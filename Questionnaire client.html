@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get EICR Quote - The Lancaster Electrician</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(180deg, #0f172a, #1e2937);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 520px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            color: #1e2937;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+        }
+        
+        .header {
+            background: #2563eb;
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 { 
+            margin: 0; 
+            font-size: 32px; 
+        }
+        
+        .form-content {
+            padding: 40px 30px;
+        }
+        
+        .guide {
+            background: #f8fafc;
+            border-left: 5px solid #2563eb;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            font-size: 16.5px;
+            line-height: 1.6;
+            color: #334155;
+        }
+        
+        label {
+            display: block;
+            margin: 20px 0 8px;
+            font-weight: 600;
+            color: #1e40af;
+            text-align: left;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 17px;
+            box-sizing: border-box;
+        }
+        
+        .submit-btn {
+            margin-top: 30px;
+            width: 100%;
+            padding: 18px;
+            background: #10b981;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Get Your EICR Quote</h1>
+        </div>
+        
+        <div class="form-content">
+            <div class="guide">
+                <strong>Please fill in the details below.</strong> This helps me understand your property quickly and provide an accurate quote for your EICR (Electrical Installation Condition Report) and any fault finding needed. 
+                I’ll reply with pricing for both Standard and Gold packages plus availability within a few hours.
+            </div>
+            
+            <form action="https://formsubmit.co/Chris.pearson.testing@gmail.com" method="POST">
+                
+                <label>Your Name</label>
+                <input type="text" name="name" required>
+                
+                <label>Phone Number</label>
+                <input type="tel" name="phone" required>
+                
+                <label>Postcode</label>
+                <input type="text" name="postcode" required>
+                
+                <label>Property Age (approx.)</label>
+                <select name="property_age" required>
+                    <option value="">Select...</option>
+                    <option value="Pre-1960">Pre-1960</option>
+                    <option value="1960-1990">1960–1990</option>
+                    <option value="1990-2010">1990–2010</option>
+                    <option value="2010+">2010 or newer</option>
+                </select>
+                
+                <label>Number of Consumer Units / Fuse Boards</label>
+                <input type="number" name="fuse_boxes" placeholder="e.g. 1 or 2" required>
+                
+                <label>Does the property have a garage, outbuilding, annex, or separate supply?</label>
+                <textarea name="outbuildings" rows="2" placeholder="Yes/No + details..."></textarea>
+                
+                <label>When was the property last electrically tested? (EICR/PIR)</label>
+                <input type="text" name="last_test" placeholder="e.g. Never / 2018 / Not sure">
+                
+                <label>Approx. Size of Property</label>
+                <select name="property_size" required>
+                    <option value="">Select...</option>
+                    <option value="1-2 bed">1–2 bedroom</option>
+                    <option value="3 bed">3 bedroom</option>
+                    <option value="4+ bed">4+ bedroom / large house</option>
+                </select>
+                
+                <label>Preferred Availability</label>
+                <input type="text" name="availability" placeholder="e.g. Next 2 weeks / Any weekday morning" required>
+                
+                <label>Any other details (rewiring needed, known issues, etc.)</label>
+                <textarea name="extra_info" rows="4" placeholder="Optional but very helpful..."></textarea>
+                
+                <input type="hidden" name="_subject" value="New EICR Quote Request - The Lancaster Electrician">
+                <input type="hidden" name="_next" value="thankyou.html">
+                <input type="hidden" name="_captcha" value="false">
+                
+                <button type="submit" class="submit-btn">Submit & Get Quote →</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

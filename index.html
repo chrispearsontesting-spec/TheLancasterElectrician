@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Lancaster Electrician</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            background: linear-gradient(180deg, #0f172a, #1e2937);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        }
+        
+        .header {
+            background: #2563eb;
+            padding: 50px 30px 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        
+        .header p {
+            margin: 0;
+            font-size: 19px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+        
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 88%;
+            max-width: 380px;
+            margin: 14px auto;
+            padding: 20px 24px;
+            font-size: 20px;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .quote-btn { background: #8b5cf6; color: white; }
+        .email-btn { background: #ef4444; color: white; }
+        .whatsapp-btn { background: #25D366; color: white; }
+        
+        .icon { font-size: 28px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>THE LANCASTER ELECTRICIAN</h1>
+            <p>Chris Pearson • Approved & Experienced Electrician</p>
+        </div>
+        
+        <div class="content">
+            <h2 style="color:#1e40af; margin-bottom:25px;">Specialist in Fault Finding & EICR Testing</h2>
+            
+            <p style="font-size:17.5px; line-height:1.6; margin-bottom:35px;">
+                I specialise in EICR testing and fault finding across Lancaster and surrounding areas. Professional, reliable electrical services focused on inspections and diagnostics.
+            </p>
+            
+            <a href="quote.html" class="button quote-btn">
+                📋 Get Your EICR Quote in Minutes
+            </a>
+            
+            <a href="mailto:Chris.pearson.testing@gmail.com?subject=EICR%20Quote%20Request%20-%20Lancaster&body=Hi%20Chris%2C%0A%0AI%27m%20interested%20in%20getting%20an%20EICR%20test%20done%20at%20my%20property.%0A%0AProperty%20details%3A%0A-%20Address%2FPostcode%3A%20%0A-%20Property%20type%2FAge%3A%20%0A-%20Number%20of%20fuse%20boards%3A%20%0A%0AAny%20other%20details%20or%20issues%3A%0A%0AI%20would%20appreciate%20a%20quote%20for%20your%20Standard%20and%20Gold%20packages%2C%20and%20your%20availability.%0A%0AThanks%2C%0A%5BYour%20Name%5D" class="button email-btn">
+                <span class="icon">✉️</span> Email Chris Now
+            </a>
+            
+            <a href="https://wa.me/447587590435" class="button whatsapp-btn">
+                <span class="icon">💬</span> Message on WhatsApp
+            </a>
+        </div>
+    </div>
+</body>
+</html>

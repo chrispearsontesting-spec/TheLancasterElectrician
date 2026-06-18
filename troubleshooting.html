@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting Guide - The Lancaster Electrician</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            background: linear-gradient(180deg, #0f172a, #1e2937);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        }
+        
+        .header {
+            background: #2563eb;
+            padding: 40px 30px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .content {
+            padding: 35px 30px;
+        }
+        
+        .question {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #1e40af;
+        }
+        
+        button {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            margin: 12px 0;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 17px;
+            text-align: left;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #e2e8f0;
+        }
+        
+        .result {
+            background: #f0fdf4;
+            padding: 25px;
+            border-radius: 16px;
+            border-left: 5px solid #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Troubleshooting Guide</h1>
+            <p>Common UK Electrical Faults</p>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="question">What best describes the problem?</div>
+            
+            <button onclick="showResult(1)">Total power loss to the whole house</button>
+            <button onclick="showResult(2)">Some sockets or lights not working</button>
+            <button onclick="showResult(3)">RCD / RCBO keeps tripping</button>
+            <button onclick="showResult(4)">One circuit keeps losing power</button>
+            <button onclick="showResult(5)">Sparks, burning smell, or hot plug/socket</button>
+            <button onclick="showResult(6)">None of the above</button>
+        </div>
+    </div>
+
+    <script>
+        function showResult(choice) {
+            let html = `<div class="result"><h2>Most Likely Cause & Solution</h2>`;
+            
+            if (choice === 5) {
+                html += `<p><strong>⚠️ POTENTIAL FIRE HAZARD</strong><br>Immediately turn off the power at the main switch and do not use the affected socket or circuit until checked by a qualified electrician.</p>`;
+            } 
+            else if (choice === 3) {
+                html += `<p><strong>RCD/RCBO Keeps Tripping</strong><br>This safety device detects leakage. <strong>Do not keep resetting it repeatedly</strong> as this can mask a dangerous fault.<br><br>1. Turn off all individual circuit breakers.<br>2. Reset the RCD once.<br>3. Turn the breakers back on one by one.<br>The circuit that causes it to trip again is faulty.</p>`;
+            } 
+            else if (choice === 4 || choice === 2) {
+                html += `<p><strong>Tripped MCB (Circuit Breaker)</strong><br>Look for a switch in the middle/tripped position on your consumer unit and push it firmly back to the ON position.<br><br><strong>Do not keep resetting it if it trips again immediately.</strong></p>`;
+            } 
+            else if (choice === 1) {
+                html += `<p><strong>Total Power Loss</strong><br>Check if your neighbours have power. If only your house is affected, check the main isolator switch on your consumer unit.</p>`;
+            } 
+            else {
+                html += `<p><strong>Other Issue</strong><br>Your symptoms don't match the most common faults listed above.</p>`;
+            }
+            
+            if (choice === 6) {
+                html += `<p style="text-align:center; margin-top:25px;"><a href="https://wa.me/447587590435" style="color:#2563eb; font-weight:600;">💬 Contact Chris on WhatsApp</a></p>`;
+            }
+            
+            document.getElementById('content').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

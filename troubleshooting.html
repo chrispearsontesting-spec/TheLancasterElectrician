@@ -78,6 +78,20 @@
             margin: 12px 0;
         }
         
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 12px;
+            background: #64748b;
+            color: white;
+            margin-top: 20px;
+        }
+        
         .disclaimer {
             font-size: 13px;
             color: #64748b;
@@ -114,7 +128,7 @@
             
             if (choice === 5) {
                 html += `<p><strong>⚠️ POTENTIAL FIRE HAZARD</strong><br>Immediately turn off the power at the main switch and do not use the affected socket or circuit until checked by a qualified electrician.</p>
-                <img src="https://via.placeholder.com/800x400/2563eb/ffffff?text=Hot+Socket+Warning" alt="Warning">`;
+                <img src="https://via.placeholder.com/800x400/ff4444/ffffff?text=Warning+Hot+Socket" alt="Hot Socket Warning">`;
             } 
             else if (choice === 3) {
                 html += `<p><strong>RCD/RCBO Keeps Tripping</strong><br>This safety device detects leakage. <strong>Do not keep resetting it repeatedly</strong> as this can mask a dangerous fault.<br><br>1. Turn off all individual circuit breakers.<br>2. Reset the RCD.<br>3. Turn the breakers back on one by one.<br>The circuit that causes it to trip again is faulty.</p>
@@ -135,6 +149,8 @@
             if (choice === 6) {
                 html += `<p style="text-align:center; margin-top:25px;"><a href="https://wa.me/447587590435" style="color:#2563eb; font-weight:600;">💬 Contact Chris on WhatsApp</a></p>`;
             }
+            
+            html += `<a href="troubleshooting.html" class="back-btn">← Back to Questions</a>`;
             
             document.getElementById('content').innerHTML = html;
         }

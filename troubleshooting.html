@@ -72,12 +72,6 @@
             border-left: 5px solid #10b981;
         }
         
-        img {
-            max-width: 100%;
-            border-radius: 12px;
-            margin: 12px 0;
-        }
-        
         .back-btn {
             display: block;
             width: 100%;
@@ -127,23 +121,52 @@
             let html = `<div class="result"><h2>Most Likely Cause & Solution</h2>`;
             
             if (choice === 5) {
-                html += `<p><strong>⚠️ POTENTIAL FIRE HAZARD</strong><br>Immediately turn off the power at the main switch and do not use the affected socket or circuit until checked by a qualified electrician.</p>
-                <img src="https://via.placeholder.com/800x400/ff4444/ffffff?text=Hot+Socket+Warning" alt="Hot Socket Warning">`;
+                html += `<p><strong>⚠️ POTENTIAL FIRE HAZARD</strong><br>This could indicate a serious fault such as a loose connection, damaged cable, or overloaded circuit.</p>
+                <p><strong>What to do immediately:</strong></p>
+                <ol>
+                    <li>Turn off the power at the main isolator switch on your consumer unit.</li>
+                    <li>Do not use the affected socket, plug, or circuit.</li>
+                    <li>Do not attempt to fix it yourself.</li>
+                </ol>
+                <p><strong>Next step:</strong> Contact Chris Pearson straight away for an urgent inspection.</p>`;
             } 
             else if (choice === 3) {
                 html += `<p><strong>RCD/RCBO Keeps Tripping</strong><br>This safety device detects leakage. <strong>Do not keep resetting it repeatedly</strong> as this can mask a dangerous fault.<br><br>1. Turn off all individual circuit breakers.<br>2. Reset the RCD.<br>3. Turn the breakers back on one by one.<br>The circuit that causes it to trip again is faulty.</p>
-                <img src="https://via.placeholder.com/800x400/2563eb/ffffff?text=RCD+Device" alt="RCD Device">`;
+                <p>Common causes include faulty appliances, damaged wiring, or moisture. Leave the faulty circuit off and contact Chris for a proper inspection and repair.</p>`;
             } 
             else if (choice === 4 || choice === 2) {
-                html += `<p><strong>Tripped MCB (Circuit Breaker)</strong><br>Look for a switch in the middle/tripped position on your consumer unit and push it firmly back to the ON position.<br><br><strong>Do not keep resetting it if it trips again immediately.</strong></p>
-                <img src="https://via.placeholder.com/800x400/2563eb/ffffff?text=MCB+Device" alt="MCB Device">`;
+                html += `<p><strong>Tripped MCB (Circuit Breaker)</strong><br>One or more circuits have lost power because a miniature circuit breaker (MCB) has tripped. This is usually caused by an overload or a short circuit.</p>
+                <p><strong>What to do:</strong></p>
+                <ol>
+                    <li>Locate your consumer unit (fuse box).</li>
+                    <li>Look for any switches that are in the middle or “tripped” position.</li>
+                    <li>Push the switch firmly back to the ON position.</li>
+                </ol>
+                <p><strong>If it trips again immediately:</strong> There is likely a fault or overload on that circuit. Turn it off and contact Chris. Do not keep resetting it.</p>
+                <p>Common causes include too many high-power appliances on one circuit or a faulty appliance.</p>`;
             } 
             else if (choice === 1) {
-                html += `<p><strong>Total Power Loss</strong><br>Check if your neighbours have power. If only your house is affected, check the main isolator switch on your consumer unit.</p>
-                <img src="https://via.placeholder.com/800x400/2563eb/ffffff?text=Consumer+Unit" alt="Consumer Unit">`;
+                html += `<p><strong>Total Power Loss</strong><br>No power anywhere in the house usually points to a problem with the incoming supply or your main switch.</p>
+                <p><strong>Step-by-step checks:</strong></p>
+                <ol>
+                    <li>Check if your neighbours still have electricity (this tells you if it’s a power cut).</li>
+                    <li>If neighbours have power, go to your consumer unit.</li>
+                    <li>Check the main isolator switch (big switch at the top). Make sure it is in the ON position.</li>
+                    <li>Check all circuit breakers are also in the ON position.</li>
+                </ol>
+                <p>If everything looks normal but you still have no power, there may be a problem with the incoming cable or meter. Contact your electricity supplier first, then call Chris if needed.</p>`;
             } 
             else {
-                html += `<p><strong>Other Issue</strong><br>Your symptoms don't match the most common faults listed above.</p>`;
+                html += `<p><strong>Other Issue</strong><br>Your symptoms don't match the most common faults listed above. This could be something less common such as a faulty appliance, loose connection, or issue with specific lighting circuits.</p>
+                <p><strong>What to do next:</strong></p>
+                <p>When you contact Chris, please provide as much detail as possible:</p>
+                <ul>
+                    <li>Which rooms or sockets are affected?</li>
+                    <li>Does it happen all the time or only sometimes?</li>
+                    <li>Any recent work done in the house (new appliances, DIY, etc.)?</li>
+                    <li>Any burning smells, buzzing sounds, or hot spots?</li>
+                </ul>
+                <p>This helps us diagnose the problem quickly when we arrive.</p>`;
             }
             
             if (choice === 6) {

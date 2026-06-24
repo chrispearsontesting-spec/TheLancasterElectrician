@@ -1,1 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EICR Certificate - The Lancaster Electrician</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            background: linear-gradient(180deg, #0f172a, #1e2937);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        }
+        
+        .header {
+            background: #3b82f6;
+            padding: 40px 30px 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 35px 30px;
+        }
+        
+        h2 {
+            color: #1e40af;
+            margin: 0 0 12px 0;
+            font-size: 22px;
+        }
+        
+        .section {
+            margin-bottom: 32px;
+        }
+        
+        .photo {
+            margin: 20px 0;
+            text-align: center;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .photo img {
+            width: 100%;
+            display: block;
+        }
+        
+        .photo-caption {
+            background: #f1f5f9;
+            padding: 10px;
+            font-size: 15px;
+            color: #475569;
+            font-weight: 500;
+        }
+        
+        .expiry {
+            font-weight: 700;
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 8px 0;
+        }
+        
+        .expired-warning {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .button {
+            display: block;
+            width: 100%;
+            max-width: 340px;
+            padding: 16px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 16px;
+        }
+        
+        .docs-btn { background: #2563eb; color: white; }
+        .guide-btn { background: #10b981; color: white; }
+        .reminder-btn { background: #f59e0b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>EICR Certificate</h1>
+            <p>Chris Pearson • Approved & Experienced Electrician</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>Property Details</h2>
+                <p><strong>Address:</strong> 7 Gold Avenue, Lancaster, LA1 5HD</p>
+                <p><strong>Test Date:</strong> 15 June 2021</p>
+                <p><strong>Reference:</strong> LAN-001</p>
+                <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[5 YEARS DATE]</span></p>
+            </div>
+            
+            <div id="expired-warning" class="expired-warning">
+                ⚠️ EICR TEST HAS EXPIRED<br>
+                <strong>Home insurance is now likely void.</strong><br>
+                Please contact Chris immediately for a new inspection.
+            </div>
+            
+            <div class="section">
+                <h2>Installation Photos</h2>
+                <div class="photo">
+                    <img src="DB001A.jpg" alt="Consumer Unit">
+                    <div class="photo-caption">Consumer Unit — 15 June 2021</div>
+                </div>
+                <div class="photo">
+                    <img src="DB001B.jpg" alt="Installation Photo">
+                    <div class="photo-caption">Installation Overview — 15 June 2021</div>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <a href="documents.html" class="button docs-btn">📑 View All Documents &amp; History</a>
+                <a href="../../troubleshooting.html" class="button guide-btn">🔧 Troubleshooting Guide</a>
+                <a id="reminder-btn" class="button reminder-btn">🔔 Set Expiry Reminder (30 days before)</a>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        const testDateStr = "2021-06-15"; 
+        const reference = "LAN-001";
+        
+        const testDate = new Date(testDateStr);
+        const expiryDate = new Date(testDate);
+        expiryDate.setFullYear(expiryDate.getFullYear() + 5);
+        
+        const reminderDate = new Date(expiryDate);
+        reminderDate.setDate(reminderDate.getDate() - 30);
+        
+        const expiryEl = document.getElementById("expiry");
+        expiryEl.textContent = expiryDate.toLocaleDateString('en-GB', { 
+            day: 'numeric', month: 'long', year: 'numeric' 
+        });
+        
+        if (new Date() > expiryDate) {
+            document.getElementById("expired-warning").style.display = "block";
+        }
+        
+        document.getElementById("reminder-btn").href = 
+            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+            `&text=EICR+Renewal+Reminder+-+${reference}` +
+            `&dates=\( {reminderDate.toISOString().slice(0,10).replace(/-/g,'')}/ \){expiryDate.toISOString().slice(0,10).replace(/-/g,'')}` +
+            `&details=Your+EICR+certificate+is+due+for+renewal.%0A%0AContact+Chris+Pearson%3A%0Ahttps%3A%2F%2Fthelancasterelectrician.com`;
+    </script>
+</body>
+</html>

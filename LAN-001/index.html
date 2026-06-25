@@ -47,55 +47,6 @@
             padding: 35px 30px;
         }
         
-        h2 {
-            color: #1e40af;
-            margin: 0 0 12px 0;
-            font-size: 22px;
-        }
-        
-        .section {
-            margin-bottom: 32px;
-        }
-        
-        .photo {
-            margin: 20px 0;
-            text-align: center;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .photo img {
-            width: 100%;
-            display: block;
-        }
-        
-        .photo-caption {
-            background: #f1f5f9;
-            padding: 10px;
-            font-size: 15px;
-            color: #475569;
-            font-weight: 500;
-        }
-        
-        .expiry {
-            font-weight: 700;
-            padding: 10px 16px;
-            border-radius: 8px;
-            display: inline-block;
-            margin: 8px 0;
-        }
-        
-        .expired-warning {
-            background: #fee2e2;
-            color: #b91c1c;
-            padding: 16px;
-            border-radius: 12px;
-            margin: 20px 0;
-            font-weight: 600;
-            text-align: center;
-        }
-        
         .buttons {
             display: flex;
             flex-direction: column;
@@ -133,26 +84,14 @@
                 <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[5 YEARS DATE]</span></p>
             </div>
             
-            <div id="expired-warning" class="expired-warning">
+            <div id="expired-warning" class="expired-warning" style="background:#fee2e2; color:#b91c1c; padding:16px; border-radius:12px; text-align:center;">
                 ⚠️ EICR TEST HAS EXPIRED<br>
                 <strong>Home insurance is now likely void.</strong><br>
                 Please contact Chris immediately for a new inspection.
             </div>
             
-            <div class="section">
-                <h2>Installation Photos</h2>
-                <div class="photo">
-                    <img src="DB001A.jpg" alt="Consumer Unit">
-                    <div class="photo-caption">Consumer Unit — 15 June 2021</div>
-                </div>
-                <div class="photo">
-                    <img src="DB001B.jpg" alt="Installation Photo">
-                    <div class="photo-caption">Installation Overview — 15 June 2021</div>
-                </div>
-            </div>
-            
             <div class="buttons">
-                <a href="bs7671_eicr_a4.pdf" class="button" style="background:#2563eb;">📄 View Current EICR Certificate (Latest)</a>
+                <a href="current.html" class="button" style="background:#2563eb;">📄 View Current EICR Certificate & Photos</a>
                 <a href="documents.html" class="button" style="background:#8b5cf6;">📚 View All Documents &amp; History</a>
                 <a href="../../troubleshooting.html" class="button" style="background:#10b981;">🔧 Troubleshooting Guide</a>
                 <a id="reminder-btn" class="button" style="background:#f59e0b;">🔔 Set Expiry Reminder</a>

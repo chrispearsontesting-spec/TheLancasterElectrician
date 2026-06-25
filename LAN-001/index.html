@@ -67,6 +67,27 @@
             border-radius: 16px;
             color: white;
         }
+        
+        .expiry {
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 12px 0;
+            font-size: 18px;
+        }
+        
+        .expired {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 3px solid #ef4444;
+            animation: flash 1s infinite alternate;
+        }
+        
+        @keyframes flash {
+            from { opacity: 1; }
+            to { opacity: 0.6; }
+        }
     </style>
 </head>
 <body>
@@ -85,14 +106,14 @@
                 <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[5 YEARS DATE]</span></p>
             </div>
             
-            <div id="expired-warning" class="expired-warning" style="background:#fee2e2; color:#b91c1c; padding:16px; border-radius:12px; text-align:center;">
+            <div id="expired-warning" class="expired-warning" style="background:#fee2e2; color:#b91c1c; padding:16px; border-radius:12px; text-align:center; display:none;">
                 ⚠️ EICR TEST HAS EXPIRED<br>
                 <strong>Home insurance is now likely void.</strong><br>
                 Please contact Chris immediately for a new inspection.
             </div>
             
             <div class="buttons">
-                <a href="documents.html" class="button" style="background:#8b5cf6;">📚 View All Documents &amp; History (incl. Photos &amp; EICR)</a>
+                <a href="documents.html" class="button" style="background:#8b5cf6;">📚 View Documents &amp; History</a>
                 <a href="../../troubleshooting.html" class="button" style="background:#10b981;">🔧 Troubleshooting Guide</a>
                 <a id="reminder-btn" class="button" style="background:#f59e0b;">🔔 Set Expiry Reminder</a>
             </div>
@@ -115,7 +136,9 @@
             day: 'numeric', month: 'long', year: 'numeric' 
         });
         
-        if (new Date() > expiryDate) {
+        const now = new Date();
+        if (now > expiryDate) {
+            expiryEl.classList.add("expired");
             document.getElementById("expired-warning").style.display = "block";
         }
         

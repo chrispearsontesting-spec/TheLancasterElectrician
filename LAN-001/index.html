@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EICR Certificate - The Lancaster Electrician</title>
+    <title>7 Gold Avenue - EICR Certificate</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -25,8 +25,8 @@
         }
         
         .header {
-            background: #3b82f6;
-            padding: 40px 30px 30px;
+            background: #2563eb;
+            padding: 50px 30px 35px;
             text-align: center;
             color: white;
         }
@@ -35,87 +35,78 @@
             margin: 0 0 8px 0;
             font-size: 32px;
             font-weight: 700;
+            line-height: 1.1;
         }
         
         .header p {
             margin: 0;
-            font-size: 18px;
+            font-size: 19px;
             opacity: 0.95;
         }
         
         .content {
-            padding: 35px 30px;
+            padding: 30px 30px 40px;
+            text-align: center;
+        }
+        
+        .expiry {
+            font-weight: 700;
+            font-size: 18.5px;
+            color: #b91c1c;
+            animation: flash 1.1s infinite alternate;
+            margin: 8px 0 25px 0;
+        }
+        
+        @keyframes flash {
+            from { opacity: 1; }
+            to { opacity: 0.55; }
         }
         
         .buttons {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            margin-top: 25px;
+            gap: 14px;
         }
         
         .button {
             display: block;
             width: 100%;
             max-width: 340px;
-            padding: 16px;
+            padding: 17px;
             text-align: center;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 17.5px;
             font-weight: 600;
             border-radius: 16px;
             color: white;
-        }
-        
-        .expiry {
-            font-weight: 700;
-            padding: 12px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin: 12px 0;
-            font-size: 18px;
-        }
-        
-        .expired {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 3px solid #ef4444;
-            animation: flash 1s infinite alternate;
-        }
-        
-        @keyframes flash {
-            from { opacity: 1; }
-            to { opacity: 0.6; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>EICR Certificate</h1>
-            <p>Chris Pearson • Approved & Experienced Electrician</p>
+            <h1>Electrical System Overview</h1>
+            <p class="address">7 Gold Avenue, Lancaster • LA1 5HD</p>
         </div>
         
         <div class="content">
-            <div class="section">
-                <h2>Property Details</h2>
-                <p><strong>Address:</strong> 7 Gold Avenue, Lancaster, LA1 5HD</p>
-                <p><strong>Test Date:</strong> 15 June 2021</p>
-                <p><strong>Reference:</strong> LAN-001</p>
-                <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[5 YEARS DATE]</span></p>
-            </div>
+            <p style="font-size:17px; line-height:1.6;">
+                EICR Test Date: 15 June 2021
+            </p>
             
-            <div id="expired-warning" class="expired-warning" style="background:#fee2e2; color:#b91c1c; padding:16px; border-radius:12px; text-align:center; display:none;">
+            <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[DATE]</span></p>
+            
+            <div id="expired-warning" style="display:none; background:#fee2e2; color:#b91c1c; padding:18px; border-radius:12px; margin:25px 0; font-weight:600;">
                 ⚠️ EICR TEST HAS EXPIRED<br>
-                <strong>Home insurance is now likely void.</strong><br>
-                Please contact Chris immediately for a new inspection.
+                <small>Your home insurance may now be void in the event of electrical fire or injury.<br>Contact me below.</small>
             </div>
             
             <div class="buttons">
-                <a href="documents.html" class="button" style="background:#8b5cf6;">📚 View Documents &amp; History</a>
-                <a href="../../troubleshooting.html" class="button" style="background:#10b981;">🔧 Troubleshooting Guide</a>
+                <a href="documents.html" class="button" style="background:#2563eb;">📚 View Documents &amp; History</a>
+                <a href="../../troubleshooting.html" class="button" style="background:#8b5cf6;">🔧 Troubleshooting Guide</a>
                 <a id="reminder-btn" class="button" style="background:#f59e0b;">🔔 Set Expiry Reminder</a>
+                <a href="https://thelancasterelectrician.com" class="button" style="background:#25D366;">📞 Contact The Lancaster Electrician</a>
             </div>
         </div>
     </div>

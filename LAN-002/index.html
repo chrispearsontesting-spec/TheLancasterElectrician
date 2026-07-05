@@ -81,7 +81,7 @@
     <div class="container">
         <div class="header">
             <h1>Electrical System Overview</h1>
-            <p class="address">[FULL ADDRESS HERE]</p>
+            <p class="address">[FULL ADDRESS HERE e.g. 12 High Street, Lancaster LA1 5HD]</p>
         </div>
         
         <div class="content">
@@ -101,7 +101,26 @@
     </div>
 
     <script>
-        // Leave this blank for now - it will be filled later
+        const testDateStr = "[TEST DATE YYYY-MM-DD]"; // Change this when you have real data
+        const reference = "[LAN-XXX]";
+        
+        const testDate = new Date(testDateStr);
+        const expiryDate = new Date(testDate);
+        expiryDate.setFullYear(expiryDate.getFullYear() + 5);
+        
+        const reminderDate = new Date(expiryDate);
+        reminderDate.setDate(reminderDate.getDate() - 30);
+        
+        const expiryEl = document.getElementById("expiry");
+        expiryEl.textContent = expiryDate.toLocaleDateString('en-GB', { 
+            day: 'numeric', month: 'long', year: 'numeric' 
+        });
+        
+        document.getElementById("reminder-btn").href = 
+            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+            `&text=EICR+Renewal+Reminder+-+${reference}` +
+            `&dates=\( {reminderDate.toISOString().slice(0,10).replace(/-/g,'')}/ \){expiryDate.toISOString().slice(0,10).replace(/-/g,'')}` +
+            `&details=Your+EICR+certificate+is+due+for+renewal.%0A%0AContact+Chris+Pearson%3A%0Ahttps%3A%2F%2Fthelancasterelectrician.com`;
     </script>
 </body>
 </html>

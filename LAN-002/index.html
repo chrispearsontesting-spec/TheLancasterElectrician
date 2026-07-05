@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[ADDRESS] - EICR Certificate</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            background: linear-gradient(180deg, #0f172a, #1e2937);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        }
+        
+        .header {
+            background: #2563eb;
+            padding: 50px 30px 35px;
+            text-align: center;
+            color: white;
+        }
+        
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        
+        .header p {
+            margin: 0;
+            font-size: 19px;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 30px 30px 40px;
+            text-align: center;
+        }
+        
+        .expiry {
+            font-weight: 700;
+            font-size: 18.5px;
+            color: #15803d;
+            margin: 8px 0 25px 0;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .button {
+            display: block;
+            width: 100%;
+            max-width: 340px;
+            padding: 17px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 17.5px;
+            font-weight: 600;
+            border-radius: 16px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Electrical System Overview</h1>
+            <p class="address">[FULL ADDRESS HERE]</p>
+        </div>
+        
+        <div class="content">
+            <p style="font-size:17px; line-height:1.6;">
+                EICR Test Date: [TEST DATE e.g. 15 June 2025]
+            </p>
+            
+            <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[EXPIRY DATE]</span></p>
+            
+            <div class="buttons">
+                <a href="documents.html" class="button" style="background:#2563eb;">📚 View Documents &amp; History</a>
+                <a href="../../troubleshooting.html" class="button" style="background:#8b5cf6;">🔧 Troubleshooting Guide</a>
+                <a id="reminder-btn" class="button" style="background:#f59e0b;">🔔 Set Expiry Reminder</a>
+                <a href="https://thelancasterelectrician.com" class="button" style="background:#25D366;">📞 Contact The Lancaster Electrician</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Leave this blank for now - it will be filled later
+    </script>
+</body>
+</html>

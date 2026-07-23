@@ -1,3 +1,16 @@
+<script>
+(function() {
+  if (sessionStorage.getItem('eicrAccessGranted') === 'true') return;
+
+  const entered = prompt("Enter your property postcode to view your secure EICR portal (e.g. LA1 5HD):");
+  if (entered && entered.toUpperCase().replace(/\s/g, '').includes("LA15HD")) {
+    sessionStorage.setItem('eicrAccessGranted', 'true');
+  } else {
+    alert("Incorrect postcode. Please try again or contact us.");
+    window.location.href = "https://thelancasterelectrician.com";
+  }
+})();
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>

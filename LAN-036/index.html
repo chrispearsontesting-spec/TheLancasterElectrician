@@ -6,75 +6,15 @@
     <title>[ADDRESS] - EICR Certificate</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            margin: 0;
-            padding: 20px 0;
-            background: linear-gradient(180deg, #0f172a, #1e2937);
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 28px;
-            overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
-        }
-        
-        .header {
-            background: #2563eb;
-            padding: 50px 30px 35px;
-            text-align: center;
-            color: white;
-        }
-        
-        .header h1 {
-            margin: 0 0 8px 0;
-            font-size: 32px;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-        
-        .header p {
-            margin: 0;
-            font-size: 19px;
-            opacity: 0.95;
-        }
-        
-        .content {
-            padding: 30px 30px 40px;
-            text-align: center;
-        }
-        
-        .expiry {
-            font-weight: 700;
-            font-size: 18.5px;
-            color: #15803d;
-            margin: 8px 0 25px 0;
-        }
-        
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-        
-        .button {
-            display: block;
-            width: 100%;
-            max-width: 340px;
-            padding: 17px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 17.5px;
-            font-weight: 600;
-            border-radius: 16px;
-            color: white;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 20px 0; background: linear-gradient(180deg, #0f172a, #1e2937); min-height: 100vh; visibility: hidden; }
+        .container { max-width: 480px; margin: 0 auto; background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35); }
+        .header { background: #2563eb; padding: 50px 30px 35px; text-align: center; color: white; }
+        .header h1 { margin: 0 0 8px 0; font-size: 32px; font-weight: 700; line-height: 1.1; }
+        .header p { margin: 0; font-size: 19px; opacity: 0.95; }
+        .content { padding: 30px 30px 40px; text-align: center; }
+        .expiry { font-weight: 700; font-size: 18.5px; color: #15803d; margin: 8px 0 25px 0; }
+        .buttons { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .button { display: block; width: 100%; max-width: 340px; padding: 17px; text-align: center; text-decoration: none; font-size: 17.5px; font-weight: 600; border-radius: 16px; color: white; }
     </style>
 </head>
 <body>
@@ -83,14 +23,9 @@
             <h1>Electrical System Overview</h1>
             <p class="address">[FULL ADDRESS HERE e.g. 12 High Street, Lancaster LA1 5HD]</p>
         </div>
-        
         <div class="content">
-            <p style="font-size:17px; line-height:1.6;">
-                EICR Test Date: [TEST DATE e.g. 15 June 2025]
-            </p>
-            
+            <p style="font-size:17px; line-height:1.6;">EICR Test Date: [TEST DATE e.g. 15 June 2025]</p>
             <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[EXPIRY DATE]</span></p>
-            
             <div class="buttons">
                 <a href="documents.html" class="button" style="background:#2563eb;">📚 View Documents &amp; History</a>
                 <a href="../../troubleshooting.html" class="button" style="background:#8b5cf6;">🔧 Troubleshooting Guide</a>
@@ -99,30 +34,36 @@
             </div>
         </div>
     </div>
-
     <script>
-        // === FILL THESE IN FOR EACH CLIENT ===
-        const testDateStr = "2025-06-15";   // Format: YYYY-MM-DD
-        const reference = "LAN-002";        // Change to match folder name
-        // =====================================
-        
+        (function() {
+            if (sessionStorage.getItem('eicrAccessGranted') === 'true') { document.body.style.visibility = 'visible'; return; }
+            const addressEl = document.querySelector('.address');
+            const addressText = addressEl ? addressEl.textContent : '';
+            const postcodeMatch = addressText.match(/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i);
+            if (!postcodeMatch) { document.body.style.visibility = 'visible'; return; }
+            const correctPostcode = postcodeMatch[1].toUpperCase().replace(/\s/g, '');
+            const entered = prompt("Enter your property postcode to view your secure EICR portal:");
+            if (entered && entered.toUpperCase().replace(/\s/g, '') === correctPostcode) {
+                sessionStorage.setItem('eicrAccessGranted', 'true');
+                document.body.style.visibility = 'visible';
+            } else {
+                alert("Incorrect postcode. Please try again or contact us.");
+                window.location.href = "https://thelancasterelectrician.com";
+            }
+        })();
+        const testDateStr = "2025-06-15";
+        const reference = "LAN-036";
         const testDate = new Date(testDateStr);
         const expiryDate = new Date(testDate);
         expiryDate.setFullYear(expiryDate.getFullYear() + 5);
-        
         const reminderDate = new Date(expiryDate);
         reminderDate.setDate(reminderDate.getDate() - 30);
-        
         const expiryEl = document.getElementById("expiry");
-        expiryEl.textContent = expiryDate.toLocaleDateString('en-GB', { 
-            day: 'numeric', month: 'long', year: 'numeric' 
-        });
-        
-        document.getElementById("reminder-btn").href = 
-            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
-            `&text=EICR+Renewal+Reminder+-+${reference}` +
-            `&dates=\( {reminderDate.toISOString().slice(0,10).replace(/-/g,'')}/ \){expiryDate.toISOString().slice(0,10).replace(/-/g,'')}` +
-            `&details=Your+EICR+certificate+is+due+for+renewal.%0A%0AContact+Chris+Pearson%3A%0Ahttps%3A%2F%2Fthelancasterelectrician.com`;
+        if (expiryEl) expiryEl.textContent = expiryDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const reminderBtn = document.getElementById("reminder-btn");
+        if (reminderBtn) {
+            reminderBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=EICR+Renewal+Reminder+-+${reference}&dates=${reminderDate.toISOString().slice(0,10).replace(/-/g,'')}/${expiryDate.toISOString().slice(0,10).replace(/-/g,'')}&details=Your+EICR+certificate+is+due+for+renewal.%0A%0AContact+Chris+Pearson%3A%0Ahttps%3A%2F%2Fthelancasterelectrician.com`;
+        }
     </script>
 </body>
 </html>

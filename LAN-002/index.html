@@ -13,6 +13,7 @@
             padding: 20px 0;
             background: linear-gradient(180deg, #0f172a, #1e2937);
             min-height: 100vh;
+            visibility: hidden; /* Hide until password check passes */
         }
         
         .container {
@@ -92,7 +93,7 @@
             <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[EXPIRY DATE]</span></p>
             
             <div class="buttons">
-                <a href="documents.html" class="button" style="background:#2563eb;">📚 View Documents &amp; History</a>
+                <a href="documents.html" class="button" style="background:#2563eb;">📚 View Documents & History</a>
                 <a href="../../troubleshooting.html" class="button" style="background:#8b5cf6;">🔧 Troubleshooting Guide</a>
                 <a id="reminder-btn" class="button" style="background:#f59e0b;">🔔 Set Expiry Reminder</a>
                 <a href="https://thelancasterelectrician.com" class="button" style="background:#25D366;">📞 Contact The Lancaster Electrician</a>
@@ -101,6 +102,38 @@
     </div>
 
     <script>
+        // === Automatic postcode password protection ===
+        // Extracts the UK postcode from the .address element and uses it as the password.
+        // Once you paste a real address containing a postcode, that postcode becomes the password for this page.
+        (function() {
+            if (sessionStorage.getItem('eicrAccessGranted') === 'true') {
+                document.body.style.visibility = 'visible';
+                return;
+            }
+
+            const addressEl = document.querySelector('.address');
+            const addressText = addressEl ? addressEl.textContent : '';
+            // UK postcode regex (e.g. LA1 5HD, M1 1AA, EC1A 1BB)
+            const postcodeMatch = addressText.match(/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i);
+
+            if (!postcodeMatch) {
+                // Still a placeholder – show the page so you can edit the address
+                document.body.style.visibility = 'visible';
+                return;
+            }
+
+            const correctPostcode = postcodeMatch[1].toUpperCase().replace(/\s/g, '');
+
+            const entered = prompt("Enter your property postcode to view your secure EICR portal:");
+            if (entered && entered.toUpperCase().replace(/\s/g, '') === correctPostcode) {
+                sessionStorage.setItem('eicrAccessGranted', 'true');
+                document.body.style.visibility = 'visible';
+            } else {
+                alert("Incorrect postcode. Please try again or contact us.");
+                window.location.href = "https://thelancasterelectrician.com";
+            }
+        })();
+
         // === FILL THESE IN FOR EACH CLIENT ===
         const testDateStr = "2025-06-15";   // Format: YYYY-MM-DD
         const reference = "LAN-002";        // Change to match folder name
@@ -114,15 +147,20 @@
         reminderDate.setDate(reminderDate.getDate() - 30);
         
         const expiryEl = document.getElementById("expiry");
-        expiryEl.textContent = expiryDate.toLocaleDateString('en-GB', { 
-            day: 'numeric', month: 'long', year: 'numeric' 
-        });
+        if (expiryEl) {
+            expiryEl.textContent = expiryDate.toLocaleDateString('en-GB', { 
+                day: 'numeric', month: 'long', year: 'numeric' 
+            });
+        }
         
-        document.getElementById("reminder-btn").href = 
-            `https://calendar.google.com/calendar/render?action=TEMPLATE` +
-            `&text=EICR+Renewal+Reminder+-+${reference}` +
-            `&dates=\( {reminderDate.toISOString().slice(0,10).replace(/-/g,'')}/ \){expiryDate.toISOString().slice(0,10).replace(/-/g,'')}` +
-            `&details=Your+EICR+certificate+is+due+for+renewal.%0A%0AContact+Chris+Pearson%3A%0Ahttps%3A%2F%2Fthelancasterelectrician.com`;
+        const reminderBtn = document.getElementById("reminder-btn");
+        if (reminderBtn) {
+            reminderBtn.href = 
+                `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+                `&text=EICR+Renewal+Reminder+-+${reference}` +
+                `&dates=${reminderDate.toISOString().slice(0,10).replace(/-/g,'')}/${expiryDate.toISOString().slice(0,10).replace(/-/g,'')}` +
+                `&details=Your+EICR+certificate+is+due+for+renewal.%0A%0AContact+Chris+Pearson%3A%0Ahttps%3A%2F%2Fthelancasterelectrician.com`;
+        }
     </script>
 </body>
 </html>

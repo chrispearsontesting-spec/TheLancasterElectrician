@@ -26,14 +26,12 @@
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
         }
 
-        /* ===== BLUE HEADER (matches design) ===== */
         .header {
             position: relative;
             padding: 48px 28px 44px;
             text-align: center;
             color: white;
             overflow: hidden;
-            /* Diagonal blue blocks */
             background:
                 linear-gradient(115deg,
                     #1e3a8a 0%,
@@ -43,7 +41,6 @@
                     #1e3a8a 100%);
         }
 
-        /* Circuit-board pattern overlay */
         .header::before {
             content: '';
             position: absolute;
@@ -54,7 +51,6 @@
             pointer-events: none;
         }
 
-        /* Soft geometric diagonal accent */
         .header::after {
             content: '';
             position: absolute;
@@ -69,22 +65,22 @@
 
         .header-icon {
             position: absolute;
-            opacity: 0.85;
+            opacity: 0.9;
             z-index: 2;
         }
 
-        .header-icon.bolt {
-            top: 18px;
-            left: 18px;
+        .header-icon.bulb {
+            top: 16px;
+            left: 16px;
             width: 28px;
             height: 28px;
         }
 
         .header-icon.plug {
-            bottom: 16px;
-            right: 18px;
-            width: 26px;
-            height: 26px;
+            bottom: 14px;
+            right: 16px;
+            width: 28px;
+            height: 28px;
         }
 
         .header-inner {
@@ -156,14 +152,23 @@
 <body>
     <div class="container">
         <div class="header">
-            <!-- Lightning bolt -->
-            <svg class="header-icon bolt" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="#93c5fd" stroke="#bfdbfe" stroke-width="0.5"/>
+            <!-- Lightbulb (top left) -->
+            <svg class="header-icon bulb" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18h6M10 21h4" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M12 2a6.5 6.5 0 00-4.2 11.5c.5.4.8 1 .9 1.6h6.6c.1-.6.4-1.2.9-1.6A6.5 6.5 0 0012 2z" fill="#93c5fd" fill-opacity="0.25" stroke="#bfdbfe" stroke-width="1.4"/>
+                <path d="M10 14.5h4" stroke="#93c5fd" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
 
-            <!-- Plug -->
+            <!-- UK 3-pin plug (bottom right) -->
             <svg class="header-icon plug" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 2v6M15 2v6M7 8h10v4a5 5 0 01-5 5h0a5 5 0 01-5-5V8zM12 17v5" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Plug body -->
+                <rect x="4" y="2.5" width="16" height="19" rx="3" stroke="#bfdbfe" stroke-width="1.5" fill="#93c5fd" fill-opacity="0.15"/>
+                <!-- Earth pin (top centre) -->
+                <rect x="10.5" y="5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
+                <!-- Live pin (bottom left) -->
+                <rect x="6.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
+                <!-- Neutral pin (bottom right) -->
+                <rect x="14.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
             </svg>
 
             <div class="header-inner">

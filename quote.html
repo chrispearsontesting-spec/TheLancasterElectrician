@@ -6,170 +6,91 @@
     <title>Get EICR Quote - The Lancaster Electrician</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
         * { box-sizing: border-box; }
-
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            margin: 0;
-            padding: 20px;
+            margin: 0; padding: 20px;
             background: linear-gradient(180deg, #0f172a, #1e2937);
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: #fff; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
         }
-
         .container {
-            max-width: 520px;
-            width: 100%;
-            margin: 0 auto;
-            background: white;
-            color: #1e2937;
-            border-radius: 28px;
-            overflow: hidden;
+            max-width: 520px; width: 100%; margin: 0 auto;
+            background: white; color: #1e2937;
+            border-radius: 28px; overflow: hidden;
             box-shadow: 0 25px 60px rgba(0,0,0,0.35);
         }
-
         .header {
-            position: relative;
-            padding: 44px 28px 40px;
-            text-align: center;
-            color: white;
-            overflow: hidden;
+            position: relative; padding: 44px 28px 40px;
+            text-align: center; color: white; overflow: hidden;
             background: linear-gradient(115deg, #1e3a8a 0%, #1e40af 28%, #2563eb 55%, #1d4ed8 78%, #1e3a8a 100%);
         }
-
         .header::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            opacity: 0.35;
+            content: ''; position: absolute; inset: 0; opacity: 0.35;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%2393c5fd' stroke-width='1.2'%3E%3Cpath d='M10 40h40v20h30v-30h40v40h30v-20h40'/%3E%3Cpath d='M20 120h50v30h40v-50h30v40h40'/%3E%3Cpath d='M0 80h25v15h20'/%3E%3Cpath d='M160 20v40h20v20'/%3E%3Cpath d='M80 160h40v20h30'/%3E%3Ccircle cx='50' cy='60' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='90' cy='30' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='130' cy='70' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='70' cy='150' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='160' cy='40' r='3' fill='%2393c5fd'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 180px 180px;
-            pointer-events: none;
+            background-size: 180px 180px; pointer-events: none;
         }
-
         .header::after {
-            content: '';
-            position: absolute;
-            top: -20%;
-            right: -15%;
-            width: 70%;
-            height: 140%;
+            content: ''; position: absolute; top: -20%; right: -15%;
+            width: 70%; height: 140%;
             background: linear-gradient(160deg, rgba(59,130,246,0.45), rgba(30,58,138,0.2));
-            transform: skewX(-18deg);
-            pointer-events: none;
+            transform: skewX(-18deg); pointer-events: none;
         }
-
-        .header-icon {
-            position: absolute;
-            opacity: 0.85;
-            z-index: 2;
-        }
-
-        .header-icon.bolt {
-            top: 16px;
-            left: 16px;
-            width: 26px;
-            height: 26px;
-        }
-
-        .header-icon.plug {
-            bottom: 14px;
-            right: 16px;
-            width: 24px;
-            height: 24px;
-        }
-
-        .header-inner {
-            position: relative;
-            z-index: 3;
-        }
-
+        .header-icon { position: absolute; opacity: 0.9; z-index: 2; }
+        .header-icon.bulb { top: 16px; left: 16px; width: 26px; height: 26px; }
+        .header-icon.plug { bottom: 14px; right: 16px; width: 28px; height: 28px; }
+        .header-inner { position: relative; z-index: 3; }
         .header h1 {
-            margin: 0;
-            font-size: 30px;
-            font-weight: 800;
-            line-height: 1.15;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            margin: 0; font-size: 30px; font-weight: 800;
+            line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.25);
         }
-
-        .form-content {
-            padding: 40px 30px;
-        }
-
+        .form-content { padding: 40px 30px; }
         .guide {
-            background: #f8fafc;
-            border-left: 5px solid #2563eb;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: 8px;
-            font-size: 16.5px;
-            line-height: 1.6;
-            color: #334155;
+            background: #f8fafc; border-left: 5px solid #2563eb;
+            padding: 20px; margin-bottom: 30px; border-radius: 8px;
+            font-size: 16.5px; line-height: 1.6; color: #334155;
         }
-
-        label {
-            display: block;
-            margin: 20px 0 8px;
-            font-weight: 600;
-            color: #1e40af;
-        }
-
+        label { display: block; margin: 20px 0 8px; font-weight: 600; color: #1e40af; }
         input, select, textarea {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 17px;
-            box-sizing: border-box;
+            width: 100%; padding: 14px; border: 2px solid #e2e8f0;
+            border-radius: 12px; font-size: 17px; box-sizing: border-box;
         }
-
         .submit-btn {
-            margin-top: 30px;
-            width: 100%;
-            padding: 18px;
-            background: #10b981;
-            color: white;
-            font-size: 20px;
-            font-weight: 600;
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
+            margin-top: 30px; width: 100%; padding: 18px;
+            background: #10b981; color: white; font-size: 20px;
+            font-weight: 600; border: none; border-radius: 16px; cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <svg class="header-icon bolt" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="#93c5fd" stroke="#bfdbfe" stroke-width="0.5"/>
+            <svg class="header-icon bulb" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18h6M10 21h4" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M12 2a6.5 6.5 0 00-4.2 11.5c.5.4.8 1 .9 1.6h6.6c.1-.6.4-1.2.9-1.6A6.5 6.5 0 0012 2z" fill="#93c5fd" fill-opacity="0.25" stroke="#bfdbfe" stroke-width="1.4"/>
+                <path d="M10 14.5h4" stroke="#93c5fd" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
             <svg class="header-icon plug" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 2v6M15 2v6M7 8h10v4a5 5 0 01-5 5h0a5 5 0 01-5-5V8zM12 17v5" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="4" y="2.5" width="16" height="19" rx="3" stroke="#bfdbfe" stroke-width="1.5" fill="#93c5fd" fill-opacity="0.15"/>
+                <rect x="10.5" y="5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
+                <rect x="6.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
+                <rect x="14.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
             </svg>
             <div class="header-inner">
                 <h1>Get Your EICR Quote</h1>
             </div>
         </div>
-
         <div class="form-content">
             <div class="guide">
                 <strong>Please fill in the details below.</strong> This helps me understand your property quickly and provide an accurate quote.
             </div>
-
             <form action="https://formsubmit.co/Chris.pearson.testing@gmail.com" method="POST">
                 <label>Your Name</label>
                 <input type="text" name="name" required>
-
                 <label>Phone Number</label>
                 <input type="tel" name="phone" required>
-
                 <label>Postcode</label>
                 <input type="text" name="postcode" required>
-
                 <label>Property Age (approx.)</label>
                 <select name="property_age" required>
                     <option value="">Select...</option>
@@ -178,16 +99,12 @@
                     <option value="1990-2010">1990–2010</option>
                     <option value="2010+">2010 or newer</option>
                 </select>
-
                 <label>Number of Consumer Units / Fuse Boards</label>
                 <input type="number" name="fuse_boxes" placeholder="e.g. 1 or 2" required>
-
                 <label>Garage, outbuilding, annex or separate supply?</label>
                 <textarea name="outbuildings" rows="2" placeholder="Yes/No + details..."></textarea>
-
                 <label>When was the property last electrically tested?</label>
                 <input type="text" name="last_test" placeholder="e.g. Never / 2018 / Not sure">
-
                 <label>Approx. Size of Property</label>
                 <select name="property_size" required>
                     <option value="">Select...</option>
@@ -195,17 +112,13 @@
                     <option value="3 bed">3 bedroom</option>
                     <option value="4+ bed">4+ bedroom / large house</option>
                 </select>
-
                 <label>Preferred Availability</label>
                 <input type="text" name="availability" placeholder="e.g. Next 2 weeks" required>
-
                 <label>Any other details</label>
                 <textarea name="extra_info" rows="4" placeholder="Known issues, rewiring, etc..."></textarea>
-
                 <input type="hidden" name="_subject" value="New EICR Quote Request - The Lancaster Electrician">
                 <input type="hidden" name="_next" value="https://thelancasterelectrician.com/thankyou.html">
                 <input type="hidden" name="_captcha" value="false">
-
                 <button type="submit" class="submit-btn">Submit & Get Quote →</button>
             </form>
         </div>

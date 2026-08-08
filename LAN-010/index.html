@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[ADDRESS] - EICR Certificate</title>
+    <title>Roseberry House - EICR Certificate</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 20px 0; background: linear-gradient(180deg, #0f172a, #1e2937); min-height: 100vh; visibility: hidden; }
@@ -21,13 +21,13 @@
     <div class="container">
         <div class="header">
             <h1>Electrical System Overview</h1>
-            <p class="address">[FULL ADDRESS HERE e.g. 12 High Street, Lancaster LA1 5HD]</p>
+            <p class="address">Roseberry House, Smallwood Hey, Pilling, PR3 6HJ</p>
         </div>
         <div class="content">
-            <p style="font-size:17px; line-height:1.6;">EICR Test Date: [TEST DATE e.g. 15 June 2025]</p>
+            <p style="font-size:17px; line-height:1.6;">EICR Test Date: 8 August 2026</p>
             <p><strong>Expiry Date:</strong> <span id="expiry" class="expiry">[EXPIRY DATE]</span></p>
             <div class="buttons">
-                <a href="documents.html" class="button" style="background:#2563eb;">📚 View Documents &amp; History</a>
+                <a href="documents.html" class="button" style="background:#2563eb;">📚 View Documents & History</a>
                 <a href="../../troubleshooting.html" class="button" style="background:#8b5cf6;">🔧 Troubleshooting Guide</a>
                 <a id="reminder-btn" class="button" style="background:#f59e0b;">🔔 Set Expiry Reminder</a>
                 <a href="https://thelancasterelectrician.com" class="button" style="background:#25D366;">📞 Contact The Lancaster Electrician</a>
@@ -35,6 +35,7 @@
         </div>
     </div>
     <script>
+        // === Automatic postcode password protection ===
         (function() {
             if (sessionStorage.getItem('eicrAccessGranted') === 'true') { document.body.style.visibility = 'visible'; return; }
             const addressEl = document.querySelector('.address');
@@ -51,7 +52,8 @@
                 window.location.href = "https://thelancasterelectrician.com";
             }
         })();
-        const testDateStr = "2025-06-15";
+
+        const testDateStr = "2026-08-08";
         const reference = "LAN-010";
         const testDate = new Date(testDateStr);
         const expiryDate = new Date(testDate);

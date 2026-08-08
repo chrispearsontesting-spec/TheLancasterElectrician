@@ -5,12 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roseberry House - EICR Certificate</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 20px 0; background: linear-gradient(180deg, #0f172a, #1e2937); min-height: 100vh; visibility: hidden; }
         .container { max-width: 480px; margin: 0 auto; background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35); }
-        .header { background: #2563eb; padding: 50px 30px 35px; text-align: center; color: white; }
-        .header h1 { margin: 0 0 8px 0; font-size: 32px; font-weight: 700; line-height: 1.1; }
-        .header p { margin: 0; font-size: 19px; opacity: 0.95; }
+
+        .header {
+            position: relative;
+            padding: 48px 28px 42px;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+            background: linear-gradient(115deg, #1e3a8a 0%, #1e40af 28%, #2563eb 55%, #1d4ed8 78%, #1e3a8a 100%);
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.35;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%2393c5fd' stroke-width='1.2'%3E%3Cpath d='M10 40h40v20h30v-30h40v40h30v-20h40'/%3E%3Cpath d='M20 120h50v30h40v-50h30v40h40'/%3E%3Cpath d='M0 80h25v15h20'/%3E%3Cpath d='M160 20v40h20v20'/%3E%3Cpath d='M80 160h40v20h30'/%3E%3Ccircle cx='50' cy='60' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='90' cy='30' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='130' cy='70' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='70' cy='150' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='160' cy='40' r='3' fill='%2393c5fd'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 180px 180px;
+            pointer-events: none;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -15%;
+            width: 70%;
+            height: 140%;
+            background: linear-gradient(160deg, rgba(59,130,246,0.45), rgba(30,58,138,0.2));
+            transform: skewX(-18deg);
+            pointer-events: none;
+        }
+        .header-icon { position: absolute; opacity: 0.85; z-index: 2; }
+        .header-icon.bolt { top: 16px; left: 16px; width: 26px; height: 26px; }
+        .header-icon.plug { bottom: 14px; right: 16px; width: 24px; height: 24px; }
+        .header-inner { position: relative; z-index: 3; }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1.15;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .header p { margin: 0; font-size: 16px; font-weight: 500; opacity: 0.95; line-height: 1.35; }
+
         .content { padding: 30px 30px 40px; text-align: center; }
         .expiry { font-weight: 700; font-size: 18.5px; color: #15803d; margin: 8px 0 25px 0; }
         .buttons { display: flex; flex-direction: column; align-items: center; gap: 14px; }
@@ -20,8 +60,16 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Electrical System Overview</h1>
-            <p class="address">Roseberry House, Smallwood Hey, Pilling, PR3 6HJ</p>
+            <svg class="header-icon bolt" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="#93c5fd" stroke="#bfdbfe" stroke-width="0.5"/>
+            </svg>
+            <svg class="header-icon plug" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 2v6M15 2v6M7 8h10v4a5 5 0 01-5 5h0a5 5 0 01-5-5V8zM12 17v5" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="header-inner">
+                <h1>Electrical System Overview</h1>
+                <p class="address">Roseberry House, Smallwood Hey, Pilling, PR3 6HJ</p>
+            </div>
         </div>
         <div class="content">
             <p style="font-size:17px; line-height:1.6;">EICR Test Date: 8 August 2026</p>

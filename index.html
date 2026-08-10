@@ -21,9 +21,7 @@
         .mobile-only { display: block; }
         .desktop-only { display: none; }
 
-        .mobile-wrap {
-            padding: 20px 0;
-        }
+        .mobile-wrap { padding: 20px 0; }
 
         .container {
             max-width: 480px;
@@ -65,15 +63,9 @@
             pointer-events: none;
         }
 
-        .header-icon {
-            position: absolute;
-            opacity: 0.9;
-            z-index: 2;
-        }
-
+        .header-icon { position: absolute; opacity: 0.9; z-index: 2; }
         .header-icon.bulb { top: 16px; left: 16px; width: 28px; height: 28px; }
         .header-icon.plug { bottom: 14px; right: 16px; width: 28px; height: 28px; }
-
         .header-inner { position: relative; z-index: 3; }
 
         .header h1 {
@@ -93,10 +85,7 @@
             line-height: 1.35;
         }
 
-        .content {
-            padding: 40px 30px;
-            text-align: center;
-        }
+        .content { padding: 40px 30px; text-align: center; }
 
         .content h2 {
             color: #1e40af;
@@ -134,15 +123,11 @@
         .quote-btn { background: #8b5cf6; }
         .email-btn { background: #ef4444; }
         .whatsapp-btn { background: #25D366; }
-
         .icon { font-size: 26px; }
 
         /* ========== DESKTOP ========== */
         @media (min-width: 900px) {
-            body {
-                background: #0f172a;
-                padding: 0;
-            }
+            body { background: #0f172a; padding: 0; }
 
             .mobile-only { display: none !important; }
             .desktop-only { display: block; }
@@ -152,109 +137,110 @@
                 background: #f8fafc;
             }
 
-            /* Top bar */
             .top-bar {
-                background: #0f172a;
+                background: #0b1220;
                 color: #94a3b8;
-                font-size: 14px;
-                padding: 10px 40px;
+                font-size: 13.5px;
+                padding: 11px 48px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
             }
 
             .top-bar a { color: #93c5fd; text-decoration: none; }
+            .top-bar a:hover { text-decoration: underline; }
 
-            /* Desktop header */
-            .desk-header {
-                background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 40%, #1e40af 70%, #2563eb 100%);
-                color: white;
-                padding: 28px 60px 40px;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .desk-header::before {
-                content: '';
-                position: absolute;
-                inset: 0;
-                opacity: 0.25;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%2393c5fd' stroke-width='1.2'%3E%3Cpath d='M10 40h40v20h30v-30h40v40h30v-20h40'/%3E%3Cpath d='M20 120h50v30h40v-50h30v40h40'/%3E%3Cpath d='M0 80h25v15h20'/%3E%3Cpath d='M160 20v40h20v20'/%3E%3Cpath d='M80 160h40v20h30'/%3E%3Ccircle cx='50' cy='60' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='90' cy='30' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='130' cy='70' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='70' cy='150' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='160' cy='40' r='3' fill='%2393c5fd'/%3E%3C/g%3E%3C/svg%3E");
-                background-size: 220px 220px;
-                pointer-events: none;
-            }
-
+            /* Navigation */
             .desk-nav {
-                position: relative;
-                z-index: 2;
+                background: #0f172a;
+                padding: 18px 48px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                margin-bottom: 36px;
+                border-bottom: 1px solid rgba(148,163,184,0.15);
             }
 
             .logo-area {
                 display: flex;
                 align-items: center;
-                gap: 18px;
+                gap: 16px;
             }
 
             .logo-area img {
-                height: 72px;
+                height: 64px;
                 width: auto;
-                border-radius: 10px;
-                background: rgba(255,255,255,0.08);
+                border-radius: 8px;
             }
 
             .logo-text h1 {
-                font-size: 28px;
+                font-size: 22px;
                 font-weight: 800;
-                letter-spacing: 0.5px;
-                line-height: 1.1;
+                color: white;
+                letter-spacing: 0.4px;
+                line-height: 1.15;
             }
 
             .logo-text span {
-                font-size: 14px;
-                opacity: 0.9;
+                font-size: 13px;
+                color: #94a3b8;
                 font-weight: 500;
             }
 
             .desk-nav-links a {
-                color: white;
+                color: #e2e8f0;
                 text-decoration: none;
                 margin-left: 28px;
                 font-weight: 500;
                 font-size: 15px;
-                opacity: 0.9;
+                transition: color 0.2s;
             }
 
-            .desk-nav-links a:hover { opacity: 1; text-decoration: underline; }
+            .desk-nav-links a:hover { color: #93c5fd; }
 
-            /* Hero */
-            .hero {
+            /* Hero banner */
+            .hero-banner {
                 position: relative;
-                z-index: 2;
-                display: grid;
-                grid-template-columns: 1.1fr 0.9fr;
-                gap: 50px;
-                align-items: center;
-                max-width: 1200px;
-                margin: 0 auto;
+                height: 480px;
+                overflow: hidden;
             }
 
-            .hero-text h2 {
-                font-size: 42px;
+            .hero-banner img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center 30%;
+            }
+
+            .hero-overlay {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(90deg, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.55) 55%, rgba(15,23,42,0.25) 100%);
+                display: flex;
+                align-items: center;
+            }
+
+            .hero-content {
+                max-width: 1140px;
+                margin: 0 auto;
+                padding: 0 48px;
+                color: white;
+                width: 100%;
+            }
+
+            .hero-content h2 {
+                font-size: 44px;
                 font-weight: 800;
                 line-height: 1.15;
-                margin-bottom: 18px;
+                margin-bottom: 16px;
+                max-width: 580px;
             }
 
-            .hero-text p {
+            .hero-content p {
                 font-size: 18px;
                 line-height: 1.6;
                 opacity: 0.95;
                 margin-bottom: 28px;
-                max-width: 520px;
+                max-width: 500px;
             }
 
             .hero-buttons {
@@ -267,10 +253,10 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 10px;
-                padding: 16px 28px;
-                border-radius: 14px;
+                padding: 15px 26px;
+                border-radius: 12px;
                 font-weight: 600;
-                font-size: 16px;
+                font-size: 15.5px;
                 text-decoration: none;
                 color: white;
                 transition: transform 0.2s, box-shadow 0.2s;
@@ -278,31 +264,19 @@
 
             .hero-buttons a:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
             }
 
             .btn-purple { background: #8b5cf6; }
             .btn-green { background: #25D366; }
             .btn-red { background: #ef4444; }
+            .btn-blue { background: #2563eb; }
 
-            .hero-image {
-                text-align: center;
-            }
-
-            .hero-image img {
-                max-width: 100%;
-                height: auto;
-                max-height: 420px;
-                border-radius: 20px;
-                box-shadow: 0 25px 50px rgba(0,0,0,0.35);
-                object-fit: cover;
-            }
-
-            /* Main content sections */
+            /* Sections */
             .section {
                 max-width: 1140px;
                 margin: 0 auto;
-                padding: 70px 40px;
+                padding: 72px 48px;
             }
 
             .section-title {
@@ -320,12 +294,12 @@
             .section-title p {
                 font-size: 17px;
                 color: #64748b;
-                max-width: 640px;
+                max-width: 620px;
                 margin: 0 auto;
                 line-height: 1.6;
             }
 
-            /* Services / Packages */
+            /* Packages */
             .packages {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -336,14 +310,14 @@
                 background: white;
                 border-radius: 20px;
                 padding: 36px 32px;
-                box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+                box-shadow: 0 10px 40px rgba(15, 23, 42, 0.07);
                 border: 1px solid #e2e8f0;
                 position: relative;
             }
 
             .package-card.gold {
                 border: 2px solid #f59e0b;
-                background: linear-gradient(180deg, #fffbeb 0%, #ffffff 40%);
+                background: linear-gradient(180deg, #fffbeb 0%, #ffffff 45%);
             }
 
             .package-card.gold::before {
@@ -363,14 +337,14 @@
             .package-card h3 {
                 font-size: 24px;
                 font-weight: 700;
-                margin-bottom: 8px;
+                margin-bottom: 6px;
                 color: #0f172a;
             }
 
             .package-card .price {
                 font-size: 15px;
                 color: #64748b;
-                margin-bottom: 20px;
+                margin-bottom: 22px;
             }
 
             .package-card ul {
@@ -379,7 +353,7 @@
             }
 
             .package-card li {
-                padding: 8px 0;
+                padding: 9px 0;
                 padding-left: 28px;
                 position: relative;
                 font-size: 15.5px;
@@ -395,7 +369,7 @@
                 font-weight: 700;
             }
 
-            .package-card.gold li::before { color: #f59e0b; }
+            .package-card.gold li::before { color: #d97706; }
 
             .package-card a {
                 display: block;
@@ -406,15 +380,19 @@
                 text-decoration: none;
                 color: white;
                 background: #2563eb;
+                transition: background 0.2s;
             }
 
+            .package-card a:hover { background: #1d4ed8; }
             .package-card.gold a { background: #f59e0b; }
+            .package-card.gold a:hover { background: #d97706; }
 
             /* Experience */
             .experience-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr 1fr;
                 gap: 24px;
+                margin-bottom: 48px;
             }
 
             .exp-card {
@@ -427,7 +405,7 @@
             }
 
             .exp-card .emoji {
-                font-size: 36px;
+                font-size: 34px;
                 margin-bottom: 14px;
             }
 
@@ -444,28 +422,31 @@
                 color: #64748b;
             }
 
-            /* Photo strip */
-            .photo-strip {
+            /* Photo gallery */
+            .photo-gallery {
                 display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 20px;
-                margin-top: 20px;
+                grid-template-columns: 1.1fr 0.9fr 1fr;
+                gap: 18px;
             }
 
-            .photo-strip img {
+            .photo-gallery img {
                 width: 100%;
-                height: 260px;
+                height: 280px;
                 object-fit: cover;
                 border-radius: 16px;
-                box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+                box-shadow: 0 12px 32px rgba(0,0,0,0.12);
             }
 
-            /* CTA band */
+            .photo-gallery img:nth-child(1) { object-position: center 20%; }
+            .photo-gallery img:nth-child(2) { object-position: center 25%; }
+            .photo-gallery img:nth-child(3) { object-position: center 30%; }
+
+            /* CTA */
             .cta-band {
-                background: linear-gradient(135deg, #1e3a8a, #2563eb);
+                background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
                 color: white;
                 text-align: center;
-                padding: 60px 40px;
+                padding: 64px 48px;
             }
 
             .cta-band h2 {
@@ -478,33 +459,32 @@
                 font-size: 17px;
                 opacity: 0.95;
                 margin-bottom: 28px;
-                max-width: 560px;
+                max-width: 540px;
                 margin-left: auto;
                 margin-right: auto;
+                line-height: 1.55;
             }
 
-            .cta-band .hero-buttons {
-                justify-content: center;
-            }
+            .cta-band .hero-buttons { justify-content: center; }
 
             /* Footer */
             .desk-footer {
-                background: #0f172a;
+                background: #0b1220;
                 color: #94a3b8;
-                padding: 36px 40px;
+                padding: 36px 48px;
                 text-align: center;
                 font-size: 14px;
             }
 
             .desk-footer strong { color: #e2e8f0; }
-
             .desk-footer a { color: #93c5fd; text-decoration: none; }
+            .desk-footer a:hover { text-decoration: underline; }
         }
     </style>
 </head>
 <body>
 
-<!-- ==================== MOBILE VERSION ==================== -->
+<!-- ==================== MOBILE VERSION (unchanged) ==================== -->
 <div class="mobile-only mobile-wrap">
     <div class="container">
         <div class="header">
@@ -553,46 +533,41 @@
         <span>
             <a href="mailto:Chris.pearson.testing@gmail.com">Chris.pearson.testing@gmail.com</a>
             &nbsp;•&nbsp;
-            <a href="https://wa.me/447587590435">WhatsApp</a>
+            <a href="https://wa.me/447587590435">WhatsApp 07587 590435</a>
         </span>
     </div>
 
-    <header class="desk-header">
-        <div class="desk-nav">
-            <div class="logo-area">
-                <!-- Upload your logo as assets/logo-lancaster.png -->
-                <img src="assets/logo-lancaster.png" alt="The Lancaster Electrician logo" onerror="this.style.display='none'">
-                <div class="logo-text">
-                    <h1>THE LANCASTER ELECTRICIAN</h1>
-                    <span>Chris Pearson • Approved & Experienced Electrician</span>
-                </div>
+    <nav class="desk-nav">
+        <div class="logo-area">
+            <img src="assets/grok_image_1786319971770.jpg" alt="The Lancaster Electrician">
+            <div class="logo-text">
+                <h1>THE LANCASTER ELECTRICIAN</h1>
+                <span>Chris Pearson • Approved & Experienced Electrician</span>
             </div>
-            <nav class="desk-nav-links">
-                <a href="#packages">Packages</a>
-                <a href="#experience">Experience</a>
-                <a href="quote.html">Get a Quote</a>
-                <a href="https://wa.me/447587590435">WhatsApp</a>
-            </nav>
         </div>
+        <div class="desk-nav-links">
+            <a href="#packages">Packages</a>
+            <a href="#experience">Experience</a>
+            <a href="quote.html">Get a Quote</a>
+            <a href="https://wa.me/447587590435">WhatsApp</a>
+        </div>
+    </nav>
 
-        <div class="hero">
-            <div class="hero-text">
+    <!-- Wide hero banner -->
+    <section class="hero-banner">
+        <img src="assets/grok_image_1786324767565.jpg" alt="Chris Pearson – Professional EICR testing in Lancaster">
+        <div class="hero-overlay">
+            <div class="hero-content">
                 <h2>Professional EICR Testing<br>& Fault Finding in Lancaster</h2>
-                <p>
-                    Specialist electrical inspections and diagnostics for landlords, homeowners and businesses across Lancaster and the surrounding areas. Clear reports, practical recommendations and a focus on safety.
-                </p>
+                <p>Specialist electrical inspections and diagnostics for landlords, homeowners and businesses. Clear reports, practical advice and a strong focus on safety.</p>
                 <div class="hero-buttons">
                     <a href="quote.html" class="btn-purple">📋 Get Your EICR Quote</a>
                     <a href="https://wa.me/447587590435" class="btn-green">💬 WhatsApp Chris</a>
                     <a href="mailto:Chris.pearson.testing@gmail.com?subject=EICR%20Quote%20Request%20-%20Lancaster" class="btn-red">✉️ Email</a>
                 </div>
             </div>
-            <div class="hero-image">
-                <!-- Main hero photo - upload as assets/chris-hero.jpg -->
-                <img src="assets/chris-hero.jpg" alt="Chris Pearson – The Lancaster Electrician carrying out electrical testing" onerror="this.src='https://via.placeholder.com/480x420/1e3a8a/ffffff?text=Chris+Pearson'">
-            </div>
         </div>
-    </header>
+    </section>
 
     <!-- Packages -->
     <section class="section" id="packages">
@@ -631,11 +606,11 @@
         </div>
     </section>
 
-    <!-- Experience -->
+    <!-- Experience + Photos -->
     <section class="section" id="experience" style="background:#f1f5f9;">
         <div class="section-title">
             <h2>Experience You Can Trust</h2>
-            <p>I bring practical testing experience across domestic and industrial environments, with a strong understanding of complex electrical systems.</p>
+            <p>Practical testing experience across domestic and industrial environments, with in-depth knowledge of complex electrical systems.</p>
         </div>
 
         <div class="experience-grid">
@@ -656,11 +631,10 @@
             </div>
         </div>
 
-        <!-- Photo gallery - upload these three images -->
-        <div class="photo-strip">
-            <img src="assets/chris-1.jpg" alt="Electrical testing in progress" onerror="this.style.background='#1e3a8a';this.style.height='260px'">
-            <img src="assets/chris-2.jpg" alt="Socket testing with multifunction tester" onerror="this.style.background='#1e40af';this.style.height='260px'">
-            <img src="assets/chris-3.jpg" alt="Chris Pearson – Lancaster Electrician" onerror="this.style.background='#2563eb';this.style.height='260px'">
+        <div class="photo-gallery">
+            <img src="assets/grok_image_1786317557807.jpg" alt="Chris Pearson carrying out electrical testing">
+            <img src="assets/grok_image_1786316468357.jpg" alt="Socket testing with multifunction tester">
+            <img src="assets/grok_image_1786324826751.jpg" alt="Professional EICR testing in a modern home">
         </div>
     </section>
 

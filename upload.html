@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload EICR Files | The Lancaster Electrician</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(180deg, #0f172a, #1e2937);
+            min-height: 100vh;
+            color: #1e2937;
+            padding: 24px 16px;
+        }
+        .wrap { max-width: 640px; margin: 0 auto; }
+        .container {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+        }
+        .header {
+            position: relative;
+            padding: 36px 28px 32px;
+            text-align: center;
+            color: white;
+            background: linear-gradient(115deg, #1e3a8a 0%, #2563eb 55%, #1e3a8a 100%);
+        }
+        .header h1 { font-size: 26px; font-weight: 800; line-height: 1.2; }
+        .header p { margin-top: 8px; opacity: 0.95; font-size: 15px; }
+        .content { padding: 28px 24px 36px; }
+        .note {
+            background: #eff6ff;
+            border-left: 5px solid #2563eb;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 14.5px;
+            line-height: 1.5;
+            color: #334155;
+            margin-bottom: 22px;
+        }
+        label { display: block; margin: 16px 0 7px; font-weight: 600; color: #1e40af; font-size: 14.5px; }
+        input, select, textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+        .submit-btn {
+            margin-top: 24px;
+            width: 100%;
+            padding: 16px;
+            background: #10b981;
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+        .gate {
+            max-width: 420px;
+            margin: 12vh auto 0;
+            background: white;
+            border-radius: 20px;
+            padding: 32px 26px;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+        }
+        .gate h2 { color: #0f172a; margin-bottom: 8px; }
+        .gate p { color: #64748b; font-size: 14.5px; margin-bottom: 18px; }
+        .hidden { display: none; }
+        .path-preview {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #475569;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        a.back { display: inline-block; margin-top: 16px; color: #93c5fd; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div id="gate" class="gate">
+    <h2>Staff upload</h2>
+    <p>Private page for adding an EICR PDF and board photos to a property record.</p>
+    <input id="pass" type="password" placeholder="Access code" autocomplete="current-password">
+    <button class="submit-btn" type="button" onclick="unlock()">Unlock</button>
+    <a class="back" href="index.html">Back to website</a>
+</div>
+<div id="app" class="wrap hidden">
+    <div class="container">
+        <div class="header">
+            <h1>Upload EICR files</h1>
+            <p>PDF + two photos for a QR property page</p>
+        </div>
+        <div class="content">
+            <div class="note">
+                Choose the property code (LAN-001 onwards). Files are emailed to Chris with the exact folder names to use on the site. GitHub Pages cannot store uploads by itself — this keeps the process tidy until automatic publishing is added.
+            </div>
+            <form action="https://formsubmit.co/Chris.pearson.testing@gmail.com" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div>
+                        <label>Property code</label>
+                        <select name="property_code" id="property_code" required></select>
+                    </div>
+                    <div>
+                        <label>Your name</label>
+                        <input type="text" name="uploaded_by" value="Chris Pearson" required>
+                    </div>
+                </div>
+                <label>Property address</label>
+                <input type="text" name="address" placeholder="e.g. 7 Gold Avenue, Lancaster" required>
+                <div class="row">
+                    <div>
+                        <label>Postcode</label>
+                        <input type="text" name="postcode" placeholder="LA1 5HD" required>
+                    </div>
+                    <div>
+                        <label>Landlord / client name</label>
+                        <input type="text" name="landlord" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <label>EICR test date</label>
+                        <input type="date" name="test_date" required>
+                    </div>
+                    <div>
+                        <label>Next test due (optional)</label>
+                        <input type="date" name="next_due">
+                    </div>
+                </div>
+                <label>EICR PDF</label>
+                <input type="file" name="attachment" accept="application/pdf" required>
+                <label>Board photo 1</label>
+                <input type="file" name="attachment2" accept="image/*" required>
+                <label>Board photo 2</label>
+                <input type="file" name="attachment3" accept="image/*" required>
+                <label>Notes</label>
+                <textarea name="notes" rows="3" placeholder="Anything to add to the property page..."></textarea>
+                <div class="path-preview" id="pathPreview">Files will be filed as LAN-001 / EICR.pdf, board-1.jpg, board-2.jpg</div>
+                <input type="hidden" name="_subject" value="EICR upload - The Lancaster Electrician">
+                <input type="hidden" name="_next" value="https://thelancasterelectrician.com/upload-thanks.html">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_template" value="table">
+                <button type="submit" class="submit-btn">Send files to publish →</button>
+            </form>
+        </div>
+    </div>
+    <p style="text-align:center;margin-top:18px;"><a class="back" href="index.html">Back to website</a></p>
+</div>
+<script>
+    const ACCESS = 'LancasterGold';
+    function unlock() {
+        const val = document.getElementById('pass').value.trim();
+        if (val === ACCESS) {
+            sessionStorage.setItem('tleUploadOk', '1');
+            showApp();
+        } else {
+            alert('Incorrect access code.');
+        }
+    }
+    function showApp() {
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+    }
+    if (sessionStorage.getItem('tleUploadOk') === '1') showApp();
+    const sel = document.getElementById('property_code');
+    for (let i = 1; i <= 50; i++) {
+        const code = 'LAN-' + String(i).padStart(3, '0');
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = code;
+        sel.appendChild(opt);
+    }
+    sel.addEventListener('change', function() {
+        document.getElementById('pathPreview').textContent =
+            'Files will be filed as ' + sel.value + ' / EICR.pdf, board-1.jpg, board-2.jpg';
+    });
+    document.getElementById('pass').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); unlock(); }
+    });
+</script>
+</body>
+</html>

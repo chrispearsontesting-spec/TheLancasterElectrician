@@ -4,25 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EICR Testing Lancaster | The Lancaster Electrician | Chris Pearson</title>
-    <meta name="description" content="Professional EICR testing and electrical fault finding in Lancaster. Domestic & industrial experience. Standard and Gold packages available. Book your Electrical Installation Condition Report today.">
+    <meta name="description" content="EICR testing in Lancaster for landlords and homeowners. Gold package includes a QR code on the consumer unit, digital certificates, photos and property history.">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
             font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(180deg, #0f172a, #1e2937);
             min-height: 100vh;
             color: #1e2937;
         }
-
-        /* ========== MOBILE (default) ========== */
         .mobile-only { display: block; }
         .desktop-only { display: none; }
-
         .mobile-wrap { padding: 20px 0; }
-
         .container {
             max-width: 480px;
             margin: 0 auto;
@@ -31,7 +25,6 @@
             overflow: hidden;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
         }
-
         .header {
             position: relative;
             padding: 48px 28px 44px;
@@ -40,494 +33,149 @@
             overflow: hidden;
             background: linear-gradient(115deg, #1e3a8a 0%, #1e40af 28%, #2563eb 55%, #1d4ed8 78%, #1e3a8a 100%);
         }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            opacity: 0.35;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%2393c5fd' stroke-width='1.2'%3E%3Cpath d='M10 40h40v20h30v-30h40v40h30v-20h40'/%3E%3Cpath d='M20 120h50v30h40v-50h30v40h40'/%3E%3Cpath d='M0 80h25v15h20'/%3E%3Cpath d='M160 20v40h20v20'/%3E%3Cpath d='M80 160h40v20h30'/%3E%3Ccircle cx='50' cy='60' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='90' cy='30' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='130' cy='70' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='70' cy='150' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='160' cy='40' r='3' fill='%2393c5fd'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 180px 180px;
-            pointer-events: none;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            top: -20%;
-            right: -15%;
-            width: 70%;
-            height: 140%;
-            background: linear-gradient(160deg, rgba(59,130,246,0.45), rgba(30,58,138,0.2));
-            transform: skewX(-18deg);
-            pointer-events: none;
-        }
-
-        .header-icon { position: absolute; opacity: 0.9; z-index: 2; }
-        .header-icon.bulb { top: 16px; left: 16px; width: 28px; height: 28px; }
-        .header-icon.plug { bottom: 14px; right: 16px; width: 28px; height: 28px; }
         .header-inner { position: relative; z-index: 3; }
-
         .header h1 {
             margin: 0 0 12px 0;
             font-size: 34px;
             font-weight: 800;
             line-height: 1.05;
-            letter-spacing: 0.5px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.25);
         }
-
-        .header p {
-            margin: 0;
-            font-size: 17px;
-            font-weight: 500;
-            opacity: 0.95;
-            line-height: 1.35;
-        }
-
+        .header p { margin: 0; font-size: 17px; font-weight: 500; opacity: 0.95; line-height: 1.35; }
         .content { padding: 40px 30px; text-align: center; }
-
-        .content h2 {
-            color: #1e40af;
-            margin: 0 0 22px 0;
-            font-size: 24px;
-            font-weight: 700;
-            line-height: 1.25;
-        }
-
-        .content > p {
-            font-size: 17px;
-            line-height: 1.6;
-            margin: 0 0 32px 0;
-            color: #1e2937;
-        }
-
+        .content h2 { color: #1e40af; margin: 0 0 22px 0; font-size: 24px; font-weight: 700; line-height: 1.25; }
+        .content > p { font-size: 17px; line-height: 1.6; margin: 0 0 24px 0; color: #1e2937; }
         .button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 88%;
-            max-width: 380px;
-            margin: 14px auto;
-            padding: 20px 24px;
-            font-size: 19px;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            color: white;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            width: 88%; max-width: 380px; margin: 14px auto; padding: 20px 24px;
+            font-size: 18px; font-weight: 600; text-decoration: none;
+            border-radius: 16px; color: white;
         }
-
         .quote-btn { background: #8b5cf6; }
+        .gold-btn { background: #d97706; }
         .email-btn { background: #ef4444; }
         .whatsapp-btn { background: #25D366; }
-        .icon { font-size: 26px; }
-
-        /* ========== DESKTOP ========== */
         @media (min-width: 900px) {
             body { background: #0f172a; padding: 0; }
-
             .mobile-only { display: none !important; }
             .desktop-only { display: block; }
-
-            .desktop-page {
-                min-height: 100vh;
-                background: #f8fafc;
-            }
-
+            .desktop-page { min-height: 100vh; background: #f8fafc; }
             .top-bar {
-                background: #0b1220;
-                color: #94a3b8;
-                font-size: 13.5px;
-                padding: 11px 48px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+                background: #0b1220; color: #94a3b8; font-size: 13.5px;
+                padding: 11px 48px; display: flex; justify-content: space-between;
             }
-
             .top-bar a { color: #93c5fd; text-decoration: none; }
-            .top-bar a:hover { text-decoration: underline; }
-
-            /* Navigation */
             .desk-nav {
-                background: #0f172a;
-                padding: 18px 48px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
+                background: #0f172a; padding: 18px 48px; display: flex;
+                align-items: center; justify-content: space-between;
                 border-bottom: 1px solid rgba(148,163,184,0.15);
             }
-
-            .logo-area {
-                display: flex;
-                align-items: center;
-                gap: 18px;
-            }
-
-            .logo-area img {
-                height: 84px;
-                width: auto;
-                border-radius: 10px;
-            }
-
-            .logo-text h1 {
-                font-size: 24px;
-                font-weight: 800;
-                color: white;
-                letter-spacing: 0.4px;
-                line-height: 1.15;
-            }
-
-            .logo-text span {
-                font-size: 13.5px;
-                color: #94a3b8;
-                font-weight: 500;
-            }
-
+            .logo-area { display: flex; align-items: center; gap: 18px; }
+            .logo-area img { height: 84px; width: auto; border-radius: 10px; }
+            .logo-text h1 { font-size: 24px; font-weight: 800; color: white; }
+            .logo-text span { font-size: 13.5px; color: #94a3b8; font-weight: 500; }
             .desk-nav-links a {
-                color: #e2e8f0;
-                text-decoration: none;
-                margin-left: 28px;
-                font-weight: 500;
-                font-size: 15px;
-                transition: color 0.2s;
+                color: #e2e8f0; text-decoration: none; margin-left: 22px;
+                font-weight: 500; font-size: 15px;
             }
-
             .desk-nav-links a:hover { color: #93c5fd; }
-
-            /* Hero banner */
-            .hero-banner {
-                position: relative;
-                height: 480px;
-                overflow: hidden;
-            }
-
-            .hero-banner img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                object-position: center 30%;
-            }
-
+            .hero-banner { position: relative; height: 480px; overflow: hidden; }
+            .hero-banner img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
             .hero-overlay {
-                position: absolute;
-                inset: 0;
+                position: absolute; inset: 0;
                 background: linear-gradient(90deg, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.55) 55%, rgba(15,23,42,0.25) 100%);
-                display: flex;
-                align-items: center;
+                display: flex; align-items: center;
             }
-
-            .hero-content {
-                max-width: 1140px;
-                margin: 0 auto;
-                padding: 0 48px;
-                color: white;
-                width: 100%;
-            }
-
-            .hero-content h2 {
-                font-size: 44px;
-                font-weight: 800;
-                line-height: 1.15;
-                margin-bottom: 16px;
-                max-width: 580px;
-            }
-
-            .hero-content p {
-                font-size: 18px;
-                line-height: 1.6;
-                opacity: 0.95;
-                margin-bottom: 28px;
-                max-width: 500px;
-            }
-
-            .hero-buttons {
-                display: flex;
-                gap: 14px;
-                flex-wrap: wrap;
-            }
-
+            .hero-content { max-width: 1140px; margin: 0 auto; padding: 0 48px; color: white; width: 100%; }
+            .hero-content h2 { font-size: 44px; font-weight: 800; line-height: 1.15; margin-bottom: 16px; max-width: 640px; }
+            .hero-content p { font-size: 18px; line-height: 1.6; opacity: 0.95; margin-bottom: 28px; max-width: 540px; }
+            .hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
             .hero-buttons a {
-                display: inline-flex;
-                align-items: center;
-                gap: 10px;
-                padding: 15px 26px;
-                border-radius: 12px;
-                font-weight: 600;
-                font-size: 15.5px;
-                text-decoration: none;
-                color: white;
-                transition: transform 0.2s, box-shadow 0.2s;
+                display: inline-flex; align-items: center; gap: 10px;
+                padding: 15px 26px; border-radius: 12px; font-weight: 600;
+                font-size: 15.5px; text-decoration: none; color: white;
             }
-
-            .hero-buttons a:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-            }
-
             .btn-purple { background: #8b5cf6; }
             .btn-green { background: #25D366; }
             .btn-red { background: #ef4444; }
-            .btn-blue { background: #2563eb; }
-
-            /* Sections */
-            .section {
-                max-width: 1140px;
-                margin: 0 auto;
-                padding: 72px 48px;
-            }
-
-            .section-title {
-                text-align: center;
-                margin-bottom: 48px;
-            }
-
-            .section-title h2 {
-                font-size: 32px;
-                font-weight: 800;
-                color: #0f172a;
-                margin-bottom: 12px;
-            }
-
-            .section-title p {
-                font-size: 17px;
-                color: #64748b;
-                max-width: 620px;
-                margin: 0 auto;
-                line-height: 1.6;
-            }
-
-            /* Packages */
-            .packages {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 28px;
-            }
-
+            .btn-gold { background: #d97706; }
+            .section { max-width: 1140px; margin: 0 auto; padding: 72px 48px; }
+            .section-title { text-align: center; margin-bottom: 48px; }
+            .section-title h2 { font-size: 32px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+            .section-title p { font-size: 17px; color: #64748b; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+            .packages { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
             .package-card {
-                background: white;
-                border-radius: 20px;
-                padding: 36px 32px;
+                background: white; border-radius: 20px; padding: 36px 32px;
                 box-shadow: 0 10px 40px rgba(15, 23, 42, 0.07);
-                border: 1px solid #e2e8f0;
-                position: relative;
+                border: 1px solid #e2e8f0; position: relative;
             }
-
-            .package-card.gold {
-                border: 2px solid #f59e0b;
-                background: linear-gradient(180deg, #fffbeb 0%, #ffffff 45%);
-            }
-
+            .package-card.gold { border: 2px solid #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 45%); }
             .package-card.gold::before {
-                content: 'RECOMMENDED';
-                position: absolute;
-                top: -12px;
-                left: 28px;
-                background: #f59e0b;
-                color: white;
-                font-size: 12px;
-                font-weight: 700;
-                padding: 4px 12px;
-                border-radius: 20px;
-                letter-spacing: 0.5px;
+                content: 'RECOMMENDED'; position: absolute; top: -12px; left: 28px;
+                background: #f59e0b; color: white; font-size: 12px; font-weight: 700;
+                padding: 4px 12px; border-radius: 20px;
             }
-
-            .package-card h3 {
-                font-size: 24px;
-                font-weight: 700;
-                margin-bottom: 6px;
-                color: #0f172a;
-            }
-
-            .package-card .price {
-                font-size: 15px;
-                color: #64748b;
-                margin-bottom: 22px;
-            }
-
-            .package-card ul {
-                list-style: none;
-                margin-bottom: 28px;
-            }
-
-            .package-card li {
-                padding: 9px 0;
-                padding-left: 28px;
-                position: relative;
-                font-size: 15.5px;
-                line-height: 1.45;
-                color: #334155;
-            }
-
-            .package-card li::before {
-                content: '✓';
-                position: absolute;
-                left: 0;
-                color: #10b981;
-                font-weight: 700;
-            }
-
+            .package-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 6px; color: #0f172a; }
+            .package-card .price { font-size: 15px; color: #64748b; margin-bottom: 22px; }
+            .package-card ul { list-style: none; margin-bottom: 28px; }
+            .package-card li { padding: 9px 0 9px 28px; position: relative; font-size: 15.5px; line-height: 1.45; color: #334155; }
+            .package-card li::before { content: '✓'; position: absolute; left: 0; color: #10b981; font-weight: 700; }
             .package-card.gold li::before { color: #d97706; }
-
             .package-card a {
-                display: block;
-                text-align: center;
-                padding: 14px;
-                border-radius: 12px;
-                font-weight: 600;
-                text-decoration: none;
-                color: white;
-                background: #2563eb;
-                transition: background 0.2s;
+                display: block; text-align: center; padding: 14px; border-radius: 12px;
+                font-weight: 600; text-decoration: none; color: white; background: #2563eb;
             }
-
-            .package-card a:hover { background: #1d4ed8; }
             .package-card.gold a { background: #f59e0b; }
-            .package-card.gold a:hover { background: #d97706; }
-
-            /* Experience */
-            .experience-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 24px;
-                margin-bottom: 48px;
+            .landlord-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+            .landlord-card {
+                background: white; border-radius: 18px; padding: 26px 22px;
+                border: 1px solid #e2e8f0; box-shadow: 0 8px 30px rgba(15,23,42,0.06);
             }
-
+            .landlord-card h3 { font-size: 18px; margin-bottom: 10px; color: #0f172a; }
+            .landlord-card p { font-size: 14.5px; line-height: 1.55; color: #64748b; }
+            .experience-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 48px; }
             .exp-card {
-                background: white;
-                border-radius: 18px;
-                padding: 28px 24px;
-                text-align: center;
-                box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
-                border: 1px solid #e2e8f0;
+                background: white; border-radius: 18px; padding: 28px 24px; text-align: center;
+                box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06); border: 1px solid #e2e8f0;
             }
-
-            .exp-card .emoji {
-                font-size: 34px;
-                margin-bottom: 14px;
-            }
-
-            .exp-card h3 {
-                font-size: 18px;
-                font-weight: 700;
-                margin-bottom: 10px;
-                color: #0f172a;
-            }
-
-            .exp-card p {
-                font-size: 14.5px;
-                line-height: 1.55;
-                color: #64748b;
-            }
-
-            /* Photo gallery */
-            .photo-gallery {
-                display: grid;
-                grid-template-columns: 1.1fr 0.9fr 1fr;
-                gap: 18px;
-            }
-
-            .photo-gallery img {
-                width: 100%;
-                height: 280px;
-                object-fit: cover;
-                border-radius: 16px;
-                box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-            }
-
-            .photo-gallery img:nth-child(1) { object-position: center 20%; }
-            .photo-gallery img:nth-child(2) { object-position: center 25%; }
-            .photo-gallery img:nth-child(3) { object-position: center 30%; }
-
-            /* CTA */
+            .exp-card .emoji { font-size: 34px; margin-bottom: 14px; }
+            .exp-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #0f172a; }
+            .exp-card p { font-size: 14.5px; line-height: 1.55; color: #64748b; }
+            .photo-gallery { display: grid; grid-template-columns: 1.1fr 0.9fr 1fr; gap: 18px; }
+            .photo-gallery img { width: 100%; height: 280px; object-fit: cover; border-radius: 16px; }
             .cta-band {
                 background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
-                color: white;
-                text-align: center;
-                padding: 64px 48px;
+                color: white; text-align: center; padding: 64px 48px;
             }
-
-            .cta-band h2 {
-                font-size: 30px;
-                font-weight: 800;
-                margin-bottom: 14px;
-            }
-
-            .cta-band p {
-                font-size: 17px;
-                opacity: 0.95;
-                margin-bottom: 28px;
-                max-width: 540px;
-                margin-left: auto;
-                margin-right: auto;
-                line-height: 1.55;
-            }
-
+            .cta-band h2 { font-size: 30px; font-weight: 800; margin-bottom: 14px; }
+            .cta-band p { font-size: 17px; opacity: 0.95; margin-bottom: 28px; max-width: 540px; margin-left: auto; margin-right: auto; }
             .cta-band .hero-buttons { justify-content: center; }
-
-            /* Footer */
-            .desk-footer {
-                background: #0b1220;
-                color: #94a3b8;
-                padding: 36px 48px;
-                text-align: center;
-                font-size: 14px;
-            }
-
+            .desk-footer { background: #0b1220; color: #94a3b8; padding: 36px 48px; text-align: center; font-size: 14px; }
             .desk-footer strong { color: #e2e8f0; }
             .desk-footer a { color: #93c5fd; text-decoration: none; }
-            .desk-footer a:hover { text-decoration: underline; }
         }
     </style>
 </head>
 <body>
-
-<!-- ==================== MOBILE VERSION (unchanged) ==================== -->
 <div class="mobile-only mobile-wrap">
     <div class="container">
         <div class="header">
-            <svg class="header-icon bulb" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18h6M10 21h4" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M12 2a6.5 6.5 0 00-4.2 11.5c.5.4.8 1 .9 1.6h6.6c.1-.6.4-1.2.9-1.6A6.5 6.5 0 0012 2z" fill="#93c5fd" fill-opacity="0.25" stroke="#bfdbfe" stroke-width="1.4"/>
-                <path d="M10 14.5h4" stroke="#93c5fd" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
-            <svg class="header-icon plug" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="2.5" width="16" height="19" rx="3" stroke="#bfdbfe" stroke-width="1.5" fill="#93c5fd" fill-opacity="0.15"/>
-                <rect x="10.5" y="5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
-                <rect x="6.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
-                <rect x="14.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
-            </svg>
             <div class="header-inner">
                 <h1>THE LANCASTER<br>ELECTRICIAN</h1>
                 <p>Chris Pearson • Approved &<br>Experienced Electrician</p>
             </div>
         </div>
-
         <div class="content">
-            <h2>Specialist in Fault Finding<br>& EICR Testing</h2>
-            <p>
-                I specialise in EICR testing and fault
-                finding across Lancaster and
-                surrounding areas. Professional,
-                reliable electrical services focused on
-                inspections and diagnostics.
-            </p>
-            <a href="quote.html" class="button quote-btn">📋 Get Your EICR Quote in Minutes</a>
-            <a href="mailto:Chris.pearson.testing@gmail.com?subject=EICR%20Quote%20Request%20-%20Lancaster&body=Hi%20Chris%2C%0A%0AI%27m%20interested%20in%20getting%20an%20EICR%20test%20done%20at%20my%20property.%0A%0AProperty%20details%3A%0A-%20Address%2FPostcode%3A%20%0A-%20Property%20type%2FAge%3A%20%0A-%20Number%20of%20fuse%20boards%3A%20%0A%0AAny%20other%20details%20or%20issues%3A%0A%0AI%20would%20appreciate%20a%20quote%20for%20your%20Standard%20and%20Gold%20packages%2C%20and%20your%20availability.%0A%0AThanks%2C%0A%5BYour%20Name%5D" class="button email-btn">
-                <span class="icon">✉️</span> Email Chris Now
-            </a>
-            <a href="https://wa.me/447587590435" class="button whatsapp-btn">
-                <span class="icon">💬</span> Message on WhatsApp
-            </a>
+            <h2>EICR Testing & Fault Finding<br>for homes and landlords</h2>
+            <p>Professional EICR testing in Lancaster and the surrounding area. Gold adds a QR code on the consumer unit so certificates, photos and history stay with the property.</p>
+            <a href="quote.html" class="button quote-btn">Get Your EICR Quote</a>
+            <a href="gold.html" class="button gold-btn">For landlords — How Gold works</a>
+            <a href="mailto:Chris.pearson.testing@gmail.com?subject=EICR%20Quote%20Request%20-%20Lancaster" class="button email-btn">Email Chris Now</a>
+            <a href="https://wa.me/447587590435" class="button whatsapp-btn">Message on WhatsApp</a>
         </div>
     </div>
 </div>
 
-<!-- ==================== DESKTOP VERSION ==================== -->
 <div class="desktop-only desktop-page">
-
     <div class="top-bar">
         <span>Chris Pearson trading as The Lancaster Electrician</span>
         <span>
@@ -536,7 +184,6 @@
             <a href="https://wa.me/447587590435">WhatsApp 07587 590435</a>
         </span>
     </div>
-
     <nav class="desk-nav">
         <div class="logo-area">
             <img src="assets/grok_image_1786319971770.jpg" alt="The Lancaster Electrician">
@@ -546,36 +193,57 @@
             </div>
         </div>
         <div class="desk-nav-links">
+            <a href="gold.html">For Landlords</a>
             <a href="#packages">Packages</a>
             <a href="#experience">Experience</a>
             <a href="quote.html">Get a Quote</a>
             <a href="https://wa.me/447587590435">WhatsApp</a>
         </div>
     </nav>
-
-    <!-- Wide hero banner -->
     <section class="hero-banner">
-        <img src="assets/grok_image_1786324767565.jpg" alt="Chris Pearson – Professional EICR testing in Lancaster">
+        <img src="assets/grok_image_1786324767565.jpg" alt="Professional EICR testing in Lancaster">
         <div class="hero-overlay">
             <div class="hero-content">
-                <h2>Professional EICR Testing<br>& Fault Finding in Lancaster</h2>
-                <p>Specialist electrical inspections and diagnostics for landlords, homeowners and businesses. Clear reports, practical advice and a strong focus on safety.</p>
+                <h2>EICR testing for landlords<br>and homeowners in Lancaster</h2>
+                <p>Clear BS 7671 reports, and a Gold digital record with a QR code on the consumer unit so certificates and photos are never lost in an inbox.</p>
                 <div class="hero-buttons">
-                    <a href="quote.html" class="btn-purple">📋 Get Your EICR Quote</a>
-                    <a href="https://wa.me/447587590435" class="btn-green">💬 WhatsApp Chris</a>
-                    <a href="mailto:Chris.pearson.testing@gmail.com?subject=EICR%20Quote%20Request%20-%20Lancaster" class="btn-red">✉️ Email</a>
+                    <a href="quote.html" class="btn-purple">Get Your EICR Quote</a>
+                    <a href="gold.html" class="btn-gold">How Gold works</a>
+                    <a href="https://wa.me/447587590435" class="btn-green">WhatsApp Chris</a>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Packages -->
-    <section class="section" id="packages">
+    <section class="section" id="landlords">
+        <div class="section-title">
+            <h2>Built for landlords</h2>
+            <p>Rented properties normally need an EICR at least every five years. Gold keeps that report, the photos and the next due date on a page linked from the board itself.</p>
+        </div>
+        <div class="landlord-grid">
+            <div class="landlord-card">
+                <h3>QR on the board</h3>
+                <p>Scan the sticker on the consumer unit to open that property's certificates, photos and history. No searching through old emails.</p>
+            </div>
+            <div class="landlord-card">
+                <h3>One view of every rental</h3>
+                <p>Landlords with more than one property get an overview page. A button turns red when an EICR has expired.</p>
+            </div>
+            <div class="landlord-card">
+                <h3>Insurance and safety</h3>
+                <p>A current EICR helps show the installation has been inspected. An expired report can cause problems if there is a claim after an electrical incident.</p>
+            </div>
+        </div>
+        <p style="text-align:center;margin-top:28px;">
+            <a href="gold.html" style="color:#d97706;font-weight:700;text-decoration:none;">Read how Gold works →</a>
+            &nbsp;&nbsp;
+            <a href="landlord-example.html" style="color:#2563eb;font-weight:700;text-decoration:none;">See an example landlord page →</a>
+        </p>
+    </section>
+    <section class="section" id="packages" style="background:#f1f5f9;">
         <div class="section-title">
             <h2>EICR Testing Packages</h2>
-            <p>Choose the level of service that suits your property. Both packages include a full Electrical Installation Condition Report carried out to BS 7671 standards.</p>
+            <p>Both packages include a full Electrical Installation Condition Report carried out to BS 7671 standards.</p>
         </div>
-
         <div class="packages">
             <div class="package-card">
                 <h3>Standard Package</h3>
@@ -589,75 +257,65 @@
                 </ul>
                 <a href="quote.html">Request Standard Quote</a>
             </div>
-
             <div class="package-card gold">
                 <h3>Gold Package</h3>
-                <div class="price">Best value – digital record & extra support</div>
+                <div class="price">Digital record & extra support</div>
                 <ul>
                     <li>Everything in the Standard package</li>
                     <li>QR code on the distribution board</li>
                     <li>Digital certificate + installation photos</li>
                     <li>Ongoing history library of previous certs</li>
                     <li>Troubleshooting guide linked to the QR code</li>
-                    <li>Optional distribution board tidy-up & labelling add-on</li>
+                    <li>Landlord overview for multiple properties</li>
                 </ul>
-                <a href="quote.html">Request Gold Quote</a>
+                <a href="gold.html">See how Gold works</a>
             </div>
         </div>
     </section>
-
-    <!-- Experience + Photos -->
-    <section class="section" id="experience" style="background:#f1f5f9;">
+    <section class="section" id="experience">
         <div class="section-title">
             <h2>Experience You Can Trust</h2>
-            <p>Practical testing experience across domestic and industrial environments, with in-depth knowledge of complex electrical systems.</p>
+            <p>Practical testing across domestic and industrial environments.</p>
         </div>
-
         <div class="experience-grid">
             <div class="exp-card">
                 <div class="emoji">🏠</div>
                 <h3>Domestic</h3>
-                <p>EICRs for houses, flats and rental properties. Clear explanations for landlords and homeowners so you know exactly where you stand.</p>
+                <p>EICRs for houses, flats and rental properties, with clear explanations for landlords and homeowners.</p>
             </div>
             <div class="exp-card">
                 <div class="emoji">🏭</div>
                 <h3>Industrial</h3>
-                <p>Experience testing in industrial settings. Comfortable working with larger installations and more demanding environments.</p>
+                <p>Experience testing in industrial settings and larger installations.</p>
             </div>
             <div class="exp-card">
                 <div class="emoji">⚡</div>
                 <h3>Complex Systems</h3>
-                <p>In-depth knowledge of modern consumer units, RCBOs, surge protection and fault finding on more complex installations.</p>
+                <p>Modern consumer units, RCBOs, surge protection and fault finding on more complex installations.</p>
             </div>
         </div>
-
         <div class="photo-gallery">
-            <img src="assets/grok_image_1786317557807.jpg" alt="Chris Pearson carrying out electrical testing">
-            <img src="assets/grok_image_1786316468357.jpg" alt="Socket testing with multifunction tester">
-            <img src="assets/grok_image_1786324826751.jpg" alt="Professional EICR testing in a modern home">
+            <img src="assets/grok_image_1786317557807.jpg" alt="Electrical testing">
+            <img src="assets/grok_image_1786316468357.jpg" alt="Socket testing">
+            <img src="assets/grok_image_1786324826751.jpg" alt="EICR testing in a home">
         </div>
     </section>
-
-    <!-- CTA -->
     <section class="cta-band">
         <h2>Ready for a professional EICR?</h2>
-        <p>Get a clear quote in minutes. Tell me a little about the property and I’ll come back with pricing for both Standard and Gold packages.</p>
+        <p>Tell me a little about the property and I will come back with pricing for Standard and Gold.</p>
         <div class="hero-buttons">
-            <a href="quote.html" class="btn-purple">📋 Get Your Quote</a>
-            <a href="https://wa.me/447587590435" class="btn-green">💬 Message on WhatsApp</a>
+            <a href="quote.html" class="btn-purple">Get Your Quote</a>
+            <a href="https://wa.me/447587590435" class="btn-green">Message on WhatsApp</a>
         </div>
     </section>
-
     <footer class="desk-footer">
         <p><strong>Chris Pearson</strong> trading as <strong>The Lancaster Electrician</strong></p>
         <p style="margin-top:8px;">
             <a href="mailto:Chris.pearson.testing@gmail.com">Chris.pearson.testing@gmail.com</a>
-            &nbsp;•&nbsp;
-            WhatsApp: 07587 590435
+            &nbsp;•&nbsp; WhatsApp: 07587 590435
         </p>
         <p style="margin-top:12px; opacity:0.7;">EICR Testing & Electrical Fault Finding • Lancaster and surrounding areas</p>
     </footer>
 </div>
-
 </body>
 </html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landlord overview example | The Lancaster Electrician</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(180deg, #0f172a, #1e2937);
+            min-height: 100vh;
+            color: #1e2937;
+            padding: 20px 16px 40px;
+        }
+        .wrap { max-width: 560px; margin: 0 auto; }
+        .card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+        }
+        .header {
+            padding: 32px 24px 26px;
+            text-align: center;
+            color: white;
+            background: linear-gradient(115deg, #1e3a8a 0%, #2563eb 55%, #1e3a8a 100%);
+        }
+        .header h1 { font-size: 24px; font-weight: 800; line-height: 1.2; }
+        .header p { margin-top: 8px; opacity: 0.95; font-size: 14.5px; }
+        .content { padding: 22px 18px 28px; }
+        .demo {
+            background: #fffbeb;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13.5px;
+            line-height: 1.45;
+            margin-bottom: 18px;
+        }
+        .property {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 12px 0;
+            background: #f8fafc;
+        }
+        .property.ok { border-color: #86efac; background: #f0fdf4; }
+        .property.expired {
+            border-color: #fca5a5;
+            background: #fef2f2;
+            animation: pulse 1.2s ease-in-out infinite alternate;
+        }
+        @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(220,38,38,0.15); } to { box-shadow: 0 0 0 6px rgba(220,38,38,0.08); } }
+        .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .addr { font-weight: 700; font-size: 16px; color: #0f172a; }
+        .meta { font-size: 13.5px; color: #64748b; margin-top: 4px; }
+        .badge {
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 8px;
+            border-radius: 999px;
+            color: white;
+        }
+        .ok .badge { background: #16a34a; }
+        .expired .badge { background: #dc2626; }
+        .soon .badge { background: #d97706; }
+        .soon { border-color: #fcd34d; background: #fffbeb; }
+        .footer { text-align: center; margin-top: 16px; }
+        .footer a { color: #93c5fd; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="header">
+            <h1>Landlord overview</h1>
+            <p>Example portfolio &mdash; tap a property</p>
+        </div>
+        <div class="content">
+            <div class="demo">
+                Demonstration page. One property is shown as expired (red) and one as current (green). Real landlord pages will use their own list of addresses.
+            </div>
+
+            <a class="property expired" href="LAN-001/index.html">
+                <div class="row">
+                    <div>
+                        <div class="addr">7 Gold Avenue, Lancaster</div>
+                        <div class="meta">LAN-001 &middot; Last EICR 15 June 2021</div>
+                    </div>
+                    <span class="badge">EXPIRED</span>
+                </div>
+            </a>
+
+            <a class="property ok" href="LAN-010/index.html">
+                <div class="row">
+                    <div>
+                        <div class="addr">Roseberry House, Pilling</div>
+                        <div class="meta">LAN-010 &middot; Last EICR 8 August 2026</div>
+                    </div>
+                    <span class="badge">CURRENT</span>
+                </div>
+            </a>
+
+            <a class="property soon" href="LAN-002/index.html">
+                <div class="row">
+                    <div>
+                        <div class="addr">Example property 3</div>
+                        <div class="meta">LAN-002 &middot; Due within 30 days (example)</div>
+                    </div>
+                    <span class="badge">DUE SOON</span>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="footer">
+        <a href="index.html">Back to website</a>
+    </div>
+</div>
+</body>
+</html>

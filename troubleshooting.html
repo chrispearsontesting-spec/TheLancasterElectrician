@@ -7,124 +7,104 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            margin: 0; padding: 20px 0;
-            background: linear-gradient(180deg, #0f172a, #1e2937);
-            min-height: 100vh;
+        body { font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 20px 0; background: linear-gradient(180deg, #0f172a, #1e2937); min-height: 100vh; }
+        .container { max-width: 520px; margin: 0 auto; background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,.35); }
+        .header { padding: 44px 28px 36px; text-align: center; color: white; background: linear-gradient(115deg, #1e3a8a 0%, #2563eb 55%, #1e3a8a 100%); }
+        .header h1 { margin: 0 0 8px; font-size: 28px; font-weight: 800; }
+        .header p { margin: 0; font-size: 16px; opacity: .95; }
+        .content { padding: 28px 22px 36px; }
+        .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+        .search-row input {
+            flex: 1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px;
         }
-        .container {
-            max-width: 480px; margin: 0 auto; background: white;
-            border-radius: 28px; overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        .search-row button {
+            width: auto; padding: 14px 16px; margin: 0; background: #2563eb; color: white;
+            border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
         }
-        .header {
-            position: relative; padding: 44px 28px 40px;
-            text-align: center; color: white; overflow: hidden;
-            background: linear-gradient(115deg, #1e3a8a 0%, #1e40af 28%, #2563eb 55%, #1d4ed8 78%, #1e3a8a 100%);
+        .mic { background: #0f172a !important; }
+        .answer {
+            display: none; background: #f8fafc; border-left: 5px solid #2563eb;
+            padding: 16px; border-radius: 12px; margin-bottom: 18px; font-size: 15.5px; line-height: 1.55; color: #334155;
         }
-        .header::before {
-            content: ''; position: absolute; inset: 0; opacity: 0.35;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%2393c5fd' stroke-width='1.2'%3E%3Cpath d='M10 40h40v20h30v-30h40v40h30v-20h40'/%3E%3Cpath d='M20 120h50v30h40v-50h30v40h40'/%3E%3Cpath d='M0 80h25v15h20'/%3E%3Cpath d='M160 20v40h20v20'/%3E%3Cpath d='M80 160h40v20h30'/%3E%3Ccircle cx='50' cy='60' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='90' cy='30' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='130' cy='70' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='70' cy='150' r='3' fill='%2393c5fd'/%3E%3Ccircle cx='160' cy='40' r='3' fill='%2393c5fd'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 180px 180px; pointer-events: none;
-        }
-        .header::after {
-            content: ''; position: absolute; top: -20%; right: -15%;
-            width: 70%; height: 140%;
-            background: linear-gradient(160deg, rgba(59,130,246,0.45), rgba(30,58,138,0.2));
-            transform: skewX(-18deg); pointer-events: none;
-        }
-        .header-icon { position: absolute; opacity: 0.9; z-index: 2; }
-        .header-icon.bulb { top: 16px; left: 16px; width: 26px; height: 26px; }
-        .header-icon.plug { bottom: 14px; right: 16px; width: 28px; height: 28px; }
-        .header-inner { position: relative; z-index: 3; }
-        .header h1 {
-            margin: 0 0 8px 0; font-size: 28px; font-weight: 800;
-            line-height: 1.15; text-shadow: 0 2px 8px rgba(0,0,0,0.25);
-        }
-        .header p { margin: 0; font-size: 16px; font-weight: 500; opacity: 0.95; }
-        .content { padding: 35px 30px; }
-        .question { font-size: 20px; font-weight: 600; margin-bottom: 25px; color: #1e40af; }
-        button {
-            display: block; width: 100%; padding: 18px; margin: 12px 0;
+        .answer strong { color: #0f172a; }
+        .question { font-size: 18px; font-weight: 600; margin: 10px 0 16px; color: #1e40af; }
+        button.opt {
+            display: block; width: 100%; padding: 16px; margin: 10px 0;
             background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
-            font-size: 17px; text-align: left; cursor: pointer;
+            font-size: 16px; text-align: left; cursor: pointer;
         }
-        button:hover { background: #e2e8f0; }
-        .result { background: #f0fdf4; padding: 25px; border-radius: 16px; border-left: 5px solid #10b981; }
-        .back-btn {
-            display: block; width: 100%; padding: 14px; text-align: center;
-            text-decoration: none; font-size: 17px; font-weight: 600;
-            border-radius: 12px; background: #64748b; color: white; margin-top: 20px;
-        }
-        .disclaimer { font-size: 13px; color: #64748b; margin-top: 30px; text-align: center; line-height: 1.5; }
+        .result { background: #f0fdf4; padding: 22px; border-radius: 16px; border-left: 5px solid #10b981; }
+        .back-btn { display: block; width: 100%; padding: 14px; text-align: center; text-decoration: none; font-size: 17px; font-weight: 600; border-radius: 12px; background: #64748b; color: white; margin-top: 20px; }
+        .disclaimer { font-size: 13px; color: #64748b; margin-top: 24px; text-align: center; line-height: 1.5; }
+        .danger { background: #fef2f2; border-left-color: #dc2626; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <svg class="header-icon bulb" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18h6M10 21h4" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M12 2a6.5 6.5 0 00-4.2 11.5c.5.4.8 1 .9 1.6h6.6c.1-.6.4-1.2.9-1.6A6.5 6.5 0 0012 2z" fill="#93c5fd" fill-opacity="0.25" stroke="#bfdbfe" stroke-width="1.4"/>
-                <path d="M10 14.5h4" stroke="#93c5fd" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
-            <svg class="header-icon plug" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="2.5" width="16" height="19" rx="3" stroke="#bfdbfe" stroke-width="1.5" fill="#93c5fd" fill-opacity="0.15"/>
-                <rect x="10.5" y="5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
-                <rect x="6.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
-                <rect x="14.5" y="13.5" width="3" height="5.5" rx="0.6" fill="#93c5fd"/>
-            </svg>
-            <div class="header-inner">
-                <h1>Troubleshooting Guide</h1>
-                <p>Common UK Electrical Faults</p>
-            </div>
-        </div>
-        <div class="content" id="content">
-            <div class="question">What best describes the problem?</div>
-            <button onclick="showResult(1)">Total power loss to the whole house</button>
-            <button onclick="showResult(2)">Some sockets or lights not working</button>
-            <button onclick="showResult(3)">RCD / RCBO keeps tripping</button>
-            <button onclick="showResult(4)">One circuit keeps losing power</button>
-            <button onclick="showResult(5)">Sparks, burning smell, or hot plug/socket</button>
-            <button onclick="showResult(6)">None of the above</button>
-            <p class="disclaimer"><strong>Important Notice:</strong> This troubleshooting guide is provided for general information only. Electrical work can be dangerous. If you are unsure about anything, do not attempt repairs yourself — contact a qualified electrician immediately. The Lancaster Electrician accepts no liability for any actions taken based on the information in this guide. By using this page you acknowledge that you are responsible for your own actions.</p>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>Troubleshooting Guide</h1>
+        <p>Plain-English help for common UK house faults</p>
     </div>
-    <script>
-        function showResult(choice) {
-            let html = `<div class="result"><h2>Most Likely Cause & Solution</h2>`;
-            if (choice === 5) {
-                html += `<p><strong>⚠️ POTENTIAL FIRE HAZARD</strong><br>This could indicate a serious fault such as a loose connection, damaged cable, or overloaded circuit.</p>
-                <p><strong>What to do immediately:</strong></p>
-                <ol><li>Turn off the power at the main isolator switch on your consumer unit.</li><li>Do not use the affected socket, plug, or circuit.</li><li>Do not attempt to fix it yourself.</li></ol>
-                <p><strong>Next step:</strong> Contact Chris Pearson straight away for an urgent inspection.</p>`;
-            } else if (choice === 3) {
-                html += `<p><strong>RCD/RCBO Keeps Tripping</strong><br>This safety device detects leakage. <strong>Do not keep resetting it repeatedly</strong> as this can mask a dangerous fault.<br><br>1. Turn off all individual circuit breakers.<br>2. Reset the RCD.<br>3. Turn the breakers back on one by one.<br>The circuit that causes it to trip again is faulty.</p>
-                <p>Common causes include faulty appliances, damaged wiring, or moisture. Leave the faulty circuit off and contact Chris for a proper inspection and repair.</p>`;
-            } else if (choice === 4 || choice === 2) {
-                html += `<p><strong>Tripped MCB (Circuit Breaker)</strong><br>One or more circuits have lost power because a miniature circuit breaker (MCB) has tripped. This is usually caused by an overload or a short circuit.</p>
-                <p><strong>What to do:</strong></p>
-                <ol><li>Locate your consumer unit (fuse box).</li><li>Look for any switches that are in the middle or “tripped” position.</li><li>Push the switch firmly back to the ON position.</li></ol>
-                <p><strong>If it trips again immediately:</strong> There is likely a fault or overload on that circuit. Turn it off and contact Chris. Do not keep resetting it.</p>
-                <p>Common causes include too many high-power appliances on one circuit or a faulty appliance.</p>`;
-            } else if (choice === 1) {
-                html += `<p><strong>Total Power Loss</strong><br>No power anywhere in the house usually points to a problem with the incoming supply or your main switch.</p>
-                <p><strong>Step-by-step checks:</strong></p>
-                <ol><li>Check if your neighbours still have electricity (this tells you if it’s a power cut).</li><li>If neighbours have power, go to your consumer unit.</li><li>Check the main isolator switch (big switch at the top). Make sure it is in the ON position.</li><li>Check all circuit breakers are also in the ON position.</li></ol>
-                <p>If everything looks normal but you still have no power, there may be a problem with the incoming cable or meter. Contact your electricity supplier first, then call Chris if needed.</p>`;
-            } else {
-                html += `<p><strong>Other Issue</strong><br>Your symptoms don't match the most common faults listed above. This could be something less common such as a faulty appliance, loose connection, or issue with specific lighting circuits.</p>
-                <p><strong>What to do next:</strong></p>
-                <p>When you contact Chris, please provide as much detail as possible:</p>
-                <ul><li>Which rooms or sockets are affected?</li><li>Does it happen all the time or only sometimes?</li><li>Any recent work done in the house (new appliances, DIY, etc.)?</li><li>Any burning smells, buzzing sounds, or hot spots?</li></ul>
-                <p>This helps us diagnose the problem quickly when we arrive.</p>`;
-            }
-            if (choice === 6) {
-                html += `<p style="text-align:center; margin-top:25px;"><a href="https://wa.me/447587590435" style="color:#2563eb; font-weight:600;">💬 Contact Chris on WhatsApp</a></p>`;
-            }
-            html += `<a href="troubleshooting.html" class="back-btn">← Back to Questions</a>`;
-            document.getElementById('content').innerHTML = html;
-        }
-    </script>
+    <div class="content" id="content">
+        <div class="search-row">
+            <input id="q" type="search" placeholder="Type or speak: RCD trip, no lights...">
+            <button type="button" class="mic" id="micBtn" title="Speak">Mic</button>
+            <button type="button" id="askBtn">Ask</button>
+        </div>
+        <div class="answer" id="answer"></div>
+        <div class="question">Or pick the closest problem</div>
+        <button class="opt" onclick="showResult(1)">Total power loss to the whole house</button>
+        <button class="opt" onclick="showResult(2)">Some sockets or lights not working</button>
+        <button class="opt" onclick="showResult(3)">RCD / RCBO keeps tripping</button>
+        <button class="opt" onclick="showResult(4)">One circuit keeps losing power</button>
+        <button class="opt" onclick="showResult(5)">Sparks, burning smell, or hot plug</button>
+        <button class="opt" onclick="showResult(6)">None of the above</button>
+        <p class="disclaimer"><strong>Important:</strong> This is general information only, not a live electrician and not a substitute for BS 7671 testing. Do not open the consumer unit or work live. If you are unsure, contact a qualified electrician. Burning smell, shock, sparks or heat: isolate if you can do so safely and get help.</p>
+    </div>
+</div>
+<script>
+const answers = [
+    { keys: ['spark','burn','hot','smoke','shock','tingle','fire'], html: '<strong>Stop. This can be dangerous.</strong><br>Turn the main switch off if you can do so safely. Do not use the socket or appliance. Do not keep resetting a trip. Contact Chris on WhatsApp for urgent help.' },
+    { keys: ['rcd','rcbo','trip','trips','tripping','leak'], html: '<strong>RCD / RCBO trips</strong> when it sees current leaking to earth. That is a safety device doing its job. Unplug appliances on that circuit, reset once, then turn breakers on one at a time. If it trips again, leave that circuit off and call Chris. Do not keep resetting it.' },
+    { keys: ['whole house','no power','power cut','everything off','blackout'], html: '<strong>No power in the whole house.</strong> Check whether neighbours still have electricity. If they do, look at the big main switch and the breakers on your consumer unit. If everything looks on and you still have nothing, call your supplier first, then Chris if needed.' },
+    { keys: ['socket','sockets','plug','upstairs','lights','one room','circuit','mcb','breaker'], html: '<strong>Part of the house is dead</strong> usually means one breaker has tripped. Find the switch that is in the middle or off and switch it on once. If it trips straight away, leave it off. Too many heaters on one circuit, or a faulty appliance, are common causes.' },
+    { keys: ['bathroom','shower','outside','garage','garden'], html: '<strong>Wet areas and outdoor circuits</strong> are protected more tightly. A trip here is often a heater, shower pump or damp. Leave the circuit off and do not investigate inside the board.' }
+];
+function ask() {
+    const text = (document.getElementById('q').value || '').toLowerCase();
+    const box = document.getElementById('answer');
+    if (!text.trim()) { box.style.display = 'none'; return; }
+    let hit = answers.find(a => a.keys.some(k => text.includes(k)));
+    box.className = 'answer' + (hit && hit.keys.includes('spark') ? ' danger' : '');
+    box.innerHTML = hit ? hit.html + '<br><br><a href="https://wa.me/447587590435">Message Chris on WhatsApp</a>' : 'I do not have a stored answer for that. Use the buttons below or WhatsApp Chris with the room, what stopped working, and whether anything smells hot.';
+    box.style.display = 'block';
+}
+document.getElementById('askBtn').onclick = ask;
+document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+document.getElementById('micBtn').onclick = function() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Voice typing is not available in this browser. Type the question instead.'); return; }
+    const rec = new SR();
+    rec.lang = 'en-GB';
+    rec.onresult = e => { document.getElementById('q').value = e.results[0][0].transcript; ask(); };
+    rec.start();
+};
+function showResult(choice) {
+    let html = '<div class="result"><h2>Most likely next step</h2>';
+    if (choice === 5) {
+        html += '<p><strong>Possible fire risk.</strong> Turn off the main switch if safe. Do not use the socket. Contact Chris now.</p>';
+    } else if (choice === 3) {
+        html += '<p><strong>RCD/RCBO keeps tripping.</strong> Do not keep resetting it. Turn off the individual breakers, reset the RCD once, then bring circuits back one by one. Leave the faulty circuit off and call Chris.</p>';
+    } else if (choice === 4 || choice === 2) {
+        html += '<p><strong>One circuit is off.</strong> A breaker has likely tripped. Switch it on once. If it trips again, leave it off. Common causes: overload or a faulty appliance.</p>';
+    } else if (choice === 1) {
+        html += '<p><strong>Whole-house power loss.</strong> Check neighbours. Then check the main switch and breakers. If they are on and you still have no power, contact your electricity supplier, then Chris if needed.</p>';
+    } else {
+        html += '<p>This does not match the common faults above. WhatsApp Chris with which rooms are affected, whether it is constant, and any smell, heat or buzzing.</p><p><a href="https://wa.me/447587590435">WhatsApp Chris</a></p>';
+    }
+    html += '<a href="troubleshooting.html" class="back-btn">Back to questions</a></div>';
+    document.getElementById('content').innerHTML = html;
+}
+</script>
 </body>
 </html>

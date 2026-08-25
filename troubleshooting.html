@@ -14,29 +14,17 @@
         .header p { margin: 0; font-size: 16px; opacity: .95; }
         .content { padding: 28px 22px 36px; }
         .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
-        .search-row input {
-            flex: 1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px;
-        }
-        .search-row button {
-            width: auto; padding: 14px 16px; margin: 0; background: #2563eb; color: white;
-            border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
-        }
+        .search-row input { flex: 1; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; }
+        .search-row button { width: auto; padding: 14px 12px; margin: 0; background: #2563eb; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
         .mic { background: #0f172a !important; }
-        .answer {
-            display: none; background: #f8fafc; border-left: 5px solid #2563eb;
-            padding: 16px; border-radius: 12px; margin-bottom: 18px; font-size: 15.5px; line-height: 1.55; color: #334155;
-        }
-        .answer strong { color: #0f172a; }
+        .answer { display: none; background: #f8fafc; border-left: 5px solid #2563eb; padding: 16px; border-radius: 12px; margin-bottom: 18px; font-size: 15.5px; line-height: 1.55; color: #334155; }
+        .answer.danger { background: #fef2f2; border-left-color: #dc2626; }
+        .answer a { color: #2563eb; font-weight: 600; }
         .question { font-size: 18px; font-weight: 600; margin: 10px 0 16px; color: #1e40af; }
-        button.opt {
-            display: block; width: 100%; padding: 16px; margin: 10px 0;
-            background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
-            font-size: 16px; text-align: left; cursor: pointer;
-        }
+        button.opt { display: block; width: 100%; padding: 16px; margin: 10px 0; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; text-align: left; cursor: pointer; }
         .result { background: #f0fdf4; padding: 22px; border-radius: 16px; border-left: 5px solid #10b981; }
         .back-btn { display: block; width: 100%; padding: 14px; text-align: center; text-decoration: none; font-size: 17px; font-weight: 600; border-radius: 12px; background: #64748b; color: white; margin-top: 20px; }
         .disclaimer { font-size: 13px; color: #64748b; margin-top: 24px; text-align: center; line-height: 1.5; }
-        .danger { background: #fef2f2; border-left-color: #dc2626; }
     </style>
 </head>
 <body>
@@ -47,8 +35,8 @@
     </div>
     <div class="content" id="content">
         <div class="search-row">
-            <input id="q" type="search" placeholder="Type or speak: RCD trip, no lights...">
-            <button type="button" class="mic" id="micBtn" title="Speak">Mic</button>
+            <input id="q" type="search" placeholder="Type or speak: RCD trip, shower, no lights...">
+            <button type="button" class="mic" id="micBtn">Mic</button>
             <button type="button" id="askBtn">Ask</button>
         </div>
         <div class="answer" id="answer"></div>
@@ -59,51 +47,106 @@
         <button class="opt" onclick="showResult(4)">One circuit keeps losing power</button>
         <button class="opt" onclick="showResult(5)">Sparks, burning smell, or hot plug</button>
         <button class="opt" onclick="showResult(6)">None of the above</button>
-        <p class="disclaimer"><strong>Important:</strong> This is general information only, not a live electrician and not a substitute for BS 7671 testing. Do not open the consumer unit or work live. If you are unsure, contact a qualified electrician. Burning smell, shock, sparks or heat: isolate if you can do so safely and get help.</p>
+        <p class="disclaimer"><strong>Important:</strong> General information only. Do not open the consumer unit or work live. Burning smell, shock, sparks or heat: isolate if safe and contact Chris. This page cannot replace an electrician or an EICR.</p>
     </div>
 </div>
 <script>
-const answers = [
-    { keys: ['spark','burn','hot','smoke','shock','tingle','fire'], html: '<strong>Stop. This can be dangerous.</strong><br>Turn the main switch off if you can do so safely. Do not use the socket or appliance. Do not keep resetting a trip. Contact Chris on WhatsApp for urgent help.' },
-    { keys: ['rcd','rcbo','trip','trips','tripping','leak'], html: '<strong>RCD / RCBO trips</strong> when it sees current leaking to earth. That is a safety device doing its job. Unplug appliances on that circuit, reset once, then turn breakers on one at a time. If it trips again, leave that circuit off and call Chris. Do not keep resetting it.' },
-    { keys: ['whole house','no power','power cut','everything off','blackout'], html: '<strong>No power in the whole house.</strong> Check whether neighbours still have electricity. If they do, look at the big main switch and the breakers on your consumer unit. If everything looks on and you still have nothing, call your supplier first, then Chris if needed.' },
-    { keys: ['socket','sockets','plug','upstairs','lights','one room','circuit','mcb','breaker'], html: '<strong>Part of the house is dead</strong> usually means one breaker has tripped. Find the switch that is in the middle or off and switch it on once. If it trips straight away, leave it off. Too many heaters on one circuit, or a faulty appliance, are common causes.' },
-    { keys: ['bathroom','shower','outside','garage','garden'], html: '<strong>Wet areas and outdoor circuits</strong> are protected more tightly. A trip here is often a heater, shower pump or damp. Leave the circuit off and do not investigate inside the board.' }
+const WA = '<br><br><a href="https://wa.me/447587590435">WhatsApp Chris if it is still not right</a>';
+const KB = [
+  { danger: true, keys: ['spark','sparks','burn','burning','smoke','hot plug','hot socket','shock','tingle','fire','scorch'], title: 'Heat, sparks or shock',
+    say: 'Stop. This can be dangerous. Turn the main switch off if you can do so safely. Do not use that socket or appliance. Message Chris now.',
+    html: '<strong>Stop. This can be dangerous.</strong> Heat, sparks, burning smell or a shock mean isolate if you can do it safely and do not keep using the circuit. Do not investigate inside the board.' },
+  { keys: ['rcd','rcbo','trip','trips','tripping','reset','keeps going off','earth leak'], title: 'RCD or RCBO trip',
+    say: 'An RCD trips when it sees current leaking to earth. That is a safety device. Unplug appliances on that circuit, reset once, then turn breakers back on one at a time. If it trips again, leave that circuit off and message Chris. Do not keep resetting it.',
+    html: '<strong>RCD / RCBO trip.</strong> It is detecting leakage to earth. Unplug appliances, reset <em>once</em>, then bring circuits back one by one. If it trips again, leave that circuit off. Repeated resetting can hide a fault.' },
+  { keys: ['whole house','no power','everything off','power cut','blackout','neighbours'], title: 'Whole house dead',
+    say: 'Check whether neighbours still have power. If they do, look at the big main switch and the breakers. If they are on and you still have nothing, call your electricity supplier first, then Chris if needed.',
+    html: '<strong>No power in the whole house.</strong> Check neighbours first. Then the main switch and breakers. If they look on, it may be the incoming supply or meter — supplier first, electrician second.' },
+  { keys: ['socket','sockets','plug','one room','upstairs','downstairs','lights out','part of','mcb','breaker','circuit'], title: 'One circuit off',
+    say: 'One breaker has probably tripped. Switch it on once. If it trips straight away, leave it off. Too many heaters on one circuit, or a faulty appliance, are common.',
+    html: '<strong>Part of the house is dead.</strong> Find the breaker that is off or in the middle and switch it on once only. Immediate trip again = leave it off and call Chris.' },
+  { keys: ['flicker','flickering','dim','dimming','lights dip'], title: 'Flickering or dipping lights',
+    say: 'Occasional dips when the kettle or shower starts can be normal. Constant flicker, lights going very dim, or flicker in many rooms should be checked. Do not ignore buzzing or heat at fittings.',
+    html: '<strong>Flicker or dimming.</strong> A brief dip when a heavy load starts can be normal. Ongoing flicker, several rooms, heat or buzzing needs a visit.' },
+  { keys: ['buzz','buzzing','hum','humming'], title: 'Buzzing',
+    say: 'A light buzz from a transformer or dimmer can be harmless. Buzzing from a socket, switch or the consumer unit, especially with heat, needs isolating and a call to Chris.',
+    html: '<strong>Buzzing.</strong> Fitting or board buzzing with heat is not something to live with. Isolate if safe and get it checked.' },
+  { keys: ['shower','electric shower'], title: 'Electric shower',
+    say: 'Showers often have their own strong protection. A trip when the shower starts can be the shower itself, a leak, or the circuit. Leave that circuit off and do not take the cover off. Message Chris.',
+    html: '<strong>Electric shower issues.</strong> Treat as a dedicated circuit. Do not open the shower or the board. Isolate that circuit and get it tested.' },
+  { keys: ['bathroom','extractor','fan','pull cord'], title: 'Bathroom',
+    say: 'Bathrooms are higher risk if there is damp. A trip, shock risk or dead extractor should be left isolated. Do not use portable heaters in the bathroom.',
+    html: '<strong>Bathroom circuit.</strong> Damp plus electricity is a common trip cause. Leave the circuit off and contact Chris rather than investigating fittings yourself.' },
+  { keys: ['outside','garden','garage','outdoor','socket outside'], title: 'Outside or garage',
+    say: 'Outdoor and garage circuits trip easily when wet. Unplug outdoor tools and leave the circuit off until it is checked.',
+    html: '<strong>Outdoor / garage.</strong> Moisture is a frequent cause. Unplug, leave off, do not keep resetting.' },
+  { keys: ['oven','cooker','hob','kitchen'], title: 'Cooker or oven',
+    say: 'A cooker is a heavy load on its own circuit. If it trips the board or the socket is hot, stop using it and get it checked. Do not keep running a hot connection.',
+    html: '<strong>Cooker / oven.</strong> Heat at the switch or outlet is urgent. Stop using it.' },
+  { keys: ['immersion','hot water','cylinder','water heater'], title: 'Immersion heater',
+    say: 'If the immersion trips the board, leave that circuit off. A failed element can leak current. Do not keep resetting it.',
+    html: '<strong>Immersion heater.</strong> A failing element often trips an RCD. Isolate and book a test.' },
+  { keys: ['smart meter','meter','supplier','dno','northern power'], title: 'Meter or supplier',
+    say: 'If the whole house is dead and neighbours have power, and your board looks on, contact your electricity supplier or the network operator. That is not always an electrician job.',
+    html: '<strong>Supply / meter.</strong> Incoming faults are often the supplier or network operator, not the house wiring.' },
+  { keys: ['old board','fuse board','rewire','consumer unit','fuse box'], title: 'Old consumer unit',
+    say: 'An older fuse board can still work, but an EICR often flags missing RCD protection or worn parts. That is a planned upgrade, not a DIY job.',
+    html: '<strong>Older consumer unit.</strong> Safety upgrades are common findings on an EICR. Do not swap devices yourself.' },
+  { keys: ['landlord','tenant','eicr','certificate','expired','rental'], title: 'Landlord / EICR',
+    say: 'Rented homes in England normally need an EICR at least every five years. Scan the QR on the board for this property record, or WhatsApp Chris to book a test.',
+    html: '<strong>EICR / rental.</strong> Scan the Gold QR on the board for this property\'s certificates, or book a test if it has expired.' },
+  { keys: ['ev','charger','car charger'], title: 'EV charger',
+    say: 'EV chargers must be installed and tested by a competent person. If the charger or its board device trips, leave it off and get the installer or Chris to check it.',
+    html: '<strong>EV charger.</strong> Do not keep resetting a dedicated EV circuit. Get it checked.' }
 ];
-function ask() {
+function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB';
+    window.speechSynthesis.speak(u);
+}
+function score(item, text) {
+    return item.keys.reduce((n, k) => n + (text.includes(k) ? (k.length > 8 ? 2 : 1) : 0), 0);
+}
+function ask(fromMic) {
     const text = (document.getElementById('q').value || '').toLowerCase();
     const box = document.getElementById('answer');
     if (!text.trim()) { box.style.display = 'none'; return; }
-    let hit = answers.find(a => a.keys.some(k => text.includes(k)));
-    box.className = 'answer' + (hit && hit.keys.includes('spark') ? ' danger' : '');
-    box.innerHTML = hit ? hit.html + '<br><br><a href="https://wa.me/447587590435">Message Chris on WhatsApp</a>' : 'I do not have a stored answer for that. Use the buttons below or WhatsApp Chris with the room, what stopped working, and whether anything smells hot.';
+    let best = null, bestScore = 0;
+    KB.forEach(item => { const s = score(item, text); if (s > bestScore) { best = item; bestScore = s; } });
+    if (!best) {
+        box.className = 'answer';
+        box.innerHTML = 'I do not have a stored answer for that. Use the buttons below or WhatsApp Chris with the room, what stopped working, and whether anything is hot or smells of burning.' + WA;
+        box.style.display = 'block';
+        if (fromMic) speak('I do not have a stored answer. Please message Chris on WhatsApp.');
+        return;
+    }
+    box.className = 'answer' + (best.danger ? ' danger' : '');
+    box.innerHTML = best.html + WA;
     box.style.display = 'block';
+    if (fromMic) speak(best.say);
 }
-document.getElementById('askBtn').onclick = ask;
-document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+document.getElementById('askBtn').onclick = function() { ask(false); };
+document.getElementById('q').addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(false); });
 document.getElementById('micBtn').onclick = function() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { alert('Voice typing is not available in this browser. Type the question instead.'); return; }
+    if (!SR) { alert('Voice is not available in this browser. Type instead.'); return; }
     const rec = new SR();
     rec.lang = 'en-GB';
-    rec.onresult = e => { document.getElementById('q').value = e.results[0][0].transcript; ask(); };
+    rec.onresult = function(e) {
+        document.getElementById('q').value = e.results[0][0].transcript;
+        ask(true);
+    };
     rec.start();
 };
 function showResult(choice) {
-    let html = '<div class="result"><h2>Most likely next step</h2>';
-    if (choice === 5) {
-        html += '<p><strong>Possible fire risk.</strong> Turn off the main switch if safe. Do not use the socket. Contact Chris now.</p>';
-    } else if (choice === 3) {
-        html += '<p><strong>RCD/RCBO keeps tripping.</strong> Do not keep resetting it. Turn off the individual breakers, reset the RCD once, then bring circuits back one by one. Leave the faulty circuit off and call Chris.</p>';
-    } else if (choice === 4 || choice === 2) {
-        html += '<p><strong>One circuit is off.</strong> A breaker has likely tripped. Switch it on once. If it trips again, leave it off. Common causes: overload or a faulty appliance.</p>';
-    } else if (choice === 1) {
-        html += '<p><strong>Whole-house power loss.</strong> Check neighbours. Then check the main switch and breakers. If they are on and you still have no power, contact your electricity supplier, then Chris if needed.</p>';
-    } else {
-        html += '<p>This does not match the common faults above. WhatsApp Chris with which rooms are affected, whether it is constant, and any smell, heat or buzzing.</p><p><a href="https://wa.me/447587590435">WhatsApp Chris</a></p>';
+    const map = {1:'whole house no power',2:'sockets lights one circuit',3:'rcd rcbo tripping',4:'breaker circuit',5:'sparks burning hot',6:'other'};
+    document.getElementById('q').value = map[choice];
+    ask(false);
+    if (choice === 6) {
+        document.getElementById('answer').innerHTML = 'This does not match the stored faults. WhatsApp Chris with which rooms are affected, whether it is constant, and any smell, heat or buzzing.' + WA;
     }
-    html += '<a href="troubleshooting.html" class="back-btn">Back to questions</a></div>';
-    document.getElementById('content').innerHTML = html;
 }
 </script>
 </body>

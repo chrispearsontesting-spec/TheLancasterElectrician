@@ -23,7 +23,6 @@
             box-shadow: 0 25px 60px rgba(0,0,0,0.35);
         }
         .header {
-            position: relative;
             padding: 36px 28px 32px;
             text-align: center;
             color: white;
@@ -42,7 +41,28 @@
             color: #334155;
             margin-bottom: 22px;
         }
+        .section {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 18px 16px 20px;
+            margin: 22px 0;
+            background: #f8fafc;
+        }
+        .section h2 {
+            font-size: 16px;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .section .hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+            line-height: 1.45;
+        }
+        .section.history { background: #f5f3ff; border-color: #ddd6fe; }
+        .section.history h2 { color: #5b21b6; }
         label { display: block; margin: 16px 0 7px; font-weight: 600; color: #1e40af; font-size: 14.5px; }
+        .section.history label { color: #6d28d9; }
         input, select, textarea {
             width: 100%;
             padding: 13px 14px;
@@ -50,6 +70,7 @@
             border-radius: 12px;
             font-size: 16px;
             font-family: inherit;
+            background: white;
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; }
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -85,6 +106,7 @@
             background: #f8fafc;
             border-radius: 10px;
             padding: 10px 12px;
+            line-height: 1.45;
         }
         a.back { display: inline-block; margin-top: 16px; color: #93c5fd; font-size: 14px; }
     </style>
@@ -92,7 +114,7 @@
 <body>
 <div id="gate" class="gate">
     <h2>Staff upload</h2>
-    <p>Private page for adding an EICR PDF and board photos to a property record.</p>
+    <p>Private page for adding current and previous EICR files to a property record.</p>
     <input id="pass" type="password" placeholder="Access code" autocomplete="current-password">
     <button class="submit-btn" type="button" onclick="unlock()">Unlock</button>
     <a class="back" href="index.html">Back to website</a>
@@ -101,11 +123,11 @@
     <div class="container">
         <div class="header">
             <h1>Upload EICR files</h1>
-            <p>PDF + two photos for a QR property page</p>
+            <p>Current job plus any older certificates and photos</p>
         </div>
         <div class="content">
             <div class="note">
-                Choose the property code (LAN-001 onwards). Files are emailed to Chris with the exact folder names to use on the site. GitHub Pages cannot store uploads by itself — this keeps the process tidy until automatic publishing is added.
+                Use this for a new Gold job. Add any older paperwork in the History section so it can go on the client's previous-certificates page.
             </div>
             <form action="https://formsubmit.co/Chris.pearson.testing@gmail.com" method="POST" enctype="multipart/form-data">
                 <div class="row">
@@ -130,25 +152,58 @@
                         <input type="text" name="landlord" placeholder="Optional">
                     </div>
                 </div>
-                <div class="row">
-                    <div>
-                        <label>EICR test date</label>
-                        <input type="date" name="test_date" required>
+
+                <div class="section">
+                    <h2>Current EICR</h2>
+                    <p class="hint">This goes on the main QR page and Documents page (current certificate + new board photos).</p>
+                    <div class="row">
+                        <div>
+                            <label>EICR test date</label>
+                            <input type="date" name="test_date" required>
+                        </div>
+                        <div>
+                            <label>Next test due (optional)</label>
+                            <input type="date" name="next_due">
+                        </div>
                     </div>
-                    <div>
-                        <label>Next test due (optional)</label>
-                        <input type="date" name="next_due">
-                    </div>
+                    <label>Current EICR PDF</label>
+                    <input type="file" name="attachment" accept="application/pdf" required>
+                    <label>Current board photo 1</label>
+                    <input type="file" name="attachment2" accept="image/*" required>
+                    <label>Current board photo 2</label>
+                    <input type="file" name="attachment3" accept="image/*" required>
                 </div>
-                <label>EICR PDF</label>
-                <input type="file" name="attachment" accept="application/pdf" required>
-                <label>Board photo 1</label>
-                <input type="file" name="attachment2" accept="image/*" required>
-                <label>Board photo 2</label>
-                <input type="file" name="attachment3" accept="image/*" required>
-                <label>Notes</label>
-                <textarea name="notes" rows="3" placeholder="Anything to add to the property page..."></textarea>
-                <div class="path-preview" id="pathPreview">Files will be filed as LAN-001 / EICR.pdf, board-1.jpg, board-2.jpg</div>
+
+                <div class="section history">
+                    <h2>History / previous certificates</h2>
+                    <p class="hint">Optional. Use this when the client already has older EICRs or photos of the old board. These go on the Previous Certificates page.</p>
+                    <div class="row">
+                        <div>
+                            <label>Previous test year or date</label>
+                            <input type="text" name="history_date_1" placeholder="e.g. 2021 or 15 June 2021">
+                        </div>
+                        <div>
+                            <label>What is this document?</label>
+                            <input type="text" name="history_label_1" placeholder="e.g. Previous EICR / old board photos">
+                        </div>
+                    </div>
+                    <label>Previous EICR or certificate PDF</label>
+                    <input type="file" name="attachment4" accept="application/pdf">
+                    <label>Old board / history photo 1</label>
+                    <input type="file" name="attachment5" accept="image/*">
+                    <label>Old board / history photo 2</label>
+                    <input type="file" name="attachment6" accept="image/*">
+                    <label>Second previous PDF (optional)</label>
+                    <input type="file" name="attachment7" accept="application/pdf">
+                    <label>Extra history photos (optional)</label>
+                    <input type="file" name="attachment8" accept="image/*" multiple>
+                    <label>History notes</label>
+                    <textarea name="history_notes" rows="3" placeholder="e.g. Old board replaced in 2024. Previous EICR by another electrician in 2021."></textarea>
+                </div>
+
+                <label>General notes</label>
+                <textarea name="notes" rows="3" placeholder="Anything else for this property page..."></textarea>
+                <div class="path-preview" id="pathPreview"></div>
                 <input type="hidden" name="_subject" value="EICR upload - The Lancaster Electrician">
                 <input type="hidden" name="_next" value="https://thelancasterelectrician.com/upload-thanks.html">
                 <input type="hidden" name="_captcha" value="false">
@@ -183,10 +238,14 @@
         opt.textContent = code;
         sel.appendChild(opt);
     }
-    sel.addEventListener('change', function() {
-        document.getElementById('pathPreview').textContent =
-            'Files will be filed as ' + sel.value + ' / EICR.pdf, board-1.jpg, board-2.jpg';
-    });
+    function updatePreview() {
+        const code = sel.value;
+        document.getElementById('pathPreview').innerHTML =
+            '<strong>' + code + '</strong> current: EICR.pdf, DB photos<br>' +
+            code + ' history: previous PDF + old board photos (if attached)';
+    }
+    sel.addEventListener('change', updatePreview);
+    updatePreview();
     document.getElementById('pass').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); unlock(); }
     });

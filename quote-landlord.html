@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landlord EICR Quote | The Lancaster Electrician</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(180deg,#0f172a,#1e2937); min-height: 100vh; color: #1e2937; padding: 20px 16px; }
+        .wrap { max-width: 640px; margin: 0 auto 30px; }
+        .card { background: #fff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,.35); }
+        .header { padding: 32px 24px; text-align: center; color: #fff; background: linear-gradient(115deg,#92400e,#d97706,#f59e0b); }
+        .header h1 { font-size: 26px; font-weight: 800; }
+        .header p { margin-top: 8px; opacity: .95; }
+        .content { padding: 26px 22px 32px; }
+        .guide { background: #fffbeb; border-left: 5px solid #d97706; padding: 14px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 15px; line-height: 1.5; color: #334155; }
+        label { display: block; margin: 16px 0 7px; font-weight: 600; color: #92400e; font-size: 14.5px; }
+        input, select, textarea { width: 100%; padding: 13px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; font-family: inherit; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+        .submit-btn { margin-top: 18px; width: 100%; padding: 16px; background: #d97706; color: #fff; font-size: 17px; font-weight: 600; border: none; border-radius: 14px; cursor: pointer; }
+        .wa-btn { margin-top: 10px; width: 100%; padding: 16px; background: #25D366; color: #fff; font-size: 16px; font-weight: 600; border: none; border-radius: 14px; cursor: pointer; }
+        .back { display: block; text-align: center; margin-top: 16px; color: #93c5fd; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="header">
+            <h1>Landlord / agent quote</h1>
+            <p>One rental or a small portfolio</p>
+        </div>
+        <div class="content">
+            <div class="guide">These questions are for rented property: access, how many units, and whether you want the Gold QR record. <a href="gold.html">How Gold works</a></div>
+            <form id="qform" action="https://formsubmit.co/Chris.pearson.testing@gmail.com" method="POST">
+                <input type="hidden" name="customer_type" value="Landlord / agent">
+                <input type="hidden" name="_subject" value="LANDLORD EICR quote — The Lancaster Electrician">
+                <input type="hidden" name="_template" value="table">
+                <input type="hidden" name="_next" value="https://thelancasterelectrician.com/thankyou.html">
+                <input type="hidden" name="_captcha" value="false">
+                <div class="row">
+                    <div><label>Your name</label><input type="text" name="name" id="name" required></div>
+                    <div><label>Phone</label><input type="tel" name="phone" id="phone" required></div>
+                </div>
+                <label>Email (optional)</label>
+                <input type="email" name="email" id="email">
+                <label>Are you the landlord or an agent?</label>
+                <select name="role" id="role" required>
+                    <option value="">Select...</option>
+                    <option value="Landlord">Landlord</option>
+                    <option value="Letting / managing agent">Letting / managing agent</option>
+                </select>
+                <div class="row">
+                    <div><label>How many properties need a test?</label><input type="number" name="property_count" id="count" min="1" placeholder="e.g. 1 or 6" required></div>
+                    <div>
+                        <label>Main reason</label>
+                        <select name="reason" id="reason" required>
+                            <option value="">Select...</option>
+                            <option value="5-year EICR due">5-year EICR due / expired</option>
+                            <option value="New tenancy">New tenancy</option>
+                            <option value="Insurance">Insurance / claim risk</option>
+                            <option value="Portfolio catch-up">Portfolio catch-up</option>
+                        </select>
+                    </div>
+                </div>
+                <label>First property address</label>
+                <input type="text" name="address" id="address" placeholder="Start with the first house or flat" required>
+                <div class="row">
+                    <div><label>Postcode</label><input type="text" name="postcode" id="postcode" required></div>
+                    <div>
+                        <label>Tenant in at that property?</label>
+                        <select name="occupied" id="occupied" required>
+                            <option value="">Select...</option>
+                            <option value="Tenant in situ">Tenant in situ</option>
+                            <option value="Void / empty">Void / empty</option>
+                            <option value="Mix / not sure">Mix / not sure</option>
+                        </select>
+                    </div>
+                </div>
+                <label>Other addresses in this job (if more than one)</label>
+                <textarea name="other_addresses" id="others" rows="3" placeholder="List other postcodes or streets if you can"></textarea>
+                <div class="row">
+                    <div><label>Typical property size</label>
+                        <select name="property_size" id="size" required>
+                            <option value="">Select...</option>
+                            <option value="1-2 bed">1–2 bedroom</option>
+                            <option value="3 bed">3 bedroom</option>
+                            <option value="Mix / larger">Mix / larger</option>
+                        </select>
+                    </div>
+                    <div><label>Fuse boards per property (typical)</label><input type="number" name="fuse_boxes" id="boards" min="1" placeholder="usually 1" required></div>
+                </div>
+                <label>When was the last EICR on the first property?</label>
+                <input type="text" name="last_test" id="last" placeholder="Expired / 2021 / never / not sure">
+                <label>Access / preferred dates</label>
+                <input type="text" name="availability" id="when" placeholder="Tenant notice needed? next 2 weeks?" required>
+                <label>Gold package — QR on each board + landlord overview?</label>
+                <select name="gold_interest" id="gold">
+                    <option value="Yes — interested in Gold">Yes — interested in Gold</option>
+                    <option value="Tell me both prices">Tell me both prices</option>
+                    <option value="Standard only">Standard only</option>
+                </select>
+                <label>Anything else</label>
+                <textarea name="extra_info" id="extra" rows="3" placeholder="HMO, old boards, previous failed EICR, etc."></textarea>
+                <button type="submit" class="submit-btn">Email this landlord quote request →</button>
+                <button type="button" class="wa-btn" id="wa">Or send the same details on WhatsApp</button>
+            </form>
+        </div>
+    </div>
+    <a class="back" href="quote.html">Back to homeowner / landlord choice</a>
+</div>
+<script>
+function details() {
+    const g = id => (document.getElementById(id).value || '').trim();
+    return [
+        'LANDLORD / AGENT EICR quote request',
+        'Name: ' + g('name') + ' (' + g('role') + ')',
+        'Phone: ' + g('phone'),
+        'Email: ' + g('email'),
+        'Properties in this job: ' + g('count'),
+        'Reason: ' + g('reason'),
+        'First property: ' + g('address') + ' ' + g('postcode'),
+        'Occupied: ' + g('occupied'),
+        'Other addresses: ' + g('others'),
+        'Typical size: ' + g('size') + ' | Boards: ' + g('boards'),
+        'Last EICR: ' + g('last'),
+        'Access: ' + g('when'),
+        'Gold: ' + g('gold'),
+        'Notes: ' + g('extra')
+    ].join('\n');
+}
+document.getElementById('wa').onclick = function() {
+    const f = document.getElementById('qform');
+    if (!f.reportValidity()) return;
+    const text = 'Hi Chris, I would like a landlord EICR quote.%0A%0A' + encodeURIComponent(details());
+    window.location.href = 'https://wa.me/447587590435?text=' + text;
+};
+</script>
+</body>
+</html>

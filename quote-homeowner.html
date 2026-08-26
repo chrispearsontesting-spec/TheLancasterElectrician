@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeowner EICR Quote | The Lancaster Electrician</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(180deg,#0f172a,#1e2937); min-height: 100vh; color: #1e2937; padding: 20px 16px; }
+        .wrap { max-width: 640px; margin: 0 auto 30px; }
+        .card { background: #fff; border-radius: 24px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,.35); }
+        .header { padding: 32px 24px; text-align: center; color: #fff; background: linear-gradient(115deg,#1e3a8a,#2563eb,#1e3a8a); }
+        .header h1 { font-size: 26px; font-weight: 800; }
+        .header p { margin-top: 8px; opacity: .95; }
+        .content { padding: 26px 22px 32px; }
+        .guide { background: #eff6ff; border-left: 5px solid #2563eb; padding: 14px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 15px; line-height: 1.5; color: #334155; }
+        label { display: block; margin: 16px 0 7px; font-weight: 600; color: #1e40af; font-size: 14.5px; }
+        input, select, textarea { width: 100%; padding: 13px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; font-family: inherit; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+        .submit-btn { margin-top: 18px; width: 100%; padding: 16px; background: #10b981; color: #fff; font-size: 17px; font-weight: 600; border: none; border-radius: 14px; cursor: pointer; }
+        .wa-btn { margin-top: 10px; width: 100%; padding: 16px; background: #25D366; color: #fff; font-size: 16px; font-weight: 600; border: none; border-radius: 14px; cursor: pointer; }
+        .back { display: block; text-align: center; margin-top: 16px; color: #93c5fd; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="header">
+            <h1>Homeowner quote</h1>
+            <p>One property you live in, are buying or selling</p>
+        </div>
+        <div class="content">
+            <div class="guide">A few details about the house or flat so I can price Standard and Gold.</div>
+            <form id="qform" action="https://formsubmit.co/Chris.pearson.testing@gmail.com" method="POST">
+                <input type="hidden" name="customer_type" value="Homeowner">
+                <input type="hidden" name="_subject" value="HOMEOWNER EICR quote — The Lancaster Electrician">
+                <input type="hidden" name="_template" value="table">
+                <input type="hidden" name="_next" value="https://thelancasterelectrician.com/thankyou.html">
+                <input type="hidden" name="_captcha" value="false">
+                <div class="row">
+                    <div><label>Your name</label><input type="text" name="name" id="name" required></div>
+                    <div><label>Phone</label><input type="tel" name="phone" id="phone" required></div>
+                </div>
+                <label>Email (optional)</label>
+                <input type="email" name="email" id="email">
+                <label>Address</label>
+                <input type="text" name="address" id="address" placeholder="House number and street" required>
+                <div class="row">
+                    <div><label>Postcode</label><input type="text" name="postcode" id="postcode" required></div>
+                    <div>
+                        <label>Why do you need the EICR?</label>
+                        <select name="reason" id="reason" required>
+                            <option value="">Select...</option>
+                            <option value="Peace of mind">Peace of mind</option>
+                            <option value="Selling the property">Selling the property</option>
+                            <option value="Buying the property">Buying the property</option>
+                            <option value="Insurance">Insurance asked for it</option>
+                            <option value="Known electrical issue">Known electrical issue</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <label>Property size</label>
+                        <select name="property_size" id="size" required>
+                            <option value="">Select...</option>
+                            <option value="1-2 bed">1–2 bedroom</option>
+                            <option value="3 bed">3 bedroom</option>
+                            <option value="4+ bed">4+ bedroom / large house</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Approx. age</label>
+                        <select name="property_age" id="age" required>
+                            <option value="">Select...</option>
+                            <option value="Pre-1960">Pre-1960</option>
+                            <option value="1960-1990">1960–1990</option>
+                            <option value="1990-2010">1990–2010</option>
+                            <option value="2010+">2010 or newer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div><label>Fuse boards / consumer units</label><input type="number" name="fuse_boxes" id="boards" min="1" placeholder="e.g. 1" required></div>
+                    <div><label>Last electrical test</label><input type="text" name="last_test" id="last" placeholder="Never / 2018 / not sure"></div>
+                </div>
+                <label>Garage, annex or separate supply?</label>
+                <input type="text" name="outbuildings" id="out" placeholder="No / yes — garage board, etc.">
+                <label>When can I access the property?</label>
+                <input type="text" name="availability" id="when" placeholder="e.g. weekday evenings, next 2 weeks" required>
+                <label>Interested in Gold (QR on the board + digital record)?</label>
+                <select name="gold_interest" id="gold">
+                    <option value="Tell me both prices">Tell me both prices</option>
+                    <option value="Yes — Gold">Yes — Gold</option>
+                    <option value="Standard only">Standard only</option>
+                </select>
+                <label>Anything else</label>
+                <textarea name="extra_info" id="extra" rows="3" placeholder="Rewire, trips, old board, etc."></textarea>
+                <button type="submit" class="submit-btn">Email this quote request →</button>
+                <button type="button" class="wa-btn" id="wa">Or send the same details on WhatsApp</button>
+            </form>
+        </div>
+    </div>
+    <a class="back" href="quote.html">Back to homeowner / landlord choice</a>
+</div>
+<script>
+function details() {
+    const g = id => (document.getElementById(id).value || '').trim();
+    return [
+        'HOMEOWNER EICR quote request',
+        'Name: ' + g('name'),
+        'Phone: ' + g('phone'),
+        'Email: ' + g('email'),
+        'Address: ' + g('address') + ' ' + g('postcode'),
+        'Reason: ' + g('reason'),
+        'Size: ' + g('size') + ' | Age: ' + g('age'),
+        'Boards: ' + g('boards') + ' | Last test: ' + g('last'),
+        'Outbuildings: ' + g('out'),
+        'Access: ' + g('when'),
+        'Gold: ' + g('gold'),
+        'Notes: ' + g('extra')
+    ].join('\n');
+}
+document.getElementById('wa').onclick = function() {
+    const f = document.getElementById('qform');
+    if (!f.reportValidity()) return;
+    const text = 'Hi Chris, I would like a homeowner EICR quote.%0A%0A' + encodeURIComponent(details());
+    window.location.href = 'https://wa.me/447587590435?text=' + text;
+};
+</script>
+</body>
+</html>

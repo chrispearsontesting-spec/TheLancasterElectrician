@@ -1,0 +1,7 @@
+Garage Trumps spec sheet v2
+Source: cardata.wiki CC BY 4.0
+Rows: 31973 variants across 67 makes
+Columns: make,model,variant,yearFrom,yearTo,fuel,cc,bhp,nm,s060,mph,boot,mpg_uk,tank_l,battery_kwh,range_mi,charge_kw,drive
+Coverage: UK MPG 78%, tank litres 58%, battery kWh 393 rows, electric range 1641 rows, 1359 electric, 1773 hybrid.
+Full files are in the chat download (car-specs-sheet-v2.zip). Too large for this Pages folder in one blob.
+Electricity p/kWh is not in this sheet — it is a tariff, not a car spec.

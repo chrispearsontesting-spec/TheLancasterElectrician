@@ -75,6 +75,10 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <div id="jobOut" style="margin-top:10px"></div>
 </div>
 </div>
+<div class="box" id="diyBox">
+<div class="r"><div class="r-left"><span class="rk">DIY service</span><span class="rc">Parts list changes with petrol / diesel / hybrid / EV</span></div></div>
+<div class="pad" id="diyOut"></div>
+</div>
 <div class="row">
 <button class="btn ghost" type="button" id="btnAdd">+ Car</button>
 <button class="btn ghost" type="button" id="btnEdit">Edit</button>
@@ -123,7 +127,8 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <label>Tank litres</label><input id="tank" type="number" placeholder="70"/>
 <label>Top speed mph</label><input id="mph" type="number"/>
 <label>Fuel</label>
-<select id="fuel"><option value="petrol">Petrol</option><option value="diesel">Diesel</option></select>
+<select id="fuel"><option value="petrol">Petrol</option><option value="diesel">Diesel</option><option value="hybrid">Hybrid</option><option value="electric">Electric</option></select>
+<label>Engine oil litres (service)</label><input id="oilL" type="number" step="0.1" placeholder="5.2"/>
 <label>Pence per litre</label><input id="ppl" type="number"/>
 <label>Insurance pounds / year</label><input id="insCost" type="number"/>
 <label>Tax pounds / year</label><input id="taxCost" type="number"/>
@@ -150,6 +155,6 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <button class="btn ghost" type="button" id="btnCClose">Back</button>
 </div>
 </div>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>

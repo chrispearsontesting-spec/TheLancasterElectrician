@@ -4,12 +4,16 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="theme-color" content="#0b0c0f"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon.svg"/>
 <title>Garage</title>
 <style>
 :root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--gold:#e4c48a;--line:rgba(255,255,255,.12)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;min-height:100%}
 .wrap{max-width:520px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
 .hint{text-align:center;color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px}
 .hero{border-radius:22px;overflow:hidden;border:1px solid rgba(228,196,138,.35);background:#14110c}
@@ -65,7 +69,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 </head>
 <body>
 <div class="wrap" id="garageView">
-<p class="hint" id="navHint">Swipe cars · swipe right for Trumps</p>
+<p class="hint" id="navHint">Use Prev / Next if swipe is blocked</p>
 <div class="hero" id="hero"></div>
 <div class="dots" id="dots"></div>
 <div class="box" id="dues"></div>
@@ -170,10 +174,10 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <button class="btn ghost" type="button" id="btnCClose">Back</button>
 </div>
 </div>
-<script src="app.js?v=16"></script>
-<script src="diy.js?v=16"></script>
-<script src="jobs.js?v=16"></script>
-<script src="lookup.js?v=16"></script>
-<script src="swipe.js?v=16"></script>
+<script src="app.js?v=17"></script>
+<script src="diy.js?v=17"></script>
+<script src="jobs.js?v=17"></script>
+<script src="lookup.js?v=17"></script>
+<script src="swipe.js?v=17"></script>
 </body>
 </html>

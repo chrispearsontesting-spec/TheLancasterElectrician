@@ -32,11 +32,12 @@ function drawDiy(){
   var d=bits(car());
   box.innerHTML=d.items.map(function(it){return "<div class='r'><span>"+it.n+"</span><b>"+it.p+"</b></div>"}).join("")+
     "<p class='copy'>Guide only. Check the handbook and part fitment. You are responsible for the oil quantity, parts and any work you do.</p>"+
-    "<a class='btn gold' style='margin-top:8px' target='_blank' rel='noopener' href='"+d.ecp+"'>Euro Car Parts — "+d.name+"</a>"+
+    "<p class='hint' style='text-align:left;margin:14px 0 6px'>Parts</p>"+
+    "<a class='btn gold' target='_blank' rel='noopener' href='"+d.ecp+"'>Euro Car Parts — "+d.name+"</a>"+
     "<a class='btn ghost' style='margin-top:8px' target='_blank' rel='noopener' href='"+d.ebay+"'>eBay — "+d.name+"</a>"+
-    "<a class='btn ghost' style='margin-top:8px' target='_blank' rel='noopener' href='"+d.haynes+"'>Haynes manual — "+d.name+"</a>"+
+    "<p class='hint' style='text-align:left;margin:16px 0 6px'>Guides</p>"+
+    "<a class='btn ghost' target='_blank' rel='noopener' href='"+d.haynes+"'>Haynes manual — "+d.name+"</a>"+
     "<a class='btn ghost' style='margin-top:8px' target='_blank' rel='noopener' href='"+d.yt+"'>YouTube — "+d.name+" service</a>";
-  var how=el("howtoLinks"); if(how) how.innerHTML="";
 }
 function persistOil(){
   var s=garage(); if(!s||!el("oilL")) return;

@@ -11,8 +11,10 @@ var IM={};
 function bootArt(){
   var A=window.GTART||{};
   ["strip","xc90","xc60","v70","s60","c30","mph","rpm"].forEach(function(k){
-    if(!A[k]) return;
-    var img=new Image(); img.src=A[k]; IM[k]=img;
+    var img=new Image();
+    img.onload=function(){ IM[k]=img; };
+    img.src=A[k]||("art/"+k+".jpg");
+    IM[k]=img;
   });
 }
 bootArt();

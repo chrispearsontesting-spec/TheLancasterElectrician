@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>Trip cost · Garage</title>
+<style>
+:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--gold:#e4c48a;--line:rgba(255,255,255,.12)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0 auto;max-width:520px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
+.hint{text-align:center;color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px}
+h1{font-size:24px;letter-spacing:-.03em;margin:0 0 6px}
+.sub{color:var(--dim);font-size:14px;line-height:1.45;margin:0 0 14px}
+label{display:block;color:var(--dim);font-size:12px;margin:10px 0 4px}
+input,select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:11px;font-size:16px}
+.btn{width:100%;border:0;border-radius:14px;padding:13px;font-weight:800;font-size:15px;text-align:center;text-decoration:none;display:block;margin-top:8px}
+.gold{background:var(--gold);color:#111}
+.ghost{background:#171a20;color:var(--ink);border:1px solid var(--line)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:#14161b;border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:12px}
+.trump{background:linear-gradient(180deg,#2a2418,#12100c);border:1px solid rgba(228,196,138,.35);border-radius:18px;padding:14px;margin-top:12px}
+.trump h2{margin:0 0 4px;color:var(--gold);font-size:18px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.mode{background:#0f1217;border:1px solid var(--line);border-radius:14px;padding:12px}
+.mode span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.mode b{display:block;font-size:26px;margin-top:4px}
+.mode em{display:block;color:var(--dim);font-style:normal;font-size:12px;margin-top:4px}
+.fav{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:14px;padding:10px 12px;margin-top:8px}
+.fav b{flex:1}
+.fav .£{color:var(--gold);font-weight:800;white-space:nowrap}
+.hit{width:100%;text-align:left;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;margin-top:6px}
+.err{color:#e7b1a0;font-size:13px;margin-top:8px}
+.ok{color:#b7d7b0;font-size:13px}
+.muted{color:var(--dim);font-size:12px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<p class="hint">Trip cost</p>
+<a class="btn ghost" href="https://thelancasterelectrician.com/">The Lancaster Electrician</a>
+<h1 style="margin-top:14px">What will this run cost?</h1>
+<p class="sub" id="carLine">Pick a car from the library or use the one already in your garage.</p>
+<div class="card"><div class="muted" id="priceLine">Loading today’s fuel prices…</div></div>
+<label>Search the library</label>
+<input id="q" placeholder="XC60 D5, Civic Type R, Model 3…"/>
+<div id="hits"></div>
+<label>From (home is the default)</label>
+<input id="from" placeholder="Home address or postcode"/>
+<label>To</label>
+<input id="to" placeholder="Windermere / LA23 / work postcode"/>
+<button class="btn gold" id="go" type="button">Check this trip</button>
+<p class="err hide" id="err"></p>
+<div class="trump hide" id="result">
+  <h2 id="rTitle">Trip</h2>
+  <p class="muted" id="rMeta"></p>
+  <div class="pair">
+    <div class="mode"><span>Steady</span><b id="rEco">—</b><em id="rEcoMeta"></em></div>
+    <div class="mode"><span>Quick</span><b id="rQuick">—</b><em id="rQuickMeta"></em></div>
+  </div>
+  <p class="muted" id="rRoads"></p>
+  <div class="row2">
+    <button class="btn ghost" id="saveFav" type="button">Save favourite</button>
+    <button class="btn ghost" id="setHome" type="button">Set as home</button>
+  </div>
+</div>
+<div class="card">
+  <b>Favourites</b>
+  <p class="muted">Miles stay saved. The £ updates when today’s price file changes.</p>
+  <div id="favs"></div>
+</div>
+<div class="card">
+  <b>Overrides</b>
+  <p class="muted">Leave blank to use the library car and the live price file.</p>
+  <div class="row2">
+    <div><label>Real MPG / mi per kWh</label><input id="mpgOverride" type="number" step="0.1" placeholder="auto"/></div>
+    <div><label>PHEV electric miles</label><input id="evRange" type="number" step="1" placeholder="auto"/></div>
+  </div>
+</div>
+<script src="trip-specs.js"></script>
+<script>
+var PRICE={date:"",petrol:164.5,diesel:186.0,electric:26.1,source:"fallback"};
+var car=null;
+var lastTrip=null;
+function $(id){return document.getElementById(id)}
+function money(n){if(n==null||isNaN(n))return "—";return "£"+n.toFixed(n>=10?0:2)}
+function garageCar(){
+  try{
+    var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
+    if(!s||!s.cars||!s.cars.length) return null;
+    return s.cars[s.i]||s.cars[0];
+  }catch(e){return null}
+}
+function tripState(){
+  try{return JSON.parse(localStorage.getItem("gt.trip.v1")||"null")||{}}
+  catch(e){return {}}
+}
+function saveTrip(t){localStorage.setItem("gt.trip.v1",JSON.stringify(t))}
+function kind(fuel){
+  fuel=String(fuel||"").toLowerCase();
+  if(fuel.indexOf("electric")>=0 && fuel.indexOf("hybrid")<0 && fuel.indexOf("plug")<0) return "electric";
+  if(fuel.indexOf("plug")>=0 || fuel.indexOf("phev")>=0) return "phev";
+  if(fuel.indexOf("diesel")>=0) return "diesel";
+  if(fuel.indexOf("hybrid")>=0) return "hybrid";
+  return "petrol";
+}
+function pplFor(k){
+  if(k==="diesel") return PRICE.diesel;
+  if(k==="electric") return PRICE.electric;
+  return PRICE.petrol;
+}
+function setCarFromGarage(){
+  var g=garageCar();
+  if(!g) return;
+  var k=kind(g.fuel);
+  car={name:g.nick||g.name||"Garage car",fuel:g.fuel||"petrol",kind:k,mpg:+g.mpg||null,range:+g.range||+g.rangeMi||null,kwh:+g.battery||+g.kwh||null};
+  paintCar();
+}
+function setCarFromRow(row){
+  car={name:[row[0],row[1],row[2]].filter(Boolean).join(" "),fuel:row[5],kind:kind(row[5]),mpg:row[6]||null,kwh:row[7]||null,range:row[8]||null};
+  if(car.kind==="phev" && !car.range) car.range=+$("evRange").value||30;
+  paintCar();
+}
+function paintCar(){
+  if(!car){$("carLine").textContent="Search a car, or add one in the garage first.";return}
+  var bits=[car.name];
+  if(car.kind==="electric") bits.push((car.range?car.range+" mi range":"EV"), (car.kwh?car.kwh+" kWh":""));
+  else if(car.kind==="phev") bits.push("PHEV", (car.range?car.range+" mi electric":""), (car.mpg?car.mpg+" mpg after":""));
+  else bits.push(car.fuel||car.kind, car.mpg?car.mpg+" mpg":"need MPG");
+  $("carLine").textContent=bits.filter(Boolean).join(" · ");
+  paintFavs();
+}
+function paintPrice(){
+  $("priceLine").textContent="UK average "+PRICE.date+" · petrol "+PRICE.petrol+"p · diesel "+PRICE.diesel+"p · electric "+PRICE.electric+"p/kWh"+(PRICE.source==="fallback"?" (cached)":"");
+}
+function costs(miles,secs){
+  var over=parseFloat($("mpgOverride").value);
+  var evR=parseFloat($("evRange").value);
+  var k=car?car.kind:"petrol";
+  var mins=secs/60;
+  if(k==="electric"){
+    var mpk=over|| (car.range&&car.kwh?car.range/car.kwh:3.5);
+    var eco=miles/Math.max(mpk,0.4);
+    var q=miles/Math.max(mpk*0.82,0.3);
+    var p=PRICE.electric/100;
+    return {eco£:eco*p,quick£:q*p,ecoMin:mins,quickMin:mins*0.88,ecoUse:eco.toFixed(1)+" kWh",quickUse:q.toFixed(1)+" kWh"};
+  }
+  var mpg=over||car.mpg||38;
+  var ppl=pplFor(k==="diesel"?"diesel":"petrol")/100;
+  if(k==="phev"){
+    var eMiles=Math.min(miles, evR||car.range||30);
+    var pMiles=Math.max(0, miles-eMiles);
+    var mpk=car.range&&car.kwh?car.range/car.kwh:3.5;
+    var ecoK=eMiles/mpk, qK=eMiles/(mpk*0.82);
+    var ecoL=pMiles/Math.max(mpg,1)*4.54609;
+    var qL=pMiles/Math.max(mpg*0.80,1)*4.54609;
+    var ep=PRICE.electric/100;
+    return {eco£:ecoK*ep+ecoL*ppl, quick£:qK*ep+qL*ppl, ecoMin:mins, quickMin:mins*0.88,
+      ecoUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+ecoL.toFixed(1)+" L",
+      quickUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+qL.toFixed(1)+" L"};
+  }
+  var ecoL=miles/Math.max(mpg,1)*4.54609;
+  var qL=miles/Math.max(mpg*0.80,1)*4.54609;
+  return {eco£:ecoL*ppl,quick£:qL*ppl,ecoMin:mins,quickMin:mins*0.88,ecoUse:ecoL.toFixed(1)+" L @ "+mpg+" mpg",quickUse:qL.toFixed(1)+" L @ "+(mpg*0.80).toFixed(0)+" mpg"};
+}
+async function geocode(q){
+  var res=await fetch("https://photon.komoot.io/api/?q="+encodeURIComponent(q+", United Kingdom")+"&limit=1&lang=en");
+  if(!res.ok) throw new Error("Place lookup failed");
+  var data=await res.json();
+  var f=data.features&&data.features[0];
+  if(!f) throw new Error("Could not find that place");
+  var p=f.properties||{};
+  var name=[p.name,p.postcode,p.city||p.town||p.village].filter(Boolean).slice(0,3).join(", ");
+  return {lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:name||q};
+}
+async function route(a,b){
+  var res=await fetch("https://router.project-osrm.org/route/v1/driving/"+a.lon+","+a.lat+";"+b.lon+","+b.lat+"?overview=false&steps=true");
+  if(!res.ok) throw new Error("Route failed");
+  var data=await res.json();
+  if(data.code!=="Ok") throw new Error("No driving route");
+  var r=data.routes[0], merged=[];
+  r.legs.forEach(function(leg){
+    (leg.steps||[]).forEach(function(st){
+      var name=st.ref||st.name; if(!name) return;
+      if(merged.length&&merged[merged.length-1].n===name) merged[merged.length-1].m+=st.distance;
+      else merged.push({n:name,m:st.distance});
+    });
+  });
+  var roads=merged.filter(function(x){return x.m>=1500}).sort(function(a,b){return b.m-a.m}).slice(0,4)
+    .map(function(x){return x.n+" "+(x.m/1609.34).toFixed(1)+" mi"});
+  return {miles:r.distance/1609.34,secs:r.duration,roads:roads};
+}
+function showErr(m){$("err").className=m?"err":"err hide";$("err").textContent=m||""}
+function paintResult(title,miles,secs,roads){
+  if(!car){showErr("Pick a car first.");return}
+  var c=costs(miles,secs);
+  $("result").className="trump";
+  $("rTitle").textContent=title;
+  $("rMeta").textContent=miles.toFixed(1)+" miles · good traffic ~"+Math.round(c.ecoMin)+" min · "+car.name;
+  $("rEco").textContent=money(c.eco£);
+  $("rQuick").textContent=money(c.quick£);
+  $("rEcoMeta").textContent=c.ecoUse+" · "+Math.round(c.ecoMin)+" min";
+  $("rQuickMeta").textContent=c.quickUse+" · "+Math.round(c.quickMin)+" min";
+  $("rRoads").textContent=roads&&roads.length?("Via "+roads.join(" · ")):"";
+  lastTrip={title:title,miles:miles,secs:secs,roads:roads||[]};
+}
+function searchLib(q){
+  q=String(q||"").trim().toLowerCase();
+  var box=$("hits");
+  if(!q||q.length<2){box.innerHTML="";return}
+  var list=window.TRIPS||window.TRIPSPECS||[];
+  var toks=q.split(/\s+/).filter(Boolean);
+  var out=[], i;
+  for(i=0;i<list.length && out.length<12;i++){
+    var r=list[i];
+    var hay=(r[0]+" "+r[1]+" "+r[2]+" "+r[5]).toLowerCase();
+    var ok=true;
+    for(var t=0;t<toks.length;t++){ if(hay.indexOf(toks[t])<0){ok=false;break;} }
+    if(!ok) continue;
+    out.push({i:i,r:r});
+  }
+  box.innerHTML=out.map(function(o){
+    var r=o.r, extra=r[6]?r[6]+" mpg":(r[8]?r[8]+" mi":r[5]);
+    return '<button class="hit" type="button" data-i="'+o.i+'">'+r[0]+' '+r[1]+' · '+r[5]+' · '+extra+'</button>';
+  }).join("")||"<p class='muted'>No match in the library. Type MPG below.</p>";
+}
+$("q").addEventListener("input",function(){searchLib(this.value)});
+$("hits").addEventListener("click",function(e){
+  var b=e.target.closest("[data-i]"); if(!b||!(window.TRIPS||window.TRIPSPECS))return;
+  setCarFromRow((window.TRIPS||window.TRIPSPECS)[+b.getAttribute("data-i")]);
+});
+$("go").onclick=async function(){
+  showErr("");
+  if(!car) setCarFromGarage();
+  if(!car){showErr("Search a library car first.");return}
+  if(car.kind!=="electric" && !car.mpg && !parseFloat($("mpgOverride").value)){
+    showErr("This row has no MPG. Type the figure you get.");return;
+  }
+  var destQ=$("to").value.trim();
+  if(!destQ){showErr("Enter a destination.");return}
+  var t=tripState();
+  $("go").textContent="Looking up…";
+  try{
+    var startQ=$("from").value.trim()||t.home||"";
+    if(!startQ) throw new Error("Set a home address first.");
+    var start=(t.homeLat&&startQ===t.home)?{lat:t.homeLat,lon:t.homeLon,name:t.home}:await geocode(startQ);
+    if(startQ!==t.home){t.home=start.name;t.homeLat=start.lat;t.homeLon=start.lon;saveTrip(t)}
+    var dest=await geocode(destQ);
+    var rt=await route(start,dest);
+    lastTrip=Object.assign({destName:dest.name,query:destQ},rt);
+    paintResult((start.name.split(",")[0])+" → "+(dest.name.split(",")[0]), rt.miles, rt.secs, rt.roads);
+  }catch(err){showErr(err.message||"Could not check that trip")}
+  $("go").textContent="Check this trip";
+};
+function paintFavs(){
+  var t=tripState();
+  var box=$("favs");
+  var favs=t.favs||[];
+  if(!favs.length){box.innerHTML="<p class='muted'>Check a trip, then save it. Five slots.</p>";return}
+  box.innerHTML=favs.map(function(f,i){
+    var c=car?costs(f.miles,f.secs||0):null;
+    var p=c?money(c.eco£)+" / "+money(c.quick£):"";
+    return '<button class="fav" type="button" data-i="'+i+'"><b>'+f.label+'</b><span class="£">'+p+'</span></button>';
+  }).join("");
+}
+$("favs").addEventListener("click",function(e){
+  var b=e.target.closest("[data-i]"); if(!b)return;
+  var f=(tripState().favs||[])[+b.getAttribute("data-i")];
+  if(!f)return;
+  $("to").value=f.query||f.label;
+  paintResult((tripState().home||"Home").split(",")[0]+" → "+f.label, f.miles, f.secs||0, f.roads||[]);
+});
+$("saveFav").onclick=function(){
+  if(!lastTrip||!lastTrip.miles){showErr("Check a trip first.");return}
+  var label=prompt("Name this favourite", (lastTrip.title||"").split("→").pop().trim()||"Favourite");
+  if(!label) return;
+  var t=tripState();
+  t.favs=(t.favs||[]).filter(function(f){return f.label!==label});
+  t.favs.unshift({label:label,query:$("to").value.trim(),miles:lastTrip.miles,secs:lastTrip.secs,roads:lastTrip.roads||[]});
+  t.favs=t.favs.slice(0,5);
+  saveTrip(t); paintFavs();
+};
+$("setHome").onclick=async function(){
+  var q=$("from").value.trim();
+  if(!q){showErr("Type a start address first.");return}
+  try{
+    var g=await geocode(q);
+    var t=tripState();
+    t.home=g.name; t.homeLat=g.lat; t.homeLon=g.lon;
+    saveTrip(t);
+    $("from").value=g.name;
+    showErr("");
+  }catch(err){showErr(err.message)}
+};
+if(!window.TRIPS){ window.TRIPS=window.TRIPSPECS||[]; }
+(function init(){
+  var t=tripState();
+  $("from").value=t.home||"";
+  setCarFromGarage();
+  paintFavs();
+  fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){
+    PRICE.date=p.date||"";
+    PRICE.petrol=+p.petrol_ppl||PRICE.petrol;
+    PRICE.diesel=+p.diesel_ppl||PRICE.diesel;
+    PRICE.electric=+p.electric_pkwh||PRICE.electric;
+    PRICE.source=p.source||"file";
+    paintPrice(); paintFavs();
+  }).catch(function(){PRICE.date="5 Sep 2026";paintPrice()});
+})();
+</script>
+</body>
+</html>

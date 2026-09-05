@@ -1,0 +1,8 @@
+{
+  "date": "5 Sep 2026",
+  "petrol_ppl": 163.9,
+  "diesel_ppl": 185.5,
+  "electric_pkwh": 26.1,
+  "source": "UK average snapshot",
+  "note": "Replace this file to update live prices. Petrol/diesel pence per litre, electricity pence per kWh."
+}

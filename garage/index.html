@@ -38,20 +38,27 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 </style>
 </head>
 <body>
-<p class="hint">Trip cost</p>
+<p class="hint">Garage · trip cost</p>
 <a class="btn ghost" href="https://thelancasterelectrician.com/">The Lancaster Electrician</a>
 <h1 style="margin-top:14px">What will this run cost?</h1>
 <p class="sub" id="carLine">Pick a car from the library or use the one already in your garage.</p>
-<div class="card"><div class="muted" id="priceLine">Loading today’s fuel prices…</div></div>
+<p class="muted" id="libLine">Loading car library…</p>
+
+<div class="card">
+  <div class="muted" id="priceLine">Loading today’s fuel prices…</div>
+</div>
+
 <label>Search the library</label>
 <input id="q" placeholder="XC60 D5, Civic Type R, Model 3…"/>
 <div id="hits"></div>
+
 <label>From (home is the default)</label>
-<input id="from" placeholder="Home address or postcode"/>
+<input id="from" placeholder="Home address or postcode (Lancaster default)"/>
 <label>To</label>
-<input id="to" placeholder="Windermere / LA23 / work postcode"/>
+<input id="to" placeholder="Windermere / LA23 / work / any UK postcode"/>
 <button class="btn gold" id="go" type="button">Check this trip</button>
 <p class="err hide" id="err"></p>
+
 <div class="trump hide" id="result">
   <h2 id="rTitle">Trip</h2>
   <p class="muted" id="rMeta"></p>
@@ -65,11 +72,13 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
     <button class="btn ghost" id="setHome" type="button">Set as home</button>
   </div>
 </div>
+
 <div class="card">
   <b>Favourites</b>
   <p class="muted">Miles stay saved. The £ updates when today’s price file changes.</p>
   <div id="favs"></div>
 </div>
+
 <div class="card">
   <b>Overrides</b>
   <p class="muted">Leave blank to use the library car and the live price file.</p>
@@ -78,9 +87,14 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
     <div><label>PHEV electric miles</label><input id="evRange" type="number" step="1" placeholder="auto"/></div>
   </div>
 </div>
+
+<script src="trip-specs-1.js"></script>
+<script src="trip-specs-2.js"></script>
+<script src="trip-specs-3.js"></script>
+<script src="trip-specs-4.js"></script>
 <script src="trip-specs.js"></script>
 <script>
-var PRICE={date:"",petrol:164.5,diesel:186.0,electric:26.1,source:"fallback"};
+var PRICE={date:"",petrol:163.9,diesel:185.5,electric:26.1,source:"fallback"};
 var car=null;
 var lastTrip=null;
 function $(id){return document.getElementById(id)}
@@ -114,11 +128,26 @@ function setCarFromGarage(){
   var g=garageCar();
   if(!g) return;
   var k=kind(g.fuel);
-  car={name:g.nick||g.name||"Garage car",fuel:g.fuel||"petrol",kind:k,mpg:+g.mpg||null,range:+g.range||+g.rangeMi||null,kwh:+g.battery||+g.kwh||null};
+  car={
+    name:g.nick||g.name||"Garage car",
+    fuel:g.fuel||"petrol",
+    kind:k,
+    mpg:+g.mpg||null,
+    range:+g.range||+g.rangeMi||null,
+    kwh:+g.battery||+g.kwh||null
+  };
   paintCar();
 }
 function setCarFromRow(row){
-  car={name:[row[0],row[1],row[2]].filter(Boolean).join(" "),fuel:row[5],kind:kind(row[5]),mpg:row[6]||null,kwh:row[7]||null,range:row[8]||null};
+  car={
+    name:[row[0],row[1],row[2]].filter(Boolean).join(" "),
+    fuel:row[5],
+    kind:kind(row[5]),
+    mpg:row[6]||null,
+    kwh:row[7]||null,
+    range:row[8]||null,
+    year:((row[3]||"")+"–"+(row[4]||"")).replace(/^–|–$/g,"")
+  };
   if(car.kind==="phev" && !car.range) car.range=+$("evRange").value||30;
   paintCar();
 }
@@ -132,7 +161,8 @@ function paintCar(){
   paintFavs();
 }
 function paintPrice(){
-  $("priceLine").textContent="UK average "+PRICE.date+" · petrol "+PRICE.petrol+"p · diesel "+PRICE.diesel+"p · electric "+PRICE.electric+"p/kWh"+(PRICE.source==="fallback"?" (cached)":"");
+  $("priceLine").textContent="UK average "+PRICE.date+" · petrol "+PRICE.petrol+"p · diesel "+PRICE.diesel+"p · electric "+PRICE.electric+"p/kWh"
+    +(PRICE.source==="fallback"?" (cached)":"");
 }
 function costs(miles,secs){
   var over=parseFloat($("mpgOverride").value);
@@ -156,9 +186,12 @@ function costs(miles,secs){
     var ecoL=pMiles/Math.max(mpg,1)*4.54609;
     var qL=pMiles/Math.max(mpg*0.80,1)*4.54609;
     var ep=PRICE.electric/100;
-    return {eco£:ecoK*ep+ecoL*ppl, quick£:qK*ep+qL*ppl, ecoMin:mins, quickMin:mins*0.88,
+    return {
+      eco£:ecoK*ep+ecoL*ppl, quick£:qK*ep+qL*ppl,
+      ecoMin:mins, quickMin:mins*0.88,
       ecoUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+ecoL.toFixed(1)+" L",
-      quickUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+qL.toFixed(1)+" L"};
+      quickUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+qL.toFixed(1)+" L"
+    };
   }
   var ecoL=miles/Math.max(mpg,1)*4.54609;
   var qL=miles/Math.max(mpg*0.80,1)*4.54609;
@@ -179,7 +212,7 @@ async function route(a,b){
   if(!res.ok) throw new Error("Route failed");
   var data=await res.json();
   if(data.code!=="Ok") throw new Error("No driving route");
-  var r=data.routes[0], merged=[];
+  var r=data.routes[0], roads=[], merged=[];
   r.legs.forEach(function(leg){
     (leg.steps||[]).forEach(function(st){
       var name=st.ref||st.name; if(!name) return;
@@ -187,7 +220,7 @@ async function route(a,b){
       else merged.push({n:name,m:st.distance});
     });
   });
-  var roads=merged.filter(function(x){return x.m>=1500}).sort(function(a,b){return b.m-a.m}).slice(0,4)
+  roads=merged.filter(function(x){return x.m>=1500}).sort(function(a,b){return b.m-a.m}).slice(0,4)
     .map(function(x){return x.n+" "+(x.m/1609.34).toFixed(1)+" mi"});
   return {miles:r.distance/1609.34,secs:r.duration,roads:roads};
 }
@@ -223,12 +256,12 @@ function searchLib(q){
   box.innerHTML=out.map(function(o){
     var r=o.r, extra=r[6]?r[6]+" mpg":(r[8]?r[8]+" mi":r[5]);
     return '<button class="hit" type="button" data-i="'+o.i+'">'+r[0]+' '+r[1]+' · '+r[5]+' · '+extra+'</button>';
-  }).join("")||"<p class='muted'>No match in the library. Type MPG below.</p>";
+  }).join("")||"<p class='muted'>No match in the library. Use the garage car or type MPG below.</p>";
 }
 $("q").addEventListener("input",function(){searchLib(this.value)});
 $("hits").addEventListener("click",function(e){
-  var b=e.target.closest("[data-i]"); if(!b||!(window.TRIPS||window.TRIPSPECS))return;
-  setCarFromRow((window.TRIPS||window.TRIPSPECS)[+b.getAttribute("data-i")]);
+  var b=e.target.closest("[data-i]"); if(!b||!window.TRIPS)return;
+  setCarFromRow(window.TRIPS[+b.getAttribute("data-i")]);
 });
 $("go").onclick=async function(){
   showErr("");
@@ -248,7 +281,7 @@ $("go").onclick=async function(){
     if(startQ!==t.home){t.home=start.name;t.homeLat=start.lat;t.homeLon=start.lon;saveTrip(t)}
     var dest=await geocode(destQ);
     var rt=await route(start,dest);
-    lastTrip=Object.assign({destName:dest.name,query:destQ},rt);
+    lastTrip=Object.assign({destName:dest.name,destLat:dest.lat,destLon:dest.lon,query:destQ},rt);
     paintResult((start.name.split(",")[0])+" → "+(dest.name.split(",")[0]), rt.miles, rt.secs, rt.roads);
   }catch(err){showErr(err.message||"Could not check that trip")}
   $("go").textContent="Check this trip";
@@ -260,8 +293,8 @@ function paintFavs(){
   if(!favs.length){box.innerHTML="<p class='muted'>Check a trip, then save it. Five slots.</p>";return}
   box.innerHTML=favs.map(function(f,i){
     var c=car?costs(f.miles,f.secs||0):null;
-    var p=c?money(c.eco£)+" / "+money(c.quick£):"";
-    return '<button class="fav" type="button" data-i="'+i+'"><b>'+f.label+'</b><span class="£">'+p+'</span></button>';
+    var £=c?money(c.eco£)+" / "+money(c.quick£):"";
+    return '<button class="fav" type="button" data-i="'+i+'"><b>'+f.label+'</b><span class="£">'+£+'</span></button>';
   }).join("");
 }
 $("favs").addEventListener("click",function(e){
@@ -293,12 +326,37 @@ $("setHome").onclick=async function(){
     showErr("");
   }catch(err){showErr(err.message)}
 };
-if(!window.TRIPS){ window.TRIPS=window.TRIPSPECS||[]; }
+
+if(!window.TRIPS){
+  window.TRIPS=window.TRIPSPECS||[
+    ["Volvo","XC60 D5","D5","2008","2017","Diesel",44,"",""],
+    ["Volvo","XC60 T5","T5","2008","2017","Petrol",35,"",""],
+    ["Volvo","XC60 B4","B4","2017","2026","Diesel",45,"",""],
+    ["Toyota","GR Yaris","","2020","2026","Petrol",34,"",""],
+    ["Toyota","Yaris","","2011","2020","Petrol",58,"",""],
+    ["Ford","Fiesta","","2008","2017","Petrol",54,"",""],
+    ["VW","Golf GTI","","2009","2020","Petrol",38,"",""],
+    ["BMW","320d","","2012","2019","Diesel",58,"",""],
+    ["Honda","Civic Type R","","2015","2026","Petrol",36,"",""],
+    ["Tesla","Model 3","","2019","2026","Electric","",60,270],
+    ["Tesla","Model Y","","2021","2026","Electric","",75,300],
+    ["Toyota","Prius","","2016","2022","Hybrid Petrol",83,"",""],
+    ["Mitsubishi","Outlander PHEV","","2014","2021","Plug In Hybrid",48,12,28],
+    ["Skoda","Octavia","","2013","2020","Diesel",64,"",""]
+  ];
+}
+function paintLib(){
+  var n=(window.TRIPS||[]).length;
+  $("libLine").textContent=n>20
+    ? n.toLocaleString()+" cars in the library · petrol, diesel, hybrid and electric"
+    : n+" fallback cars (full library still loading)";
+}
 (function init(){
   var t=tripState();
-  $("from").value=t.home||"";
+  $("from").value=t.home||"Lancaster";
   setCarFromGarage();
   paintFavs();
+  paintLib();
   fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){
     PRICE.date=p.date||"";
     PRICE.petrol=+p.petrol_ppl||PRICE.petrol;

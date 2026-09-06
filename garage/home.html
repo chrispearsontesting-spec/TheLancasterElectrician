@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b0c0f"/>
 <title>Garage</title>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--gold:#e4c48a;--line:rgba(255,255,255,.1);--late:#e7b1a0}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--ice:#9fd8ff;--line:rgba(255,255,255,.1)}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
 .hero{position:relative;height:150px;border-radius:16px 16px 0 0;overflow:hidden;background:#2a2a24 url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60) center/cover;cursor:pointer}
@@ -25,13 +25,17 @@ body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-fa
 .item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid var(--line)}
 .item:last-child{border-bottom:0}
 .item h3{margin:0;font-size:15px;font-weight:700}
-.when{margin:4px 0 0;color:var(--gold);font-size:17px;font-weight:800}
+.when{margin:4px 0 0;color:var(--ice);font-size:17px;font-weight:800}
 .left{margin:2px 0 0;color:#9aa3b0;font-size:12px}
-.soon .when,.soon .left{color:#f0a36a}
-.late .when,.late .left{color:var(--late)}
+.c1 .when,.c1 .left{color:#9fd8ff}
+.c2 .when,.c2 .left{color:#7eb8ff}
+.c3 .when,.c3 .left{color:#f0c56a}
+.c4 .when,.c4 .left{color:#f08a4a}
+.c5 .when,.c5 .left{color:#ef4444;animation:flashRed .85s ease-in-out infinite}
+@keyframes flashRed{0%,100%{opacity:1}50%{opacity:.35}}
 .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .btn{display:inline-block;background:#171a20;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:11px;padding:8px 12px;font-weight:800;font-size:12px;text-align:center;min-width:92px;cursor:pointer}
-.wide{display:block;padding:13px;border-radius:14px;font-size:15px;width:100%;margin-top:8px;background:var(--gold);color:#111;border:0}
+.wide{display:block;padding:13px;border-radius:14px;font-size:15px;width:100%;margin-top:8px;background:var(--ice);color:#0b0c0f;border:0}
 .sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
 .sheet.on{display:block}
 .panel{background:#14161b;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
@@ -130,9 +134,11 @@ function leftTxt(iso){
 function tone(iso){
   var d=daysLeft(iso);
   if(d==null)return "";
-  if(d<0)return " late";
-  if(d<=31)return " soon";
-  return "";
+  if(d<=7)return " c5";
+  if(d<=31)return " c4";
+  if(d<=90)return " c3";
+  if(d<=180)return " c2";
+  return " c1";
 }
 function beltDue(c){
   if(!c.beltDate)return "";
@@ -225,9 +231,6 @@ function savePic(f){
 function openSheet(mode){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
-  ["fName","fPlate","fMot","fTax","fIns","fOil","fBeltDate","fBeltYears","fBeltMiles","fTyreDate","fTyreLife","fMiles","fMpg","fFuel","fGarage","fPhone","fEmail","fInsWeb"].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.value="";
-  });
   document.getElementById("fName").value=c.nick||c.name||"";
   document.getElementById("fPlate").value=c.plate||"";
   document.getElementById("fMot").value=c.mot||"";

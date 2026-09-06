@@ -13,7 +13,7 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif}
 .wrap{max-width:520px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
 .hint{text-align:center;color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px}
-.hero{border-radius:22px;overflow:hidden;border:1px solid rgba(228,196,138,.35);background:#14110c}
+.hero{border-radius:22px;overflow:hidden;border:1px solid rgba(228,196,138,.35);background:#14110c;min-height:240px}
 .hero img,.addshot{width:100%;height:200px;object-fit:cover;display:block;background:#1a1712}
 .addshot{display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:800;min-height:200px}
 .hero h1{margin:0;font-size:20px;padding:10px 14px 12px}
@@ -129,7 +129,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <option value="mesh">Mesh</option>
 <option value="off">Off-road</option>
 </select>
-<p class="copy">Six gears. Wait for green, then shift when the tacho is in the green sliver (about 6.4 to 7.3). Early shift bogs it. Late shift over-revs. Speed builds much quicker now.</p>
+<p class="copy">Six gears. Wait for green, then shift when the tacho is in the green sliver (about 6.4 to 7.3).</p>
 <div id="raceOut"></div>
 </div>
 <div class="sheet" id="sheet">
@@ -177,12 +177,39 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <button class="btn ghost" type="button" id="btnCClose">Back</button>
 </div>
 </div>
-<script src="app.js?v=25"></script>
-<script src="diy.js?v=25"></script>
-<script src="jobs.js?v=25"></script>
-<script src="lookup.js?v=25"></script>
-<script src="swipe.js?v=25"></script>
-<script src="game.js?v=25"></script>
-<script src="race.js?v=25"></script>
+<script>
+(function(){
+function el(id){return document.getElementById(id)}
+function nice(iso){if(!iso)return "Set date";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
+function left(iso){if(!iso)return "Set in Edit";var end=new Date(iso+"T12:00:00"),now=new Date();now.setHours(12,0,0,0);var days=Math.round((end-now)/86400000);if(days===0)return "Due today";if(days<0)return Math.abs(days)+" days overdue";var m=Math.floor(days/30),d=days-m*30;return (m?m+(m===1?" month ":" months "):"")+d+(d===1?" day":" days")+" left"}
+function row(name,iso){return "<div class='r'><div class='r-left'><span class='rk'>"+name+"</span><span class='rc'>"+left(iso)+"</span></div><span class='when'>"+nice(iso)+"</span></div>"}
+window.gtFill=function(){
+  try{
+    var raw=localStorage.getItem("gt.garage");
+    var s=raw?JSON.parse(raw):null;
+    var c=(s&&s.cars&&(s.cars[s.i]||s.cars[0]))||{nick:"Volvo XC60 D5",mpg:"40",tank:"70",miles:"12000",fuel:"diesel"};
+    var hero=el("hero"); if(!hero) return;
+    var shot=c.photo?("<img src='"+c.photo+"' alt='car'/>"):"<div class='addshot'>Tap to add photo</div>";
+    var pl=String(c.plate||"SB61LGZ").toUpperCase();
+    hero.innerHTML="<div class='hero-pic'>"+shot+"<div class='platebox'><span class='gb'>UK</span><span class='reg'>"+pl+"</span></div></div><h1>"+(c.nick||c.name||"Volvo XC60 D5")+"</h1>";
+    if(el("dues")) el("dues").innerHTML=row("MOT",c.mot)+row("Tax",c.tax)+row("Insurance",c.ins)+row("Oil / service",c.oil)+row("Timing belt",c.beltDate)+"<div class='r'><div class='r-left'><span class='rk'>Tyres</span><span class='rc'>Set in Edit</span></div></div>";
+    var mpg=+c.mpg||0,tank=+c.tank||0,miles=+c.miles||0,ppl=+(c.ppl||183.6);
+    var tm=mpg&&tank?Math.round((tank/4.546)*mpg):null;
+    var year=mpg&&miles?miles/mpg*4.546*ppl/100:null;
+    var ins=+(c.insCost||0),tax=+(c.taxCost||0);
+    if(el("money")) el("money").innerHTML="<div class='r'><span>UK MPG</span><b>"+(c.mpg||"-")+"</b></div><div class='r'><span>Miles per tank</span><b>"+(tm?tm+" mi":"-")+"</b></div><div class='r'><span>Fuel / month</span><b>"+(year?("GBP "+Math.round(year/12)):"-")+"</b></div><div class='r'><span>Fuel / year</span><b>"+(year?("GBP "+Math.round(year)):"-")+"</b></div><div class='r'><span>Tax + insurance / year</span><b>"+((ins||tax)?("GBP "+Math.round(ins+tax)):"-")+"</b></div><div class='r'><span>Running / month</span><b>"+(year||ins||tax?("GBP "+Math.round((ins+tax)/12+(year?year/12:0))):"-")+"</b></div>";
+  }catch(e){}
+};
+window.gtFill();
+})();
+</script>
+<script src="app.js?v=26"></script>
+<script src="diy.js?v=26"></script>
+<script src="jobs.js?v=26"></script>
+<script src="lookup.js?v=26"></script>
+<script src="swipe.js?v=26"></script>
+<script src="game.js?v=26"></script>
+<script src="race.js?v=26"></script>
+<script>setTimeout(function(){var h=document.getElementById("hero");if(h&&!h.querySelector("h1")) window.gtFill();},200);</script>
 </body>
 </html>

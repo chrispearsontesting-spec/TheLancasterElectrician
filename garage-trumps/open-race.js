@@ -8,4 +8,12 @@ setTimeout(function(){
     var j=document.getElementById("btnJobsDiy");
     if(j) j.click();
   }
+  var back=document.getElementById("btnRaceBack");
+  if(back){
+    back.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      location.href="../garage/home.html";
+    }, true);
+  }
 },400);

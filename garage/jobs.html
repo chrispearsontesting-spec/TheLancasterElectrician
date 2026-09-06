@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>Service costs</title>
+<style>
+:root{--bg:#0b0c0f;--ink:#f3efe6;--gold:#c9a36a;--blue:#3b82f6;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:#9aa3b0;font-size:13px;margin:0 0 12px}
+.card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.card h2{margin:0;padding:12px 14px 0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#9aa3b0;font-weight:700}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item span{color:#d7d3cb}
+.item b{color:var(--ink)}
+.note{padding:10px 14px 14px;color:#9aa3b0;font-size:12px;line-height:1.4}
+select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:12px;font-size:16px;margin:10px 0 0}
+.btn{display:block;background:linear-gradient(180deg,#60a5fa,#2563eb);color:#fff;text-decoration:none;border:0;border-radius:14px;padding:13px;font-weight:800;font-size:15px;text-align:center;width:100%;margin-top:8px;position:relative;overflow:hidden}
+.btn:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.22) 50%,transparent 70%);transform:translateX(-120%);animation:shine 3.2s ease-in-out infinite}
+.ghost{background:#171a20;border:1px solid var(--line);color:var(--ink)}
+.ghost:after{display:none}
+@keyframes shine{0%{transform:translateX(-120%)}40%{transform:translateX(120%)}100%{transform:translateX(120%)}}
+</style>
+</head>
+<body>
+<a class="btn ghost" href="home.html">Back</a>
+<h1>Service costs</h1>
+<p class="sub" id="carLine">Volvo XC60 D5</p>
+<div class="card">
+  <h2>Job</h2>
+  <div style="padding:0 12px 12px"><select id="jobPick"></select></div>
+  <div id="quote"></div>
+</div>
+<div class="card">
+  <h2>Typical parts</h2>
+  <div id="parts"></div>
+  <p class="note">Guide only. Check the handbook and part fitment before you buy or work on the car.</p>
+</div>
+<div class="card">
+  <h2>Parts</h2>
+  <div style="padding:8px 12px 12px">
+    <a class="btn" id="ecp" target="_blank" rel="noopener">Euro Car Parts</a>
+    <a class="btn ghost" id="ebay" target="_blank" rel="noopener">eBay</a>
+  </div>
+</div>
+<div class="card">
+  <h2>Guides</h2>
+  <div style="padding:8px 12px 12px">
+    <a class="btn ghost" id="haynes" target="_blank" rel="noopener">Haynes manual</a>
+    <a class="btn ghost" id="yt" target="_blank" rel="noopener">YouTube service</a>
+  </div>
+</div>
+<script>
+var WORK=[
+  {id:"beltwp",name:"Timing belt + water pump",hrs:4.5,plo:80,phi:180,note:"Do the pump while it is open. Some engines use a chain."},
+  {id:"belt",name:"Timing belt only",hrs:4,plo:40,phi:120,note:"Usually false economy not to do the pump."},
+  {id:"clutch",name:"Clutch kit",hrs:6,plo:160,phi:350,note:"Gearbox out. Dual-mass flywheel extra if worn."},
+  {id:"clutchdmf",name:"Clutch + dual-mass flywheel",hrs:6.5,plo:350,phi:700,note:"Common on diesels."},
+  {id:"shaft",name:"Driveshaft (one side)",hrs:2,plo:80,phi:220,note:"Clicking on lock is the usual clue."},
+  {id:"fpads",name:"Front pads and discs",hrs:1.5,plo:80,phi:220,note:""},
+  {id:"rpads",name:"Rear pads and discs",hrs:1.5,plo:70,phi:200,note:""},
+  {id:"batt",name:"Battery",hrs:0.4,plo:70,phi:180,note:"Stop-start batteries cost more."},
+  {id:"service",name:"Interim service (oil + filter)",hrs:1,plo:35,phi:90,note:"Full service is more."},
+  {id:"damp",name:"Pair of dampers",hrs:2,plo:120,phi:350,note:""}
+];
+var MULT={small:0.85,family:1,suv:1.15,premium:1.35},RATE=80;
+function car(){
+  try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars)return s.cars[s.i]||s.cars[0]}catch(e){}
+  return {nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",cls:"suv"};
+}
+function qname(c){return String(c.nick||c.name||c.plate||"car").trim()}
+function row(a,b){return "<div class='item'><span>"+a+"</span><b>"+b+"</b></div>"}
+function draw(){
+  var c=car(), name=qname(c), f=c.fuel||"diesel", cls=c.cls||"suv";
+  document.getElementById("carLine").textContent=name+(c.plate?" · "+String(c.plate).toUpperCase():"");
+  var sel=document.getElementById("jobPick");
+  if(!sel.options.length) sel.innerHTML=WORK.map(function(w){return "<option value='"+w.id+"'>"+w.name+"</option>"}).join("");
+  var job=WORK.filter(function(w){return w.id===sel.value})[0]||WORK[0];
+  var m=MULT[cls]||1, lab=job.hrs*RATE*m;
+  var lo=Math.round((lab*0.85+job.plo*m)/10)*10, hi=Math.round((lab*1.2+job.phi*m)/10)*10;
+  document.getElementById("quote").innerHTML=
+    row("Independent","£"+lo+"–"+hi)+
+    row("Main dealer-ish","£"+Math.round(lo*1.35/10)*10+"–"+Math.round(hi*1.45/10)*10)+
+    row("Labour",job.hrs+" hrs × £"+RATE)+
+    "<p class='note'>"+(job.note||"Range only.")+"</p>";
+  var oil=f==="electric"?[["No engine oil","–"]]:[["Engine oil","handbook litres"],["Oil filter + washer","£6–£15"]];
+  var extra=f==="diesel"?[["Fuel filter","£12–£30"]]:f==="electric"?[["Cabin filter","£10–£28"]]:[["Air filter","£8–£20"],["Cabin filter","£8–£25"]];
+  document.getElementById("parts").innerHTML=oil.concat(extra).map(function(x){return row(x[0],x[1])}).join("");
+  var q=encodeURIComponent(name+" service kit"), qn=encodeURIComponent(name);
+  document.getElementById("ecp").href="https://www.eurocarparts.com/search?q="+q;
+  document.getElementById("ebay").href="https://www.ebay.co.uk/sch/i.html?_nkw="+q;
+  document.getElementById("haynes").href="https://uk.haynes.com/search?q="+qn;
+  document.getElementById("yt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(name+" oil change service UK");
+  document.getElementById("ecp").textContent="Euro Car Parts — "+name;
+  document.getElementById("ebay").textContent="eBay — "+name;
+  document.getElementById("haynes").textContent="Haynes — "+name;
+  document.getElementById("yt").textContent="YouTube — "+name;
+}
+document.getElementById("jobPick").onchange=draw;
+draw();
+</script>
+</body>
+</html>

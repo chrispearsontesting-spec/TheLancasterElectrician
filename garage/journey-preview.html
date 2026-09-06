@@ -3,72 +3,45 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<meta name="theme-color" content="#1a73e8"/>
-<title>Journey cost · preview</title>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>Journey cost</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-:root{
-  --ink:#202124;--dim:#5f6368;--line:#e8eaed;--blue:#1a73e8;--blue-ink:#174ea6;
-  --sheet:#fff;--map:#d6e2ee;--ok:#188038;--bad:#c5221f;
-}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--gold:#e4c48a;--line:rgba(255,255,255,.12);--panel:#14161b;--field:#171a20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;font-family:Roboto,system-ui,-apple-system,sans-serif;background:#eef2f6;color:var(--ink)}
-#map{position:fixed;inset:0;background:var(--map);z-index:0}
-.topcard{
-  position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:20;
-  background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(32,33,36,.16),0 8px 24px rgba(32,33,36,.12);
-  padding:8px 8px 8px 4px;
-}
-.cardrow{display:grid;grid-template-columns:36px 1fr 40px;align-items:stretch}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+#map{position:fixed;inset:0;background:#111;z-index:0}
+.topcard{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px 8px 8px 4px}
+.cardrow{display:grid;grid-template-columns:36px 1fr 40px}
 .dotscol{display:flex;flex-direction:column;align-items:center;padding:10px 0 8px}
-.dot{width:10px;height:10px;border-radius:50%;background:#1a73e8;border:2px solid #fff;box-shadow:0 0 0 1px #1a73e8;flex:0 0 auto}
-.dot.home{background:#188038;box-shadow:0 0 0 1px #188038}
-.dot.end{background:#c5221f;box-shadow:0 0 0 1px #c5221f}
-.dot.stop{background:#f9ab00;box-shadow:0 0 0 1px #e37400}
-.vline{width:2px;flex:1;background:#dadce0;margin:3px 0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--gold)}
+.dot.end{background:#e7b1a0}.dot.stop{background:#9aa3b0}
+.vline{width:2px;flex:1;background:rgba(228,196,138,.35);margin:3px 0}
 .fields{display:flex;flex-direction:column;gap:6px;padding:6px 0}
-.fields input{
-  width:100%;border:0;background:#f1f3f4;border-radius:10px;padding:11px 12px;font-size:15px;
-}
-.fields input:focus{outline:2px solid #d2e3fc;background:#fff}
-.menucol{position:relative;display:flex;align-items:flex-start;justify-content:center;padding-top:4px}
-.iconbtn{border:0;background:transparent;width:40px;height:40px;border-radius:20px;color:#5f6368;font-size:20px;line-height:1}
-.menu{
-  display:none;position:absolute;right:0;top:42px;z-index:30;min-width:180px;
-  background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(32,33,36,.22);padding:6px 0;
-}
+.fields input{width:100%;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:12px;padding:11px 12px;font-size:16px}
+.menucol{position:relative}
+.iconbtn{border:0;background:transparent;width:40px;height:40px;color:var(--gold);font-size:20px}
+.menu{display:none;position:absolute;right:0;top:42px;z-index:30;min-width:200px;background:#171a20;border:1px solid var(--line);border-radius:14px;padding:6px 0}
 .menu.on{display:block}
-.menu button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:12px 16px;font-size:14px;color:#202124}
-.menu button:active{background:#f1f3f4}
-.hint{font-size:11px;color:var(--dim);padding:2px 8px 6px 36px}
-.carpill{display:inline-flex;align-items:center;gap:6px;margin:0 8px 4px 36px;background:#e8f0fe;color:var(--blue-ink);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:600;max-width:calc(100% - 48px)}
-.carpill span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sheet{
-  position:fixed;left:0;right:0;bottom:0;z-index:10;
-  background:var(--sheet);border-radius:20px 20px 0 0;
-  box-shadow:0 -8px 32px rgba(32,33,36,.18);
-  padding:0 16px calc(16px + env(safe-area-inset-bottom));
-}
-.handle{width:36px;height:4px;border-radius:4px;background:#dadce0;margin:10px auto 8px}
-.sheet h1{margin:0 0 8px;font-size:18px;font-weight:600}
+.menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:12px 16px;color:var(--ink)}
+.carpill{display:inline-flex;margin:0 8px 4px 36px;background:#1a1712;color:var(--gold);border:1px solid rgba(228,196,138,.35);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700}
+.hint{font-size:11px;color:var(--dim);padding:2px 8px 8px 36px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--panel);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:0 16px calc(16px + env(safe-area-inset-bottom))}
+.handle{width:36px;height:4px;border-radius:4px;background:#3a3f48;margin:10px auto 8px}
+.sheet h1{margin:0 0 8px;font-size:18px}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.btn{border:0;border-radius:24px;padding:12px 14px;font-weight:600;font-size:15px}
-.primary{background:var(--blue);color:#fff}
-.ghost{background:#f1f3f4;color:#202124}
-.err{color:var(--bad);font-size:13px;min-height:16px;margin:6px 0 0}
-.muted{color:var(--dim);font-size:12px;margin:6px 0 0}
-.results{display:none;margin-top:8px}
-.results.on{display:block}
-.opt{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px}
-.opt.best{border-color:#d2e3fc;background:#f8fbff}
-.opt b{display:block;font-size:22px;letter-spacing:-.03em}
-.opt small{color:var(--dim);font-size:12px}
-.roads{color:var(--dim);font-size:12px;margin-top:8px;line-height:1.4}
-.home-edit{display:none;margin-top:8px}
-.home-edit.on{display:block}
-.home-edit input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;font-size:15px}
-.xrow{position:relative}
-.xbtn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#5f6368;font-size:18px;width:28px;height:28px}
+.btn{border:0;border-radius:14px;padding:12px 14px;font-weight:800}
+.gold{background:var(--gold);color:#111}.ghost{background:#171a20;color:var(--ink);border:1px solid var(--line)}
+.err{color:#e7b1a0;font-size:13px;min-height:16px}
+.muted{color:var(--dim);font-size:12px}
+.results{display:none;margin-top:8px}.results.on{display:block}
+.opt{display:grid;grid-template-columns:1fr auto;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:8px;background:#171a20}
+.opt.best{border-color:rgba(228,196,138,.45);background:#1a1712}
+.opt b{display:block;font-size:22px;color:var(--gold)}
+.opt small,.roads{color:var(--dim);font-size:12px}
+.home-edit{display:none;margin-top:8px}.home-edit.on{display:block}
+.home-edit input{width:100%;border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:12px;padding:11px;font-size:16px}
+.xrow{position:relative}.xbtn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--dim);font-size:18px}
 </style>
 </head>
 <body>
@@ -78,7 +51,7 @@ html,body{margin:0;height:100%;font-family:Roboto,system-ui,-apple-system,sans-s
     <div class="dotscol" id="dots"></div>
     <div class="fields" id="fields"></div>
     <div class="menucol">
-      <button class="iconbtn" id="more" type="button" aria-label="More">⋮</button>
+      <button class="iconbtn" id="more" type="button">⋮</button>
       <div class="menu" id="menu">
         <button type="button" id="addStop">Add stop</button>
         <button type="button" id="setHome">Set home address</button>
@@ -88,256 +61,69 @@ html,body{margin:0;height:100%;font-family:Roboto,system-ui,-apple-system,sans-s
     </div>
   </div>
   <div class="carpill"><span id="carLabel">No car saved</span></div>
-  <div class="hint" id="hint">Start defaults to Home. Tap it to change. Use ⋮ to add stops.</div>
+  <div class="hint">Start defaults to Home. Map draws the route after Get cost.</div>
 </div>
 <div class="sheet">
   <div class="handle"></div>
   <h1>Journey cost</h1>
   <div class="actions">
     <button class="btn ghost" id="clearTrip" type="button">Clear</button>
-    <button class="btn primary" id="go" type="button">Get cost</button>
+    <button class="btn gold" id="go" type="button">Get cost</button>
   </div>
   <div class="home-edit" id="homeEdit">
     <input id="homeInput" placeholder="Home address or postcode"/>
     <div class="actions" style="margin-top:8px">
       <button class="btn ghost" id="cancelHome" type="button">Cancel</button>
-      <button class="btn primary" id="saveHome" type="button">Save home</button>
+      <button class="btn gold" id="saveHome" type="button">Save home</button>
     </div>
   </div>
   <p class="err" id="err"></p>
-  <p class="muted" id="priceLine">UK fuel prices load when you check a trip.</p>
+  <p class="muted" id="priceLine"></p>
   <div class="results" id="results">
-    <div class="opt best">
-      <div>
-        <small>Driving economically</small>
-        <b id="ecoGBP">—</b>
-        <small id="ecoMeta"></small>
-      </div>
-      <small id="ecoTime"></small>
-    </div>
-    <div class="opt">
-      <div>
-        <small>Driving to the speed limit</small>
-        <b id="quickGBP">—</b>
-        <small id="quickMeta"></small>
-      </div>
-      <small id="quickTime"></small>
-    </div>
+    <div class="opt best"><div><small>Driving economically</small><b id="ecoGBP">—</b><small id="ecoMeta"></small></div><small id="ecoTime"></small></div>
+    <div class="opt"><div><small>Driving to the speed limit</small><b id="quickGBP">—</b><small id="quickMeta"></small></div><small id="quickTime"></small></div>
     <p class="roads" id="roads"></p>
   </div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var PRICE={date:"6 Sep 2026",petrol:164.5,diesel:186.0,electric:26.1};
-var map, line;
+var map,line,home=null,car=null;
 var stops=[{role:"start",q:"",fixed:"home"},{role:"end",q:""}];
-var home=null, car=null;
-
 function $(id){return document.getElementById(id)}
-function money(n){if(n==null||isNaN(n))return "—";return "£"+n.toFixed(n>=10?0:2)}
-function tripState(){
-  try{return JSON.parse(localStorage.getItem("gt.trip.v1")||"null")||{}}
-  catch(e){return {}}
-}
+function money(n){return (n==null||isNaN(n))?"—":"£"+n.toFixed(n>=10?0:2)}
+function tripState(){try{return JSON.parse(localStorage.getItem("gt.trip.v1")||"null")||{}}catch(e){return {}}}
 function saveTrip(t){localStorage.setItem("gt.trip.v1",JSON.stringify(t))}
-function garageCar(){
-  try{
-    var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
-    if(!s||!s.cars||!s.cars.length) return null;
-    return s.cars[s.i]||s.cars[0];
-  }catch(e){return null}
-}
-function kind(fuel){
-  fuel=String(fuel||"").toLowerCase();
-  if(fuel.indexOf("electric")>=0 && fuel.indexOf("hybrid")<0 && fuel.indexOf("plug")<0) return "electric";
-  if(fuel.indexOf("plug")>=0 || fuel.indexOf("phev")>=0) return "phev";
-  if(fuel.indexOf("diesel")>=0) return "diesel";
-  if(fuel.indexOf("hybrid")>=0) return "hybrid";
-  return "petrol";
-}
-function loadCar(){
-  var g=garageCar();
-  if(g){
-    car={name:g.nick||g.name||"Garage car",fuel:g.fuel||"petrol",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||+g.rangeMi||null,kwh:+g.battery||+g.kwh||null};
-  }else{
-    car={name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:44,range:null,kwh:null,demo:true};
-  }
-  $("carLabel").textContent=car.name+(car.mpg?" · "+car.mpg+" mpg":"");
-}
-function loadPlaces(){
-  var t=tripState();
-  home=t.home?{name:t.home,lat:t.homeLat,lon:t.homeLon}:null;
-  if(home) stops[0]={role:"start",q:home.name,fixed:"home"};
-  else stops[0]={role:"start",q:"Home",fixed:"home"};
-}
-function paint(){
-  $("dots").innerHTML=stops.map(function(s,i){
-    var cls=s.fixed==="home"?"home":(i===stops.length-1?"end":(i?"stop":""));
-    var line=i===stops.length-1?"":'<i class="vline"></i>';
-    return '<i class="dot '+cls+'"></i>'+line;
-  }).join("");
-  $("fields").innerHTML=stops.map(function(s,i){
-    var ph=i===0?"Starting point":(i===stops.length-1?"Choose destination":"Stop");
-    var val=s.fixed==="home"?(home?home.name:"Home"):(s.q||"");
-    var x=i>0&&i<stops.length-1?'<button class="xbtn" type="button" data-x="'+i+'">×</button>':"";
-    return '<div class="xrow"><input data-leg="'+i+'" value="'+String(val).replace(/"/g,"&quot;")+'" placeholder="'+ph+'"/>'+x+"</div>";
-  }).join("");
-}
-function readLegs(){
-  stops.forEach(function(s,i){
-    var el=document.querySelector('[data-leg="'+i+'"]');
-    if(!el) return;
-    s.q=el.value.trim();
-    if(s.fixed==="home" && home && s.q!==home.name && s.q.toLowerCase()!=="home") s.fixed="";
-    if(s.fixed==="home" && !home && s.q.toLowerCase()!=="home") s.fixed="";
-  });
-}
-async function geocode(q){
-  if((!q || q.toLowerCase()==="home") && home && home.lat) return home;
-  if(!q || q.toLowerCase()==="home") throw new Error("Save a home address first (⋮ → Set home address).");
-  var res=await fetch("https://photon.komoot.io/api/?q="+encodeURIComponent(q+", United Kingdom")+"&limit=1&lang=en");
-  if(!res.ok) throw new Error("Place lookup failed");
-  var data=await res.json();
-  var f=data.features&&data.features[0];
-  if(!f) throw new Error("Could not find “"+q+"”");
-  var p=f.properties||{};
-  var name=[p.name,p.postcode,p.city||p.town||p.village].filter(Boolean).slice(0,3).join(", ");
-  return {lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:name||q};
-}
-async function routePoints(pts){
-  var path=pts.map(function(p){return p.lon+","+p.lat}).join(";");
-  var res=await fetch("https://router.project-osrm.org/route/v1/driving/"+path+"?overview=full&geometries=geojson&steps=true");
-  if(!res.ok) throw new Error("Route failed");
-  var data=await res.json();
-  if(data.code!=="Ok") throw new Error("No driving route for those stops");
-  var r=data.routes[0], merged=[];
-  r.legs.forEach(function(leg){
-    (leg.steps||[]).forEach(function(st){
-      var name=st.ref||st.name; if(!name) return;
-      if(merged.length&&merged[merged.length-1].n===name) merged[merged.length-1].m+=st.distance;
-      else merged.push({n:name,m:st.distance});
-    });
-  });
-  var roads=merged.filter(function(x){return x.m>=2000}).sort(function(a,b){return b.m-a.m}).slice(0,5)
-    .map(function(x){return x.n+" "+(x.m/1609.34).toFixed(1)+" mi"});
-  return {miles:r.distance/1609.34,secs:r.duration,roads:roads,geo:r.geometry};
-}
-function costs(miles,secs){
-  var k=car.kind, mins=secs/60;
-  if(k==="electric"){
-    var mpk=car.range&&car.kwh?car.range/car.kwh:3.5;
-    var eco=miles/Math.max(mpk,0.4), q=miles/Math.max(mpk*0.82,0.3), p=PRICE.electric/100;
-    return {ecoGBP:eco*p,quickGBP:q*p,ecoMin:mins,quickMin:mins*0.88,ecoUse:eco.toFixed(1)+" kWh",quickUse:q.toFixed(1)+" kWh"};
-  }
-  var mpg=car.mpg||38, ppl=(k==="diesel"?PRICE.diesel:PRICE.petrol)/100;
-  if(k==="phev"){
-    var eMiles=Math.min(miles, car.range||30), pMiles=Math.max(0,miles-eMiles);
-    var mpk=car.range&&car.kwh?car.range/car.kwh:3.5;
-    var ecoL=pMiles/Math.max(mpg,1)*4.54609, qL=pMiles/Math.max(mpg*0.80,1)*4.54609;
-    var ep=PRICE.electric/100;
-    return {
-      ecoGBP:(eMiles/mpk)*ep+ecoL*ppl, quickGBP:(eMiles/(mpk*0.82))*ep+qL*ppl,
-      ecoMin:mins, quickMin:mins*0.88,
-      ecoUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+ecoL.toFixed(1)+" L",
-      quickUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+qL.toFixed(1)+" L"
-    };
-  }
-  var ecoL=miles/Math.max(mpg,1)*4.54609, qL=miles/Math.max(mpg*0.80,1)*4.54609;
-  return {ecoGBP:ecoL*ppl,quickGBP:qL*ppl,ecoMin:mins,quickMin:mins*0.88,ecoUse:ecoL.toFixed(1)+" L",quickUse:qL.toFixed(1)+" L"};
-}
+function garageCar(){try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");return s&&s.cars&&s.cars.length?(s.cars[s.i]||s.cars[0]):null}catch(e){return null}}
+function kind(fuel){fuel=String(fuel||"").toLowerCase();if(fuel.indexOf("electric")>=0&&fuel.indexOf("hybrid")<0&&fuel.indexOf("plug")<0)return "electric";if(fuel.indexOf("plug")>=0||fuel.indexOf("phev")>=0)return "phev";if(fuel.indexOf("diesel")>=0)return "diesel";if(fuel.indexOf("hybrid")>=0)return "hybrid";return "petrol"}
+function loadCar(){var g=garageCar();car=g?{name:g.nick||g.name||"Garage car",fuel:g.fuel||"petrol",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||null,kwh:+g.battery||+g.kwh||null}:{name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:44};$("carLabel").textContent=car.name+(car.mpg?" · "+car.mpg+" mpg":"")}
+function loadPlaces(){var t=tripState();home=t.home?{name:t.home,lat:t.homeLat,lon:t.homeLon}:null;stops[0]=home?{role:"start",q:home.name,fixed:"home"}:{role:"start",q:"Home",fixed:"home"}}
+function paint(){$("dots").innerHTML=stops.map(function(s,i){return '<i class="dot '+(i===stops.length-1?"end":(i?"stop":""))+'"></i>'+(i===stops.length-1?"":'<i class="vline"></i>')}).join("");$("fields").innerHTML=stops.map(function(s,i){var ph=i===0?"Starting point":(i===stops.length-1?"Choose destination":"Stop");var val=s.fixed==="home"?(home?home.name:"Home"):(s.q||"");var x=i>0&&i<stops.length-1?'<button class="xbtn" type="button" data-x="'+i+'">×</button>':"";return '<div class="xrow"><input data-leg="'+i+'" value="'+String(val).replace(/"/g,"&quot;")+'" placeholder="'+ph+'"/>'+x+"</div>"}).join("")}
+function readLegs(){stops.forEach(function(s,i){var el=document.querySelector('[data-leg="'+i+'"]');if(!el)return;s.q=el.value.trim();if(s.fixed==="home"&&s.q.toLowerCase()!=="home"&&(!home||s.q!==home.name))s.fixed=""})}
+async function geocode(q){if((!q||q.toLowerCase()==="home")&&home&&home.lat)return home;if(!q||q.toLowerCase()==="home")throw new Error("Set a home address first (⋮ → Set home address).");var res=await fetch("https://photon.komoot.io/api/?q="+encodeURIComponent(q+", United Kingdom")+"&limit=1&lang=en");if(!res.ok)throw new Error("Place lookup failed");var data=await res.json();var f=data.features&&data.features[0];if(!f)throw new Error("Could not find “"+q+"”");var p=f.properties||{};return {lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:[p.name,p.postcode,p.city||p.town||p.village].filter(Boolean).slice(0,3).join(", ")||q}}
+async function routePoints(pts){var path=pts.map(function(p){return p.lon+","+p.lat}).join(";");var res=await fetch("https://router.project-osrm.org/route/v1/driving/"+path+"?overview=full&geometries=geojson&steps=true");if(!res.ok)throw new Error("Route failed");var data=await res.json();if(data.code!=="Ok")throw new Error("No driving route");var r=data.routes[0],merged=[];r.legs.forEach(function(leg){(leg.steps||[]).forEach(function(st){var name=st.ref||st.name;if(!name)return;if(merged.length&&merged[merged.length-1].n===name)merged[merged.length-1].m+=st.distance;else merged.push({n:name,m:st.distance})})});return {miles:r.distance/1609.34,secs:r.duration,roads:merged.filter(function(x){return x.m>=2000}).sort(function(a,b){return b.m-a.m}).slice(0,5).map(function(x){return x.n+" "+(x.m/1609.34).toFixed(1)+" mi"}),geo:r.geometry}}
+function costs(miles,secs){var k=car.kind,mins=secs/60;if(k==="electric"){var mpk=car.range&&car.kwh?car.range/car.kwh:3.5,eco=miles/Math.max(mpk,.4),q=miles/Math.max(mpk*.82,.3),p=PRICE.electric/100;return {ecoGBP:eco*p,quickGBP:q*p,ecoMin:mins,quickMin:mins*.88,ecoUse:eco.toFixed(1)+" kWh",quickUse:q.toFixed(1)+" kWh"}}var mpg=car.mpg||38,ppl=(k==="diesel"?PRICE.diesel:PRICE.petrol)/100;if(k==="phev"){var eMiles=Math.min(miles,car.range||30),pMiles=Math.max(0,miles-eMiles),mpk=car.range&&car.kwh?car.range/car.kwh:3.5,ecoL=pMiles/Math.max(mpg,1)*4.54609,qL=pMiles/Math.max(mpg*.8,1)*4.54609,ep=PRICE.electric/100;return {ecoGBP:(eMiles/mpk)*ep+ecoL*ppl,quickGBP:(eMiles/(mpk*.82))*ep+qL*ppl,ecoMin:mins,quickMin:mins*.88,ecoUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+ecoL.toFixed(1)+" L",quickUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+qL.toFixed(1)+" L"}}var ecoL=miles/Math.max(mpg,1)*4.54609,qL=miles/Math.max(mpg*.8,1)*4.54609;return {ecoGBP:ecoL*ppl,quickGBP:qL*ppl,ecoMin:mins,quickMin:mins*.88,ecoUse:ecoL.toFixed(1)+" L",quickUse:qL.toFixed(1)+" L"}}
 function showErr(m){$("err").textContent=m||""}
-function drawRoute(geo){
-  if(line) map.removeLayer(line);
-  line=L.geoJSON(geo,{style:{color:"#1a73e8",weight:5,opacity:.92}}).addTo(map);
-  map.fitBounds(line.getBounds(),{padding:[80,40,220,40]});
-}
+function drawRoute(geo){if(line)map.removeLayer(line);line=L.geoJSON(geo,{style:{color:"#e4c48a",weight:5,opacity:.95}}).addTo(map);map.fitBounds(line.getBounds(),{padding:[90,30,240,30]})}
 function closeMenu(){$("menu").classList.remove("on")}
-
 map=L.map("map",{zoomControl:false}).setView([54.05,-2.8],8);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OSM"}).addTo(map);
-loadCar(); loadPlaces(); paint();
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,attribution:"© OSM © CARTO"}).addTo(map);
+loadCar();loadPlaces();paint();
 $("priceLine").textContent="UK average "+PRICE.date+" · petrol "+PRICE.petrol+"p · diesel "+PRICE.diesel+"p · electric "+PRICE.electric+"p/kWh";
-setTimeout(function(){map.invalidateSize()},250);
-
-$("fields").addEventListener("input",function(e){
-  var i=e.target.getAttribute("data-leg"); if(i==null) return;
-  stops[+i].q=e.target.value;
-  if(+i===0) stops[0].fixed="";
-});
-$("fields").addEventListener("click",function(e){
-  var x=e.target.getAttribute("data-x");
-  if(x!=null){stops.splice(+x,1);paint();}
-});
+setTimeout(function(){map.invalidateSize()},300);
+$("fields").addEventListener("input",function(e){var i=e.target.getAttribute("data-leg");if(i==null)return;stops[+i].q=e.target.value;if(+i===0)stops[0].fixed=""});
+$("fields").addEventListener("click",function(e){var x=e.target.getAttribute("data-x");if(x!=null){stops.splice(+x,1);paint()}});
 $("more").onclick=function(e){e.stopPropagation();$("menu").classList.toggle("on")};
 document.addEventListener("click",function(){closeMenu()});
 $("menu").addEventListener("click",function(e){e.stopPropagation()});
-$("addStop").onclick=function(){
-  if(stops.length>=6){showErr("Six points is enough.");closeMenu();return}
-  stops.splice(stops.length-1,0,{role:"stop",q:""});
-  paint(); closeMenu();
-};
-$("useHomeBtn").onclick=function(){
-  stops[0]={role:"start",q:home?home.name:"Home",fixed:"home"};
-  paint(); closeMenu();
-};
-$("setHome").onclick=function(){
-  $("homeEdit").classList.add("on");
-  $("homeInput").value=home?home.name:"";
-  $("homeInput").focus();
-  closeMenu();
-};
-$("swap").onclick=function(){
-  readLegs();
-  var a=stops[0], b=stops[stops.length-1];
-  stops[0]=b; stops[stops.length-1]=a;
-  stops[0].role="start"; stops[stops.length-1].role="end";
-  stops[0].fixed=""; stops[stops.length-1].fixed="";
-  paint(); closeMenu();
-};
-$("cancelHome").onclick=function(){$("homeEdit").classList.remove("on");showErr("");};
-$("saveHome").onclick=async function(){
-  var q=$("homeInput").value.trim();
-  if(!q){showErr("Type a home address or postcode.");return}
-  try{
-    var g=await geocode(q);
-    var t=tripState();
-    t.home=g.name; t.homeLat=g.lat; t.homeLon=g.lon; saveTrip(t);
-    home={name:g.name,lat:g.lat,lon:g.lon};
-    stops[0]={role:"start",q:g.name,fixed:"home"};
-    $("homeEdit").classList.remove("on");
-    paint(); showErr("");
-  }catch(err){showErr(err.message)}
-};
-$("clearTrip").onclick=function(){
-  stops=[{role:"start",q:home?home.name:"Home",fixed:"home"},{role:"end",q:""}];
-  paint(); $("results").className="results"; showErr("");
-};
-$("go").onclick=async function(){
-  showErr(""); readLegs();
-  var queries=stops.map(function(s){return s.q}).filter(Boolean);
-  if(queries.length<2){showErr("Need a start and a destination.");return}
-  $("go").textContent="Looking up…";
-  try{
-    var pts=[];
-    for(var i=0;i<stops.length;i++){
-      var s=stops[i]; if(!s.q) continue;
-      if(s.fixed==="home"&&home&&home.lat){pts.push(home);continue}
-      pts.push(await geocode(s.q));
-    }
-    var rt=await routePoints(pts);
-    var c=costs(rt.miles,rt.secs);
-    $("ecoGBP").textContent=money(c.ecoGBP);
-    $("quickGBP").textContent=money(c.quickGBP);
-    $("ecoMeta").textContent=c.ecoUse+" · "+rt.miles.toFixed(1)+" miles";
-    $("quickMeta").textContent=c.quickUse+" · about 20% thirstier";
-    $("ecoTime").textContent=Math.round(c.ecoMin)+" min";
-    $("quickTime").textContent=Math.round(c.quickMin)+" min";
-    $("roads").textContent=rt.roads.length?("Via "+rt.roads.join(" · ")):(pts.map(function(p){return p.name.split(",")[0]}).join(" → "));
-    $("results").className="results on";
-    if(rt.geo) drawRoute(rt.geo);
-  }catch(err){showErr(err.message||"Could not cost that journey")}
-  $("go").textContent="Get cost";
-};
+$("addStop").onclick=function(){if(stops.length>=6){showErr("Six points is enough.");closeMenu();return}stops.splice(stops.length-1,0,{role:"stop",q:""});paint();closeMenu()};
+$("useHomeBtn").onclick=function(){stops[0]={role:"start",q:home?home.name:"Home",fixed:"home"};paint();closeMenu()};
+$("setHome").onclick=function(){$("homeEdit").classList.add("on");$("homeInput").value=home?home.name:"";$("homeInput").focus();closeMenu()};
+$("swap").onclick=function(){readLegs();var a=stops[0],b=stops[stops.length-1];stops[0]=b;stops[stops.length-1]=a;stops[0].role="start";stops[stops.length-1].role="end";stops[0].fixed="";stops[stops.length-1].fixed="";paint();closeMenu()};
+$("cancelHome").onclick=function(){$("homeEdit").classList.remove("on")};
+$("saveHome").onclick=async function(){var q=$("homeInput").value.trim();if(!q){showErr("Type a home address or postcode.");return}try{var g=await geocode(q);var t=tripState();t.home=g.name;t.homeLat=g.lat;t.homeLon=g.lon;saveTrip(t);home={name:g.name,lat:g.lat,lon:g.lon};stops[0]={role:"start",q:g.name,fixed:"home"};$("homeEdit").classList.remove("on");paint();showErr("")}catch(err){showErr(err.message)}};
+$("clearTrip").onclick=function(){stops=[{role:"start",q:home?home.name:"Home",fixed:"home"},{role:"end",q:""}];paint();$("results").className="results";showErr("")};
+$("go").onclick=async function(){showErr("");readLegs();if(stops.filter(function(s){return s.q}).length<2){showErr("Need a start and a destination.");return}$("go").textContent="Looking up…";try{var pts=[];for(var i=0;i<stops.length;i++){var s=stops[i];if(!s.q)continue;if(s.fixed==="home"&&home&&home.lat)pts.push(home);else pts.push(await geocode(s.q))}var rt=await routePoints(pts),c=costs(rt.miles,rt.secs);$("ecoGBP").textContent=money(c.ecoGBP);$("quickGBP").textContent=money(c.quickGBP);$("ecoMeta").textContent=c.ecoUse+" · "+rt.miles.toFixed(1)+" miles";$("quickMeta").textContent=c.quickUse+" · about 20% thirstier";$("ecoTime").textContent=Math.round(c.ecoMin)+" min";$("quickTime").textContent=Math.round(c.quickMin)+" min";$("roads").textContent=rt.roads.length?"Via "+rt.roads.join(" · "):pts.map(function(p){return p.name.split(",")[0]}).join(" → ");$("results").className="results on";if(rt.geo)drawRoute(rt.geo)}catch(err){showErr(err.message||"Could not cost that journey")}$("go").textContent="Get cost"};
 </script>
 </body>
 </html>

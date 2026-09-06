@@ -71,6 +71,12 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="trip-specs.js"></script>
 <script src="cars-uk-1.js"></script>
+<script src="cars-uk-2.js"></script>
+<script src="cars-uk-3.js"></script>
+<script src="cars-uk-4.js"></script>
+<script src="cars-uk-5.js"></script>
+<script src="cars-uk-6.js"></script>
+<script src="cars-uk-7.js"></script>
 <script>
 var PRICE={date:"6 Sep 2026",petrol:165.3,diesel:186.6,electric:26.1};
 var car=null,lastTrip=null,map,line,UK_GALLON=4.54609,MILE=1609.34;
@@ -102,7 +108,7 @@ $("favs").addEventListener("click",function(e){var b=e.target.closest("[data-f]"
 $("saveFav").onclick=function(){if(!lastTrip||!lastTrip.miles){showErr("Check a trip first.");return}var label=prompt("Name",(lastTrip.title||"").split("\u2192").pop().trim()||"Favourite");if(!label)return;var t=tripState();t.favs=(t.favs||[]).filter(function(f){return f.label!==label});t.favs.unshift({label:label,query:$("to").value.trim(),miles:lastTrip.miles,secs:lastTrip.secs,roads:lastTrip.roads||[]});t.favs=t.favs.slice(0,5);saveTrip(t);paintFavs()};
 $("setHome").onclick=async function(){var q=$("from").value.trim();if(!q){showErr("Type a start first.");return}try{var g=await geocode(q);var t=tripState();t.home=g.name;t.homeLat=g.lat;t.homeLon=g.lon;saveTrip(t);$("from").value=g.name;showErr("")}catch(err){showErr(err.message)}};
 if(!window.TRIPS||!window.TRIPS.length){window.TRIPS=window.TRIPSPECS&&window.TRIPSPECS.length?window.TRIPSPECS:[]}
-(function init(){var t=tripState(),g=garageCar();$("from").value=t.home||"Lancaster";$("to").value="Samlesbury brewery";$("plate").value="SB61LGZ";if(g)setCar({name:g.nick||g.name||"Garage car",fuel:g.fuel||"Diesel",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||null,kwh:+g.kwh||null});else setCar({name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:38});$("libLine").textContent=lib().length.toLocaleString()+" cars in batch 1 \u00b7 more batches next.";$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p";paintFavs();fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){PRICE.date=p.date||PRICE.date;PRICE.petrol=+p.petrol_ppl||PRICE.petrol;PRICE.diesel=+p.diesel_ppl||PRICE.diesel;PRICE.electric=+p.electric_pkwh||PRICE.electric;$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p \u00b7 "+PRICE.date}).catch(function(){});searchLib()})();
+(function init(){var t=tripState(),g=garageCar();$("from").value=t.home||"Lancaster";$("to").value="Samlesbury brewery";$("plate").value="SB61LGZ";if(g)setCar({name:g.nick||g.name||"Garage car",fuel:g.fuel||"Diesel",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||null,kwh:+g.kwh||null});else setCar({name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:38});$("libLine").textContent=lib().length.toLocaleString()+" cars loaded";$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p";paintFavs();fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){PRICE.date=p.date||PRICE.date;PRICE.petrol=+p.petrol_ppl||PRICE.petrol;PRICE.diesel=+p.diesel_ppl||PRICE.diesel;PRICE.electric=+p.electric_pkwh||PRICE.electric;$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p \u00b7 "+PRICE.date}).catch(function(){});searchLib()})();
 </script>
 </body>
 </html>

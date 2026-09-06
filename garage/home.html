@@ -9,7 +9,9 @@
 :root{--bg:#0b0c0f;--ink:#f3efe6;--gold:#c9a36a;--teal:#0d9488;--line:rgba(255,255,255,.1)}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
-.hero{position:relative;height:124px;border-radius:16px 16px 0 0;overflow:hidden;background:#2a2a24 url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60) center/cover}
+.hero{position:relative;height:150px;border-radius:16px 16px 0 0;overflow:hidden;background:#2a2a24 url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60) center/cover;cursor:pointer}
+.hero img{width:100%;height:150px;object-fit:cover;display:block}
+.hint{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:4px 8px;border-radius:8px}
 .plate{position:absolute;right:10px;bottom:10px;display:flex;border-radius:4px;overflow:hidden;border:2px solid #111;font-weight:800}
 .plate .uk{background:#003399;color:#fc0;padding:8px 6px;font-size:11px;line-height:1.1;text-align:center}
 .plate .reg{background:#f4d000;color:#111;padding:8px 10px;letter-spacing:.06em;font-size:18px}
@@ -17,33 +19,151 @@ body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-fa
 .nameRow{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:6px;margin:2px 0 12px}
 .nameRow button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:#171a20;color:var(--ink);font-size:20px}
 .name{text-align:center;font-weight:800;font-size:18px}
+.dots{text-align:center;color:#6b7280;font-size:12px;margin:-6px 0 10px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
 .item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid var(--line)}
 .item:last-child{border-bottom:0}
 .item h3{margin:0;font-size:15px;font-weight:700}
 .item p{margin:3px 0 0;color:var(--gold);font-size:13px}
-.btn{display:inline-block;background:var(--teal);color:#fff;text-decoration:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:13px;text-align:center;min-width:92px}
-.wide{display:block;padding:13px;border-radius:14px;font-size:15px}
+.btn{display:inline-block;background:var(--teal);color:#fff;text-decoration:none;border:0;border-radius:10px;padding:8px 14px;font-weight:800;font-size:13px;text-align:center;min-width:92px;cursor:pointer}
+.wide{display:block;padding:13px;border-radius:14px;font-size:15px;width:100%;margin-top:8px}
+.sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
+.sheet.on{display:block}
+.panel{background:#14161b;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
+label{display:block;color:#9aa3b0;font-size:12px;margin:8px 0 4px}
+input,select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;font-size:16px}
 </style>
 </head>
 <body>
-<div class="hero">
-  <div class="plate"><span class="uk">UK</span><span class="reg">SB61 LGZ</span></div>
+<input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
+<div class="hero" id="hero" title="Tap to add your photo">
+  <span class="hint">Tap to add photo</span>
+  <div class="plate"><span class="uk">UK</span><span class="reg" id="reg">SB61 LGZ</span></div>
 </div>
-<div class="caption">Volvo XC60 D5</div>
+<div class="caption" id="caption">Volvo XC60 D5</div>
 <div class="nameRow">
-  <button type="button" aria-label="Previous">&#8592;</button>
-  <div class="name">Volvo XC60 D5</div>
-  <button type="button" aria-label="Next">&#8594;</button>
+  <button type="button" id="prev" aria-label="Previous">&#8592;</button>
+  <div class="name" id="name">Volvo XC60 D5</div>
+  <button type="button" id="next" aria-label="Next">&#8594;</button>
 </div>
-<div class="card">
-  <div class="item"><div><h3>MOT expiry 16 Aug 2027</h3><p>11 months 10 days left</p></div><a class="btn" href="https://www.gov.uk/check-mot-history">History</a></div>
-  <div class="item"><div><h3>Tax expiry 1 Oct 2026</h3><p>25 days left</p></div><a class="btn" href="https://www.gov.uk/vehicle-tax">Check Pay</a></div>
-  <div class="item"><div><h3>Insurance expiry 12 Oct 2026</h3><p>1 month 6 days left</p></div><a class="btn" href="#">Check Pay</a></div>
-  <div class="item"><div><h3>Oil / service expiry 31 Dec 2026</h3><p>3 months 25 days left</p></div><a class="btn" href="mailto:">Contact</a></div>
-  <div class="item"><div><h3>Timing belt</h3><p>Set in Edit</p></div><a class="btn" href="#">Set date</a></div>
-  <div class="item"><div><h3>Tyres</h3><p>0% tread life left</p></div><a class="btn" href="mailto:">Contact</a></div>
-</div>
+<p class="dots" id="dots"></p>
+<div class="card" id="dues"></div>
+<button class="btn wide" type="button" id="btnAdd">Add car</button>
 <a class="btn wide" href="./">Trip cost</a>
+<a class="btn wide" href="../garage-trumps/?open=race">Drag race</a>
+<button class="btn wide" type="button" id="btnEdit">Edit this car</button>
+<div class="sheet" id="sheet">
+  <div class="panel">
+    <h2 id="sheetTitle">Add car</h2>
+    <label>Name</label><input id="fName"/>
+    <label>Number plate</label><input id="fPlate" style="text-transform:uppercase"/>
+    <label>MOT</label><input id="fMot" type="date"/>
+    <label>Tax</label><input id="fTax" type="date"/>
+    <label>Insurance</label><input id="fIns" type="date"/>
+    <label>Oil / service</label><input id="fOil" type="date"/>
+    <label>UK MPG</label><input id="fMpg" type="number" step="0.1"/>
+    <label>Fuel</label>
+    <select id="fFuel">
+      <option value="diesel">Diesel</option>
+      <option value="petrol">Petrol</option>
+      <option value="hybrid">Hybrid</option>
+      <option value="electric">Electric</option>
+    </select>
+    <button class="btn wide" type="button" id="btnSave">Save</button>
+    <button class="btn wide" type="button" id="btnClose">Back</button>
+  </div>
+</div>
+<script>
+function seed(){
+  return {id:"xc60",nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",mpg:"38",
+    mot:"2027-08-16",tax:"2026-10-01",ins:"2026-10-12",oil:"2026-12-31",photo:"",miles:"12000"};
+}
+function state(){
+  try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
+  return {i:0,cars:[seed()]};
+}
+function save(s){localStorage.setItem("gt.garage",JSON.stringify(s))}
+function car(){var s=state();return s.cars[s.i]||s.cars[0]}
+function nice(iso){if(!iso)return "Set date";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
+function left(iso){
+  if(!iso)return "Set in Edit";
+  var end=new Date(iso+"T12:00:00"),now=new Date();now.setHours(12,0,0,0);
+  var days=Math.round((end-now)/86400000);
+  if(days===0)return "Due today";
+  if(days<0)return Math.abs(days)+" days overdue";
+  var m=Math.floor(days/30),d=days-m*30;
+  return (m?m+(m===1?" month ":" months "):"")+d+(d===1?" day":" days")+" left";
+}
+function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"YOUR REG"}
+function paint(){
+  var s=state(),c=car(),hero=document.getElementById("hero");
+  var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
+  var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
+  hero.style.backgroundImage=c.photo?"none":"";
+  hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
+  document.getElementById("caption").textContent=c.nick||c.name||"Car";
+  document.getElementById("name").textContent=c.nick||c.name||"Car";
+  document.getElementById("dots").textContent=s.cars.length>1?("Car "+(s.i+1)+" of "+s.cars.length):"Tap the photo to change it";
+  var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
+  document.getElementById("dues").innerHTML=
+    item("MOT expiry "+nice(c.mot),left(c.mot),"History",motUrl)+
+    item("Tax expiry "+nice(c.tax),left(c.tax),"Check Pay","https://www.gov.uk/vehicle-tax")+
+    item("Insurance expiry "+nice(c.ins),left(c.ins),"Check Pay","#")+
+    item("Oil / service "+nice(c.oil),left(c.oil),"Contact","mailto:")+
+    item("Timing belt","Set in Edit","Set date","#")+
+    item("Tyres","Set in Edit","Contact","mailto:");
+}
+function item(h,p,lab,href){return "<div class='item'><div><h3>"+h+"</h3><p>"+p+"</p></div><a class='btn' href='"+href+"'>"+lab+"</a></div>"}
+function savePic(f){
+  if(!f)return;
+  var gif=/gif/i.test(f.type)||/\.gif$/i.test(f.name);
+  var r=new FileReader();
+  r.onload=function(){
+    if(gif){var s=state();s.cars[s.i].photo=r.result;save(s);paint();return}
+    var img=new Image();
+    img.onload=function(){
+      var cv=document.createElement("canvas"),w=720,h=Math.round(img.height/img.width*720);
+      cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+      var s=state();s.cars[s.i].photo=cv.toDataURL("image/jpeg",0.72);save(s);paint();
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(f);
+}
+function openSheet(mode){
+  var c=mode==="add"?{nick:"",plate:"",mot:"",tax:"",ins:"",oil:"",mpg:"",fuel:"petrol"}:car();
+  document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
+  document.getElementById("fName").value=c.nick||c.name||"";
+  document.getElementById("fPlate").value=c.plate||"";
+  document.getElementById("fMot").value=c.mot||"";
+  document.getElementById("fTax").value=c.tax||"";
+  document.getElementById("fIns").value=c.ins||"";
+  document.getElementById("fOil").value=c.oil||"";
+  document.getElementById("fMpg").value=c.mpg||"";
+  document.getElementById("fFuel").value=c.fuel||"petrol";
+  document.getElementById("sheet").dataset.mode=mode;
+  document.getElementById("sheet").className="sheet on";
+}
+document.getElementById("hero").onclick=function(){document.getElementById("photoPick").click()};
+document.getElementById("photoPick").onchange=function(){savePic(this.files&&this.files[0])};
+document.getElementById("prev").onclick=function(){var s=state();s.i=(s.i-1+s.cars.length)%s.cars.length;save(s);paint()};
+document.getElementById("next").onclick=function(){var s=state();s.i=(s.i+1)%s.cars.length;save(s);paint()};
+document.getElementById("btnAdd").onclick=function(){openSheet("add")};
+document.getElementById("btnEdit").onclick=function(){openSheet("edit")};
+document.getElementById("btnClose").onclick=function(){document.getElementById("sheet").className="sheet"};
+document.getElementById("btnSave").onclick=function(){
+  var s=state(),mode=document.getElementById("sheet").dataset.mode;
+  var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
+  c.nick=document.getElementById("fName").value||"Car";
+  c.name=c.nick;c.plate=document.getElementById("fPlate").value.toUpperCase();
+  c.mot=document.getElementById("fMot").value;c.tax=document.getElementById("fTax").value;
+  c.ins=document.getElementById("fIns").value;c.oil=document.getElementById("fOil").value;
+  c.mpg=document.getElementById("fMpg").value;c.fuel=document.getElementById("fFuel").value;
+  if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}
+  save(s);paint();document.getElementById("sheet").className="sheet";
+};
+if(!localStorage.getItem("gt.garage")) save({i:0,cars:[seed()]});
+paint();
+</script>
 </body>
 </html>

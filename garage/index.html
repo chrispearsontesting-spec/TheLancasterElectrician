@@ -69,6 +69,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
   <div id="favs"></div>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="trip-specs.js"></script>
 <script src="cars-uk-1.js"></script>
 <script src="cars-uk-2.js"></script>
@@ -96,9 +97,9 @@ async function route(a,b){var res=await fetch("https://router.project-osrm.org/r
 function showErr(m){$("err").textContent=m||""}
 function drawRoute(geo){if(!map){map=L.map("map",{zoomControl:false}).setView([54.05,-2.7],9);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"\u00a9 OpenStreetMap"}).addTo(map)}if(line)map.removeLayer(line);line=L.geoJSON(geo,{style:{color:"#14b8a6",weight:5,opacity:.95}}).addTo(map);setTimeout(function(){map.invalidateSize();map.fitBounds(line.getBounds(),{padding:[20,20]})},80)}
 function paintResult(title,miles,secs,roads){var c=costs(miles,secs);$("result").className="card";$("rTitle").textContent=title;$("rMeta").textContent=miles.toFixed(1)+" mi \u00b7 ~"+Math.round(c.ecoMin)+" min";$("rEco").textContent=money(c.ecoGBP);$("rQuick").textContent=money(c.quickGBP);$("rEcoMeta").textContent=c.ecoUse;$("rQuickMeta").textContent=c.quickUse;$("rRoads").textContent=roads&&roads.length?roads.join(" \u00b7 "):"";lastTrip={title:title,miles:miles,secs:secs,roads:roads||[]}}
-function lib(){return window.TRIPS||window.TRIPSPECS||[]}
+function lib(){var a=window.SPECS&&window.SPECS.length?window.SPECS:null;var b=window.TRIPS||window.TRIPSPECS||[];return a&&a.length?a.concat(b):b}
 function searchLib(){var q=($("q").value||"").trim().toLowerCase(),yr=plateYear($("plate").value),box=$("hits");if(q.length<2&&!yr){box.innerHTML="";return}var list=lib(),out=[],i;for(i=0;i<list.length&&out.length<10;i++){var r=list[i],hay=(r[0]+" "+r[1]+" "+r[2]+" "+r[5]).toLowerCase();if(q&&hay.indexOf(q)<0)continue;if(yr){var y0=parseInt(r[3],10)||0,y1=parseInt(r[4],10)||9999;if(yr<y0||yr>y1)continue}out.push({i:i,r:r})}box.innerHTML=out.map(function(o){var r=o.r;return '<button class="hit" type="button" data-i="'+o.i+'">'+r[0]+" "+r[1]+" ("+labelFuel(kind(r[5]))+")</button>"}).join("")||"<p class='muted'>No match in the loaded list.</p>"}
-function setCarFromRow(r){setCar({name:[r[0],r[1],r[2]].filter(Boolean).join(" "),fuel:r[5],kind:kind(r[5]),mpg:r[6]||null,kwh:r[7]||null,range:r[8]||null})}
+function setCarFromRow(r){var spec=r.length>=12;setCar({name:[r[0],r[1],r[2]].filter(Boolean).join(" "),fuel:r[5],kind:kind(r[5]),mpg:(spec?r[11]:r[6])||null,kwh:(spec?r[13]:r[7])||null,range:(spec?r[14]:r[8])||null})}
 $("q").addEventListener("input",searchLib);
 $("plate").addEventListener("input",function(){this.value=this.value.toUpperCase();searchLib()});
 $("hits").addEventListener("click",function(e){var b=e.target.closest("[data-i]");if(!b)return;setCarFromRow(lib()[+b.getAttribute("data-i")]);$("hits").innerHTML=""});
@@ -108,6 +109,8 @@ $("favs").addEventListener("click",function(e){var b=e.target.closest("[data-f]"
 $("saveFav").onclick=function(){if(!lastTrip||!lastTrip.miles){showErr("Check a trip first.");return}var label=prompt("Name",(lastTrip.title||"").split("\u2192").pop().trim()||"Favourite");if(!label)return;var t=tripState();t.favs=(t.favs||[]).filter(function(f){return f.label!==label});t.favs.unshift({label:label,query:$("to").value.trim(),miles:lastTrip.miles,secs:lastTrip.secs,roads:lastTrip.roads||[]});t.favs=t.favs.slice(0,5);saveTrip(t);paintFavs()};
 $("setHome").onclick=async function(){var q=$("from").value.trim();if(!q){showErr("Type a start first.");return}try{var g=await geocode(q);var t=tripState();t.home=g.name;t.homeLat=g.lat;t.homeLon=g.lon;saveTrip(t);$("from").value=g.name;showErr("")}catch(err){showErr(err.message)}};
 if(!window.TRIPS||!window.TRIPS.length){window.TRIPS=window.TRIPSPECS&&window.TRIPSPECS.length?window.TRIPSPECS:[]}
+function loadZipSpecs(){return fetch("car-specs-sheet-v2.zip").then(function(r){if(!r.ok)throw new Error("zip");return r.arrayBuffer()}).then(function(buf){return JSZip.loadAsync(buf)}).then(function(z){var f=z.file("car-specs-lookup.js");if(!f)throw new Error("no js");return f.async("string")}).then(function(code){eval(code);$("libLine").textContent=lib().length.toLocaleString()+" cars loaded"}).catch(function(){})}
+loadZipSpecs();
 (function init(){var t=tripState(),g=garageCar();$("from").value=t.home||"Lancaster";$("to").value="Samlesbury brewery";$("plate").value="SB61LGZ";if(g)setCar({name:g.nick||g.name||"Garage car",fuel:g.fuel||"Diesel",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||null,kwh:+g.kwh||null});else setCar({name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:38});$("libLine").textContent=lib().length.toLocaleString()+" cars loaded";$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p";paintFavs();fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){PRICE.date=p.date||PRICE.date;PRICE.petrol=+p.petrol_ppl||PRICE.petrol;PRICE.diesel=+p.diesel_ppl||PRICE.diesel;PRICE.electric=+p.electric_pkwh||PRICE.electric;$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p \u00b7 "+PRICE.date}).catch(function(){});searchLib()})();
 </script>
 </body>

@@ -16,7 +16,9 @@ function openJobs(){
 if(el("btnJobsDiy")) el("btnJobsDiy").addEventListener("click",openJobs);
 if(el("btnQuotes")) el("btnQuotes").addEventListener("click",openJobs);
 if(el("btnDiyPage")) el("btnDiyPage").addEventListener("click",openJobs);
-if(el("btnJobsBack")) el("btnJobsBack").addEventListener("click",function(){show("garageView")});
+if(el("btnJobsBack")) el("btnJobsBack").addEventListener("click",function(){
+  location.href="../garage/home.html";
+});
 if(el("btnGame")) el("btnGame").addEventListener("click",function(){show("gameView")});
-if(el("btnBack")) el("btnBack").addEventListener("click",function(){show("garageView")});
+if(el("btnBack")) el("btnBack").addEventListener("click",function(){location.href="../garage/home.html"});
 })();

@@ -1,1 +1,45 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>Garage</title>
+<style>
+:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--gold:#c9a36a;--teal:#0d9488;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
+.hero{width:100%;height:118px;object-fit:cover;border-radius:16px 16px 0 0;display:block;background:#111}
+.caption{background:#16120e;border-radius:0 0 16px 16px;padding:12px 14px;font-weight:800;font-size:20px;margin-bottom:10px}
+.nameRow{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:6px;margin:2px 0 12px}
+.nameRow button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:#171a20;color:var(--ink);font-size:20px}
+.name{text-align:center;font-weight:800;font-size:18px}
+.card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 12px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item h3{margin:0;font-size:16px;font-weight:700}
+.item p{margin:3px 0 0;color:var(--gold);font-size:13px}
+.btn{display:inline-block;background:var(--teal);color:#fff;text-decoration:none;border-radius:10px;padding:8px 14px;font-weight:800;font-size:13px;text-align:center;min-width:92px}
+.stack{display:grid;gap:8px}
+.wide{display:block;padding:13px;border-radius:14px;font-size:15px}
+</style>
+</head>
+<body>
+<img class="hero" alt="SB61 LGZ" src="xc60-hero.jpg"/>
+<div class="caption">Volvo XC60 D5</div>
+<div class="nameRow">
+  <button type="button" aria-label="Previous">&#8592;</button>
+  <div class="name">Volvo XC60 D5</div>
+  <button type="button" aria-label="Next">&#8594;</button>
+</div>
+<div class="card">
+  <div class="item"><div><h3>MOT expiry 16 Aug 2027</h3><p>11 months 10 days left</p></div><a class="btn" href="https://www.gov.uk/check-mot-history">History</a></div>
+  <div class="item"><div><h3>Tax expiry 1 Oct 2026</h3><p>25 days left</p></div><a class="btn" href="https://www.gov.uk/vehicle-tax">Check Pay</a></div>
+  <div class="item"><div><h3>Insurance expiry 12 Oct 2026</h3><p>1 month 6 days left</p></div><a class="btn" href="#">Check Pay</a></div>
+  <div class="item"><div><h3>Oil / service expiry 31 Dec 2026</h3><p>3 months 25 days left</p></div><a class="btn" href="mailto:">Contact</a></div>
+  <div class="item"><div><h3>Timing belt</h3><p>Set in Edit</p></div><a class="btn" href="#">Set date</a></div>
+  <div class="item"><div><h3>Tyres</h3><p>0% tread life left</p></div><a class="btn" href="mailto:">Contact</a></div>
+</div>
+<div class="stack"><a class="btn wide" href="./">Trip cost</a></div>
+</body>
+</html>

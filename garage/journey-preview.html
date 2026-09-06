@@ -10,7 +10,8 @@
 :root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--gold:#e4c48a;--line:rgba(255,255,255,.12);--panel:#14161b;--field:#171a20}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif}
-#map{position:fixed;inset:0;background:#111;z-index:0}
+#map{position:fixed;inset:0;background:#111;z-index:0;filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.95) saturate(.7)}
+.leaflet-control-attribution{filter:invert(1) hue-rotate(180deg)}
 .topcard{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px 8px 8px 4px}
 .cardrow{display:grid;grid-template-columns:36px 1fr 40px}
 .dotscol{display:flex;flex-direction:column;align-items:center;padding:10px 0 8px}
@@ -56,7 +57,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
         <button type="button" id="addStop">Add stop</button>
         <button type="button" id="setHome">Set home address</button>
         <button type="button" id="useHomeBtn">Start from Home</button>
-        <button type="button" id="swap">Swap start &amp; destination</button>
+        <button type="button" id="swap">Swap start & destination</button>
       </div>
     </div>
   </div>
@@ -98,16 +99,16 @@ function garageCar(){try{var s=JSON.parse(localStorage.getItem("gt.garage")||"nu
 function kind(fuel){fuel=String(fuel||"").toLowerCase();if(fuel.indexOf("electric")>=0&&fuel.indexOf("hybrid")<0&&fuel.indexOf("plug")<0)return "electric";if(fuel.indexOf("plug")>=0||fuel.indexOf("phev")>=0)return "phev";if(fuel.indexOf("diesel")>=0)return "diesel";if(fuel.indexOf("hybrid")>=0)return "hybrid";return "petrol"}
 function loadCar(){var g=garageCar();car=g?{name:g.nick||g.name||"Garage car",fuel:g.fuel||"petrol",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||null,kwh:+g.battery||+g.kwh||null}:{name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:44};$("carLabel").textContent=car.name+(car.mpg?" · "+car.mpg+" mpg":"")}
 function loadPlaces(){var t=tripState();home=t.home?{name:t.home,lat:t.homeLat,lon:t.homeLon}:null;stops[0]=home?{role:"start",q:home.name,fixed:"home"}:{role:"start",q:"Home",fixed:"home"}}
-function paint(){$("dots").innerHTML=stops.map(function(s,i){return '<i class="dot '+(i===stops.length-1?"end":(i?"stop":""))+'"></i>'+(i===stops.length-1?"":'<i class="vline"></i>')}).join("");$("fields").innerHTML=stops.map(function(s,i){var ph=i===0?"Starting point":(i===stops.length-1?"Choose destination":"Stop");var val=s.fixed==="home"?(home?home.name:"Home"):(s.q||"");var x=i>0&&i<stops.length-1?'<button class="xbtn" type="button" data-x="'+i+'">×</button>':"";return '<div class="xrow"><input data-leg="'+i+'" value="'+String(val).replace(/"/g,"&quot;")+'" placeholder="'+ph+'"/>'+x+"</div>"}).join("")}
+function paint(){$("dots").innerHTML=stops.map(function(s,i){return '<i class="dot '+(i===stops.length-1?"end":(i?"stop":""))+'"></i>'+(i===stops.length-1?"":'<i class="vline"></i>')}).join("");$("fields").innerHTML=stops.map(function(s,i){var ph=i===0?"Starting point":(i===stops.length-1?"Choose destination":"Stop");var val=s.fixed==="home"?(home?home.name:"Home"):(s.q||"");var x=i>0&&i<stops.length-1?'<button class="xbtn" type="button" data-x="'+i+'">×</button>':"";return '<div class="xrow"><input data-leg="'+i+'" value="'+String(val).replace(/"/g,""")+'" placeholder="'+ph+'"/>'+x+"</div>"}).join("")}
 function readLegs(){stops.forEach(function(s,i){var el=document.querySelector('[data-leg="'+i+'"]');if(!el)return;s.q=el.value.trim();if(s.fixed==="home"&&s.q.toLowerCase()!=="home"&&(!home||s.q!==home.name))s.fixed=""})}
 async function geocode(q){if((!q||q.toLowerCase()==="home")&&home&&home.lat)return home;if(!q||q.toLowerCase()==="home")throw new Error("Set a home address first (⋮ → Set home address).");var res=await fetch("https://photon.komoot.io/api/?q="+encodeURIComponent(q+", United Kingdom")+"&limit=1&lang=en");if(!res.ok)throw new Error("Place lookup failed");var data=await res.json();var f=data.features&&data.features[0];if(!f)throw new Error("Could not find “"+q+"”");var p=f.properties||{};return {lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:[p.name,p.postcode,p.city||p.town||p.village].filter(Boolean).slice(0,3).join(", ")||q}}
 async function routePoints(pts){var path=pts.map(function(p){return p.lon+","+p.lat}).join(";");var res=await fetch("https://router.project-osrm.org/route/v1/driving/"+path+"?overview=full&geometries=geojson&steps=true");if(!res.ok)throw new Error("Route failed");var data=await res.json();if(data.code!=="Ok")throw new Error("No driving route");var r=data.routes[0],merged=[];r.legs.forEach(function(leg){(leg.steps||[]).forEach(function(st){var name=st.ref||st.name;if(!name)return;if(merged.length&&merged[merged.length-1].n===name)merged[merged.length-1].m+=st.distance;else merged.push({n:name,m:st.distance})})});return {miles:r.distance/1609.34,secs:r.duration,roads:merged.filter(function(x){return x.m>=2000}).sort(function(a,b){return b.m-a.m}).slice(0,5).map(function(x){return x.n+" "+(x.m/1609.34).toFixed(1)+" mi"}),geo:r.geometry}}
 function costs(miles,secs){var k=car.kind,mins=secs/60;if(k==="electric"){var mpk=car.range&&car.kwh?car.range/car.kwh:3.5,eco=miles/Math.max(mpk,.4),q=miles/Math.max(mpk*.82,.3),p=PRICE.electric/100;return {ecoGBP:eco*p,quickGBP:q*p,ecoMin:mins,quickMin:mins*.88,ecoUse:eco.toFixed(1)+" kWh",quickUse:q.toFixed(1)+" kWh"}}var mpg=car.mpg||38,ppl=(k==="diesel"?PRICE.diesel:PRICE.petrol)/100;if(k==="phev"){var eMiles=Math.min(miles,car.range||30),pMiles=Math.max(0,miles-eMiles),mpk=car.range&&car.kwh?car.range/car.kwh:3.5,ecoL=pMiles/Math.max(mpg,1)*4.54609,qL=pMiles/Math.max(mpg*.8,1)*4.54609,ep=PRICE.electric/100;return {ecoGBP:(eMiles/mpk)*ep+ecoL*ppl,quickGBP:(eMiles/(mpk*.82))*ep+qL*ppl,ecoMin:mins,quickMin:mins*.88,ecoUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+ecoL.toFixed(1)+" L",quickUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+qL.toFixed(1)+" L"}}var ecoL=miles/Math.max(mpg,1)*4.54609,qL=miles/Math.max(mpg*.8,1)*4.54609;return {ecoGBP:ecoL*ppl,quickGBP:qL*ppl,ecoMin:mins,quickMin:mins*.88,ecoUse:ecoL.toFixed(1)+" L",quickUse:qL.toFixed(1)+" L"}}
 function showErr(m){$("err").textContent=m||""}
-function drawRoute(geo){if(line)map.removeLayer(line);line=L.geoJSON(geo,{style:{color:"#e4c48a",weight:5,opacity:.95}}).addTo(map);map.fitBounds(line.getBounds(),{padding:[90,30,240,30]})}
+function drawRoute(geo){if(line)map.removeLayer(line);line=L.geoJSON(geo,{style:{color:"#1b4a8a",weight:5,opacity:.95}}).addTo(map);map.fitBounds(line.getBounds(),{padding:[90,30,240,30]})}
 function closeMenu(){$("menu").classList.remove("on")}
 map=L.map("map",{zoomControl:false}).setView([54.05,-2.8],8);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,attribution:"© OSM © CARTO"}).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
 loadCar();loadPlaces();paint();
 $("priceLine").textContent="UK average "+PRICE.date+" · petrol "+PRICE.petrol+"p · diesel "+PRICE.diesel+"p · electric "+PRICE.electric+"p/kWh";
 setTimeout(function(){map.invalidateSize()},300);

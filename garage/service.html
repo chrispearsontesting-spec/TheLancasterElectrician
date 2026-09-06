@@ -16,12 +16,13 @@ select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--in
 .card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:10px 0}
 .card h2{margin:0;padding:12px 14px 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3b0}
 .item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
-.item:first-of-type{border-top:1px solid var(--line)}
 .item span{font-size:14px}
 .item b{font-size:14px;white-space:nowrap}
 .note{padding:10px 14px 14px;color:#9aa3b0;font-size:12px;line-height:1.4}
-.btn{display:block;background:var(--blue);color:#fff;text-decoration:none;border:0;border-radius:14px;padding:13px;font-weight:800;font-size:15px;text-align:center;width:100%;margin-top:8px;cursor:pointer}
-.ghost{background:#171a20;border:1px solid var(--line)}
+.btn{display:block;background:var(--blue);color:#fff;text-decoration:none;border:0;border-radius:14px;padding:13px;font-weight:800;font-size:15px;text-align:center;width:100%;margin:8px 14px;width:calc(100% - 28px);box-sizing:border-box;cursor:pointer}
+.ghost{background:#171a20;border:1px solid var(--line);color:#fff}
+.foot{margin-top:8px}
+.foot .btn{margin-left:0;margin-right:0;width:100%}
 </style>
 </head>
 <body>
@@ -39,8 +40,9 @@ select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--in
 
 <div class="card">
   <h2>Where to buy</h2>
+  <div id="parts"></div>
   <div id="buy"></div>
-  <p class="note">Parts list is a guide. Check fitment for this exact car before you buy.</p>
+  <p class="note">Check fitment for this exact car before you buy.</p>
 </div>
 
 <div class="card">
@@ -48,7 +50,9 @@ select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--in
   <div id="guides"></div>
 </div>
 
-<a class="btn" href="home.html">Back</a>
+<div class="foot">
+  <a class="btn" href="home.html">Back</a>
+</div>
 
 <script>
 var WORK=[
@@ -67,10 +71,10 @@ var WORK=[
 ];
 var RATE=80, MULT={small:0.85,family:1,suv:1.15,premium:1.35};
 var PARTS={
-  petrol:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6–£15"},{n:"Air filter",p:"£8–£20"},{n:"Spark plugs",p:"£20–£60"},{n:"Cabin filter",p:"£8–£25"}],
-  diesel:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6–£15"},{n:"Air filter",p:"£8–£20"},{n:"Fuel filter",p:"£12–£30"},{n:"Cabin filter",p:"£8–£25"}],
-  hybrid:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6–£18"},{n:"Air filter",p:"£8–£20"},{n:"Spark plugs",p:"£20–£60"},{n:"Cabin filter",p:"£10–£28"}],
-  electric:[{n:"No engine oil",p:"-"},{n:"Cabin filter",p:"£10–£28"},{n:"Brake fluid if due",p:"£8–£18"},{n:"Screenwash",p:"£3–£6"}]
+  petrol:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6-£15"},{n:"Air filter",p:"£8-£20"},{n:"Spark plugs",p:"£20-£60"},{n:"Cabin filter",p:"£8-£25"}],
+  diesel:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6-£15"},{n:"Air filter",p:"£8-£20"},{n:"Fuel filter",p:"£12-£30"},{n:"Cabin filter",p:"£8-£25"}],
+  hybrid:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6-£18"},{n:"Air filter",p:"£8-£20"},{n:"Spark plugs",p:"£20-£60"},{n:"Cabin filter",p:"£10-£28"}],
+  electric:[{n:"No engine oil",p:"-"},{n:"Cabin filter",p:"£10-£28"},{n:"Brake fluid if due",p:"£8-£18"},{n:"Screenwash",p:"£3-£6"}]
 };
 function car(){
   try{
@@ -87,26 +91,28 @@ function qname(c){
 function row(n,p){return "<div class='item'><span>"+n+"</span><b>"+p+"</b></div>"}
 function draw(){
   var c=car(), name=qname(c), fuel=c.fuel||"diesel", cls=c.cls||"suv";
-  document.getElementById("carLine").textContent=name+(c.plate?" · "+String(c.plate).toUpperCase():"");
+  var plate=String(c.plate||"").toUpperCase();
+  document.getElementById("carLine").textContent=name+(plate?" · "+plate:"");
   var job=WORK.filter(function(w){return w.id===document.getElementById("jobPick").value})[0]||WORK[0];
   var m=MULT[cls]||1;
   var lab=job.hrs*RATE*m;
   var lo=Math.round((lab*0.85+job.plo*m)/10)*10;
   var hi=Math.round((lab*1.2+job.phi*m)/10)*10;
   document.getElementById("quotes").innerHTML=
-    row("Independent","£"+lo+"–£"+hi)+
-    row("Main dealer-ish","£"+Math.round(lo*1.35/10)*10+"–£"+Math.round(hi*1.45/10)*10)+
+    row("Independent","£"+lo+"-£"+hi)+
+    row("Main dealer-ish","£"+Math.round(lo*1.35/10)*10+"-£"+Math.round(hi*1.45/10)*10)+
     row("Labour",job.hrs+" hrs");
-  document.getElementById("jobNote").textContent=job.note||"Guide only — not a firm quote.";
+  document.getElementById("jobNote").textContent=job.note||"Guide only - not a firm quote.";
   var parts=PARTS[fuel]||PARTS.diesel;
+  document.getElementById("parts").innerHTML=parts.map(function(it){return row(it.n,it.p)}).join("");
   var q=encodeURIComponent(name+" "+job.name);
   var qn=encodeURIComponent(name);
+  var yt=encodeURIComponent(name+" "+job.name+" UK");
   document.getElementById("buy").innerHTML=
-    parts.map(function(it){return row(it.n,it.p)}).join("")+
     "<a class='btn' target='_blank' rel='noopener' href='https://www.eurocarparts.com/search?q="+qn+"+service+kit'>Euro Car Parts</a>"+
     "<a class='btn ghost' target='_blank' rel='noopener' href='https://www.ebay.co.uk/sch/i.html?_nkw="+q+"'>eBay</a>";
   document.getElementById("guides").innerHTML=
-    "<a class='btn' target='_blank' rel='noopener' href='https://www.youtube.com/results?search_query="+encodeURIComponent(name+" "+job.name+" UK')+">YouTube — "+job.name+"</a>"+
+    "<a class='btn' target='_blank' rel='noopener' href='https://www.youtube.com/results?search_query="+yt+"'>YouTube - "+job.name+"</a>"+
     "<a class='btn ghost' target='_blank' rel='noopener' href='https://uk.haynes.com/search?q="+qn+"'>Haynes manual</a>";
 }
 var sel=document.getElementById("jobPick");

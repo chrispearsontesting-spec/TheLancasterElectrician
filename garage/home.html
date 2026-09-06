@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b0c0f"/>
 <title>Garage</title>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--gold:#e4c48a;--line:rgba(255,255,255,.1)}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--gold:#e4c48a;--line:rgba(255,255,255,.1);--late:#e7b1a0}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
 .hero{position:relative;height:150px;border-radius:16px 16px 0 0;overflow:hidden;background:#2a2a24 url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60) center/cover;cursor:pointer}
@@ -25,14 +25,20 @@ body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-fa
 .item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid var(--line)}
 .item:last-child{border-bottom:0}
 .item h3{margin:0;font-size:15px;font-weight:700}
-.item p{margin:3px 0 0;color:var(--gold);font-size:13px}
-.btn{display:inline-block;background:#171a20;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:11px;padding:8px 14px;font-weight:800;font-size:13px;text-align:center;min-width:92px;cursor:pointer}
+.when{margin:4px 0 0;color:var(--gold);font-size:17px;font-weight:800}
+.left{margin:2px 0 0;color:#9aa3b0;font-size:12px}
+.soon .when,.soon .left{color:#f0a36a}
+.late .when,.late .left{color:var(--late)}
+.acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.btn{display:inline-block;background:#171a20;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:11px;padding:8px 12px;font-weight:800;font-size:12px;text-align:center;min-width:92px;cursor:pointer}
 .wide{display:block;padding:13px;border-radius:14px;font-size:15px;width:100%;margin-top:8px;background:var(--gold);color:#111;border:0}
 .sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
 .sheet.on{display:block}
 .panel{background:#14161b;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
 label{display:block;color:#9aa3b0;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;font-size:16px}
+.sec{margin:14px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3b0}
+#cBody{color:#c9c2b4;font-size:14px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -51,6 +57,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <div class="card" id="dues"></div>
 <a class="btn wide" href="service.html">Service costs</a>
 <a class="btn wide" href="./">Route costs</a>
+
 <div class="sheet" id="sheet">
   <div class="panel">
     <h2 id="sheetTitle">Add car</h2>
@@ -59,7 +66,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
     <label>MOT</label><input id="fMot" type="date"/>
     <label>Tax</label><input id="fTax" type="date"/>
     <label>Insurance</label><input id="fIns" type="date"/>
-    <label>Oil / service</label><input id="fOil" type="date"/>
+    <label>Full service</label><input id="fOil" type="date"/>
     <label>Timing belt date</label><input id="fBeltDate" type="date"/>
     <label>Belt years</label><input id="fBeltYears" type="number" placeholder="5"/>
     <label>Belt miles</label><input id="fBeltMiles" type="number" placeholder="60000"/>
@@ -74,15 +81,31 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
       <option value="hybrid">Hybrid</option>
       <option value="electric">Electric</option>
     </select>
+    <p class="sec">Your garage</p>
+    <label>Garage name</label><input id="fGarage" placeholder="e.g. Smiths MOT Centre"/>
+    <label>Garage phone</label><input id="fPhone" type="tel"/>
+    <label>Garage email</label><input id="fEmail" type="email"/>
+    <label>Insurer website</label><input id="fInsWeb" placeholder="https://"/>
     <button class="btn wide" type="button" id="btnSave">Save</button>
     <button class="btn wide" type="button" id="btnClose">Back</button>
   </div>
 </div>
+
+<div class="sheet" id="contact">
+  <div class="panel">
+    <h2 id="cTitle">Book</h2>
+    <p id="cBody"></p>
+    <div id="cLinks"></div>
+    <button class="btn wide" type="button" id="btnCClose">Back</button>
+  </div>
+</div>
+
 <script>
 function seed(){
   return {id:"xc60",nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",mpg:"38",
     mot:"2027-08-16",tax:"2026-10-01",ins:"2026-10-12",oil:"2026-12-31",photo:"",miles:"12000",
-    beltDate:"",beltYears:"5",beltMiles:"150000",tyreDate:"",tyreLife:"20000"};
+    beltDate:"",beltYears:"5",beltMiles:"150000",tyreDate:"",tyreLife:"20000",
+    motName:"",motPhone:"",motEmail:"",insWeb:""};
 }
 function state(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
@@ -91,14 +114,25 @@ function state(){
 function save(s){localStorage.setItem("gt.garage",JSON.stringify(s))}
 function car(){var s=state();return s.cars[s.i]||s.cars[0]}
 function nice(iso){if(!iso)return "Set date";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
-function left(iso){
-  if(!iso)return "Set in Edit";
+function daysLeft(iso){
+  if(!iso)return null;
   var end=new Date(iso+"T12:00:00"),now=new Date();now.setHours(12,0,0,0);
-  var days=Math.round((end-now)/86400000);
+  return Math.round((end-now)/86400000);
+}
+function leftTxt(iso){
+  var days=daysLeft(iso);
+  if(days==null)return "Set in Edit";
   if(days===0)return "Due today";
   if(days<0)return Math.abs(days)+" days overdue";
   var m=Math.floor(days/30),d=days-m*30;
   return (m?m+(m===1?" month ":" months "):"")+d+(d===1?" day":" days")+" left";
+}
+function tone(iso){
+  var d=daysLeft(iso);
+  if(d==null)return "";
+  if(d<0)return " late";
+  if(d<=31)return " soon";
+  return "";
 }
 function beltDue(c){
   if(!c.beltDate)return "";
@@ -112,6 +146,46 @@ function tyreLeft(c){
   return Math.max(0,Math.round(100*(1-used/+c.tyreLife)));
 }
 function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"YOUR REG"}
+function esc(s){return encodeURIComponent(s||"")}
+function mail(c,subject,body){
+  if(!c.motEmail)return "#book";
+  return "mailto:"+c.motEmail+"?subject="+esc(subject)+"&body="+esc(body);
+}
+function jobCopy(c,kind){
+  var name=c.nick||c.name||"car";
+  var pl=plate(c.plate);
+  var garage=c.motName||"the garage";
+  var map={
+    mot:{title:"Book MOT",subject:"MOT booking — "+pl,body:"Hi "+garage+",\n\nPlease could I book an MOT for my "+name+" ("+pl+").\n\nThanks"},
+    service:{title:"Book full service",subject:"Full service booking — "+pl,body:"Hi "+garage+",\n\nPlease could I book a full service for my "+name+" ("+pl+").\n\nThanks"},
+    belt:{title:"Book timing belt change",subject:"Timing belt change — "+pl,body:"Hi "+garage+",\n\nPlease could I book a timing belt change for my "+name+" ("+pl+").\n\nThanks"},
+    tyre:{title:"Book tyre change",subject:"Tyre change — "+pl,body:"Hi "+garage+",\n\nPlease could I book new tyres / a tyre change for my "+name+" ("+pl+").\n\nThanks"}
+  };
+  return map[kind]||map.service;
+}
+function openBook(kind){
+  var c=car(), j=jobCopy(c,kind);
+  document.getElementById("cTitle").textContent=j.title;
+  var who=c.motName?c.motName:"Add your garage in Edit";
+  document.getElementById("cBody").textContent=who+(c.motPhone?" · "+c.motPhone:"");
+  var html="";
+  if(c.motPhone) html+="<a class='btn wide' href='tel:"+String(c.motPhone).replace(/\s/g,"")+"'>Call</a>";
+  if(c.motEmail) html+="<a class='btn wide' href='"+mail(c,j.subject,j.body)+"'>Email</a>";
+  if(!html) html="<button class='btn wide' type='button' id='needGarage'>Add garage details</button>";
+  document.getElementById("cLinks").innerHTML=html;
+  var ng=document.getElementById("needGarage");
+  if(ng) ng.onclick=function(){document.getElementById("contact").className="sheet";openSheet("edit")};
+  document.getElementById("contact").className="sheet on";
+}
+function btns(list){
+  return "<div class='acts'>"+list.map(function(b){
+    if(b.job) return "<button class='btn' type='button' data-job='"+b.job+"'>"+b.lab+"</button>";
+    return "<a class='btn' href='"+b.href+"'>"+b.lab+"</a>";
+  }).join("")+"</div>";
+}
+function row(title,iso,extra,buttons){
+  return "<div class='item"+tone(iso)+"'><div><h3>"+title+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" · "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+}
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
   var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
@@ -122,15 +196,16 @@ function paint(){
   document.getElementById("dots").textContent="Car "+(s.i+1)+" of "+s.cars.length;
   var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
   var bd=beltDue(c), tl=tyreLeft(c);
+  var taxUrl="https://www.gov.uk/vehicle-tax";
+  var insUrl=c.insWeb||"https://www.gov.uk/vehicle-insurance";
   document.getElementById("dues").innerHTML=
-    item("MOT expiry "+nice(c.mot),left(c.mot),"History",motUrl)+
-    item("Tax expiry "+nice(c.tax),left(c.tax),"Check Pay","https://www.gov.uk/vehicle-tax")+
-    item("Insurance expiry "+nice(c.ins),left(c.ins),"Check Pay","#")+
-    item("Oil / service "+nice(c.oil),left(c.oil),"Contact","mailto:")+
-    item("Timing belt "+(bd?nice(bd):""),bd?left(bd):"Set in Edit","Set date","#edit")+
-    item("Tyres",tl==null?"Set in Edit":(tl+"% tread life left"),"Contact","mailto:");
+    row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
+    row("Tax",c.tax,"",[{lab:"Renew",href:taxUrl}])+
+    row("Insurance",c.ins,"",[{lab:"Renew",href:insUrl}])+
+    row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
+    row("Timing belt",bd,bd?"":"",[{lab:"Book change",job:"belt"}])+
+    "<div class='item'><div><h3>Tyres</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";
 }
-function item(h,p,lab,href){return "<div class='item'><div><h3>"+h+"</h3><p>"+p+"</p></div><a class='btn' href='"+href+"'>"+lab+"</a></div>"}
 function savePic(f){
   if(!f)return;
   var gif=/gif/i.test(f.type)||/\.gif$/i.test(f.name);
@@ -150,6 +225,9 @@ function savePic(f){
 function openSheet(mode){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
+  ["fName","fPlate","fMot","fTax","fIns","fOil","fBeltDate","fBeltYears","fBeltMiles","fTyreDate","fTyreLife","fMiles","fMpg","fFuel","fGarage","fPhone","fEmail","fInsWeb"].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value="";
+  });
   document.getElementById("fName").value=c.nick||c.name||"";
   document.getElementById("fPlate").value=c.plate||"";
   document.getElementById("fMot").value=c.mot||"";
@@ -164,6 +242,10 @@ function openSheet(mode){
   document.getElementById("fMiles").value=c.miles||"12000";
   document.getElementById("fMpg").value=c.mpg||"";
   document.getElementById("fFuel").value=c.fuel||"petrol";
+  document.getElementById("fGarage").value=c.motName||"";
+  document.getElementById("fPhone").value=c.motPhone||"";
+  document.getElementById("fEmail").value=c.motEmail||"";
+  document.getElementById("fInsWeb").value=c.insWeb||"";
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
 }
@@ -173,8 +255,13 @@ document.getElementById("prev").onclick=function(){var s=state();s.i=(s.i-1+s.ca
 document.getElementById("next").onclick=function(){var s=state();s.i=(s.i+1)%s.cars.length;save(s);paint()};
 document.getElementById("btnAdd").onclick=function(){openSheet("add")};
 document.getElementById("btnEdit").onclick=function(){openSheet("edit")};
-document.getElementById("dues").addEventListener("click",function(e){if(e.target.getAttribute("href")==="#edit"){e.preventDefault();openSheet("edit")}});
+document.getElementById("dues").addEventListener("click",function(e){
+  var b=e.target.closest("[data-job]");
+  if(!b)return;
+  openBook(b.getAttribute("data-job"));
+});
 document.getElementById("btnClose").onclick=function(){document.getElementById("sheet").className="sheet"};
+document.getElementById("btnCClose").onclick=function(){document.getElementById("contact").className="sheet"};
 document.getElementById("btnSave").onclick=function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
@@ -189,6 +276,10 @@ document.getElementById("btnSave").onclick=function(){
   c.tyreLife=document.getElementById("fTyreLife").value||"20000";
   c.miles=document.getElementById("fMiles").value||"12000";
   c.mpg=document.getElementById("fMpg").value;c.fuel=document.getElementById("fFuel").value;
+  c.motName=document.getElementById("fGarage").value;
+  c.motPhone=document.getElementById("fPhone").value;
+  c.motEmail=document.getElementById("fEmail").value;
+  c.insWeb=document.getElementById("fInsWeb").value;
   if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}
   save(s);paint();document.getElementById("sheet").className="sheet";
 };

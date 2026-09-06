@@ -7,10 +7,9 @@ function nextCar(){
   s.i=(s.i+1)%s.cars.length; save(s); location.reload();
 }
 function prevCar(){
-  var s=S(); if(!s||!s.cars||!s.cars.length) return;
+  var s=S(); if(!s||!s.cars||s.cars.length<2) return;
   s.i=(s.i-1+s.cars.length)%s.cars.length; save(s); location.reload();
 }
-function openGame(){ if(el("btnGame")) el("btnGame").click(); }
 function back(){
   if(el("btnBack") && el("gameView") && el("gameView").className.indexOf("hide")<0){ el("btnBack").click(); return; }
   if(el("btnJobsBack")) el("btnJobsBack").click();
@@ -29,11 +28,7 @@ function end(x,y){
   if(Date.now()-t0>1200) return;
   if(onGarage()){
     if(dx<0) nextCar();
-    else {
-      var s=S();
-      if(s&&s.i>0) prevCar();
-      else openGame();
-    }
+    else prevCar();
     return;
   }
   back();
@@ -46,12 +41,12 @@ var row=el("dots");
 if(row && !el("swipeBtns")){
   var bar=document.createElement("div");
   bar.id="swipeBtns";
-  bar.style.cssText="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 0";
-  bar.innerHTML="<button class='btn ghost' type='button' id='btnPrevCar'>Prev</button><button class='btn ghost' type='button' id='btnNextCar'>Next</button><button class='btn gold' type='button' id='btnSwipeGame'>Trumps</button>";
+  bar.className="row2";
+  bar.style.marginTop="10px";
+  bar.innerHTML="<button class='btn ghost' type='button' id='btnPrevCar'>Previous</button><button class='btn ghost' type='button' id='btnNextCar'>Next</button>";
   row.parentNode.insertBefore(bar,row.nextSibling);
-  el("btnPrevCar").onclick=function(){ var s=S(); if(s&&s.i>0) prevCar(); else openGame(); };
+  el("btnPrevCar").onclick=prevCar;
   el("btnNextCar").onclick=nextCar;
-  el("btnSwipeGame").onclick=openGame;
 }
 if(el("dots")) el("dots").addEventListener("click", nextCar);
 })();

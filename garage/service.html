@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>Service costs</title>
+<style>
+:root{--bg:#0b0c0f;--ink:#f3efe6;--gold:#c9a36a;--blue:#3b82f6;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:#9aa3b0;font-size:13px;margin:0 0 14px}
+label{display:block;color:#9aa3b0;font-size:12px;margin:8px 0 4px}
+select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;font-size:16px}
+.card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:10px 0}
+.card h2{margin:0;padding:12px 14px 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3b0}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:1px solid var(--line)}
+.item span{font-size:14px}
+.item b{font-size:14px;white-space:nowrap}
+.note{padding:10px 14px 14px;color:#9aa3b0;font-size:12px;line-height:1.4}
+.btn{display:block;background:var(--blue);color:#fff;text-decoration:none;border:0;border-radius:14px;padding:13px;font-weight:800;font-size:15px;text-align:center;width:100%;margin-top:8px;cursor:pointer}
+.ghost{background:#171a20;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<h1>Service costs</h1>
+<p class="sub" id="carLine">Volvo XC60 D5</p>
+
+<label>Job</label>
+<select id="jobPick"></select>
+
+<div class="card">
+  <h2>Garage quote</h2>
+  <div id="quotes"></div>
+  <p class="note" id="jobNote"></p>
+</div>
+
+<div class="card">
+  <h2>Where to buy</h2>
+  <div id="buy"></div>
+  <p class="note">Parts list is a guide. Check fitment for this exact car before you buy.</p>
+</div>
+
+<div class="card">
+  <h2>How-to guides</h2>
+  <div id="guides"></div>
+</div>
+
+<a class="btn" href="home.html">Back</a>
+
+<script>
+var WORK=[
+  {id:"service",name:"Interim service (oil + filter)",hrs:1,plo:35,phi:90,note:"Full service is more."},
+  {id:"beltwp",name:"Timing belt + water pump",hrs:4.5,plo:80,phi:180,note:"Do the pump while it is open. Some engines use a chain."},
+  {id:"belt",name:"Timing belt only",hrs:4,plo:40,phi:120,note:"Usually false economy not to do the pump."},
+  {id:"clutch",name:"Clutch kit",hrs:6,plo:160,phi:350,note:"Gearbox out. Dual-mass flywheel extra if worn."},
+  {id:"clutchdmf",name:"Clutch + dual-mass flywheel",hrs:6.5,plo:350,phi:700,note:"Common on diesels."},
+  {id:"shaft",name:"Driveshaft (one side)",hrs:2,plo:80,phi:220,note:"Clicking on lock is the usual clue."},
+  {id:"fpads",name:"Front pads and discs",hrs:1.5,plo:80,phi:220,note:""},
+  {id:"rpads",name:"Rear pads and discs",hrs:1.5,plo:70,phi:200,note:""},
+  {id:"batt",name:"Battery",hrs:0.4,plo:70,phi:180,note:"Stop-start batteries cost more."},
+  {id:"alt",name:"Alternator",hrs:2,plo:120,phi:350,note:""},
+  {id:"start",name:"Starter motor",hrs:1.8,plo:100,phi:280,note:""},
+  {id:"damp",name:"Pair of dampers",hrs:2,plo:120,phi:350,note:""}
+];
+var RATE=80, MULT={small:0.85,family:1,suv:1.15,premium:1.35};
+var PARTS={
+  petrol:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6–£15"},{n:"Air filter",p:"£8–£20"},{n:"Spark plugs",p:"£20–£60"},{n:"Cabin filter",p:"£8–£25"}],
+  diesel:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6–£15"},{n:"Air filter",p:"£8–£20"},{n:"Fuel filter",p:"£12–£30"},{n:"Cabin filter",p:"£8–£25"}],
+  hybrid:[{n:"Engine oil",p:"Handbook litres"},{n:"Oil filter + washer",p:"£6–£18"},{n:"Air filter",p:"£8–£20"},{n:"Spark plugs",p:"£20–£60"},{n:"Cabin filter",p:"£10–£28"}],
+  electric:[{n:"No engine oil",p:"-"},{n:"Cabin filter",p:"£10–£28"},{n:"Brake fluid if due",p:"£8–£18"},{n:"Screenwash",p:"£3–£6"}]
+};
+function car(){
+  try{
+    var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
+    if(s&&s.cars&&s.cars.length) return s.cars[s.i]||s.cars[0];
+  }catch(e){}
+  return {nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",cls:"suv"};
+}
+function qname(c){
+  var n=String(c.nick||c.name||"").trim();
+  if(!n||/your car details/i.test(n)) n="";
+  return n||String(c.plate||"car").replace(/\s+/g,"").toUpperCase();
+}
+function row(n,p){return "<div class='item'><span>"+n+"</span><b>"+p+"</b></div>"}
+function draw(){
+  var c=car(), name=qname(c), fuel=c.fuel||"diesel", cls=c.cls||"suv";
+  document.getElementById("carLine").textContent=name+(c.plate?" · "+String(c.plate).toUpperCase():"");
+  var job=WORK.filter(function(w){return w.id===document.getElementById("jobPick").value})[0]||WORK[0];
+  var m=MULT[cls]||1;
+  var lab=job.hrs*RATE*m;
+  var lo=Math.round((lab*0.85+job.plo*m)/10)*10;
+  var hi=Math.round((lab*1.2+job.phi*m)/10)*10;
+  document.getElementById("quotes").innerHTML=
+    row("Independent","£"+lo+"–£"+hi)+
+    row("Main dealer-ish","£"+Math.round(lo*1.35/10)*10+"–£"+Math.round(hi*1.45/10)*10)+
+    row("Labour",job.hrs+" hrs");
+  document.getElementById("jobNote").textContent=job.note||"Guide only — not a firm quote.";
+  var parts=PARTS[fuel]||PARTS.diesel;
+  var q=encodeURIComponent(name+" "+job.name);
+  var qn=encodeURIComponent(name);
+  document.getElementById("buy").innerHTML=
+    parts.map(function(it){return row(it.n,it.p)}).join("")+
+    "<a class='btn' target='_blank' rel='noopener' href='https://www.eurocarparts.com/search?q="+qn+"+service+kit'>Euro Car Parts</a>"+
+    "<a class='btn ghost' target='_blank' rel='noopener' href='https://www.ebay.co.uk/sch/i.html?_nkw="+q+"'>eBay</a>";
+  document.getElementById("guides").innerHTML=
+    "<a class='btn' target='_blank' rel='noopener' href='https://www.youtube.com/results?search_query="+encodeURIComponent(name+" "+job.name+" UK')+">YouTube — "+job.name+"</a>"+
+    "<a class='btn ghost' target='_blank' rel='noopener' href='https://uk.haynes.com/search?q="+qn+"'>Haynes manual</a>";
+}
+var sel=document.getElementById("jobPick");
+sel.innerHTML=WORK.map(function(w){return "<option value='"+w.id+"'>"+w.name+"</option>"}).join("");
+sel.onchange=draw;
+draw();
+</script>
+</body>
+</html>

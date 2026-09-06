@@ -29,7 +29,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 .mode em{display:block;color:var(--dim);font-style:normal;font-size:12px;margin-top:4px}
 .fav{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:14px;padding:10px 12px;margin-top:8px}
 .fav b{flex:1}
-.fav .£{color:var(--gold);font-weight:800;white-space:nowrap}
+.fav .gbp{color:var(--gold);font-weight:800;white-space:nowrap}
 .hit{width:100%;text-align:left;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;margin-top:6px}
 .err{color:#e7b1a0;font-size:13px;margin-top:8px}
 .ok{color:#b7d7b0;font-size:13px}
@@ -170,7 +170,7 @@ function costs(miles,secs){
     var eco=miles/Math.max(mpk,0.4);
     var q=miles/Math.max(mpk*0.82,0.3);
     var p=PRICE.electric/100;
-    return {eco£:eco*p,quick£:q*p,ecoMin:mins,quickMin:mins*0.88,ecoUse:eco.toFixed(1)+" kWh",quickUse:q.toFixed(1)+" kWh"};
+    return {ecoGBP:eco*p,quickGBP:q*p,ecoMin:mins,quickMin:mins*0.88,ecoUse:eco.toFixed(1)+" kWh",quickUse:q.toFixed(1)+" kWh"};
   }
   var mpg=over||car.mpg||38;
   var ppl=pplFor(k==="diesel"?"diesel":"petrol")/100;
@@ -183,7 +183,7 @@ function costs(miles,secs){
     var qL=pMiles/Math.max(mpg*0.80,1)*4.54609;
     var ep=PRICE.electric/100;
     return {
-      eco£:ecoK*ep+ecoL*ppl, quick£:qK*ep+qL*ppl,
+      ecoGBP:ecoK*ep+ecoL*ppl, quickGBP:qK*ep+qL*ppl,
       ecoMin:mins, quickMin:mins*0.88,
       ecoUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+ecoL.toFixed(1)+" L",
       quickUse:(eMiles?eMiles.toFixed(0)+" mi EV + ":"")+qL.toFixed(1)+" L"
@@ -191,7 +191,7 @@ function costs(miles,secs){
   }
   var ecoL=miles/Math.max(mpg,1)*4.54609;
   var qL=miles/Math.max(mpg*0.80,1)*4.54609;
-  return {eco£:ecoL*ppl,quick£:qL*ppl,ecoMin:mins,quickMin:mins*0.88,ecoUse:ecoL.toFixed(1)+" L @ "+mpg+" mpg",quickUse:qL.toFixed(1)+" L @ "+(mpg*0.80).toFixed(0)+" mpg"};
+  return {ecoGBP:ecoL*ppl,quickGBP:qL*ppl,ecoMin:mins,quickMin:mins*0.88,ecoUse:ecoL.toFixed(1)+" L @ "+mpg+" mpg",quickUse:qL.toFixed(1)+" L @ "+(mpg*0.80).toFixed(0)+" mpg"};
 }
 async function geocode(q){
   var res=await fetch("https://photon.komoot.io/api/?q="+encodeURIComponent(q+", United Kingdom")+"&limit=1&lang=en");
@@ -227,8 +227,8 @@ function paintResult(title,miles,secs,roads){
   $("result").className="trump";
   $("rTitle").textContent=title;
   $("rMeta").textContent=miles.toFixed(1)+" miles · good traffic ~"+Math.round(c.ecoMin)+" min · "+car.name;
-  $("rEco").textContent=money(c.eco£);
-  $("rQuick").textContent=money(c.quick£);
+  $("rEco").textContent=money(c.ecoGBP);
+  $("rQuick").textContent=money(c.quickGBP);
   $("rEcoMeta").textContent=c.ecoUse+" · "+Math.round(c.ecoMin)+" min";
   $("rQuickMeta").textContent=c.quickUse+" · "+Math.round(c.quickMin)+" min";
   $("rRoads").textContent=roads&&roads.length?("Via "+roads.join(" · ")):"";
@@ -252,7 +252,7 @@ function searchLib(q){
   box.innerHTML=out.map(function(o){
     var r=o.r, extra=r[6]?r[6]+" mpg":(r[8]?r[8]+" mi":r[5]);
     return '<button class="hit" type="button" data-i="'+o.i+'">'+r[0]+' '+r[1]+' · '+r[5]+' · '+extra+'</button>';
-  }).join("")||"<p class='muted'>No match. Type a real MPG in Overrides and still check the trip.</p>";
+  }).join("")||"<p class='muted'>No match in the library. Use the garage car or type MPG below.</p>";
 }
 $("q").addEventListener("input",function(){searchLib(this.value)});
 $("hits").addEventListener("click",function(e){
@@ -271,7 +271,7 @@ $("go").onclick=async function(){
   var t=tripState();
   $("go").textContent="Looking up…";
   try{
-    var startQ=$("from").value.trim()||t.home||"Lancaster";
+    var startQ=$("from").value.trim()||t.home||"";
     if(!startQ) throw new Error("Set a home address first.");
     var start=(t.homeLat&&startQ===t.home)?{lat:t.homeLat,lon:t.homeLon,name:t.home}:await geocode(startQ);
     if(startQ!==t.home){t.home=start.name;t.homeLat=start.lat;t.homeLon=start.lon;saveTrip(t)}
@@ -289,8 +289,8 @@ function paintFavs(){
   if(!favs.length){box.innerHTML="<p class='muted'>Check a trip, then save it. Five slots.</p>";return}
   box.innerHTML=favs.map(function(f,i){
     var c=car?costs(f.miles,f.secs||0):null;
-    var £=c?money(c.eco£)+" / "+money(c.quick£):"";
-    return '<button class="fav" type="button" data-i="'+i+'"><b>'+f.label+'</b><span class="£">'+£+'</span></button>';
+    var gbp=c?money(c.ecoGBP)+" / "+money(c.quickGBP):"";
+    return '<button class="fav" type="button" data-i="'+i+'"><b>'+f.label+'</b><span class="gbp">'+gbp+'</span></button>';
   }).join("");
 }
 $("favs").addEventListener("click",function(e){
@@ -359,7 +359,9 @@ if(!window.TRIPS || !window.TRIPS.length){
 }
 function paintLib(){
   var n=(window.TRIPS||[]).length;
-  $("libLine").textContent=n+" cars ready · petrol, diesel, hybrid and electric";
+  $("libLine").textContent=n>20
+    ? n.toLocaleString()+" cars in the library · petrol, diesel, hybrid and electric"
+    : n+" cars ready · petrol, diesel, hybrid and electric";
 }
 (function init(){
   var t=tripState();
@@ -367,6 +369,8 @@ function paintLib(){
   setCarFromGarage();
   paintFavs();
   paintLib();
+  PRICE.date=PRICE.date||"today";
+  paintPrice();
   fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){
     PRICE.date=p.date||"";
     PRICE.petrol=+p.petrol_ppl||PRICE.petrol;

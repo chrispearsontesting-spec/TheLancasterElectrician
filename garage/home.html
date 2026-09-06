@@ -38,7 +38,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <div class="hero" id="hero" title="Tap to add your photo">
   <span class="hint">Tap to add photo</span>
-  <div class="plate"><span class="uk">UK</span><span class="reg" id="reg">SB61 LGZ</span></div>
+  <div class="plate"><span class="uk">UK</span><span class="reg">SB61 LGZ</span></div>
 </div>
 <div class="caption" id="caption">Volvo XC60 D5</div>
 <div class="nameRow">
@@ -49,6 +49,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <p class="dots" id="dots"></p>
 <div class="card" id="dues"></div>
 <button class="btn wide" type="button" id="btnAdd">Add car</button>
+<a class="btn wide" id="btnJobs" href="../garage-trumps/?open=jobs">Service costs</a>
 <a class="btn wide" href="./">Trip cost</a>
 <a class="btn wide" href="../garage-trumps/?open=race">Drag race</a>
 <button class="btn wide" type="button" id="btnEdit">Edit this car</button>
@@ -61,6 +62,12 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
     <label>Tax</label><input id="fTax" type="date"/>
     <label>Insurance</label><input id="fIns" type="date"/>
     <label>Oil / service</label><input id="fOil" type="date"/>
+    <label>Timing belt date</label><input id="fBeltDate" type="date"/>
+    <label>Belt years</label><input id="fBeltYears" type="number" placeholder="5"/>
+    <label>Belt miles</label><input id="fBeltMiles" type="number" placeholder="60000"/>
+    <label>Tyres fitted</label><input id="fTyreDate" type="date"/>
+    <label>Tyre life (miles)</label><input id="fTyreLife" type="number" placeholder="20000"/>
+    <label>Miles / year</label><input id="fMiles" type="number" placeholder="12000"/>
     <label>UK MPG</label><input id="fMpg" type="number" step="0.1"/>
     <label>Fuel</label>
     <select id="fFuel">
@@ -76,7 +83,8 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 <script>
 function seed(){
   return {id:"xc60",nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",mpg:"38",
-    mot:"2027-08-16",tax:"2026-10-01",ins:"2026-10-12",oil:"2026-12-31",photo:"",miles:"12000"};
+    mot:"2027-08-16",tax:"2026-10-01",ins:"2026-10-12",oil:"2026-12-31",photo:"",miles:"12000",
+    beltDate:"",beltYears:"5",beltMiles:"150000",tyreDate:"",tyreLife:"20000"};
 }
 function state(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
@@ -94,6 +102,17 @@ function left(iso){
   var m=Math.floor(days/30),d=days-m*30;
   return (m?m+(m===1?" month ":" months "):"")+d+(d===1?" day":" days")+" left";
 }
+function beltDue(c){
+  if(!c.beltDate)return "";
+  var d=new Date(c.beltDate+"T12:00:00");
+  d.setFullYear(d.getFullYear()+(+(c.beltYears||5)));
+  return d.toISOString().slice(0,10);
+}
+function tyreLeft(c){
+  if(!c.tyreDate||!c.tyreLife||!c.miles)return null;
+  var used=(new Date()-new Date(c.tyreDate+"T12:00:00"))/86400000/365*(+c.miles);
+  return Math.max(0,Math.round(100*(1-used/+c.tyreLife)));
+}
 function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"YOUR REG"}
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
@@ -105,13 +124,14 @@ function paint(){
   document.getElementById("name").textContent=c.nick||c.name||"Car";
   document.getElementById("dots").textContent=s.cars.length>1?("Car "+(s.i+1)+" of "+s.cars.length):"Tap the photo to change it";
   var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
+  var bd=beltDue(c), tl=tyreLeft(c);
   document.getElementById("dues").innerHTML=
     item("MOT expiry "+nice(c.mot),left(c.mot),"History",motUrl)+
     item("Tax expiry "+nice(c.tax),left(c.tax),"Check Pay","https://www.gov.uk/vehicle-tax")+
     item("Insurance expiry "+nice(c.ins),left(c.ins),"Check Pay","#")+
     item("Oil / service "+nice(c.oil),left(c.oil),"Contact","mailto:")+
-    item("Timing belt","Set in Edit","Set date","#")+
-    item("Tyres","Set in Edit","Contact","mailto:");
+    item("Timing belt "+(bd?nice(bd):""),bd?left(bd):"Set in Edit","Set date","#edit")+
+    item("Tyres",tl==null?"Set in Edit":(tl+"% tread life left"),"Contact","mailto:");
 }
 function item(h,p,lab,href){return "<div class='item'><div><h3>"+h+"</h3><p>"+p+"</p></div><a class='btn' href='"+href+"'>"+lab+"</a></div>"}
 function savePic(f){
@@ -131,7 +151,7 @@ function savePic(f){
   r.readAsDataURL(f);
 }
 function openSheet(mode){
-  var c=mode==="add"?{nick:"",plate:"",mot:"",tax:"",ins:"",oil:"",mpg:"",fuel:"petrol"}:car();
+  var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
   document.getElementById("fName").value=c.nick||c.name||"";
   document.getElementById("fPlate").value=c.plate||"";
@@ -139,6 +159,12 @@ function openSheet(mode){
   document.getElementById("fTax").value=c.tax||"";
   document.getElementById("fIns").value=c.ins||"";
   document.getElementById("fOil").value=c.oil||"";
+  document.getElementById("fBeltDate").value=c.beltDate||"";
+  document.getElementById("fBeltYears").value=c.beltYears||"5";
+  document.getElementById("fBeltMiles").value=c.beltMiles||"60000";
+  document.getElementById("fTyreDate").value=c.tyreDate||"";
+  document.getElementById("fTyreLife").value=c.tyreLife||"20000";
+  document.getElementById("fMiles").value=c.miles||"12000";
   document.getElementById("fMpg").value=c.mpg||"";
   document.getElementById("fFuel").value=c.fuel||"petrol";
   document.getElementById("sheet").dataset.mode=mode;
@@ -150,6 +176,7 @@ document.getElementById("prev").onclick=function(){var s=state();s.i=(s.i-1+s.ca
 document.getElementById("next").onclick=function(){var s=state();s.i=(s.i+1)%s.cars.length;save(s);paint()};
 document.getElementById("btnAdd").onclick=function(){openSheet("add")};
 document.getElementById("btnEdit").onclick=function(){openSheet("edit")};
+document.getElementById("dues").addEventListener("click",function(e){if(e.target.getAttribute("href")==="#edit"){e.preventDefault();openSheet("edit")}});
 document.getElementById("btnClose").onclick=function(){document.getElementById("sheet").className="sheet"};
 document.getElementById("btnSave").onclick=function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
@@ -158,6 +185,12 @@ document.getElementById("btnSave").onclick=function(){
   c.name=c.nick;c.plate=document.getElementById("fPlate").value.toUpperCase();
   c.mot=document.getElementById("fMot").value;c.tax=document.getElementById("fTax").value;
   c.ins=document.getElementById("fIns").value;c.oil=document.getElementById("fOil").value;
+  c.beltDate=document.getElementById("fBeltDate").value;
+  c.beltYears=document.getElementById("fBeltYears").value||"5";
+  c.beltMiles=document.getElementById("fBeltMiles").value||"60000";
+  c.tyreDate=document.getElementById("fTyreDate").value;
+  c.tyreLife=document.getElementById("fTyreLife").value||"20000";
+  c.miles=document.getElementById("fMiles").value||"12000";
   c.mpg=document.getElementById("fMpg").value;c.fuel=document.getElementById("fFuel").value;
   if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}
   save(s);paint();document.getElementById("sheet").className="sheet";

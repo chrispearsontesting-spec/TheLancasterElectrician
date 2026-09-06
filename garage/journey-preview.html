@@ -12,7 +12,8 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif}
 #map{position:fixed;inset:0;background:#111;z-index:0;filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.95) saturate(.7)}
 .leaflet-control-attribution{filter:invert(1) hue-rotate(180deg)}
-.topcard{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px 8px 8px 4px}
+.back{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:25;display:inline-flex;align-items:center;gap:6px;background:#14161b;border:1px solid var(--line);color:var(--gold);text-decoration:none;border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700}
+.topcard{position:fixed;top:calc(52px + env(safe-area-inset-top));left:12px;right:12px;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:8px 8px 8px 4px}
 .cardrow{display:grid;grid-template-columns:36px 1fr 40px}
 .dotscol{display:flex;flex-direction:column;align-items:center;padding:10px 0 8px}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--gold)}
@@ -47,6 +48,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 </head>
 <body>
 <div id="map"></div>
+<a class="back" href="/garage-trumps/">← Garage</a>
 <div class="topcard">
   <div class="cardrow">
     <div class="dotscol" id="dots"></div>
@@ -57,7 +59,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
         <button type="button" id="addStop">Add stop</button>
         <button type="button" id="setHome">Set home address</button>
         <button type="button" id="useHomeBtn">Start from Home</button>
-        <button type="button" id="swap">Swap start & destination</button>
+        <button type="button" id="swap">Swap start &amp; destination</button>
       </div>
     </div>
   </div>
@@ -99,7 +101,7 @@ function garageCar(){try{var s=JSON.parse(localStorage.getItem("gt.garage")||"nu
 function kind(fuel){fuel=String(fuel||"").toLowerCase();if(fuel.indexOf("electric")>=0&&fuel.indexOf("hybrid")<0&&fuel.indexOf("plug")<0)return "electric";if(fuel.indexOf("plug")>=0||fuel.indexOf("phev")>=0)return "phev";if(fuel.indexOf("diesel")>=0)return "diesel";if(fuel.indexOf("hybrid")>=0)return "hybrid";return "petrol"}
 function loadCar(){var g=garageCar();car=g?{name:g.nick||g.name||"Garage car",fuel:g.fuel||"petrol",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||null,kwh:+g.battery||+g.kwh||null}:{name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:44};$("carLabel").textContent=car.name+(car.mpg?" · "+car.mpg+" mpg":"")}
 function loadPlaces(){var t=tripState();home=t.home?{name:t.home,lat:t.homeLat,lon:t.homeLon}:null;stops[0]=home?{role:"start",q:home.name,fixed:"home"}:{role:"start",q:"Home",fixed:"home"}}
-function paint(){$("dots").innerHTML=stops.map(function(s,i){return '<i class="dot '+(i===stops.length-1?"end":(i?"stop":""))+'"></i>'+(i===stops.length-1?"":'<i class="vline"></i>')}).join("");$("fields").innerHTML=stops.map(function(s,i){var ph=i===0?"Starting point":(i===stops.length-1?"Choose destination":"Stop");var val=s.fixed==="home"?(home?home.name:"Home"):(s.q||"");var x=i>0&&i<stops.length-1?'<button class="xbtn" type="button" data-x="'+i+'">×</button>':"";return '<div class="xrow"><input data-leg="'+i+'" value="'+String(val).replace(/"/g,""")+'" placeholder="'+ph+'"/>'+x+"</div>"}).join("")}
+function paint(){$("dots").innerHTML=stops.map(function(s,i){return '<i class="dot '+(i===stops.length-1?"end":(i?"stop":""))+'"></i>'+(i===stops.length-1?"":'<i class="vline"></i>')}).join("");$("fields").innerHTML=stops.map(function(s,i){var ph=i===0?"Starting point":(i===stops.length-1?"Choose destination":"Stop");var val=s.fixed==="home"?(home?home.name:"Home"):(s.q||"");var x=i>0&&i<stops.length-1?'<button class="xbtn" type="button" data-x="'+i+'">×</button>':"";return '<div class="xrow"><input data-leg="'+i+'" value="'+String(val).replace(/"/g,"&quot;")+'" placeholder="'+ph+'"/>'+x+"</div>"}).join("")}
 function readLegs(){stops.forEach(function(s,i){var el=document.querySelector('[data-leg="'+i+'"]');if(!el)return;s.q=el.value.trim();if(s.fixed==="home"&&s.q.toLowerCase()!=="home"&&(!home||s.q!==home.name))s.fixed=""})}
 async function geocode(q){if((!q||q.toLowerCase()==="home")&&home&&home.lat)return home;if(!q||q.toLowerCase()==="home")throw new Error("Set a home address first (⋮ → Set home address).");var res=await fetch("https://photon.komoot.io/api/?q="+encodeURIComponent(q+", United Kingdom")+"&limit=1&lang=en");if(!res.ok)throw new Error("Place lookup failed");var data=await res.json();var f=data.features&&data.features[0];if(!f)throw new Error("Could not find “"+q+"”");var p=f.properties||{};return {lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],name:[p.name,p.postcode,p.city||p.town||p.village].filter(Boolean).slice(0,3).join(", ")||q}}
 async function routePoints(pts){var path=pts.map(function(p){return p.lon+","+p.lat}).join(";");var res=await fetch("https://router.project-osrm.org/route/v1/driving/"+path+"?overview=full&geometries=geojson&steps=true");if(!res.ok)throw new Error("Route failed");var data=await res.json();if(data.code!=="Ok")throw new Error("No driving route");var r=data.routes[0],merged=[];r.legs.forEach(function(leg){(leg.steps||[]).forEach(function(st){var name=st.ref||st.name;if(!name)return;if(merged.length&&merged[merged.length-1].n===name)merged[merged.length-1].m+=st.distance;else merged.push({n:name,m:st.distance})})});return {miles:r.distance/1609.34,secs:r.duration,roads:merged.filter(function(x){return x.m>=2000}).sort(function(a,b){return b.m-a.m}).slice(0,5).map(function(x){return x.n+" "+(x.m/1609.34).toFixed(1)+" mi"}),geo:r.geometry}}

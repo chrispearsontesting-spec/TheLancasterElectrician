@@ -14,6 +14,14 @@ h1{font-size:20px;margin:4px 0 2px}
 label{display:block;color:#9aa3b0;font-size:12px;margin:10px 0 4px}
 select,input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:12px;font-size:16px}
 input[type=search]::placeholder{color:#6b7280}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.go{background:#171a20;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-weight:800;font-size:14px;white-space:nowrap}
+.status{min-height:22px;margin:8px 0 4px;font-size:13px;color:#9aa3b0}
+.status.ok{color:#9fd8ff;font-weight:700}
+.status.wait{color:#f0c56a}
+.spin{display:inline-block;width:10px;height:10px;border:2px solid #f0c56a;border-right-color:transparent;border-radius:50%;margin-right:6px;vertical-align:-1px;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:14px 0}
 .card h2{margin:0;padding:14px 14px 8px;font-size:15px;font-weight:800}
 .item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
@@ -23,6 +31,7 @@ input[type=search]::placeholder{color:#6b7280}
 .hide{display:none}
 .btns{padding:0 14px 14px}
 .btn{display:block;background:#171a20;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:13px;font-weight:800;font-size:15px;text-align:center;width:100%;margin-top:8px;cursor:pointer}
+.btn.flash{outline:2px solid #9fd8ff}
 </style>
 </head>
 <body>
@@ -30,7 +39,13 @@ input[type=search]::placeholder{color:#6b7280}
 <p class="sub" id="carLine">Volvo XC60 D5</p>
 
 <label>Search a part or job</label>
-<input type="search" id="qBox" placeholder="e.g. boot strut, MAP sensor" autocomplete="off"/>
+<form id="qForm">
+  <div class="row">
+    <input type="search" id="qBox" placeholder="e.g. boot strut, MAP sensor" autocomplete="off" enterkeyhint="search"/>
+    <button class="go" type="submit">Search</button>
+  </div>
+</form>
+<p class="status" id="status"></p>
 
 <label>Or pick a common job</label>
 <select id="jobPick">
@@ -77,6 +92,7 @@ var WORK=[
   {id:"damp",name:"Pair of dampers",buy:"shock absorbers",hrs:2,plo:120,phi:350,note:""}
 ];
 var RATE=80, MULT={small:0.85,family:1,suv:1.15,premium:1.35};
+var waitT=null;
 function car(){
   try{
     var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
@@ -95,10 +111,24 @@ function term(){
   if(typed) return typed;
   var id=document.getElementById("jobPick").value;
   var job=WORK.filter(function(w){return w.id===id})[0];
-  return job?job.buy:"service kit";
+  return job?job.buy:"";
+}
+function setStatus(html, cls){
+  var el=document.getElementById("status");
+  el.className="status "+(cls||"");
+  el.innerHTML=html||"";
+}
+function flashBtns(){
+  ["btnGsf","btnEbay","btnYt","btnHaynes"].forEach(function(id){
+    var b=document.getElementById(id);
+    b.classList.remove("flash");
+    void b.offsetWidth;
+    b.classList.add("flash");
+    setTimeout(function(){b.classList.remove("flash");},900);
+  });
 }
 function links(){
-  var c=car(), name=qname(c), buy=term();
+  var c=car(), name=qname(c), buy=term()||"service kit";
   var q=encodeURIComponent(name+" "+buy);
   var qn=encodeURIComponent(name);
   document.getElementById("btnGsf").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+q;
@@ -128,11 +158,35 @@ function draw(){
   }
   links();
 }
+function finishSearch(){
+  var buy=term();
+  var name=qname(car());
+  draw();
+  if(!buy){
+    setStatus("Type a part, then tap Search.","");
+    return;
+  }
+  setStatus("Ready \u2014 "+buy+" for "+name+". Use the buttons below.","ok");
+  flashBtns();
+}
+function runSearch(){
+  var buy=document.getElementById("qBox").value.trim();
+  if(!buy){finishSearch();return;}
+  document.getElementById("qBox").blur();
+  setStatus("<span class='spin'></span>Searching "+buy+"\u2026","wait");
+  clearTimeout(waitT);
+  waitT=setTimeout(finishSearch,450);
+}
 var sel=document.getElementById("jobPick");
 sel.innerHTML="<option value=\"\">Select a job</option>"+WORK.map(function(w){return "<option value='"+w.id+"'>"+w.name+"</option>"}).join("");
-sel.onchange=function(){document.getElementById("qBox").value="";draw();};
-document.getElementById("qBox").addEventListener("input",draw);
-document.getElementById("qBox").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();draw();}});
+sel.onchange=function(){
+  document.getElementById("qBox").value="";
+  draw();
+  var job=WORK.filter(function(w){return w.id===sel.value})[0];
+  if(job) setStatus("Ready \u2014 "+job.name+". Use the buttons below.","ok");
+  else setStatus("","");
+};
+document.getElementById("qForm").addEventListener("submit",function(e){e.preventDefault();runSearch();});
 draw();
 </script>
 </body>

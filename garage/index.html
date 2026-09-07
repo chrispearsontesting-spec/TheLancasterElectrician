@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
-<title>Garage trip</title>
+<title>Garage route</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--teal:#0d9488;--line:rgba(255,255,255,.12)}
@@ -39,7 +39,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 </style>
 </head>
 <body>
-<h1>Trip cost</h1>
+<h1>Route cost</h1>
 <p class="car" id="carLine"><b>Volvo XC60 D5</b> (diesel)</p>
 <p class="muted" id="libLine"></p>
 <label>Number plate</label>
@@ -63,11 +63,11 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
     <div><label>Weeks / year</label><input id="weeks" type="number" min="1" max="52" value="46"/></div>
   </div>
 </div>
-<button class="btn" id="go" type="button">Check trip</button>
+<button class="btn" id="go" type="button">Check route</button>
 <p class="err" id="err"></p>
 <div id="map"></div>
 <div class="card hide" id="result">
-  <b id="rTitle">Trip</b>
+  <b id="rTitle">Route</b>
   <p class="muted" id="rMeta"></p>
   <div class="pair">
     <div class="mode"><span>Steady</span><b id="rEco">-</b><span class="muted" id="rEcoMeta"></span></div>
@@ -118,7 +118,7 @@ async function geocode(q){var res=await fetch("https://photon.komoot.io/api/?q="
 async function route(a,b){var res=await fetch("https://router.project-osrm.org/route/v1/driving/"+a.lon+","+a.lat+";"+b.lon+","+b.lat+"?overview=full&geometries=geojson&steps=true");if(!res.ok)throw new Error("Route failed");var data=await res.json();if(data.code!=="Ok")throw new Error("No driving route");var r=data.routes[0],merged=[];r.legs.forEach(function(leg){(leg.steps||[]).forEach(function(st){var name=st.ref||st.name;if(!name)return;if(merged.length&&merged[merged.length-1].n===name)merged[merged.length-1].m+=st.distance;else merged.push({n:name,m:st.distance})})});return{miles:r.distance/MILE,secs:r.duration,roads:merged.filter(function(x){return x.m>=1500}).sort(function(a,b){return b.m-a.m}).slice(0,4).map(function(x){return x.n+" "+(x.m/MILE).toFixed(1)+" mi"}),geo:r.geometry}}
 function showErr(m){$("err").textContent=m||""}
 function drawRoute(geo){if(!map){map=L.map("map",{zoomControl:false}).setView([54.05,-2.7],9);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"\u00a9 OpenStreetMap"}).addTo(map)}if(line)map.removeLayer(line);line=L.geoJSON(geo,{style:{color:"#14b8a6",weight:5,opacity:.95}}).addTo(map);setTimeout(function(){map.invalidateSize();map.fitBounds(line.getBounds(),{padding:[20,20]})},80)}
-function paintResult(title,oneMiles,oneSecs,roads){var m=tripMult(),miles=oneMiles*m,secs=oneSecs*m,c=costs(miles,secs);$("result").className="card";$("rTitle").textContent=title+($("isReturn").checked?" return":"");$("rMeta").textContent=miles.toFixed(1)+" mi \u00b7 ~"+Math.round(c.ecoMin)+" min"+($("isReturn").checked?" (there and back)":"");$("rEco").textContent=money(c.ecoGBP);$("rQuick").textContent=money(c.quickGBP);$("rEcoMeta").textContent=c.ecoUse;$("rQuickMeta").textContent=c.quickUse;if($("isYear").checked){var n=yearTrips();$("rYear").textContent="Yearly commute \u00b7 "+n+" trips \u00b7 "+money(c.ecoGBP*n)+" steady \u00b7 "+money(c.quickGBP*n)+" quick"}else{$("rYear").textContent=""}$("rRoads").textContent=roads&&roads.length?roads.join(" \u00b7 "):"";lastTrip={title:title,miles:miles,oneMiles:oneMiles,secs:secs,oneSecs:oneSecs,roads:roads||[]}}
+function paintResult(title,oneMiles,oneSecs,roads){var m=tripMult(),miles=oneMiles*m,secs=oneSecs*m,c=costs(miles,secs);$("result").className="card";$("rTitle").textContent=title+($("isReturn").checked?" return":"");$("rMeta").textContent=miles.toFixed(1)+" mi \u00b7 ~"+Math.round(c.ecoMin)+" min"+($("isReturn").checked?" (there and back)":"");$("rEco").textContent=money(c.ecoGBP);$("rQuick").textContent=money(c.quickGBP);$("rEcoMeta").textContent=c.ecoUse;$("rQuickMeta").textContent=c.quickUse;if($("isYear").checked){var n=yearTrips();$("rYear").textContent="Yearly commute \u00b7 "+n+" routes \u00b7 "+money(c.ecoGBP*n)+" steady \u00b7 "+money(c.quickGBP*n)+" quick"}else{$("rYear").textContent=""}$("rRoads").textContent=roads&&roads.length?roads.join(" \u00b7 "):"";lastTrip={title:title,miles:miles,oneMiles:oneMiles,secs:secs,oneSecs:oneSecs,roads:roads||[]}}
 function lib(){var a=window.SPECS&&window.SPECS.length?window.SPECS:null;var b=window.TRIPS||window.TRIPSPECS||[];return a&&a.length?a.concat(b):b}
 var pickRow=null;
 function rowLabel(r){return [r[0],r[1]].filter(Boolean).join(" ")}
@@ -147,15 +147,16 @@ $("isYear").addEventListener("change",refreshOpts);
 $("days").addEventListener("input",refreshOpts);
 $("weeks").addEventListener("input",refreshOpts);
 $("mpgOverride").addEventListener("input",refreshOpts);
-$("go").onclick=async function(){showErr("");if(!car){showErr("Pick a car first.");return}var destQ=$("to").value.trim();if(!destQ){showErr("Enter a destination.");return}var t=tripState();$("go").textContent="Looking up\u2026";try{var startQ=$("from").value.trim()||t.home||"";if(!startQ)throw new Error("Set a home first.");var start=(t.homeLat&&startQ===t.home)?{lat:t.homeLat,lon:t.homeLon,name:t.home}:await geocode(startQ);if(startQ!==t.home){t.home=start.name;t.homeLat=start.lat;t.homeLon=start.lon;saveTrip(t)}var dest=await geocode(destQ);var rt=await route(start,dest);paintResult((start.name.split(",")[0])+" \u2192 "+(dest.name.split(",")[0]),rt.miles,rt.secs,rt.roads);if(rt.geo)drawRoute(rt.geo)}catch(err){showErr(err.message||"Could not check that trip")}$("go").textContent="Check trip"};
+$("go").onclick=async function(){showErr("");if(!car){showErr("Pick a car first.");return}var destQ=$("to").value.trim();if(!destQ){showErr("Enter a destination.");return}var t=tripState();$("go").textContent="Looking up\u2026";try{var startQ=$("from").value.trim()||t.home||"";if(!startQ)throw new Error("Set a home first.");var start=(t.homeLat&&startQ===t.home)?{lat:t.homeLat,lon:t.homeLon,name:t.home}:await geocode(startQ);if(startQ!==t.home){t.home=start.name;t.homeLat=start.lat;t.homeLon=start.lon;saveTrip(t)}var dest=await geocode(destQ);var rt=await route(start,dest);paintResult((start.name.split(",")[0])+" \u2192 "+(dest.name.split(",")[0]),rt.miles,rt.secs,rt.roads);if(rt.geo)drawRoute(rt.geo)}catch(err){showErr(err.message||"Could not check that route")}$("go").textContent="Check route"};
 function paintFavs(){var favs=(tripState().favs)||[];$("favs").innerHTML=favs.map(function(f,i){var miles=(f.oneMiles||f.miles||0)*tripMult(),c=car?costs(miles,((f.oneSecs||f.secs||0)*tripMult())):null;return '<button class="hit" type="button" data-f="'+i+'">'+f.label+(c?" \u00b7 "+money(c.ecoGBP):"")+"</button>"}).join("")}
 $("favs").addEventListener("click",function(e){var b=e.target.closest("[data-f]");if(!b)return;var f=(tripState().favs||[])[+b.getAttribute("data-f")];if(!f)return;$("to").value=f.query||f.label;paintResult((tripState().home||"Home").split(",")[0]+" \u2192 "+f.label,f.oneMiles||f.miles,f.oneSecs||f.secs||0,f.roads||[])});
-$("saveFav").onclick=function(){if(!lastTrip||!(lastTrip.oneMiles||lastTrip.miles)){showErr("Check a trip first.");return}var label=prompt("Name",(lastTrip.title||"").split("\u2192").pop().trim()||"Favourite");if(!label)return;var t=tripState();t.favs=(t.favs||[]).filter(function(x){return x.label!==label});t.favs.unshift({label:label,query:$("to").value.trim(),miles:lastTrip.oneMiles||lastTrip.miles,oneMiles:lastTrip.oneMiles||lastTrip.miles,secs:lastTrip.oneSecs||lastTrip.secs,oneSecs:lastTrip.oneSecs||lastTrip.secs,roads:lastTrip.roads||[]});t.favs=t.favs.slice(0,5);saveTrip(t);paintFavs()};
+$("saveFav").onclick=function(){if(!lastTrip||!(lastTrip.oneMiles||lastTrip.miles)){showErr("Check a route first.");return}var label=prompt("Name",(lastTrip.title||"").split("\u2192").pop().trim()||"Favourite");if(!label)return;var t=tripState();t.favs=(t.favs||[]).filter(function(x){return x.label!==label});t.favs.unshift({label:label,query:$("to").value.trim(),miles:lastTrip.oneMiles||lastTrip.miles,oneMiles:lastTrip.oneMiles||lastTrip.miles,secs:lastTrip.oneSecs||lastTrip.secs,oneSecs:lastTrip.oneSecs||lastTrip.secs,roads:lastTrip.roads||[]});t.favs=t.favs.slice(0,5);saveTrip(t);paintFavs()};
 $("setHome").onclick=async function(){var q=$("from").value.trim();if(!q){showErr("Type a start first.");return}try{var g=await geocode(q);var t=tripState();t.home=g.name;t.homeLat=g.lat;t.homeLon=g.lon;saveTrip(t);$("from").value=g.name;showErr("")}catch(err){showErr(err.message)}};
 if(!window.TRIPS||!window.TRIPS.length){window.TRIPS=window.TRIPSPECS&&window.TRIPSPECS.length?window.TRIPSPECS:[]}
 function loadZipSpecs(){return fetch("car-specs-sheet-v2.zip").then(function(r){if(!r.ok)throw new Error("zip");return r.arrayBuffer()}).then(function(buf){return JSZip.loadAsync(buf)}).then(function(z){var f=z.file("car-specs-lookup.js");if(!f)throw new Error("no js");return f.async("string")}).then(function(code){eval(code);$("libLine").textContent=lib().length.toLocaleString()+" cars loaded"}).catch(function(){})}
 loadZipSpecs();
 (function init(){var t=tripState(),g=garageCar();$("from").value=t.home||"Lancaster";$("to").value="Samlesbury brewery";$("plate").value="SB61LGZ";if(g)setCar({name:g.nick||g.name||"Garage car",fuel:g.fuel||"Diesel",kind:kind(g.fuel),mpg:+g.mpg||38,range:+g.range||null,kwh:+g.kwh||null});else setCar({name:"Volvo XC60 D5",fuel:"Diesel",kind:"diesel",mpg:38});$("libLine").textContent=lib().length.toLocaleString()+" cars loaded";$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p";paintFavs();fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){PRICE.date=p.date||PRICE.date;PRICE.petrol=+p.petrol_ppl||PRICE.petrol;PRICE.diesel=+p.diesel_ppl||PRICE.diesel;PRICE.electric=+p.electric_pkwh||PRICE.electric;$("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 petrol "+PRICE.petrol+"p \u00b7 "+PRICE.date}).catch(function(){})})();
 </script>
+<a class="btn ghost" href="home.html" style="display:block;text-align:center;text-decoration:none;margin-top:18px">Back</a>
 </body>
 </html>

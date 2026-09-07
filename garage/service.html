@@ -58,19 +58,19 @@ select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--in
 
 <script>
 var WORK=[
-  {id:"service",name:"Interim service (oil + filter)",buy:"service kit",hrs:1,plo:35,phi:90,note:"Full service is more."},
-  {id:"full",name:"Full service",buy:"full service kit",hrs:1.6,plo:55,phi:140,note:"Oil, filters and plugs or fuel filter."},
-  {id:"beltwp",name:"Timing belt + water pump",buy:"timing belt kit water pump",hrs:4.5,plo:80,phi:180,note:"Do the pump while it is open. Some engines use a chain."},
-  {id:"belt",name:"Timing belt only",buy:"timing belt kit",hrs:4,plo:40,phi:120,note:"Usually false economy not to do the pump."},
-  {id:"clutch",name:"Clutch kit",buy:"clutch kit",hrs:6,plo:160,phi:350,note:"Gearbox out. Dual-mass flywheel extra if worn."},
-  {id:"clutchdmf",name:"Clutch + dual-mass flywheel",buy:"clutch kit dual mass flywheel",hrs:6.5,plo:350,phi:700,note:"Common on diesels."},
-  {id:"shaft",name:"Driveshaft (one side)",buy:"driveshaft",hrs:2,plo:80,phi:220,note:"Clicking on lock is the usual clue."},
-  {id:"fpads",name:"Front pads and discs",buy:"front brake pads discs",hrs:1.5,plo:80,phi:220,note:""},
-  {id:"rpads",name:"Rear pads and discs",buy:"rear brake pads discs",hrs:1.5,plo:70,phi:200,note:""},
-  {id:"batt",name:"Battery",buy:"car battery",hrs:0.4,plo:70,phi:180,note:"Stop-start batteries cost more."},
-  {id:"alt",name:"Alternator",buy:"alternator",hrs:2,plo:120,phi:350,note:""},
-  {id:"start",name:"Starter motor",buy:"starter motor",hrs:1.8,plo:100,phi:280,note:""},
-  {id:"damp",name:"Pair of dampers",buy:"shock absorbers",hrs:2,plo:120,phi:350,note:""}
+  {id:"service",name:"Interim service (oil + filter)",buy:"service kit",ecp:"service-kit",hrs:1,plo:35,phi:90,note:"Full service is more."},
+  {id:"full",name:"Full service",buy:"full service kit",ecp:"service-kit",hrs:1.6,plo:55,phi:140,note:"Oil, filters and plugs or fuel filter."},
+  {id:"beltwp",name:"Timing belt + water pump",buy:"timing belt kit water pump",ecp:"timing-belt-kit",hrs:4.5,plo:80,phi:180,note:"Do the pump while it is open. Some engines use a chain."},
+  {id:"belt",name:"Timing belt only",buy:"timing belt kit",ecp:"timing-belt-kit",hrs:4,plo:40,phi:120,note:"Usually false economy not to do the pump."},
+  {id:"clutch",name:"Clutch kit",buy:"clutch kit",ecp:"clutch-kit",hrs:6,plo:160,phi:350,note:"Gearbox out. Dual-mass flywheel extra if worn."},
+  {id:"clutchdmf",name:"Clutch + dual-mass flywheel",buy:"clutch kit dual mass flywheel",ecp:"clutch-kit",hrs:6.5,plo:350,phi:700,note:"Common on diesels."},
+  {id:"shaft",name:"Driveshaft (one side)",buy:"driveshaft",ecp:"driveshaft",hrs:2,plo:80,phi:220,note:"Clicking on lock is the usual clue."},
+  {id:"fpads",name:"Front pads and discs",buy:"front brake pads discs",ecp:"brake-pads",hrs:1.5,plo:80,phi:220,note:""},
+  {id:"rpads",name:"Rear pads and discs",buy:"rear brake pads discs",ecp:"brake-pads",hrs:1.5,plo:70,phi:200,note:""},
+  {id:"batt",name:"Battery",buy:"car battery",ecp:"car-battery",hrs:0.4,plo:70,phi:180,note:"Stop-start batteries cost more."},
+  {id:"alt",name:"Alternator",buy:"alternator",ecp:"alternator",hrs:2,plo:120,phi:350,note:""},
+  {id:"start",name:"Starter motor",buy:"starter motor",ecp:"starter-motor",hrs:1.8,plo:100,phi:280,note:""},
+  {id:"damp",name:"Pair of dampers",buy:"shock absorbers",ecp:"shock-absorber",hrs:2,plo:120,phi:350,note:""}
 ];
 var RATE=80, MULT={small:0.85,family:1,suv:1.15,premium:1.35};
 function car(){
@@ -85,11 +85,25 @@ function qname(c){
   if(!n||/your car details/i.test(n)) n="";
   return n||String(c.plate||"car").replace(/\s+/g,"").toUpperCase();
 }
+function makeModel(name){
+  var bits=String(name||"").trim().split(/\s+/);
+  var make=(bits[0]||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+  var model=(bits[1]||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+  return {make:make,model:model};
+}
+function ecpUrl(name, slug){
+  var mm=makeModel(name);
+  if(mm.make && mm.model && slug) return "https://www.eurocarparts.com/"+slug+"/"+mm.make+"/"+mm.model;
+  if(slug) return "https://www.eurocarparts.com/"+slug;
+  return "https://www.eurocarparts.com/";
+}
 function row(n,p){return "<div class='item'><span>"+n+"</span><b>"+p+"</b></div>"}
-function links(name, buy){
+function links(name, job){
+  var buy=job&&job.buy?job.buy:"service kit";
+  var slug=job&&job.ecp?job.ecp:"service-kit";
   var q=encodeURIComponent(name+" "+buy);
   var qn=encodeURIComponent(name);
-  document.getElementById("btnEcp").href="https://www.eurocarparts.com/search?q="+q;
+  document.getElementById("btnEcp").href=ecpUrl(name, slug);
   document.getElementById("btnEbay").href="https://www.ebay.co.uk/sch/i.html?_nkw="+q;
   document.getElementById("btnYt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(name+" "+buy+" how to UK");
   document.getElementById("btnHaynes").href="https://uk.haynes.com/search?q="+qn;
@@ -102,7 +116,7 @@ function draw(){
   var job=WORK.filter(function(w){return w.id===id})[0];
   if(!job){
     document.getElementById("quoteBox").className="card hide";
-    links(name,"service kit");
+    links(name,{buy:"service kit",ecp:"service-kit"});
     return;
   }
   var m=MULT[cls]||1;
@@ -114,7 +128,7 @@ function draw(){
     row("Main dealer","\u00a3"+Math.round(lo*1.35/10)*10+"-\u00a3"+Math.round(hi*1.45/10)*10);
   document.getElementById("jobNote").textContent=job.note||"Guide only \u2014 not a firm quote.";
   document.getElementById("quoteBox").className="card";
-  links(name, job.buy||job.name);
+  links(name, job);
 }
 var sel=document.getElementById("jobPick");
 sel.innerHTML="<option value=\"\">Select a job</option>"+WORK.map(function(w){return "<option value='"+w.id+"'>"+w.name+"</option>"}).join("");

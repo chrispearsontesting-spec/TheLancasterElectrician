@@ -1,39 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="96" fill="#0b1a33"/>
-  <!-- handle -->
-  <path d="M256 46c-28 0-50 22-50 50v28h28v-28c0-12 10-22 22-22s22 10 22 22v28h28v-28c0-28-22-50-50-50z" fill="#f3efe6"/>
-  <!-- body -->
-  <rect x="214" y="112" width="84" height="268" rx="42" fill="#f3efe6"/>
-  <!-- face -->
-  <circle cx="238" cy="168" r="7" fill="#0b1a33"/>
-  <circle cx="274" cy="168" r="7" fill="#0b1a33"/>
-  <circle cx="232" cy="180" r="6" fill="#f4b8a8"/>
-  <circle cx="280" cy="180" r="6" fill="#f4b8a8"/>
-  <path d="M244 192c8 10 16 10 24 0" fill="none" stroke="#0b1a33" stroke-width="4" stroke-linecap="round"/>
-  <!-- left arm -->
-  <path d="M214 220 C168 236 150 268 168 292" fill="none" stroke="#1e3a5f" stroke-width="10" stroke-linecap="round"/>
-  <circle cx="170" cy="296" r="10" fill="#f3efe6"/>
-  <!-- right arm + calendar -->
-  <path d="M298 224 C330 236 348 250 352 268" fill="none" stroke="#1e3a5f" stroke-width="10" stroke-linecap="round"/>
-  <g transform="translate(332 250)">
-    <rect x="0" y="14" width="92" height="86" rx="10" fill="#f3efe6"/>
-    <rect x="0" y="14" width="92" height="20" rx="8" fill="#e0b35a"/>
-    <rect x="0" y="26" width="92" height="8" fill="#e0b35a"/>
-    <circle cx="24" cy="14" r="6" fill="#1e3a5f"/>
-    <circle cx="68" cy="14" r="6" fill="#1e3a5f"/>
-    <g fill="#d7d0c4">
-      <rect x="12" y="42" width="14" height="12" rx="2"/>
-      <rect x="30" y="42" width="14" height="12" rx="2"/>
-      <rect x="48" y="42" width="14" height="12" rx="2"/>
-      <rect x="66" y="42" width="14" height="12" rx="2"/>
-      <rect x="12" y="58" width="14" height="12" rx="2"/>
-      <rect x="48" y="58" width="14" height="12" rx="2"/>
-      <rect x="66" y="58" width="14" height="12" rx="2"/>
-      <rect x="12" y="74" width="14" height="12" rx="2"/>
-      <rect x="30" y="74" width="14" height="12" rx="2"/>
-      <rect x="48" y="74" width="14" height="12" rx="2"/>
-    </g>
-    <rect x="30" y="58" width="14" height="12" rx="2" fill="#e0b35a"/>
-    <path d="M33 64 l4 4 7-8" fill="none" stroke="#0b1a33" stroke-width="2" stroke-linecap="round"/>
-  </g>
+  <image href="https://thelancasterelectrician.com/garage/icon-mascot.jpg" width="512" height="512" preserveAspectRatio="xMidYMid slice"/>
 </svg>

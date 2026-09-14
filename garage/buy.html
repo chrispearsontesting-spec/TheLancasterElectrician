@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b0c0f"/>
 <title>Buying guide</title>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--ice:#9fd8ff;--line:rgba(255,255,255,.12);--teal:#0d9488}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--ice:#9fd8ff;--line:rgba(255,255,255,.12)}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
 h1{font-size:22px;margin:0 0 4px}
@@ -32,11 +32,11 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">Checks and known weak points for this exact car. MOT history will drop in here when the DVSA key arrives.</p>
+<p class="sub">Type the make and model, then Show guide. The plate is only used for MOT history and year.</p>
 <label>Number plate</label>
-<input id="plate" placeholder="SB61 LGZ" autocapitalize="characters"/>
+<input id="plate" placeholder="KC03 VAY" autocapitalize="characters"/>
 <label>Car search</label>
-<input id="q" placeholder="e.g. Volvo XC60 D5"/>
+<input id="q" placeholder="e.g. Toyota Celica"/>
 <button class="btn" type="button" id="go">Show guide</button>
 <p class="muted" id="status"></p>
 <div class="card" id="carCard">
@@ -57,10 +57,9 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 </div>
 <div class="card" id="motCard">
   <h3>MOT history</h3>
-  <p class="muted" id="motNote">Ready for the DVSA feed. Until the key arrives this still opens the official checker.</p>
+  <p class="muted">Until the DVSA key arrives this opens the official checker for the plate you typed.</p>
   <div id="motList"></div>
   <a class="btn ghost" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a>
-  <p class="ready" id="motReady">Slot ready: tests, mileage and advisories will list here.</p>
 </div>
 <div class="row">
   <a class="btn ghost" id="yt" href="#" target="_blank" rel="noopener">YouTube guide</a>
@@ -69,70 +68,95 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <a class="btn ghost" href="home.html">Back</a>
 <script src="cars-uk-1.js"></script>
 <script src="faults.js"></script>
+<script src="faults-extra.js"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function garageCar(){try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");return s&&s.cars&&s.cars.length?(s.cars[s.i]||s.cars[0]):null}catch(e){return null}}
-function plateYear(p){var k=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(k.length<5)return null;var n=parseInt(k.replace(/^[A-Z]+/,"").slice(0,2),10);if(!(n>=2&&n<=79))return null;return n>=50?2000+(n-50):2000+n}
-function kind(fuel){fuel=String(fuel||"").toLowerCase();if(fuel.indexOf("electric")>=0&&fuel.indexOf("hybrid")<0&&fuel.indexOf("plug")<0)return "electric";if(fuel.indexOf("plug")>=0||fuel.indexOf("phev")>=0||fuel.indexOf("hybrid")>=0)return "hybrid";if(fuel.indexOf("diesel")>=0)return "diesel";return "petrol"}
-function lib(){return window.TRIPS||window.CARS_UK_1||[]}
-function findRow(q,yr){
-  q=(q||"").trim().toLowerCase();
-  var list=lib(),best=null,i;
-  for(i=0;i<list.length;i++){
-    var r=list[i],hay=(r[0]+" "+r[1]+" "+(r[2]||"")).toLowerCase();
-    if(q&&hay.indexOf(q)<0)continue;
-    if(yr){var y0=parseInt(r[3],10)||0,y1=parseInt(r[4],10)||9999;if(yr<y0||yr>y1)continue}
-    if(!best)best=r;
-    if(q&&hay.indexOf(q)===0)return r;
-  }
-  return best;
+function plateYear(p){
+  var k=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(k.length<5)return null;
+  var core=k.replace(/^[A-Z]+/,"");
+  var n=parseInt(core.slice(0,2),10);
+  if(n>=1&&n<=49)return 2000+n;
+  if(n>=50&&n<=99)return 2000+(n-50);
+  return null;
 }
-function matchFault(name,fuel){
+function guessFuel(text){
+  var t=String(text||"").toLowerCase();
+  if(/\b(ev|electric|leaf|id\.?[34]|enyaq|ioniq|model [3y]|taycan|e-tron|eqa|corsa-e|e-208)\b/.test(t))return "electric";
+  if(/\b(phev|plug|recharge|t8|330e|outlander phev)\b/.test(t))return "hybrid";
+  if(/\b(hybrid|prius|niro|yaris hybrid)\b/.test(t))return "hybrid";
+  if(/\b(d5|d4|tdi|tdci|cdti|dci|crdi|bluehdi|diesel|td4|sdv6)\b/.test(t))return "diesel";
+  return "petrol";
+}
+function tokens(s){return String(s||"").toLowerCase().replace(/[^a-z0-9.]+/g," ").trim().split(/\s+/).filter(function(w){return w.length>1&&w!=="the"&&w!=="and"})}
+function matchFault(name){
   var hay=String(name||"").toLowerCase();
+  var words=tokens(hay);
   var list=window.FAULTS||[],i,best=null,score=0;
   for(i=0;i<list.length;i++){
-    var ok=list[i].k.every(function(w){return hay.indexOf(w)>=0});
-    if(!ok)continue;
-    if(list[i].k.length>score){best=list[i];score=list[i].k.length}
+    var keys=list[i].k||[];
+    var hit=0;
+    keys.forEach(function(k){if(hay.indexOf(k)>=0)hit++});
+    if(!hit)continue;
+    var all=keys.every(function(k){return hay.indexOf(k)>=0});
+    var pts=(all?keys.length*10:0)+hit*2+keys.length;
+    if(words.length&&keys.some(function(k){return words.indexOf(k)>=0}))pts+=5;
+    if(pts>score){best=list[i];score=pts}
   }
-  if(best)return best;
+  if(best&&score>=5)return best;
   var g=window.FAULT_GENERIC||{};
-  return g[kind(fuel)]||g.default;
+  return g[guessFuel(name)]||g.default;
+}
+function findRow(q){
+  q=String(q||"").trim().toLowerCase();
+  if(!q)return null;
+  var list=window.TRIPS||window.CARS_UK_1||[],best=null,i,bestPts=0;
+  for(i=0;i<list.length;i++){
+    var r=list[i],hay=(r[0]+" "+r[1]+" "+(r[2]||"")).toLowerCase();
+    if(hay.indexOf(q)<0&&q.split(" ").some(function(w){return w.length>2&&hay.indexOf(w)<0}))continue;
+    var pts=0;
+    q.split(" ").forEach(function(w){if(w&&hay.indexOf(w)>=0)pts++});
+    if(pts>bestPts){best=r;bestPts=pts}
+  }
+  return bestPts?best:null;
 }
 function paint(car){
-  var pack=matchFault(car.name,car.fuel);
-  $("carName").textContent=pack.name||car.name;
+  var pack=matchFault(car.name);
+  var exact=pack&&pack.k;
+  $("carName").textContent=exact?(pack.name):(car.name||"Car");
   $("carMeta").textContent=[car.plate||"",pack.engine||car.fuel||"",car.mpg?car.mpg+" mpg":"",car.year?("reg ~"+car.year):""].filter(Boolean).join(" \u00b7 ");
   $("faults").innerHTML=(pack.faults||[]).map(function(f){
     return "<div class='fault'><span class='tag "+f.s+"'>"+f.s+"</span><b>"+f.t+"</b><p>"+f.d+"</p></div>";
-  }).join("")||"<p class='muted'>No model-specific row yet. Generic checks still apply.</p>";
+  }).join("");
   $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
   $("views").innerHTML=(window.VIEW_CHECKS||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
-  var q=encodeURIComponent((pack.name||car.name)+" common problems inspection");
-  $("yt").href="https://www.youtube.com/results?search_query="+q;
-  $("parts").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+encodeURIComponent((pack.name||car.name)+" timing belt");
+  var label=pack.name||car.name;
+  $("yt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(label+" common problems inspection");
+  $("parts").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+encodeURIComponent(label);
   var raw=String(car.plate||"").replace(/\s/g,"");
   $("motLink").href=raw?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(raw):"https://www.gov.uk/check-mot-history";
-  $("motList").innerHTML="";
-  $("status").textContent="Guide ready for "+(pack.name||car.name);
-  try{localStorage.setItem("gt.buy.v1",JSON.stringify({name:car.name,plate:car.plate,fuel:car.fuel}))}catch(e){}
+  $("status").textContent=exact?("Guide ready for "+pack.name):("No exact pack yet — showing "+(pack.name||"generic")+" checks for "+car.name);
 }
-$("go").onclick=function(){
-  var plate=$("plate").value.trim(), q=$("q").value.trim();
-  var yr=plateYear(plate);
-  var row=findRow(q,yr);
+function run(){
+  var plate=$("plate").value.trim();
+  var q=$("q").value.trim();
   var g=garageCar();
-  var name=q||(row?([row[0],row[1],row[2]].filter(Boolean).join(" ")):(g&&(g.nick||g.name))||"Volvo XC60 D5");
-  var fuel=row?row[5]:(g&&g.fuel)||"diesel";
-  var mpg=row?(row[6]||row[11]):(g&&g.mpg);
-  if(row)$("q").value=[row[0],row[1]].filter(Boolean).join(" ");
-  paint({name:name,plate:plate||(g&&g.plate)||"",fuel:fuel,mpg:mpg,year:yr});
-};
+  var name=q||(g&&(g.nick||g.name))||"";
+  if(!name){$("status").textContent="Type a make and model first.";return}
+  var row=findRow(name);
+  var fuel=guessFuel(name+(row?(" "+row[5]):""));
+  var mpg=row?row[6]:"";
+  paint({name:name,plate:plate,fuel:fuel,mpg:mpg,year:plateYear(plate)});
+}
+$("go").onclick=run;
+$("q").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
+$("plate").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
 (function init(){
   var g=garageCar();
-  $("plate").value=(g&&g.plate)||"SB61LGZ";
-  $("q").value=(g&&(g.nick||g.name))||"Volvo XC60 D5";
-  paint({name:$("q").value,plate:$("plate").value,fuel:(g&&g.fuel)||"diesel",mpg:g&&g.mpg,year:plateYear($("plate").value)});
+  if(!$("plate").value)$("plate").value=(g&&g.plate)||"";
+  if(!$("q").value)$("q").value=(g&&(g.nick||g.name))||"";
+  if($("q").value)run();
 })();
 </script>
 </body>

@@ -27,38 +27,36 @@ h3{margin:12px 0 6px;font-size:16px}
 .fault p{margin:6px 0 0;color:#c9c2b4;font-size:14px;line-height:1.4}
 .muted{color:var(--dim);font-size:12px}
 ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.45}
-.ready{font-size:12px;color:#86efac;margin-top:8px}
 </style>
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">Type the make and model, then Show guide. The plate is only used for MOT history and year.</p>
+<p class="sub">Type the make and model. The plate sets the year so older cars get the right generation and checks.</p>
 <label>Number plate</label>
 <input id="plate" placeholder="KC03 VAY" autocapitalize="characters"/>
 <label>Car search</label>
 <input id="q" placeholder="e.g. Toyota Celica"/>
 <button class="btn" type="button" id="go">Show guide</button>
 <p class="muted" id="status"></p>
-<div class="card" id="carCard">
+<div class="card">
   <b id="carName">Car</b>
   <p class="muted" id="carMeta"></p>
 </div>
-<div class="card" id="faultCard">
+<div class="card">
   <h3>Known weak points</h3>
   <div id="faults"></div>
 </div>
-<div class="card" id="dueCard">
+<div class="card">
   <h3>Should already have been done</h3>
   <ul id="dues"></ul>
 </div>
-<div class="card" id="viewCard">
+<div class="card">
   <h3>On the viewing</h3>
   <ul id="views"></ul>
 </div>
-<div class="card" id="motCard">
+<div class="card">
   <h3>MOT history</h3>
   <p class="muted">Until the DVSA key arrives this opens the official checker for the plate you typed.</p>
-  <div id="motList"></div>
   <a class="btn ghost" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a>
 </div>
 <div class="row">
@@ -69,42 +67,51 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="cars-uk-1.js"></script>
 <script src="faults.js"></script>
 <script src="faults-extra.js"></script>
+<script src="faults-classic.js"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function garageCar(){try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");return s&&s.cars&&s.cars.length?(s.cars[s.i]||s.cars[0]):null}catch(e){return null}}
+var SUFFIX={A:1983,B:1984,C:1985,D:1986,E:1987,F:1988,G:1989,H:1990,J:1991,K:1992,L:1993,M:1994,N:1995,P:1996,R:1997,S:1998,T:1999,V:1999,W:2000,X:2000,Y:2001};
 function plateYear(p){
   var k=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-  if(k.length<5)return null;
-  var core=k.replace(/^[A-Z]+/,"");
-  var n=parseInt(core.slice(0,2),10);
-  if(n>=1&&n<=49)return 2000+n;
-  if(n>=50&&n<=99)return 2000+(n-50);
+  if(k.length<4)return null;
+  if(/^[A-Z]{2}\d{2}[A-Z]{3}$/.test(k)){
+    var n=parseInt(k.slice(2,4),10);
+    if(n>=1&&n<=49)return 2000+n;
+    if(n>=50&&n<=99)return 2000+(n-50);
+  }
+  var last=k.slice(-1);
+  if(/^[A-Z]$/.test(last)&&SUFFIX[last]&&/\d/.test(k))return SUFFIX[last];
+  var first=k.charAt(0);
+  if(SUFFIX[first]&&/^\d/.test(k.charAt(1)))return SUFFIX[first];
   return null;
 }
 function guessFuel(text){
   var t=String(text||"").toLowerCase();
   if(/\b(ev|electric|leaf|id\.?[34]|enyaq|ioniq|model [3y]|taycan|e-tron|eqa|corsa-e|e-208)\b/.test(t))return "electric";
-  if(/\b(phev|plug|recharge|t8|330e|outlander phev)\b/.test(t))return "hybrid";
-  if(/\b(hybrid|prius|niro|yaris hybrid)\b/.test(t))return "hybrid";
+  if(/\b(phev|plug|recharge|t8|330e|hybrid|prius|niro)\b/.test(t))return "hybrid";
   if(/\b(d5|d4|tdi|tdci|cdti|dci|crdi|bluehdi|diesel|td4|sdv6)\b/.test(t))return "diesel";
   return "petrol";
 }
-function tokens(s){return String(s||"").toLowerCase().replace(/[^a-z0-9.]+/g," ").trim().split(/\s+/).filter(function(w){return w.length>1&&w!=="the"&&w!=="and"})}
-function matchFault(name){
+function matchFault(name,year){
   var hay=String(name||"").toLowerCase();
-  var words=tokens(hay);
   var list=window.FAULTS||[],i,best=null,score=0;
   for(i=0;i<list.length;i++){
-    var keys=list[i].k||[];
-    var hit=0;
-    keys.forEach(function(k){if(hay.indexOf(k)>=0)hit++});
-    if(!hit)continue;
+    var p=list[i],keys=p.k||[];
+    if(!keys.length)continue;
     var all=keys.every(function(k){return hay.indexOf(k)>=0});
-    var pts=(all?keys.length*10:0)+hit*2+keys.length;
-    if(words.length&&keys.some(function(k){return words.indexOf(k)>=0}))pts+=5;
-    if(pts>score){best=list[i];score=pts}
+    if(!all)continue;
+    var pts=keys.length*10;
+    if(year&&p.y0&&p.y1){
+      if(year>=p.y0&&year<=p.y1)pts+=50;
+      else pts-=20;
+    }
+    if(pts>score){best=p;score=pts}
   }
-  if(best&&score>=5)return best;
+  if(best&&score>=10)return best;
+  var era=window.FAULT_ERA||{};
+  if(year&&year<1992)return era.pre92||null;
+  if(year&&year<2001)return era.nineties||null;
   var g=window.FAULT_GENERIC||{};
   return g[guessFuel(name)]||g.default;
 }
@@ -114,29 +121,30 @@ function findRow(q){
   var list=window.TRIPS||window.CARS_UK_1||[],best=null,i,bestPts=0;
   for(i=0;i<list.length;i++){
     var r=list[i],hay=(r[0]+" "+r[1]+" "+(r[2]||"")).toLowerCase();
-    if(hay.indexOf(q)<0&&q.split(" ").some(function(w){return w.length>2&&hay.indexOf(w)<0}))continue;
     var pts=0;
-    q.split(" ").forEach(function(w){if(w&&hay.indexOf(w)>=0)pts++});
+    q.split(" ").forEach(function(w){if(w.length>1&&hay.indexOf(w)>=0)pts++});
     if(pts>bestPts){best=r;bestPts=pts}
   }
-  return bestPts?best:null;
+  return bestPts>=2?best:null;
 }
 function paint(car){
-  var pack=matchFault(car.name);
-  var exact=pack&&pack.k;
-  $("carName").textContent=exact?(pack.name):(car.name||"Car");
+  var pack=matchFault(car.name,car.year)||{};
+  var exact=pack.k;
+  var classic=car.year&&car.year<2001;
+  $("carName").textContent=pack.name||car.name||"Car";
   $("carMeta").textContent=[car.plate||"",pack.engine||car.fuel||"",car.mpg?car.mpg+" mpg":"",car.year?("reg ~"+car.year):""].filter(Boolean).join(" \u00b7 ");
   $("faults").innerHTML=(pack.faults||[]).map(function(f){
     return "<div class='fault'><span class='tag "+f.s+"'>"+f.s+"</span><b>"+f.t+"</b><p>"+f.d+"</p></div>";
   }).join("");
   $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
-  $("views").innerHTML=(window.VIEW_CHECKS||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
+  var views=classic&&window.VIEW_CHECKS_CLASSIC?window.VIEW_CHECKS_CLASSIC:(window.VIEW_CHECKS||[]);
+  $("views").innerHTML=views.map(function(x){return "<li>"+x+"</li>"}).join("");
   var label=pack.name||car.name;
-  $("yt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(label+" common problems inspection");
-  $("parts").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+encodeURIComponent(label);
+  $("yt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(label+" common problems rust inspection");
+  $("parts").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+encodeURIComponent(car.name||label);
   var raw=String(car.plate||"").replace(/\s/g,"");
   $("motLink").href=raw?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(raw):"https://www.gov.uk/check-mot-history";
-  $("status").textContent=exact?("Guide ready for "+pack.name):("No exact pack yet — showing "+(pack.name||"generic")+" checks for "+car.name);
+  $("status").textContent=exact?("Guide ready for "+pack.name):(classic?("Older-car checks for "+(car.name||"this plate")):("Generic "+(pack.name||"")+" checks for "+car.name));
 }
 function run(){
   var plate=$("plate").value.trim();
@@ -146,8 +154,7 @@ function run(){
   if(!name){$("status").textContent="Type a make and model first.";return}
   var row=findRow(name);
   var fuel=guessFuel(name+(row?(" "+row[5]):""));
-  var mpg=row?row[6]:"";
-  paint({name:name,plate:plate,fuel:fuel,mpg:mpg,year:plateYear(plate)});
+  paint({name:name,plate:plate,fuel:fuel,mpg:row?row[6]:"",year:plateYear(plate)});
 }
 $("go").onclick=run;
 $("q").addEventListener("keydown",function(e){if(e.key==="Enter")run()});

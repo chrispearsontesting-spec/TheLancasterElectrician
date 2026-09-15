@@ -1,2 +1,2 @@
-/* After you deploy the Worker, put the workers.dev URL here. No secrets. */
-window.MOT_PROXY = "";
+/* Worker URL only. Secrets stay in Cloudflare. */
+window.MOT_PROXY = "https://dipstick-mot.chris-pearson-testing.workers.dev";

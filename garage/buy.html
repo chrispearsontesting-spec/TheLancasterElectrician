@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b0c0f"/>
 <title>Buying guide</title>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--ice:#9fd8ff;--line:rgba(255,255,255,.12)}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--ice:#9fd8ff;--line:rgba(255,255,255,.12);--grey:#2a2e36}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
 h1{font-size:22px;margin:0 0 4px}
@@ -14,7 +14,7 @@ h1{font-size:22px;margin:0 0 4px}
 label{display:block;color:var(--dim);font-size:12px;margin:8px 0 4px}
 input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:11px;font-size:16px}
 .btn{display:block;width:100%;border:0;border-radius:14px;padding:13px;font-weight:800;margin-top:8px;background:var(--ice);color:#0b0c0f;text-align:center;text-decoration:none}
-.ghost{background:#171a20;color:var(--ink);border:1px solid var(--line)}
+.grey{background:var(--grey);color:var(--ink);border:1px solid var(--line)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
 .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;margin-right:6px}
@@ -22,58 +22,57 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .med{background:#4a3514;color:#fde68a}
 .low{background:#1e3a34;color:#a7f3d0}
 h3{margin:12px 0 6px;font-size:16px}
-.fault{padding:10px 0;border-bottom:1px solid var(--line)}
+.fault{border-bottom:1px solid var(--line)}
 .fault:last-child{border-bottom:0}
-.fault p{margin:6px 0 0;color:#c9c2b4;font-size:14px;line-height:1.4}
+.faultBtn{width:100%;background:none;border:0;color:var(--ink);text-align:left;padding:12px 0;font-size:15px;font-weight:800;cursor:pointer}
+.more{display:none;padding:0 0 12px;color:#c9c2b4;font-size:14px;line-height:1.45}
+.fault.open .more{display:block}
+.more p{margin:0 0 8px}
 .muted{color:var(--dim);font-size:12px}
-.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);color:#c9c2b4;font-size:14px;line-height:1.4}
-.check:last-child{border-bottom:0}
-.check input{margin-top:3px}
 .saved a{color:var(--ice);font-weight:800;text-decoration:none}
 .saved p{margin:6px 0}
+ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.45}
 </style>
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">Look a car up, save it to today's viewings, then tick checks on the drive.</p>
+<p class="sub">Tap an issue for when it is due, what paper to ask for, and a cost link.</p>
 <label>Number plate</label>
 <input id="plate" type="text" placeholder="L806 DKH" autocapitalize="characters"/>
 <label>Car search</label>
-<input id="q" type="text" placeholder="e.g. Toyota Supra"/>
+<input id="q" type="text" placeholder="e.g. Ford Fiesta EcoBoost"/>
 <button class="btn" type="button" id="go">Show guide</button>
-<button class="btn ghost" type="button" id="saveBtn">Save to viewings</button>
+<button class="btn grey" type="button" id="saveBtn">Save to viewings</button>
 <p class="muted" id="status"></p>
 <div class="card"><b id="carName">Car</b><p class="muted" id="carMeta"></p></div>
 <div class="card"><h3>Known weak points</h3><div id="faults"></div></div>
-<div class="card"><h3>Should already have been done</h3><div id="dues"></div></div>
-<div class="card"><h3>On the viewing</h3><div id="views"></div></div>
+<div class="card"><h3>Should already have been done</h3><ul id="dues"></ul></div>
+<div class="card"><h3>On the viewing</h3><ul id="views"></ul></div>
 <div class="card">
   <h3>MOT history</h3>
-  <p class="muted">Until the DVSA key arrives this opens the official checker.</p>
-  <a class="btn ghost" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a>
+  <p class="muted">Mileage from DVLA/DVSA will later flag overdue belts automatically.</p>
+  <a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a>
 </div>
 <div class="row">
-  <a class="btn ghost" id="yt" href="#" target="_blank" rel="noopener">YouTube guide</a>
-  <a class="btn ghost" id="parts" href="#" target="_blank" rel="noopener">Parts</a>
+  <a class="btn grey" id="yt" href="#" target="_blank" rel="noopener">YouTube guide</a>
+  <a class="btn grey" id="parts" href="#" target="_blank" rel="noopener">Parts</a>
 </div>
 <div class="card saved">
   <h3>Saved viewings</h3>
   <div id="savedList"></div>
-  <a class="btn ghost" href="view.html">Open viewing page</a>
+  <a class="btn grey" href="view.html">Open viewing page</a>
 </div>
-<a class="btn ghost" href="home.html">Back</a>
+<a class="btn grey" href="home.html">Back</a>
 <script src="cars-uk-1.js"></script>
 <script src="faults.js"></script>
 <script src="faults-extra.js"></script>
 <script src="faults-classic.js"></script>
 <script src="models-classic.js"></script>
+<script src="jobs-advice.js"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function garageCar(){
-  try{
-    var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
-    return s&&s.cars&&s.cars.length?(s.cars[s.i]||s.cars[0]):null;
-  }catch(e){return null}
+  try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");return s&&s.cars&&s.cars.length?(s.cars[s.i]||s.cars[0]):null}catch(e){return null}
 }
 function loadView(){try{return JSON.parse(localStorage.getItem("gt.viewings.v1")||"[]")}catch(e){return []}}
 function saveView(list){localStorage.setItem("gt.viewings.v1",JSON.stringify(list))}
@@ -95,12 +94,11 @@ function guessFuel(text){
   var t=String(text||"").toLowerCase();
   if(/\b(ev|electric|leaf)\b/.test(t))return "electric";
   if(/\b(hybrid|phev|prius|recharge)\b/.test(t))return "hybrid";
-  if(/\b(d5|d4|tdi|tdci|cdti|dci|diesel|td4)\b/.test(t))return "diesel";
+  if(/\b(d5|d4|tdi|diesel|td4)\b/.test(t))return "diesel";
   return "petrol";
 }
 function findClassic(name){
-  var hay=String(name||"").toLowerCase();
-  var list=window.CLASSIC_MODELS||[],best=null,score=0,i;
+  var hay=String(name||"").toLowerCase(),list=window.CLASSIC_MODELS||[],best=null,score=0,i;
   for(i=0;i<list.length;i++){
     if(hay.indexOf(list[i][1])<0)continue;
     var pts=list[i][1].length+(hay.indexOf(list[i][0])>=0?20:0);
@@ -109,8 +107,7 @@ function findClassic(name){
   return score>=3?best:null;
 }
 function matchFault(name,year){
-  var hay=String(name||"").toLowerCase();
-  var list=window.FAULTS||[],best=null,score=0,i,j;
+  var hay=String(name||"").toLowerCase(),list=window.FAULTS||[],best=null,score=0,i,j;
   for(i=0;i<list.length;i++){
     var p=list[i],keys=p.k||[],ok=keys.length;
     for(j=0;j<keys.length;j++)if(hay.indexOf(keys[j])<0)ok=false;
@@ -130,32 +127,17 @@ function eraPack(year,fuel){
 }
 var current={name:"",plate:"",year:null,title:""};
 function keyFor(){return (current.plate||current.name||"car").toUpperCase().replace(/\s+/g,"")}
-function ticksFor(){
-  var list=loadView(),k=keyFor(),i;
-  for(i=0;i<list.length;i++)if((list[i].id||"")===k)return list[i].ticks||{};
-  return {};
-}
-function setTick(id,on){
-  var list=loadView(),k=keyFor(),i,found=-1;
-  for(i=0;i<list.length;i++)if((list[i].id||"")===k)found=i;
-  if(found<0)return;
-  list[found].ticks=list[found].ticks||{};
-  list[found].ticks[id]=on;
-  saveView(list);
-}
-function boxes(items,prefix){
-  var t=ticksFor();
-  return (items||[]).map(function(x,i){
-    var id=prefix+i, label=typeof x==="string"?x:x.t;
-    return "<label class='check'><input type='checkbox' data-k='"+id+"' "+(t[id]?"checked":"")+">"+label+"</label>";
-  }).join("");
-}
 function paintSaved(){
   var list=loadView();
-  if(!list.length){$("savedList").innerHTML="<p class='muted'>None yet. Look a car up and tap Save to viewings.</p>";return}
+  if(!list.length){$("savedList").innerHTML="<p class='muted'>None yet.</p>";return}
   $("savedList").innerHTML=list.map(function(c){
     return "<p><a href='buy.html?plate="+encodeURIComponent(c.plate||"")+"&q="+encodeURIComponent(c.name||"")+"'>"+(c.name||"Car")+(c.plate?(" \u00b7 "+c.plate):"")+"</a></p>";
   }).join("");
+}
+function faultBlock(f,pack){
+  var adv=(window.adviceFor?window.adviceFor(f.t,pack):{})||{};
+  var href="service.html?job="+encodeURIComponent(adv.job||"beltwp")+"&q="+encodeURIComponent(adv.buy||f.t);
+  return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+f.s+"'>"+f.s+"</span>"+f.t+"</button><div class='more'><p>"+(f.d||"")+"</p><p><b>When it is due.</b> "+(adv.interval||"")+"</p><p><b>What to ask for.</b> "+(adv.detail||"")+" When official mileage is linked we will say if this should already have been done.</p><a class='btn grey' href='"+href+"'>Likely cost and parts</a></div></div>";
 }
 function paint(car){
   var classic=findClassic(car.name);
@@ -163,10 +145,7 @@ function paint(car){
   var pack=matchFault(car.name,year)||eraPack(year,car.fuel)||eraPack(classic?classic[2]:null,car.fuel)||{};
   var title=car.name||"Car";
   if(pack.k&&pack.name)title=pack.name;
-  else if(classic){
-    title=cap(classic[0]+" "+classic[1]);
-    if(classic[2])title+=" ("+classic[2]+"-"+classic[3]+")";
-  }
+  else if(classic){title=cap(classic[0]+" "+classic[1]);if(classic[2])title+=" ("+classic[2]+"-"+classic[3]+")"}
   current={name:car.name,plate:car.plate,year:year,title:title,fuel:car.fuel};
   $("carName").textContent=title;
   var meta=[];
@@ -175,45 +154,40 @@ function paint(car){
   else if(car.fuel)meta.push(car.fuel);
   if(year)meta.push("reg ~"+year);
   $("carMeta").textContent=meta.join(" \u00b7 ");
-  $("faults").innerHTML=(pack.faults||[]).map(function(f){
-    return "<div class='fault'><span class='tag "+f.s+"'>"+f.s+"</span><b>"+f.t+"</b><p>"+f.d+"</p></div>";
-  }).join("")||"<p class='muted'>Generic checks still apply.</p>";
-  $("dues").innerHTML=boxes(pack.due||[],"due-");
+  $("faults").innerHTML=(pack.faults||[]).map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>Generic checks still apply.</p>";
+  $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
   var views=(year&&year<2001&&window.VIEW_CHECKS_CLASSIC)?window.VIEW_CHECKS_CLASSIC:(window.VIEW_CHECKS||[]);
-  $("views").innerHTML=boxes(views,"view-");
+  $("views").innerHTML=views.map(function(x){return "<li>"+x+"</li>"}).join("");
   var q=classic?(classic[0]+" "+classic[1]):car.name;
   $("yt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(q+" common problems rust");
   $("parts").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+encodeURIComponent(q);
   var raw=String(car.plate||"").replace(/\s/g,"");
   $("motLink").href=raw?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(raw):"https://www.gov.uk/check-mot-history";
-  $("status").textContent=pack.k?("Guide ready for "+pack.name):(classic?("Recognised "+cap(classic[0]+" "+classic[1])):("Checks ready for "+car.name));
+  $("status").textContent=pack.k?("Guide ready for "+pack.name):("Checks ready for "+title);
   paintSaved();
 }
 function run(){
   try{
-    var plate=$("plate").value.trim();
-    var q=$("q").value.trim();
-    var g=garageCar();
+    var plate=$("plate").value.trim(), q=$("q").value.trim(), g=garageCar();
     var name=q||(g&&(g.nick||g.name))||"";
     if(!name){$("status").textContent="Type a make and model first.";return}
     paint({name:name,plate:plate,fuel:guessFuel(name),year:plateYear(plate)});
   }catch(err){$("status").textContent="Search error: "+err.message}
 }
+$("faults").addEventListener("click",function(e){
+  var b=e.target.closest(".faultBtn"); if(!b)return;
+  var box=b.parentNode; box.className=box.className.indexOf("open")>=0?"fault":"fault open";
+});
 $("go").onclick=run;
 $("saveBtn").onclick=function(){
   if(!current.name)run();
   if(!current.name)return;
-  var list=loadView(), id=keyFor(), i, found=-1;
+  var list=loadView(),id=keyFor(),i,found=-1;
   for(i=0;i<list.length;i++)if(list[i].id===id)found=i;
-  var row={id:id,name:current.title||current.name,plate:current.plate||"",year:current.year,fuel:current.fuel,ticks:found>=0?(list[found].ticks||{}):{}};
-  if(found>=0)list[found]=row; else list.unshift(row);
-  saveView(list);
-  $("status").textContent="Saved to viewings: "+row.name;
-  paintSaved();
+  var row={id:id,name:current.title||current.name,plate:current.plate||"",year:current.year,fuel:current.fuel,ticks:{}};
+  if(found>=0)list[found]=Object.assign(list[found],row); else list.unshift(row);
+  saveView(list);$("status").textContent="Saved to viewings: "+row.name;paintSaved();
 };
-document.addEventListener("change",function(e){
-  if(e.target&&e.target.getAttribute("data-k"))setTick(e.target.getAttribute("data-k"),e.target.checked);
-});
 $("q").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
 $("plate").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
 (function init(){
@@ -223,8 +197,7 @@ $("plate").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
   var g=garageCar();
   if(!$("plate").value)$("plate").value=(g&&g.plate)||"";
   if(!$("q").value)$("q").value=(g&&(g.nick||g.name))||"";
-  if($("q").value)run();
-  else paintSaved();
+  if($("q").value)run(); else paintSaved();
 })();
 </script>
 </body>

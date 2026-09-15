@@ -17,12 +17,6 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .grey{background:var(--grey);color:var(--ink);border:1px solid var(--line)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
-.rateGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.rate{background:#171a20;border-radius:12px;padding:10px}
-.rate b{display:block;font-size:11px;color:#9aa3b0;letter-spacing:.04em;text-transform:uppercase}
-.rate span{display:block;margin:6px 0 4px;font-weight:800}
-.stars{color:#f5d76e}
-.rate p{margin:0;color:#9aa3b0;font-size:12px;line-height:1.35}
 .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;margin-right:6px}
 .high{background:#5b1d1d;color:#fecaca}
 .med{background:#4a3514;color:#fde68a}
@@ -56,7 +50,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <div class="card"><h3>On the viewing</h3><ul id="views"></ul></div>
 <div class="card">
   <h3>MOT history</h3>
-  <p class="muted">Mileage from DVLA/DVSA will later flag overdue belts automatically.</p>
+  <div id="motBox"><p class="muted">Official tests load here once the proxy URL is set.</p></div>
   <a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a>
 </div>
 <div class="row">
@@ -78,6 +72,8 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="ved.js"></script>
 <script src="ncap.js"></script>
 <script src="ratings-ui.js"></script>
+<script src="mot-config.js"></script>
+<script src="mot-client.js"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function garageCar(){
@@ -173,6 +169,7 @@ function paint(car){
   $("parts").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+encodeURIComponent(q);
   var raw=String(car.plate||"").replace(/\s/g,"");
   $("motLink").href=raw?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(raw):"https://www.gov.uk/check-mot-history";
+  if(window.loadMotHistory)window.loadMotHistory(raw);
   $("status").textContent=pack.k?("Guide ready for "+pack.name):("Checks ready for "+title);
   paintSaved();
 }
@@ -185,6 +182,10 @@ function run(){
   }catch(err){$("status").textContent="Search error: "+err.message}
 }
 $("faults").addEventListener("click",function(e){
+  var b=e.target.closest(".faultBtn"); if(!b)return;
+  var box=b.parentNode; box.className=box.className.indexOf("open")>=0?"fault":"fault open";
+});
+$("motBox").addEventListener("click",function(e){
   var b=e.target.closest(".faultBtn"); if(!b)return;
   var box=b.parentNode; box.className=box.className.indexOf("open")>=0?"fault":"fault open";
 });

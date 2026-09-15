@@ -1,8 +1,24 @@
-window.ratingsHtml=function(name,year,fuel,plate){
-  var tax=window.vedAnnual?window.vedAnnual({year:year,fuel:fuel,plate:plate}):{label:"Tax",note:""};
+window.ratingsHtml=function(name,year,fuel,plate,co2){
+  var tax=window.vedAnnual?window.vedAnnual({year:year,fuel:fuel,plate:plate,co2:co2}):{label:"Tax",note:""};
   var n=window.ncapFor?window.ncapFor(name,year):{none:true};
   var stars=n.none?"Not rated":(window.ncapStars?window.ncapStars(n.stars):"");
-  var ncapNote=window.ncapExplain?window.ncapExplain(n):"";
-  var taxNote=tax.note||"";
-  return "<div class='rateGrid'><div class='rate'><b>Annual tax</b><span>"+tax.label+"</span><p>"+taxNote+"</p></div><div class='rate ncapTap' data-ncap='1'><b>Euro NCAP</b><span class='stars'>"+stars+"</span><p>"+ncapNote+"</p></div></div>";
+  var co2Label=co2!=null? (co2+" g/km") : "With DVLA";
+  var co2Note=co2!=null
+    ? ("This car is recorded at "+co2+" g/km. That figure sets the pre-2017 tax band and is used for clean-air rules.")
+    : "DVLA Vehicle Enquiry returns official CO\u2082 for the plate. Until that key is live we only know the year from the registration.";
+  function row(title,value,cls,body){
+    return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+cls+"'>"+value+"</span>"+title+"</button><div class='more'><p>"+body+"</p></div></div>";
+  }
+  return row("Annual tax", tax.label||"Tax", tax.ok?"low":"med", tax.note||"")
+    + row("CO\u2082", co2Label, co2!=null?"low":"med", co2Note)
+    + row("Euro NCAP", stars, n.none?"med":"low", window.ncapExplain?window.ncapExplain(n):"");
 };
+if(!window._ratingsTap){
+  window._ratingsTap=true;
+  document.addEventListener("click",function(e){
+    var b=e.target.closest("#ratings .faultBtn");
+    if(!b)return;
+    var box=b.parentNode;
+    box.className=box.className.indexOf("open")>=0?"fault":"fault open";
+  });
+}

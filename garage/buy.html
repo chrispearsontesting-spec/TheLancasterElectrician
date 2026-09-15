@@ -17,6 +17,12 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .grey{background:var(--grey);color:var(--ink);border:1px solid var(--line)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
+.rateGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.rate{background:#171a20;border-radius:12px;padding:10px}
+.rate b{display:block;font-size:11px;color:#9aa3b0;letter-spacing:.04em;text-transform:uppercase}
+.rate span{display:block;margin:6px 0 4px;font-weight:800}
+.stars{color:#f5d76e}
+.rate p{margin:0;color:#9aa3b0;font-size:12px;line-height:1.35}
 .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;margin-right:6px}
 .high{background:#5b1d1d;color:#fecaca}
 .med{background:#4a3514;color:#fde68a}
@@ -36,7 +42,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">Tap an issue for when it is due, what paper to ask for, and a cost link.</p>
+<p class="sub">Tax and Euro NCAP sit under the car. Tap an issue for the job detail.</p>
 <label>Number plate</label>
 <input id="plate" type="text" placeholder="L806 DKH" autocapitalize="characters"/>
 <label>Car search</label>
@@ -44,7 +50,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <button class="btn" type="button" id="go">Show guide</button>
 <button class="btn grey" type="button" id="saveBtn">Save to viewings</button>
 <p class="muted" id="status"></p>
-<div class="card"><b id="carName">Car</b><p class="muted" id="carMeta"></p></div>
+<div class="card"><b id="carName">Car</b><p class="muted" id="carMeta"></p><div id="ratings"></div></div>
 <div class="card"><h3>Known weak points</h3><div id="faults"></div></div>
 <div class="card"><h3>Should already have been done</h3><ul id="dues"></ul></div>
 <div class="card"><h3>On the viewing</h3><ul id="views"></ul></div>
@@ -69,6 +75,9 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="faults-classic.js"></script>
 <script src="models-classic.js"></script>
 <script src="jobs-advice.js"></script>
+<script src="ved.js"></script>
+<script src="ncap.js"></script>
+<script src="ratings-ui.js"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function garageCar(){
@@ -154,6 +163,7 @@ function paint(car){
   else if(car.fuel)meta.push(car.fuel);
   if(year)meta.push("reg ~"+year);
   $("carMeta").textContent=meta.join(" \u00b7 ");
+  if(window.ratingsHtml)$("ratings").innerHTML=window.ratingsHtml(title,year,car.fuel,car.plate);
   $("faults").innerHTML=(pack.faults||[]).map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>Generic checks still apply.</p>";
   $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
   var views=(year&&year<2001&&window.VIEW_CHECKS_CLASSIC)?window.VIEW_CHECKS_CLASSIC:(window.VIEW_CHECKS||[]);

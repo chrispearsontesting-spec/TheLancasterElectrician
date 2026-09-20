@@ -15,34 +15,49 @@
   function car(){
     try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");return s&&s.cars&&s.cars.length?(s.cars[s.i]||s.cars[0]):null;}catch(e){return null}
   }
+  function rating(){
+    var c=car(), year=plateYear(c&&c.plate);
+    return window.ncapFor?window.ncapFor(c&&(c.nick||c.name),year):{none:true};
+  }
+  function openNcap(e){
+    if(e){e.preventDefault();e.stopPropagation()}
+    var r=rating();
+    var sheet=document.getElementById("ncapSheet");
+    var body=document.getElementById("ncapBody");
+    var links=document.getElementById("ncapLinks");
+    if(!sheet||!body){
+      alert((window.ncapExplain?window.ncapExplain(r):"Euro NCAP")+"\n\n"+(window.ncapUrl?window.ncapUrl(r):"https://www.euroncap.com/en"));
+      return;
+    }
+    document.getElementById("ncapTitle").textContent=r.none?"Euro NCAP":"Euro NCAP "+(window.ncapStars?window.ncapStars(r.stars):"");
+    body.textContent=window.ncapExplain?window.ncapExplain(r):"Euro NCAP crash test rating.";
+    var model=window.ncapUrl?window.ncapUrl(r):"https://www.euroncap.com/en";
+    var all="https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/";
+    links.innerHTML="<a class='btn wide' href='"+model+"' target='_blank' rel='noopener'>Official rating for this car</a>"+
+      "<a class='btn wide' href='"+all+"' target='_blank' rel='noopener'>All Euro NCAP models</a>";
+    sheet.className="sheet on";
+  }
   function decorate(){
     var c=car(), hero=document.getElementById("hero");
     if(!c||!hero)return;
-    var year=plateYear(c.plate);
-    var n=window.ncapFor?window.ncapFor(c.nick||c.name,year):{none:true};
-    var tax=window.vedAnnual?window.vedAnnual({year:year,fuel:c.fuel,plate:c.plate}):null;
+    var n=rating();
     var badge=hero.querySelector(".ncapBadge");
     if(!badge){
       badge=document.createElement("button");
       badge.type="button";
       badge.className="ncapBadge";
-      badge.style.cssText="position:absolute;left:8px;bottom:8px;z-index:3;background:rgba(0,0,0,.78);color:#f5d76e;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 8px;font-size:12px;font-weight:800";
+      badge.setAttribute("aria-label","Euro NCAP rating");
       hero.appendChild(badge);
-      badge.addEventListener("click",function(e){
-        e.preventDefault();e.stopPropagation();
-        var now=car();
-        var y=plateYear(now&&now.plate);
-        var r=window.ncapFor(now&&(now.nick||now.name),y);
-        alert(window.ncapExplain?window.ncapExplain(r):"Euro NCAP");
-      });
+      badge.addEventListener("click",openNcap);
     }
     badge.textContent=n.none?"NCAP":"NCAP "+(window.ncapStars?window.ncapStars(n.stars):"");
-    var lefts=document.querySelectorAll("#dues .left");
-    if(tax&&lefts&&lefts[1]&&lefts[1].dataset.ved!=="1"){
-      lefts[1].dataset.ved="1";
-      lefts[1].textContent=lefts[1].textContent+" \u00b7 "+tax.label;
-    }
   }
+  document.addEventListener("click",function(e){
+    if(e.target&&e.target.id==="ncapClose"){
+      var s=document.getElementById("ncapSheet");
+      if(s)s.className="sheet";
+    }
+  });
   setInterval(decorate,400);
   if(document.readyState==="complete")decorate(); else window.addEventListener("load",decorate);
 })();

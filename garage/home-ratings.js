@@ -32,7 +32,7 @@
     document.getElementById("ncapTitle").textContent=r.none?"Euro NCAP":"Euro NCAP "+(window.ncapStars?window.ncapStars(r.stars):"");
     body.textContent=window.ncapExplain?window.ncapExplain(r):"Euro NCAP crash test rating.";
     var model=window.ncapUrl?window.ncapUrl(r):"https://www.euroncap.com/en";
-    var all="https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/";
+    var all=window.ncapAllUrl||"https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/";
     links.innerHTML="<a class='btn wide' href='"+model+"' target='_blank' rel='noopener'>Official rating for this car</a>"+
       "<a class='btn wide' href='"+all+"' target='_blank' rel='noopener'>All Euro NCAP models</a>";
     sheet.className="sheet on";
@@ -50,7 +50,7 @@
       hero.appendChild(badge);
       badge.addEventListener("click",openNcap);
     }
-    badge.textContent=n.none?"NCAP":"NCAP "+(window.ncapStars?window.ncapStars(n.stars):"");
+    badge.textContent=n.none?"NCAP":""+(window.ncapStars?window.ncapStars(n.stars):"NCAP");
   }
   document.addEventListener("click",function(e){
     if(e.target&&e.target.id==="ncapClose"){

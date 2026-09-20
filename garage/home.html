@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
 <link rel="manifest" href="./manifest.json"/>
+<link rel="stylesheet" href="./ui.css"/>
 <link rel="apple-touch-icon" href="./icon.svg"/>
 <title>Dipstick</title>
 <style>
@@ -48,6 +49,7 @@ label{display:block;color:#9aa3b0;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;font-size:16px}
 .sec{margin:14px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3b0}
 #cBody{color:#c9c2b4;font-size:14px;line-height:1.4}
+.ncapBadge{position:absolute;left:10px;bottom:10px;z-index:3;background:rgba(8,8,10,.72);color:#fde68a;border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:5px 8px;font-size:12px;font-weight:800;letter-spacing:.03em;cursor:pointer}
 </style>
 </head>
 <body>
@@ -107,6 +109,16 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
     <button class="btn wide" type="button" id="btnCClose">Back</button>
   </div>
 </div>
+<div class="sheet" id="ncapSheet">
+  <div class="panel">
+    <h2 id="ncapTitle">Euro NCAP</h2>
+    <p id="ncapBody" style="color:#c9c2b4;font-size:14px;line-height:1.45"></p>
+    <div id="ncapLinks"></div>
+    <button class="btn wide" type="button" id="ncapClose">Back</button>
+  </div>
+</div>
+<script src="ncap.js"></script>
+<script src="ncap-url.js"></script>
 <script>
 function seed(){
   return {id:"xc60",nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",mpg:"38",
@@ -119,6 +131,30 @@ function state(){
   return {i:0,cars:[seed()]};
 }
 function save(s){localStorage.setItem("gt.garage",JSON.stringify(s))}
+function plateYear(p){
+  var k=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(/^[A-Z]{2}\d{2}[A-Z]{3}$/.test(k)){
+    var n=parseInt(k.slice(2,4),10);
+    if(n>=1&&n<=49)return 2000+n;
+    if(n>=50&&n<=99)return 2000+(n-50);
+  }
+  return null;
+}
+function ncapBadgeHtml(c){
+  var r=window.ncapFor?window.ncapFor(c.nick||c.name,plateYear(c.plate)):null;
+  var label=(r&&!r.none&&window.ncapStars)?window.ncapStars(r.stars):"NCAP \u2014";
+  return "<button type='button' class='ncapBadge' id='ncapBadge'>"+label+"</button>";
+}
+function openNcap(){
+  var c=car();
+  var r=window.ncapFor?window.ncapFor(c.nick||c.name,plateYear(c.plate)):{none:true};
+  document.getElementById("ncapTitle").textContent=r.none?"Euro NCAP":("Euro NCAP "+(window.ncapStars?window.ncapStars(r.stars):""));
+  document.getElementById("ncapBody").textContent=window.ncapExplain?window.ncapExplain(r):"Euro NCAP crash test rating for this generation.";
+  var model=window.ncapUrl?window.ncapUrl(r):"https://www.euroncap.com/en";
+  var all=window.ncapAllUrl||"https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/";
+  document.getElementById("ncapLinks").innerHTML="<a class='btn wide' href='"+model+"' target='_blank' rel='noopener'>Official rating for this car</a><a class='btn wide' href='"+all+"' target='_blank' rel='noopener'>All Euro NCAP models</a>";
+  document.getElementById("ncapSheet").className="sheet on";
+}
 function car(){var s=state();return s.cars[s.i]||s.cars[0]}
 function nice(iso){if(!iso)return "Set date";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
 function daysLeft(iso){
@@ -203,7 +239,7 @@ function paint(){
   var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
   var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
   hero.style.backgroundImage=c.photo?"none":"";
-  hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
+  hero.innerHTML=img+hint+ncapBadgeHtml(c)+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
   document.getElementById("caption").textContent=c.nick||c.name||"Car";
   document.getElementById("dots").textContent="Car "+(s.i+1)+" of "+s.cars.length;
   var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
@@ -258,7 +294,8 @@ function openSheet(mode){
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
 }
-document.getElementById("hero").onclick=function(){document.getElementById("photoPick").click()};
+document.getElementById("hero").onclick=function(e){if(e.target.closest(".ncapBadge")){openNcap();return;}document.getElementById("photoPick").click()};
+document.getElementById("ncapClose").onclick=function(){document.getElementById("ncapSheet").className="sheet"};
 document.getElementById("photoPick").onchange=function(){savePic(this.files&&this.files[0])};
 document.getElementById("prev").onclick=function(){var s=state();s.i=(s.i-1+s.cars.length)%s.cars.length;save(s);paint()};
 document.getElementById("next").onclick=function(){var s=state();s.i=(s.i+1)%s.cars.length;save(s);paint()};

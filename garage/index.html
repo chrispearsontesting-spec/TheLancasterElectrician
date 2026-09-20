@@ -106,7 +106,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <script src="cars-uk-6.js"></script>
 <script src="cars-uk-7.js"></script>
 <script>
-var PRICE={date:"14 Sep 2026",petrol:169.6,diesel:191.6,electric:26.1,source:"UK average"};
+var PRICE={date:"20 Sep 2026",petrol:171.1,diesel:195.2,electric:26.1,source:"UK pump average"};
 var car=null,lastTrip=null,map,line,UK_GALLON=4.54609,MILE=1609.34;
 function $(id){return document.getElementById(id)}
 function money(n){return (n==null||isNaN(n))?"-":"\u00a3"+n.toFixed(2)}
@@ -191,23 +191,20 @@ if(!window.TRIPS||!window.TRIPS.length){window.TRIPS=window.TRIPSPECS&&window.TR
 function loadZipSpecs(){return fetch("car-specs-sheet-v2.zip").then(function(r){if(!r.ok)throw new Error("zip");return r.arrayBuffer()}).then(function(buf){return JSZip.loadAsync(buf)}).then(function(z){var f=z.file("car-specs-lookup.js");if(!f)throw new Error("no js");return f.async("string")}).then(function(code){eval(code);$("libLine").textContent=lib().length.toLocaleString()+" cars loaded"}).catch(function(){})}
 function todayKey(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function applyLivePrices(p){if(!p)return;if(+p.petrol)PRICE.petrol=+p.petrol;if(+p.diesel)PRICE.diesel=+p.diesel;if(+p.electric)PRICE.electric=+p.electric;PRICE.date=p.date||PRICE.date;PRICE.source=p.source||PRICE.source;paintPrices();if(lastTrip)paintResult(lastTrip.title,lastTrip.oneMiles||lastTrip.miles,lastTrip.oneSecs||lastTrip.secs,lastTrip.roads)}
-function avgFromStations(data){var e=[],d=[],st=data.stations||data.Sites||[];st.forEach(function(s){var p=s.prices||s.Prices||{};var e10=p.E10||p.e10||p.unleaded;var b7=p.B7||p.b7||p.diesel;if(+e10>80&&+e10<300)e.push(+e10);if(+b7>80&&+b7<300)d.push(+b7)});if(!e.length||!d.length)return null;return{petrol:Math.round((e.reduce(function(a,b){return a+b},0)/e.length)*10)/10,diesel:Math.round((d.reduce(function(a,b){return a+b},0)/d.length)*10)/10,n:st.length,updated:data.last_updated||data.lastUpdated||""}}
+function latestAvg(j){if(!j)return null;if(j.summary&&+j.summary.currentAvg>80)return +j.summary.currentAvg;var t=j.trends||j.data||[];if(!t.length)return null;var last=t[t.length-1];return +(last.avgPricePence||last.average_price||last.avg||0)||null}
 function loadLivePrices(){
-  var key="gt.fuel.prices.v2", day=todayKey();
+  var key="gt.fuel.prices.v3", day=todayKey();
   try{var cached=JSON.parse(localStorage.getItem(key)||"null");if(cached&&cached.day===day){applyLivePrices(cached);}}catch(e){}
   fetch("prices.json?t="+Date.now()).then(function(r){return r.json()}).then(function(p){
     applyLivePrices({petrol:+p.petrol_ppl||PRICE.petrol,diesel:+p.diesel_ppl||PRICE.diesel,electric:+p.electric_pkwh||PRICE.electric,date:p.date||PRICE.date,source:p.source||"saved snapshot"});
   }).catch(function(){});
-  var feeds=[
-    "https://storelocator.asda.com/fuel_prices_data.json",
-    "https://www.sgnretail.uk/files/data/SGN_daily_fuel_prices.json",
-    "https://www.morrisons.com/fuel-prices/fuel.json"
-  ];
-  Promise.all(feeds.map(function(u){return fetch(u,{mode:"cors"}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})})).then(function(list){
-    var petrols=[],diesels=[];
-    list.forEach(function(data){if(!data)return;var a=avgFromStations(data);if(!a)return;petrols.push(a.petrol);diesels.push(a.diesel)});
-    if(!petrols.length)return;
-    var live={day:day,petrol:Math.round((petrols.reduce(function(a,b){return a+b},0)/petrols.length)*10)/10,diesel:Math.round((diesels.reduce(function(a,b){return a+b},0)/diesels.length)*10)/10,electric:PRICE.electric,date:new Date().toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}),source:"live UK pumps"};
+  Promise.all([
+    fetch("https://fuelcosts.co.uk/api/prices/history?type=uk&fuel=E10&days=3&aggregate=daily").then(function(r){return r.ok?r.json():null}).catch(function(){return null}),
+    fetch("https://fuelcosts.co.uk/api/prices/history?type=uk&fuel=B7_STANDARD&days=3&aggregate=daily").then(function(r){return r.ok?r.json():null}).catch(function(){return null})
+  ]).then(function(pair){
+    var petrol=latestAvg(pair[0]), diesel=latestAvg(pair[1]);
+    if(!(petrol>80&&diesel>80)) return;
+    var live={day:day,petrol:Math.round(petrol*10)/10,diesel:Math.round(diesel*10)/10,electric:PRICE.electric,date:new Date().toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}),source:"UK pump average"};
     try{localStorage.setItem(key,JSON.stringify(live))}catch(e){}
     applyLivePrices(live);
   }).catch(function(){});

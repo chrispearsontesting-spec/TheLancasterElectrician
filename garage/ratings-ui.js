@@ -6,12 +6,15 @@ window.ratingsHtml=function(name,year,fuel,plate,co2){
   var co2Note=co2!=null
     ? ("This car is recorded at "+co2+" g/km. That figure sets the pre-2017 tax band and is used for clean-air rules.")
     : "DVLA Vehicle Enquiry returns official CO\u2082 for the plate. Until that key is live we only know the year from the registration.";
+  var ncapBody=(window.ncapExplain?window.ncapExplain(n):"")+
+    " <a class='btn grey' href='"+(window.ncapUrl?window.ncapUrl(n):"https://www.euroncap.com/en")+"' target='_blank' rel='noopener'>Official rating page</a>"+
+    " <a class='btn grey' href='https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/' target='_blank' rel='noopener'>All Euro NCAP models</a>";
   function row(title,value,cls,body){
     return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+cls+"'>"+value+"</span>"+title+"</button><div class='more'><p>"+body+"</p></div></div>";
   }
   return row("Annual tax", tax.label||"Tax", tax.ok?"low":"med", tax.note||"")
     + row("CO\u2082", co2Label, co2!=null?"low":"med", co2Note)
-    + row("Euro NCAP", stars, n.none?"med":"low", window.ncapExplain?window.ncapExplain(n):"");
+    + row("Euro NCAP", stars, n.none?"med":"low", ncapBody);
 };
 if(!window._ratingsTap){
   window._ratingsTap=true;

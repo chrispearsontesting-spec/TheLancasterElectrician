@@ -1,0 +1,10 @@
+/* Shared Dipstick buttons — dark disc + thin grey ring */
+a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost{
+  background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%) !important;
+  color:#fff !important;
+  text-decoration:none;
+  border:1px solid #6b7280 !important;
+  border-radius:999px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+.btn:after{display:none !important}

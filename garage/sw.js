@@ -1,5 +1,5 @@
 self.addEventListener("install", function(e){
-  e.waitUntil(caches.open("dipstick-v1").then(function(c){
+  e.waitUntil(caches.open("dipstick-v2").then(function(c){
     return c.addAll(["./home.html","./index.html","./service.html","./manifest.json","./icon.svg"]);
   }));
   self.skipWaiting();

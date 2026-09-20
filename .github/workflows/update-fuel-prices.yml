@@ -1,0 +1,48 @@
+name: Update UK fuel prices
+on:
+  schedule:
+    - cron: "15 6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch UK averages
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request, datetime
+          def latest(url):
+              with urllib.request.urlopen(url, timeout=30) as r:
+                  j=json.load(r)
+              if j.get("summary") and j["summary"].get("currentAvg"):
+                  return float(j["summary"]["currentAvg"])
+              t=j.get("trends") or j.get("data") or []
+              if not t: raise SystemExit("no trends "+url)
+              last=t[-1]
+              return float(last.get("avgPricePence") or last.get("average_price"))
+          p=latest("https://fuelcosts.co.uk/api/prices/history?type=uk&fuel=E10&days=3&aggregate=daily")
+          d=latest("https://fuelcosts.co.uk/api/prices/history?type=uk&fuel=B7_STANDARD&days=3&aggregate=daily")
+          if not (80 < p < 400 and 80 < d < 400):
+              raise SystemExit("bad prices %s %s"%(p,d))
+          today=datetime.datetime.utcnow().strftime("%d %b %Y")
+          out={
+            "date": today,
+            "petrol_ppl": round(p,1),
+            "diesel_ppl": round(d,1),
+            "electric_pkwh": 26.1,
+            "source": "UK pump average "+today
+          }
+          open("garage/prices.json","w").write(json.dumps(out, indent=2)+"\n")
+          print(out)
+          PY
+      - name: Commit if changed
+        run: |
+          git config user.name "fuel-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add garage/prices.json
+          git diff --cached --quiet && echo "No price change" && exit 0
+          git commit -m "chore: daily UK fuel prices"
+          git push

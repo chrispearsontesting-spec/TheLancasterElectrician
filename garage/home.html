@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="./icon.svg"/>
 <title>Dipstick</title>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--ice:#9fd8ff;--spot:#1ed760;--line:rgba(255,255,255,.1)}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--ice:#9fd8ff;--ring:#6b7280;--line:rgba(255,255,255,.1)}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
 .hero{position:relative;height:150px;border-radius:16px 16px 0 0;overflow:hidden;background:#2a2a24 url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=60) center/cover;cursor:pointer}
@@ -19,7 +19,7 @@ body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-fa
 .plate .reg{background:#f4d000;color:#111;padding:5px 7px;letter-spacing:.06em;font-size:13px}
 .bar{background:#16120e;border-radius:0 0 16px 16px;padding:8px 8px 10px;margin-bottom:10px}
 .nameRow{display:grid;grid-template-columns:36px 36px 1fr 36px 36px;align-items:center;gap:6px}
-.nameRow button{width:36px;height:36px;border-radius:50%;border:2px solid var(--spot);background:radial-gradient(circle at 50% 32%,#6a6a6a 0%,#2b2b2b 42%,#111 78%);color:#fff;font-size:16px;cursor:pointer;box-shadow:0 0 10px rgba(30,215,96,.28),inset 0 1px 0 rgba(255,255,255,.28)}
+.nameRow button{width:36px;height:36px;border-radius:50%;border:1px solid var(--ring);background:radial-gradient(circle at 50% 32%,#6a6a6a 0%,#2b2b2b 42%,#111 78%);color:#fff;font-size:16px;cursor:pointer;box-shadow:0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.28)}
 .nameRow .ico{font-weight:800;font-size:20px;line-height:1}
 .name{text-align:center;font-weight:800;font-size:17px;line-height:1.2}
 .dots{text-align:center;color:#6b7280;font-size:12px;margin:6px 0 0}
@@ -39,8 +39,8 @@ body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-fa
 .cOver .when,.cOver .left{color:#ff2a2a;animation:flashRed .55s ease-in-out infinite}
 @keyframes flashRed{0%,100%{opacity:1}50%{opacity:.28}}
 .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
-.btn{display:inline-block;background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);color:#fff;text-decoration:none;border:2px solid var(--spot);border-radius:999px;padding:8px 12px;font-weight:800;font-size:12px;text-align:center;min-width:92px;cursor:pointer;box-shadow:0 0 10px rgba(30,215,96,.25),inset 0 1px 0 rgba(255,255,255,.22)}
-.wide{display:block;padding:14px;border-radius:999px;font-size:15px;width:100%;margin-top:10px;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;border:3px solid var(--spot);box-shadow:0 0 14px rgba(30,215,96,.32),inset 0 1px 0 rgba(255,255,255,.28)}
+.btn{display:inline-block;background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);color:#fff;text-decoration:none;border:1px solid var(--ring);border-radius:999px;padding:8px 12px;font-weight:800;font-size:12px;text-align:center;min-width:92px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.wide{display:block;padding:14px;border-radius:999px;font-size:15px;width:100%;margin-top:10px;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;border:1px solid var(--ring);box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
 .sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
 .sheet.on{display:block}
 .panel{background:#14161b;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}

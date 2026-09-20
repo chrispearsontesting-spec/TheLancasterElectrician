@@ -30,11 +30,14 @@ body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-fa
 .when{margin:4px 0 0;color:var(--ice);font-size:17px;font-weight:800}
 .left{margin:2px 0 0;color:#9aa3b0;font-size:12px}
 .c1 .when,.c1 .left{color:#9fd8ff}
-.c2 .when,.c2 .left{color:#7eb8ff}
-.c3 .when,.c3 .left{color:#f0c56a}
-.c4 .when,.c4 .left{color:#f08a4a}
-.c5 .when,.c5 .left{color:#ef4444;animation:flashRed .85s ease-in-out infinite}
-@keyframes flashRed{0%,100%{opacity:1}50%{opacity:.35}}
+.c2 .when,.c2 .left{color:#7ec8e8}
+.c3 .when,.c3 .left{color:#86c48a}
+.c4 .when,.c4 .left{color:#d4c45a}
+.c5 .when,.c5 .left{color:#e89b45}
+.c6 .when,.c6 .left{color:#e85d3a}
+.cFlash .when,.cFlash .left{color:#ef4444;animation:flashRed .85s ease-in-out infinite}
+.cOver .when,.cOver .left{color:#ff2a2a;animation:flashRed .55s ease-in-out infinite}
+@keyframes flashRed{0%,100%{opacity:1}50%{opacity:.28}}
 .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .btn{display:inline-block;background:#171a20;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:11px;padding:8px 12px;font-weight:800;font-size:12px;text-align:center;min-width:92px;cursor:pointer}
 .wide{display:block;padding:13px;border-radius:14px;font-size:15px;width:100%;margin-top:8px;background:var(--ice);color:#0b0c0f;border:0}
@@ -134,10 +137,13 @@ function leftTxt(iso){
 function tone(iso){
   var d=daysLeft(iso);
   if(d==null)return "";
-  if(d<=7)return " c5";
-  if(d<=31)return " c4";
-  if(d<=90)return " c3";
-  if(d<=180)return " c2";
+  if(d<0)return " cOver";
+  if(d<=31)return " cFlash";
+  if(d<=60)return " c6";
+  if(d<=120)return " c5";
+  if(d<=180)return " c4";
+  if(d<=240)return " c3";
+  if(d<=300)return " c2";
   return " c1";
 }
 function beltDue(c){
@@ -173,7 +179,7 @@ function openBook(kind){
   var c=car(), j=jobCopy(c,kind);
   document.getElementById("cTitle").textContent=j.title;
   var who=c.motName?c.motName:"Add your garage in Edit";
-  document.getElementById("cBody").textContent=who+(c.motPhone?" · "+c.motPhone:"");
+  document.getElementById("cBody").textContent=who+(c.motPhone?" \u00b7 "+c.motPhone:"");
   var html="";
   if(c.motPhone) html+="<a class='btn wide' href='tel:"+String(c.motPhone).replace(/\s/g,"")+"'>Call</a>";
   if(c.motEmail) html+="<a class='btn wide' href='"+mail(c,j.subject,j.body)+"'>Email</a>";
@@ -190,7 +196,7 @@ function btns(list){
   }).join("")+"</div>";
 }
 function row(title,iso,extra,buttons){
-  return "<div class='item"+tone(iso)+"'><div><h3>"+title+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" · "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  return "<div class='item"+tone(iso)+"'><div><h3>"+title+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");

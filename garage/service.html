@@ -41,26 +41,34 @@ select,input[type=search]{width:100%;background:#171a20;border:1px solid var(--l
 <a class="btn" href="home.html">Back</a>
 <script>
 var WORK=[
-  {id:"service",name:"Interim service (oil + filter)",buy:"service kit",hrs:1,plo:35,phi:90,note:"Full service is more."},
-  {id:"full",name:"Full service",buy:"full service kit",hrs:1.6,plo:55,phi:140,note:"Oil, filters and plugs or fuel filter."},
-  {id:"beltwp",name:"Timing belt + water pump",buy:"timing belt kit water pump",hrs:4.5,plo:80,phi:180,note:"Do the pump while it is open. Some engines use a chain."},
-  {id:"belt",name:"Timing belt only",buy:"timing belt kit",hrs:4,plo:40,phi:120,note:"Usually false economy not to do the pump."},
-  {id:"clutch",name:"Clutch kit",buy:"clutch kit",hrs:6,plo:160,phi:350,note:"Gearbox out. Dual-mass flywheel extra if worn."},
-  {id:"clutchdmf",name:"Clutch + dual-mass flywheel",buy:"clutch kit dual mass flywheel",hrs:6.5,plo:350,phi:700,note:"Common on diesels."},
-  {id:"shaft",name:"Driveshaft (one side)",buy:"driveshaft",hrs:2,plo:80,phi:220,note:"Clicking on lock is the usual clue."},
-  {id:"fpads",name:"Front pads and discs",buy:"front brake pads discs",hrs:1.5,plo:80,phi:220,note:""},
-  {id:"rpads",name:"Rear pads and discs",buy:"rear brake pads discs",hrs:1.5,plo:70,phi:200,note:""},
-  {id:"batt",name:"Battery",buy:"car battery",hrs:0.4,plo:70,phi:180,note:"Stop-start batteries cost more."},
-  {id:"alt",name:"Alternator",buy:"alternator",hrs:2,plo:120,phi:350,note:""},
-  {id:"start",name:"Starter motor",buy:"starter motor",hrs:1.8,plo:100,phi:280,note:""},
-  {id:"damp",name:"Pair of dampers",buy:"shock absorbers",hrs:2,plo:120,phi:350,note:""}
+  {id:"service",name:"Interim service (oil + filter)",buy:"service kit",hrs:1,plo:40,phi:95,note:"Oil and filter. Full service is the next step."},
+  {id:"full",name:"Full service",buy:"full service kit",hrs:1.8,plo:70,phi:160,note:"Oil, filters and plugs or fuel filter."},
+  {id:"beltwp",name:"Timing belt + water pump",buy:"timing belt kit water pump",hrs:5,plo:90,phi:220,note:"Do the pump while it is open. Some engines use a chain."},
+  {id:"belt",name:"Timing belt only",buy:"timing belt kit",hrs:4.5,plo:45,phi:140,note:"Usually false economy not to do the pump."},
+  {id:"clutch",name:"Clutch kit",buy:"clutch kit",hrs:6.5,plo:180,phi:380,note:"Gearbox out. Dual-mass flywheel extra if worn."},
+  {id:"clutchdmf",name:"Clutch + dual-mass flywheel",buy:"clutch kit dual mass flywheel",hrs:7,plo:380,phi:750,note:"Common on diesels."},
+  {id:"shaft",name:"Driveshaft (one side)",buy:"driveshaft",hrs:2.2,plo:90,phi:240,note:"Clicking on lock is the usual clue."},
+  {id:"fpads",name:"Front pads and discs",buy:"front brake pads discs",hrs:1.6,plo:85,phi:240,note:"Premium / SUV discs cost more."},
+  {id:"rpads",name:"Rear pads and discs",buy:"rear brake pads discs",hrs:1.6,plo:75,phi:220,note:""},
+  {id:"batt",name:"Battery",buy:"car battery",hrs:0.5,plo:80,phi:200,note:"Stop-start AGM batteries sit at the top of the range."},
+  {id:"alt",name:"Alternator",buy:"alternator",hrs:2.2,plo:130,phi:380,note:""},
+  {id:"start",name:"Starter motor",buy:"starter motor",hrs:2,plo:110,phi:300,note:""},
+  {id:"damp",name:"Pair of dampers",buy:"shock absorbers",hrs:2.2,plo:130,phi:380,note:"Air springs are a different, dearer job."}
 ];
-var RATE=80, MULT={small:0.85,family:1,suv:1.15,premium:1.35};
+var RATE=85;
 function car(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s.cars[s.i]||s.cars[0]}catch(e){}
-  return {nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",cls:"suv"};
+  return {nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel"};
 }
-function qname(c){var n=String(c.nick||c.name||"").trim();return n||"car"}
+function qname(c){return String(c.nick||c.name||"").trim()||"car"}
+function clsOf(c){
+  var n=qname(c).toLowerCase()+" "+String(c.fuel||"");
+  if(/bmw|mercedes|benz|audi|porsche|lexus|jaguar|land rover|range rover|volvo|mini cooper|maserati|alfa romeo/.test(n)) return {k:"premium",m:1.4,lab:"premium"};
+  if(/xc60|xc90|xc40|x5|x3|q5|q7|touareg|sharan|discovery|defender|rav4|cr-v|sportage|tucson|kuga|qashqai|tiguan|karoq|ateca|tucson|outlander|santa fe|forester/.test(n)) return {k:"suv",m:1.2,lab:"SUV"};
+  if(/fiesta|corsa|polo|ibiza|fabia|yaris|aygo|108|107|i10|i20|picanto|up!|citigo|adam|micra|swift|jazz/.test(n)) return {k:"small",m:0.85,lab:"small car"};
+  return {k:"family",m:1,lab:"family car"};
+}
+function gbp(n){return "\u00a3"+Math.round(n/10)*10}
 function row(n,p){return "<div class='item'><span>"+n+"</span><b>"+p+"</b></div>"}
 function term(){
   var typed=document.getElementById("qBox").value.trim();
@@ -78,17 +86,21 @@ function links(){
   document.getElementById("btnHaynes").href="https://uk.haynes.com/search?q="+encodeURIComponent(name);
 }
 function draw(){
-  var c=car(), name=qname(c), cls=c.cls||"suv";
-  document.getElementById("carLine").textContent=name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"");
+  var c=car(), name=qname(c), cls=clsOf(c);
+  document.getElementById("carLine").textContent=name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"")+" \u00b7 "+cls.lab+" guide";
   var typed=document.getElementById("qBox").value.trim();
   var id=document.getElementById("jobPick").value;
   var job=WORK.filter(function(w){return w.id===id})[0];
   if(job && !typed){
-    var m=MULT[cls]||1, lab=job.hrs*RATE*m;
-    var lo=Math.round((lab*0.85+job.plo*m)/10)*10;
-    var hi=Math.round((lab*1.2+job.phi*m)/10)*10;
-    document.getElementById("quotes").innerHTML=row("Independent","\u00a3"+lo+"-\u00a3"+hi)+row("Main dealer","\u00a3"+Math.round(lo*1.35/10)*10+"-\u00a3"+Math.round(hi*1.45/10)*10);
-    document.getElementById("jobNote").textContent=job.note||"Guide only.";
+    var m=cls.m, lab=job.hrs*RATE*m;
+    var partsLo=job.plo*m, partsHi=job.phi*m;
+    var indLo=lab*0.9+partsLo, indHi=lab*1.15+partsHi;
+    var dealLo=indLo*1.45, dealHi=indHi*1.55;
+    document.getElementById("quotes").innerHTML=
+      row("DIY (parts only)",gbp(partsLo)+"\u2013"+gbp(partsHi))+
+      row("Independent",gbp(indLo)+"\u2013"+gbp(indHi))+
+      row("Main dealer",gbp(dealLo)+"\u2013"+gbp(dealHi));
+    document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"UK 2026 guide for a "+cls.lab+". Not an invoice. GSF/eBay show live part prices for this car.";
     document.getElementById("quoteBox").className="card";
   }else document.getElementById("quoteBox").className="card hide";
   links();
@@ -96,7 +108,7 @@ function draw(){
 var sel=document.getElementById("jobPick");
 sel.innerHTML="<option value=''>Select a job</option>"+WORK.map(function(w){return "<option value='"+w.id+"'>"+w.name+"</option>"}).join("");
 sel.onchange=function(){document.getElementById("qBox").value="";draw()};
-document.getElementById("qForm").addEventListener("submit",function(e){e.preventDefault();draw();});
+document.getElementById("qForm").addEventListener("submit",function(e){e.preventDefault();document.getElementById("status").textContent="Search ready — GSF, eBay and YouTube now use that part.";document.getElementById("status").className="status ok";draw();});
 (function(){
   var p=new URLSearchParams(location.search);
   if(p.get("job")) sel.value=p.get("job");

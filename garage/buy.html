@@ -21,7 +21,14 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .high{background:#5b1d1d;color:#fecaca}
 .med{background:#4a3514;color:#fde68a}
 .low{background:#1e3a34;color:#a7f3d0}
-h3{margin:12px 0 6px;font-size:16px}
+.count{float:right;color:var(--dim);font-size:12px;font-weight:700}
+.acc{border-bottom:1px solid var(--line)}
+.acc:last-child{border-bottom:0}
+.accBtn{width:100%;background:none;border:0;color:var(--ink);text-align:left;padding:14px 0;font-size:16px;font-weight:800;cursor:pointer}
+.accBtn:after{content:"+";float:right;color:var(--dim);font-weight:700}
+.acc.open .accBtn:after{content:"\2212"}
+.accBody{display:none;padding:0 0 12px}
+.acc.open .accBody{display:block}
 .fault{border-bottom:1px solid var(--line)}
 .fault:last-child{border-bottom:0}
 .faultBtn{width:100%;background:none;border:0;color:var(--ink);text-align:left;padding:12px 0;font-size:15px;font-weight:800;cursor:pointer}
@@ -36,7 +43,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">Tax and Euro NCAP sit under the car. Tap an issue for the job detail.</p>
+<p class="sub">One screen. Tap a heading to open it.</p>
 <label>Number plate</label>
 <input id="plate" type="text" placeholder="L806 DKH" autocapitalize="characters"/>
 <label>Car search</label>
@@ -44,23 +51,22 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <button class="btn" type="button" id="go">Show guide</button>
 <button class="btn grey" type="button" id="saveBtn">Save to viewings</button>
 <p class="muted" id="status"></p>
-<div class="card"><b id="carName">Car</b><p class="muted" id="carMeta"></p><div id="ratings"></div></div>
-<div class="card"><h3>Known weak points</h3><div id="faults"></div></div>
-<div class="card"><h3>Should already have been done</h3><ul id="dues"></ul></div>
-<div class="card"><h3>On the viewing</h3><ul id="views"></ul></div>
 <div class="card">
-  <h3>MOT history</h3>
-  <div id="motBox"><p class="muted">Official tests load here once the proxy URL is set.</p></div>
-  <a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a>
+  <b id="carName">Car</b>
+  <p class="muted" id="carMeta"></p>
+  <div class="acc"><button type="button" class="accBtn">Ratings</button><div class="accBody" id="ratings"></div></div>
+  <div class="acc"><button type="button" class="accBtn">Known weak points <span class="count" id="faultCount"></span></button><div class="accBody" id="faults"></div></div>
+  <div class="acc"><button type="button" class="accBtn">Should already have been done</button><div class="accBody"><ul id="dues"></ul></div></div>
+  <div class="acc"><button type="button" class="accBtn">On the viewing</button><div class="accBody"><ul id="views"></ul></div></div>
+  <div class="acc"><button type="button" class="accBtn">Major MOT failures <span class="count" id="motMajorCount">0</span></button><div class="accBody" id="motMajors"><p class="muted">Load a plate to see official fails.</p></div></div>
+  <div class="acc"><button type="button" class="accBtn">MOT history <span class="count" id="motHistCount"></span></button><div class="accBody"><div id="motBox"><p class="muted">Official tests load here.</p></div><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a></div></div>
 </div>
 <div class="row">
-  <a class="btn grey" id="yt" href="#" target="_blank" rel="noopener">YouTube guide</a>
+  <a class="btn grey" id="yt" href="#" target="_blank" rel="noopener">YouTube</a>
   <a class="btn grey" id="parts" href="#" target="_blank" rel="noopener">Parts</a>
 </div>
 <div class="card saved">
-  <h3>Saved viewings</h3>
-  <div id="savedList"></div>
-  <a class="btn grey" href="view.html">Open viewing page</a>
+  <div class="acc"><button type="button" class="accBtn">Saved viewings</button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Open viewing page</a></div></div>
 </div>
 <a class="btn grey" href="home.html">Back</a>
 <script src="cars-uk-1.js"></script>
@@ -143,7 +149,7 @@ function paintSaved(){
 function faultBlock(f,pack){
   var adv=(window.adviceFor?window.adviceFor(f.t,pack):{})||{};
   var href="service.html?job="+encodeURIComponent(adv.job||"beltwp")+"&q="+encodeURIComponent(adv.buy||f.t);
-  return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+f.s+"'>"+f.s+"</span>"+f.t+"</button><div class='more'><p>"+(f.d||"")+"</p><p><b>When it is due.</b> "+(adv.interval||"")+"</p><p><b>What to ask for.</b> "+(adv.detail||"")+" When official mileage is linked we will say if this should already have been done.</p><a class='btn grey' href='"+href+"'>Likely cost and parts</a></div></div>";
+  return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+f.s+"'>"+f.s+"</span>"+f.t+"</button><div class='more'><p>"+(f.d||"")+"</p><p><b>When it is due.</b> "+(adv.interval||"")+"</p><p><b>What to ask for.</b> "+(adv.detail||"")+"</p><a class='btn grey' href='"+href+"'>Likely cost and parts</a></div></div>";
 }
 function paint(car){
   var classic=findClassic(car.name);
@@ -161,7 +167,9 @@ function paint(car){
   if(year)meta.push("reg ~"+year);
   $("carMeta").textContent=meta.join(" \u00b7 ");
   if(window.ratingsHtml)$("ratings").innerHTML=window.ratingsHtml(title,year,car.fuel,car.plate);
-  $("faults").innerHTML=(pack.faults||[]).map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>Generic checks still apply.</p>";
+  var faults=pack.faults||[];
+  $("faults").innerHTML=faults.map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>Generic checks still apply.</p>";
+  $("faultCount").textContent=faults.length?String(faults.length):"";
   $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
   var views=(year&&year<2001&&window.VIEW_CHECKS_CLASSIC)?window.VIEW_CHECKS_CLASSIC:(window.VIEW_CHECKS||[]);
   $("views").innerHTML=views.map(function(x){return "<li>"+x+"</li>"}).join("");
@@ -182,13 +190,17 @@ function run(){
     paint({name:name,plate:plate,fuel:guessFuel(name),year:plateYear(plate)});
   }catch(err){$("status").textContent="Search error: "+err.message}
 }
-$("faults").addEventListener("click",function(e){
-  var b=e.target.closest(".faultBtn"); if(!b)return;
-  var box=b.parentNode; box.className=box.className.indexOf("open")>=0?"fault":"fault open";
-});
-$("motBox").addEventListener("click",function(e){
-  var b=e.target.closest(".faultBtn"); if(!b)return;
-  var box=b.parentNode; box.className=box.className.indexOf("open")>=0?"fault":"fault open";
+document.addEventListener("click",function(e){
+  var acc=e.target.closest(".accBtn");
+  if(acc){
+    var box=acc.parentNode;
+    box.className=box.className.indexOf("open")>=0?"acc":"acc open";
+    return;
+  }
+  var b=e.target.closest(".faultBtn");
+  if(!b)return;
+  var box=b.parentNode;
+  box.className=box.className.indexOf("open")>=0?"fault":"fault open";
 });
 $("go").onclick=run;
 $("saveBtn").onclick=function(){

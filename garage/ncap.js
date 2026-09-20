@@ -107,6 +107,16 @@ window.ncapExplain=function(r){
   var t="Euro NCAP "+r.stars+" star"+(r.stars===1?"":"s")+(r.tested?(" (tested "+r.tested+")"):".");
   if(r.old) t+=" Tested under older rules — not as strict as a 2020s 5-star.";
   else t+=" Adult, child, pedestrian and safety-assist scores sit behind the stars.";
-  t+=" Stars compare that generation of car, not every trim. Tap through to the official result if you want the percentages.";
+  if(r.adult) t+=" Adult "+r.adult+"%.";
+  if(r.child) t+=" Child "+r.child+"%.";
+  if(r.vr) t+=" Vulnerable road users "+r.vr+"%.";
+  if(r.sa) t+=" Safety assist "+r.sa+"%.";
+  t+=" Stars compare that generation of car, not every trim. Use the buttons below for the official page and every other model.";
   return t;
 };
+window.ncapUrl=function(r){
+  var q=(r&&r.k&&r.k.length)?r.k.join(" "):"";
+  if(!q) return "https://www.euroncap.com/en";
+  return "https://www.euroncap.com/en/?s="+encodeURIComponent(q);
+};
+window.ncapAllUrl="https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/";

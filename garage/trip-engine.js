@@ -33,3 +33,9 @@ function scoreTrip(o){
   var gbp=tripCost(miles, mpg, o.ppl);
   return {miles:miles, mins:mins, mph:mph, mpg:mpg, gbp:gbp, rated:rated};
 }
+function moneyTxt(n){return "\u00a3"+(+n||0).toFixed(2)}
+function pushLoggedRoute(entry){
+  var list=tripStore().filter(function(x){return !(x.title===entry.title && x.source==="route")});
+  list.unshift(entry);
+  saveTrips(list);
+}

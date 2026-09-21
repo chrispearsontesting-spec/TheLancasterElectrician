@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="./ui.css"/>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12);--ring:#6b7280}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12);--ring:#6b7280;--ice:#9fd8ff}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 24px}
 h1{font-size:22px;margin:0 0 10px}
@@ -17,10 +17,17 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .btn{width:100%;border:0;border-radius:999px;padding:13px;font-weight:800;margin-top:8px;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;border:1px solid var(--ring)}
 .ghost{background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);color:#fff;border:1px solid var(--ring)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
-.prices{background:#14161b;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;margin:0 0 14px}
-.prices .kicker{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px}
-.prices #priceLine{color:var(--ink);font-size:18px;font-weight:800;line-height:1.35;margin:0}
+.prices{background:linear-gradient(180deg,#1a1d24 0%,#12141a 100%);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px 14px 12px;margin:0 0 16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.prices .kicker{color:#9aa3b0;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pgrid.three{grid-template-columns:1fr 1fr 1fr}
+.pcell{background:#0e1014;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 8px;text-align:center}
+.pcell span{display:block;color:#9aa3b0;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.pcell b{display:block;color:#f3efe6;font-size:22px;margin-top:4px;font-weight:800}
+.pcell em{display:block;color:#9fd8ff;font-size:11px;font-style:normal;margin-top:2px}
+.prices .when{margin:10px 0 0;color:#9aa3b0;font-size:11px;text-align:center}
 .hit{width:100%;text-align:left;background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);border:1px solid var(--ring);color:#fff;border-radius:999px;padding:12px 14px;margin-top:8px;font-weight:700}
 .err{color:#e7b1a0;font-size:13px;min-height:16px}
 .muted{color:var(--dim);font-size:12px}
@@ -37,17 +44,17 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .opt{flex:1;display:flex;align-items:center;gap:8px;background:#171a20;border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);font-size:14px;font-weight:600}
 .opt input{width:18px;height:18px;accent-color:#9aa3b0;padding:0;margin:0}
 #yearBox{margin-top:8px}
-.mpgWrap{display:grid;grid-template-columns:1fr 140px 1fr;align-items:end;gap:8px;margin:4px 0 2px}
-.mpgWrap .pad{height:1px}
-.mpgWrap input{padding:9px;font-size:15px;text-align:center}
-.mpgWrap label{text-align:center}
 </style>
 </head>
 <body>
 <h1>Route cost</h1>
 <div class="prices">
-  <p class="kicker">UK fuel today</p>
-  <p id="priceLine">Diesel · petrol</p>
+  <p class="kicker">UK average fuel price</p>
+  <div class="pgrid" id="priceGrid">
+    <div class="pcell"><span>Diesel</span><b id="pDiesel">195.2p</b><em>per litre</em></div>
+    <div class="pcell"><span>Petrol</span><b id="pPetrol">171.1p</b><em>per litre</em></div>
+  </div>
+  <p class="when" id="priceWhen"></p>
 </div>
 <p class="muted" id="libLine" style="display:none"></p>
 <p class="car" id="carLine" style="display:none"></p>
@@ -56,18 +63,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <span class="hint" id="qHint" style="display:none"></span>
 <label>From</label>
 <input id="from"/>
-<div class="mpgWrap">
-  <div class="pad"></div>
-  <div>
-    <label id="mpgLabel">Diesel MPG</label>
-    <input id="mpgOverride" type="number" step="0.1" value="38"/>
-  </div>
-  <div class="pad"></div>
-</div>
-<div id="phevBox" class="hide">
-  <label>Electric range (miles)</label>
-  <input id="evRange" type="number" placeholder="e.g. 30"/>
-</div>
 <label>To</label>
 <input id="to"/>
 <div class="opts">
@@ -75,10 +70,18 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
   <label class="opt"><input type="checkbox" id="isYear" checked/> Yearly commute</label>
 </div>
 <div id="yearBox">
-  <div class="row">
+  <div class="row3">
+    <div>
+      <label id="mpgLabel">Diesel MPG</label>
+      <input id="mpgOverride" type="number" step="0.1" value="38"/>
+    </div>
     <div><label>Days / week</label><input id="days" type="number" min="1" max="7" value="5"/></div>
     <div><label>Weeks / year</label><input id="weeks" type="number" min="1" max="52" value="46"/></div>
   </div>
+</div>
+<div id="phevBox" class="hide">
+  <label>Electric range (miles)</label>
+  <input id="evRange" type="number" placeholder="e.g. 30"/>
 </div>
 <button class="btn" id="go" type="button">Check route</button>
 <p class="err" id="err"></p>

@@ -1,1 +1,86 @@
-PLACEHOLDER_HOME
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="stylesheet" href="./ui.css"/>
+<title>Dipstick</title>
+<style>
+:root{--bg:#0b0c0f;--ink:#f3efe6;--ice:#9fd8ff;--ring:#6b7280;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
+.hero{position:relative;height:150px;border-radius:16px 16px 0 0;overflow:hidden;background:#2a2a24;cursor:pointer}
+.hero img{width:100%;height:150px;object-fit:cover;display:block}
+.hint{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:4px 8px;border-radius:8px}
+.plate{position:absolute;right:10px;bottom:10px;display:flex;border-radius:3px;overflow:hidden;border:2px solid #111;font-weight:800;transform:scale(.78);transform-origin:bottom right}
+.plate .uk{background:#003399;color:#fc0;padding:5px 4px;font-size:8px;line-height:1.1;text-align:center}
+.plate .reg{background:#f4d000;color:#111;padding:5px 7px;letter-spacing:.06em;font-size:13px}
+.bar{background:#16120e;border-radius:0 0 16px 16px;padding:8px 8px 10px;margin-bottom:10px}
+.nameRow{display:grid;grid-template-columns:36px 36px 1fr 36px 36px;align-items:center;gap:6px}
+.nameRow button{width:36px;height:36px;border-radius:50%;border:1px solid var(--ring);background:radial-gradient(circle at 50% 32%,#6a6a6a 0%,#2b2b2b 42%,#111 78%);color:#fff;font-size:16px;cursor:pointer}
+.name{text-align:center;font-weight:800;font-size:17px}
+.dots{text-align:center;color:#6b7280;font-size:12px;margin:6px 0 0}
+.card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid var(--line)}
+.item h3{margin:0;font-size:15px;font-weight:700}
+.when{margin:4px 0 0;color:var(--ice);font-size:17px;font-weight:800}
+.left{margin:2px 0 0;color:#9aa3b0;font-size:12px}
+.btn{display:inline-block;background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);color:#fff;text-decoration:none;border:1px solid var(--ring);border-radius:999px;padding:8px 12px;font-weight:800;font-size:12px;text-align:center;min-width:92px;cursor:pointer}
+.wide{display:block;padding:14px;border-radius:999px;font-size:15px;width:100%;margin-top:10px;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;border:1px solid var(--ring)}
+.sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
+.sheet.on{display:block}
+.panel{background:#14161b;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
+label{display:block;color:#9aa3b0;font-size:12px;margin:8px 0 4px}
+input,select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;font-size:16px}
+.ncapBadge{position:absolute;left:10px;bottom:10px;z-index:3;background:rgba(8,8,10,.72);color:#fde68a;border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:5px 8px;font-size:12px;font-weight:800;cursor:pointer}
+.cFlash .when,.cFlash .left{color:#ef4444;animation:flashRed .85s ease-in-out infinite}
+.cOver .when,.cOver .left{color:#ff2a2a;animation:flashRed .55s ease-in-out infinite}
+@keyframes flashRed{0%,100%{opacity:1}50%{opacity:.28}}
+</style>
+</head>
+<body>
+<input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
+<div class="hero" id="hero"></div>
+<div class="bar"><div class="nameRow">
+<button type="button" id="btnAdd">+</button>
+<button type="button" id="prev">&#8592;</button>
+<div class="name" id="caption">Volvo XC60 D5</div>
+<button type="button" id="next">&#8594;</button>
+<button type="button" id="btnEdit">&#9998;</button>
+</div><p class="dots" id="dots">Car 1 of 1</p></div>
+<div class="card" id="dues"></div>
+<a class="btn wide" href="service.html">Job estimates</a>
+<a class="btn wide" href="./">Route costs</a>
+<a class="btn wide" href="buy.html">Buying guide</a>
+<div class="sheet" id="sheet"><div class="panel">
+<h2 id="sheetTitle">Add car</h2>
+<label>Name</label><input id="fName"/>
+<label>Number plate</label><input id="fPlate" style="text-transform:uppercase"/>
+<label>MOT</label><input id="fMot" type="date"/>
+<label>Tax</label><input id="fTax" type="date"/>
+<label>Insurance</label><input id="fIns" type="date"/>
+<label>Full service</label><input id="fOil" type="date"/>
+<label>Timing belt date</label><input id="fBeltDate" type="date"/>
+<label>Belt years</label><input id="fBeltYears" type="number"/>
+<label>Belt miles</label><input id="fBeltMiles" type="number"/>
+<label>Tyres fitted</label><input id="fTyreDate" type="date"/>
+<label>Tyre life (miles)</label><input id="fTyreLife" type="number"/>
+<label>Miles / year</label><input id="fMiles" type="number"/>
+<label>UK MPG</label><input id="fMpg" type="number" step="0.1"/>
+<label>Fuel</label><select id="fFuel"><option value="diesel">Diesel</option><option value="petrol">Petrol</option><option value="hybrid">Hybrid</option><option value="electric">Electric</option></select>
+<label>Garage name</label><input id="fGarage"/>
+<label>Garage phone</label><input id="fPhone" type="tel"/>
+<label>Garage email</label><input id="fEmail" type="email"/>
+<label>Insurer website</label><input id="fInsWeb"/>
+<button class="btn wide" type="button" id="btnSave">Save</button>
+<button class="btn wide" type="button" id="btnClose">Back</button>
+</div></div>
+<div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn wide" type="button" id="btnCClose">Back</button></div></div>
+<div class="sheet" id="ncapSheet"><div class="panel"><h2 id="ncapTitle">Euro NCAP</h2><p id="ncapBody"></p><div id="ncapLinks"></div><button class="btn wide" type="button" id="ncapClose">Back</button></div></div>
+<script src="ncap.js"></script>
+<script src="ncap-url.js"></script>
+<script src="./home-app.js"></script>
+</body>
+</html>

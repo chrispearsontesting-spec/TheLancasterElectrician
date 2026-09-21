@@ -7,105 +7,75 @@
 <title>Journey log</title>
 <link rel="stylesheet" href="./ui.css"/>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12)}
+:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12);--ring:#6b7280}
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
 h1{font-size:22px;margin:0 0 6px}
 .muted{color:var(--dim);font-size:13px;line-height:1.45}
-label{display:block;color:var(--dim);font-size:12px;margin:10px 0 4px}
-input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:11px;font-size:16px}
-.btn{display:block;width:100%;border:0;border-radius:999px;padding:13px;font-weight:800;margin-top:10px;background:#2a2e36;color:#fff;text-align:center;text-decoration:none}
-.card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.trip{padding:10px 0;border-top:1px solid var(--line);font-size:14px}
-.trip:first-child{border-top:0}
-.row{display:flex;justify-content:space-between;gap:10px}
-.tot{font-size:20px;font-weight:800}
-.err{color:#e7b1a0;font-size:13px}
+.btn{display:block;width:100%;border:0;border-radius:999px;padding:13px;font-weight:800;margin-top:10px;background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);color:#fff;text-align:center;text-decoration:none;border:1px solid var(--ring)}
+.route{width:100%;text-align:left;background:#14161b;border:1px solid var(--line);color:var(--ink);border-radius:16px;padding:14px;margin-top:10px}
+.route .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.route b.title{display:block;font-size:16px}
+.route .cost{font-size:18px;font-weight:800;white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11px;color:#d7dde6;background:#1d2128;border:1px solid var(--line);border-radius:999px;padding:3px 8px}
+.more{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:4px 0}
+.kv span{color:var(--dim)}
+.empty{background:#14161b;border:1px dashed var(--line);border-radius:16px;padding:18px;margin-top:14px;color:var(--dim)}
+.hide{display:none}
 </style>
 </head>
 <body>
 <h1>Journey log</h1>
-<p class="muted">Log miles and minutes now. The Android app will fill the same log from Bluetooth + GPS later. Cost uses speed-adjusted MPG, not one fixed figure.</p>
-<div class="card">
-  <div class="row2">
-    <div><label>Miles</label><input id="miles" type="number" step="0.1" placeholder="28.6"/></div>
-    <div><label>Minutes</label><input id="mins" type="number" step="1" placeholder="35"/></div>
-  </div>
-  <div class="row2">
-    <div><label>From</label><input id="from" placeholder="Home"/></div>
-    <div><label>To</label><input id="to" placeholder="Work"/></div>
-  </div>
-  <button class="btn" type="button" id="add">Save journey</button>
-  <p class="muted" id="preview"></p>
-</div>
-<div class="card">
-  <div class="tot" id="tot">£0.00</div>
-  <p class="muted" id="meta">No journeys yet</p>
-  <div id="list"></div>
-</div>
-<p class="muted">Or import a Google Timeline file</p>
-<input id="file" type="file" accept=".json,application/json"/>
-<p class="err" id="err"></p>
+<p class="muted">Saved routes from Route cost. Tap a card for the full breakdown.</p>
+<div id="list"></div>
+<p class="empty" id="empty">No saved journeys yet. Check a route, then tap Save.</p>
 <a class="btn" href="./index.html">Back to route cost</a>
 <script src="./trip-engine.js"></script>
 <script>
-function ppl(){
-  try{var p=JSON.parse(sessionStorage.getItem("gt.prices")||"null"); if(p&&+p.diesel) return +p.diesel}catch(e){}
-  return 195.2;
+function kindLabel(t){
+  if(t.isYear) return "Yearly commute";
+  if(t.isReturn) return "Return";
+  return "One way";
 }
-function rated(){return garageFuel().mpg}
-function preview(){
-  var s=scoreTrip({miles:$("miles").value, mins:$("mins").value, rated:rated(), ppl:ppl()});
-  $("preview").textContent=(!+s.miles||!+s.mins)?"Enter miles and minutes": (s.mph.toFixed(0)+" mph avg \u00b7 "+s.mpg.toFixed(1)+" mpg used \u00b7 "+("\u00a3"+s.gbp.toFixed(2)));
+function headline(t){
+  if(t.isYear && t.yearGBP!=null) return moneyTxt(t.yearGBP);
+  if(t.isReturn && t.retGBP!=null) return moneyTxt(t.retGBP);
+  if(t.oneGBP!=null) return moneyTxt(t.oneGBP);
+  var s=scoreTrip(t);
+  return moneyTxt(s.gbp);
 }
-function $(id){return document.getElementById(id)}
 function render(){
   var list=tripStore();
-  var tot=0, miles=0;
-  $("list").innerHTML=list.map(function(t){
-    var s=scoreTrip(t);
-    tot+=s.gbp; miles+=s.miles;
-    return "<div class='trip'><div class='row'><span>"+(t.from||"Start")+" \u2192 "+(t.to||"Finish")+"</span><b>\u00a3"+s.gbp.toFixed(2)+"</b></div><div class='muted'>"+s.miles.toFixed(1)+" mi \u00b7 "+s.mins+" min \u00b7 "+s.mph.toFixed(0)+" mph \u00b7 "+s.mpg.toFixed(1)+" mpg</div></div>";
-  }).join("")||"";
-  $("tot").textContent="\u00a3"+tot.toFixed(2);
-  $("meta").textContent=list.length? (list.length+" journeys \u00b7 "+miles.toFixed(0)+" miles"):"No journeys yet";
+  var box=document.getElementById("list");
+  var empty=document.getElementById("empty");
+  empty.className=list.length?"empty hide":"empty";
+  box.innerHTML=list.map(function(t,i){
+    var miles=(+t.miles||0).toFixed(1);
+    var mins=t.mins||Math.round((+t.oneSecs||0)/60);
+    var tags=[kindLabel(t)];
+    if(t.isReturn) tags.push("Return");
+    if(t.isYear) tags.push((t.days||5)+" d / wk \u00b7 "+(t.weeks||46)+" wks");
+    tags.push(miles+" mi each way");
+    var extra="";
+    extra+="<div class='kv'><span>One way</span><b>"+moneyTxt(t.oneGBP)+"</b></div>";
+    extra+="<div class='kv'><span>Return</span><b>"+moneyTxt(t.retGBP)+"</b></div>";
+    if(t.isYear) extra+="<div class='kv'><span>Year ("+(t.days||5)+" \u00d7 "+(t.weeks||46)+")</span><b>"+moneyTxt(t.yearGBP)+"</b></div>";
+    extra+="<div class='kv'><span>Time one way</span><b>"+(mins||"-")+" min</b></div>";
+    extra+="<div class='kv'><span>MPG used</span><b>"+(t.rated?Number(t.rated).toFixed(1):"-")+"</b></div>";
+    extra+="<div class='kv'><span>Fuel price</span><b>"+(t.ppl?Number(t.ppl).toFixed(1)+"p":"-")+"</b></div>";
+    if(t.roads&&t.roads.length) extra+="<p class='muted'>"+t.roads.join(" \u00b7 ")+"</p>";
+    extra+="<p class='muted'>"+new Date(t.when||Date.now()).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+"</p>";
+    return "<button type='button' class='route' data-i='"+i+"'><div class='top'><div><b class='title'>"+(t.title||(t.from+" \u2192 "+t.to))+"</b><div class='muted'>"+miles+" mi \u00b7 "+kindLabel(t)+"</div></div><div class='cost'>"+headline(t)+"</div></div><div class='tags'>"+tags.map(function(x){return "<span class='tag'>"+x+"</span>"}).join("")+"</div><div class='more hide'>"+extra+"</div></button>";
+  }).join("");
 }
-$("add").onclick=function(){
-  var s=scoreTrip({miles:$("miles").value, mins:$("mins").value, rated:rated(), ppl:ppl()});
-  if(!s.miles||!s.mins) return;
-  var list=tripStore();
-  list.unshift({when:Date.now(), from:$("from").value||"Start", to:$("to").value||"Finish", miles:s.miles, mins:s.mins, rated:s.rated, ppl:ppl(), source:"manual"});
-  saveTrips(list); render(); preview();
-};
-["miles","mins"].forEach(function(id){$ (id).addEventListener("input",preview)});
-$("file").onchange=function(){
-  var f=this.files&&this.files[0]; if(!f)return;
-  var r=new FileReader();
-  r.onload=function(){
-    try{
-      var data=JSON.parse(r.result), found=[];
-      (function walk(o){
-        if(!o)return;
-        if(Array.isArray(o)){o.forEach(walk);return}
-        if(typeof o!=="object")return;
-        var a=o.activitySegment;
-        if(a&&a.distance){
-          var miles=a.distance/1609.34;
-          var st=a.duration&&a.duration.startTimestamp, en=a.duration&&a.duration.endTimestamp;
-          var mins=(st&&en)?Math.max(1,(new Date(en)-new Date(st))/60000):0;
-          if(miles>=0.4) found.push({when:+new Date(st||Date.now()), from:"Timeline", to:"Drive", miles:miles, mins:mins||Math.round(miles), rated:rated(), ppl:ppl(), source:"timeline"});
-        }
-        Object.keys(o).forEach(function(k){if(o[k]&&typeof o[k]==="object")walk(o[k])});
-      })(data);
-      if(!found.length){$("err").textContent="No car journeys in that file";return}
-      $("err").textContent="";
-      saveTrips(found.concat(tripStore())); render();
-    }catch(e){$("err").textContent="Not valid JSON"}
-  };
-  r.readAsText(f);
-};
-render(); preview();
+document.getElementById("list").addEventListener("click",function(e){
+  var b=e.target.closest(".route"); if(!b)return;
+  var more=b.querySelector(".more");
+  if(more) more.className=more.className.indexOf("hide")>=0?"more":"more hide";
+});
+render();
 </script>
 </body>
 </html>

@@ -1,4 +1,6 @@
 function drawRoute(geo){
+  var el=document.getElementById("map");
+  if(el) el.classList.remove("hide");
   if(map){ try{ map.remove(); }catch(e){} map=null; line=null; }
   map=L.map("map",{zoomControl:false,attributionControl:false}).setView([54.05,-2.7],9);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);

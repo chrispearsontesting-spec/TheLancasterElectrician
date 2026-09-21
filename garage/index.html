@@ -14,6 +14,11 @@ body{margin:0 auto;max-width:480px;background:var(--bg);color:var(--ink);font-fa
 h1{font-size:22px;margin:0 0 10px}
 label{display:block;color:var(--dim);font-size:12px;margin:8px 0 4px}
 input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:11px;font-size:16px}
+.suggest{position:relative}
+.suggest-list{position:absolute;left:0;right:0;top:100%;z-index:20;background:#171a20;border:1px solid var(--line);border-radius:12px;margin-top:4px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.suggest-hit{display:block;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--ink);padding:11px 12px;font-size:14px}
+.suggest-hit:last-child{border-bottom:0}
+.suggest-hit b{font-weight:600}
 .btn{width:100%;border:0;border-radius:999px;padding:13px;font-weight:800;margin-top:8px;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;border:1px solid var(--ring)}
 .ghost{background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);color:#fff;border:1px solid var(--ring)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -21,7 +26,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .prices{background:linear-gradient(180deg,#1a1d24 0%,#12141a 100%);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px 14px 12px;margin:0 0 16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
 .prices .kicker{color:#9aa3b0;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.pgrid.three{grid-template-columns:1fr 1fr 1fr}
 .pcell{background:#0e1014;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 8px;text-align:center}
 .pcell span{display:block;color:#9aa3b0;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .pcell b{display:block;color:#f3efe6;font-size:22px;margin-top:4px;font-weight:800}
@@ -54,9 +58,9 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
   <p class="when" id="priceWhen"></p>
 </div>
 <label>From</label>
-<input id="from"/>
+<input id="from" autocomplete="off" placeholder="Start typing a place"/>
 <label>To</label>
-<input id="to"/>
+<input id="to" autocomplete="off" placeholder="Start typing a place"/>
 <div>
   <label id="mpgLabel">Diesel MPG</label>
   <input id="mpgOverride" type="number" step="0.1" value="38"/>
@@ -117,6 +121,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <script src="./route-prices.js"></script>
 <script src="./route-map.js"></script>
 <script src="./route-save.js"></script>
+<script src="./place-suggest.js"></script>
 <script>if(typeof paintPrices==="function")paintPrices();</script>
 </body>
 </html>

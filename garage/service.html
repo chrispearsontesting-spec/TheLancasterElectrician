@@ -63,16 +63,16 @@ function car(){
 function qname(c){return String(c.nick||c.name||"").trim()||"car"}
 function clsOf(c){
   var n=(qname(c)+" "+String(c.make||"")+" "+String(c.model||"")+" "+String(c.fuel||"")).toLowerCase();
-  if(/ferrari|lamborghini|mclaren|bugatti|pagani|koenigsegg|aston martin/.test(n)) return {k:"exotic",m:3.2,lab:"exotic",indie:180,dealer:340};
-  if(/rolls-royce|rolls royce|bentley|maybach|phantom|cullinan|flying spur|mulsanne/.test(n)) return {k:"luxury",m:2.2,lab:"luxury",indie:140,dealer:260};
-  if(/911|cayman|boxster|amg |\\bm3\\b|\\bm4\\b|\\bm5\\b|rs3|rs4|rs5|rs6|rs7|\\br8\\b|supra|gt-r|gtr |corvette|civic type r|gr yaris|gr86|lotus|alpine a110|focus rs|megane rs/.test(n)) return {k:"sports",m:1.7,lab:"sports",indie:100,dealer:210};
-  if(/range rover|defender|discovery|xc90|xc60|xc40|x5|x6|x7|q7|q8|gle|gls|glc|cayenne|macan|touareg|land cruiser/.test(n)) return {k:"prem_suv",m:1.55,lab:"premium SUV",indie:95,dealer:190};
-  if(/qashqai|tiguan|kuga|sportage|tucson|rav4|cr-v|karoq|ateca|outlander|santa fe|sorento|forester|cx-5|cx5|hybrid q4|kodiac|kodiaq|arteon|sharan|touran/.test(n)) return {k:"suv",m:1.25,lab:"SUV",indie:80,dealer:155};
-  if(/bmw|mercedes|benz|audi|porsche|lexus|jaguar|land rover|volvo|mini cooper|maserati|alfa romeo|infiniti/.test(n)) return {k:"premium",m:1.4,lab:"premium",indie:90,dealer:175};
-  if(/fiesta|corsa|polo|ibiza|fabia|yaris|jazz|swift|i20|clio|208|c3|micra|adam/.test(n)) return {k:"small",m:0.85,lab:"small car",indie:70,dealer:130};
-  if(/aygo|108|107|i10|picanto|up!|citigo|spark|ka \\b|c1|108 /.test(n)) return {k:"city",m:0.75,lab:"city car",indie:65,dealer:120};
-  if(/transit|vivaro|sprinter|crafter|ducato|boxer|relay|trafic|transporter|amarok|navara|hilux|ranger|l200/.test(n)) return {k:"van",m:1.2,lab:"van / pickup",indie:72,dealer:130};
-  return {k:"family",m:1,lab:"family car",indie:75,dealer:145};
+  if(/ferrari|lamborghini|mclaren|bugatti|pagani|koenigsegg|aston martin/.test(n)) return {k:"exotic",m:3.2,lab:"exotic",indie:120,dealer:240};
+  if(/rolls-royce|rolls royce|bentley|maybach|phantom|cullinan|flying spur|mulsanne/.test(n)) return {k:"luxury",m:2.2,lab:"luxury",indie:95,dealer:190};
+  if(/911|cayman|boxster|amg |\\bm3\\b|\\bm4\\b|\\bm5\\b|rs3|rs4|rs5|rs6|rs7|\\br8\\b|supra|gt-r|gtr |corvette|civic type r|gr yaris|gr86|lotus|alpine a110|focus rs|megane rs/.test(n)) return {k:"sports",m:1.7,lab:"sports",indie:75,dealer:150};
+  if(/range rover|defender|discovery|xc90|xc60|xc40|x5|x6|x7|q7|q8|gle|gls|glc|cayenne|macan|touareg|land cruiser/.test(n)) return {k:"prem_suv",m:1.55,lab:"premium SUV",indie:70,dealer:140};
+  if(/qashqai|tiguan|kuga|sportage|tucson|rav4|cr-v|karoq|ateca|outlander|santa fe|sorento|forester|cx-5|cx5|hybrid q4|kodiac|kodiaq|arteon|sharan|touran/.test(n)) return {k:"suv",m:1.25,lab:"SUV",indie:62,dealer:115};
+  if(/bmw|mercedes|benz|audi|porsche|lexus|jaguar|land rover|volvo|mini cooper|maserati|alfa romeo|infiniti/.test(n)) return {k:"premium",m:1.4,lab:"premium",indie:68,dealer:130};
+  if(/fiesta|corsa|polo|ibiza|fabia|yaris|jazz|swift|i20|clio|208|c3|micra|adam/.test(n)) return {k:"small",m:0.85,lab:"small car",indie:58,dealer:100};
+  if(/aygo|108|107|i10|picanto|up!|citigo|spark|ka \\b|c1|108 /.test(n)) return {k:"city",m:0.75,lab:"city car",indie:55,dealer:95};
+  if(/transit|vivaro|sprinter|crafter|ducato|boxer|relay|trafic|transporter|amarok|navara|hilux|ranger|l200/.test(n)) return {k:"van",m:1.2,lab:"van / pickup",indie:60,dealer:105};
+  return {k:"family",m:1,lab:"family car",indie:60,dealer:110};
 }
 function gbp(n){return "\u00a3"+Math.round(n/10)*10}
 function row(n,p){return "<div class='item'><span>"+n+"</span><b>"+p+"</b></div>"}
@@ -109,7 +109,7 @@ function draw(){
       row("Local garage",gbp(indLo)+"\u2013"+gbp(indHi))+
       row("Main dealer",gbp(dealLo)+"\u2013"+gbp(dealHi))+
       row("Labour used",job.hrs+" hrs \u00b7 indie \u00a3"+cls.indie+"/hr \u00b7 dealer \u00a3"+cls.dealer+"/hr");
-    document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"UK 2026 guide for a "+cls.lab+". Local garage rate is a typical independent outside London. Dealer rate is main-agent labour plus dearer parts. DIY is parts only. Not an invoice.";
+    document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"North West 2026 guide for a "+cls.lab+". Local garage is a typical Lancaster / Lancashire independent. Dealer is main-agent labour plus dearer parts. DIY is parts only. Not an invoice.";
     document.getElementById("quoteBox").className="card";
   }else document.getElementById("quoteBox").className="card hide";
   links();

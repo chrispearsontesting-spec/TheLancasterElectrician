@@ -1,9 +1,7 @@
 function drawRoute(geo){
-  if(!map){
-    map=L.map("map",{zoomControl:false,attributionControl:false}).setView([54.05,-2.7],9);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{maxZoom:19}).addTo(map);
-  }
-  if(line) map.removeLayer(line);
+  if(map){ try{ map.remove(); }catch(e){} map=null; line=null; }
+  map=L.map("map",{zoomControl:false,attributionControl:false}).setView([54.05,-2.7],9);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(map);
   line=L.geoJSON(geo,{style:{color:"#2563eb",weight:5,opacity:.95}}).addTo(map);
   setTimeout(function(){map.invalidateSize();map.fitBounds(line.getBounds(),{padding:[20,20]})},80);
 }

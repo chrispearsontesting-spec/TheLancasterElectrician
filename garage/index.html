@@ -27,7 +27,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .pcell b{display:block;color:#f3efe6;font-size:22px;margin-top:4px;font-weight:800}
 .pcell em{display:block;color:#9fd8ff;font-size:11px;font-style:normal;margin-top:2px}
 .prices .when{margin:10px 0 0;color:#9aa3b0;font-size:11px;text-align:center}
-.hit{width:100%;text-align:left;background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);border:1px solid var(--ring);color:#fff;border-radius:999px;padding:12px 14px;margin-top:8px;font-weight:700}
 .err{color:#e7b1a0;font-size:13px;min-height:16px}
 .muted{color:var(--dim);font-size:12px}
 #map{height:220px;border-radius:14px;margin-top:10px;border:1px solid var(--line);background:#e8eef4}
@@ -62,16 +61,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
   <label id="mpgLabel">Diesel MPG</label>
   <input id="mpgOverride" type="number" step="0.1" value="38"/>
 </div>
-<div class="opts hide">
-  <label class="opt"><input type="checkbox" id="isReturn" checked/> Return</label>
-  <label class="opt"><input type="checkbox" id="isYear"/> Yearly commute</label>
-</div>
-<div id="yearBox" class="hide">
-  <div class="row">
-    <div><label>Days / week</label><input id="days" type="number" min="1" max="7" value="5"/></div>
-    <div><label>Weeks / year</label><input id="weeks" type="number" min="1" max="52" value="46"/></div>
-  </div>
-</div>
 <div id="phevBox" class="hide">
   <label>Electric range (miles)</label>
   <input id="evRange" type="number" placeholder="e.g. 30"/>
@@ -82,6 +71,16 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <div class="card hide" id="result">
   <b id="rTitle">Route</b>
   <p class="muted" id="rMeta"></p>
+  <div class="opts" id="routeOpts">
+    <label class="opt"><input type="checkbox" id="isReturn" checked/> Return</label>
+    <label class="opt"><input type="checkbox" id="isYear"/> Yearly commute</label>
+  </div>
+  <div id="yearBox" class="hide">
+    <div class="row">
+      <div><label>Days / week</label><input id="days" type="number" min="1" max="7" value="5"/></div>
+      <div><label>Weeks / year</label><input id="weeks" type="number" min="1" max="52" value="46"/></div>
+    </div>
+  </div>
   <div class="triple" id="costRow">
     <div class="mode split"><span>One way</span><b id="rOne">-</b><span class="muted" id="rOneMeta"></span></div>
     <div class="mode split"><span>Return</span><b id="rRet">-</b><span class="muted" id="rRetMeta"></span></div>
@@ -98,13 +97,11 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
     <button class="btn ghost" id="setHome" type="button">Set home</button>
   </div>
 </div>
-<div class="card">
-  <div id="favs"></div>
-</div>
 <a class="btn ghost" href="timeline.html" style="display:block;text-align:center;text-decoration:none;margin-top:12px">Journey log</a>
 <a class="btn ghost" href="home.html" style="display:block;text-align:center;text-decoration:none;margin-top:8px">Back</a>
 <input id="plate" type="hidden"/>
 <input id="q" type="hidden"/>
+<div id="favs" class="hide"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="trip-specs.js"></script>
@@ -115,9 +112,11 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <script src="cars-uk-5.js"></script>
 <script src="cars-uk-6.js"></script>
 <script src="cars-uk-7.js"></script>
+<script src="./trip-engine.js"></script>
 <script src="./route-app.js"></script>
 <script src="./route-prices.js"></script>
 <script src="./route-map.js"></script>
+<script src="./route-save.js"></script>
 <script>if(typeof paintPrices==="function")paintPrices();</script>
 </body>
 </html>

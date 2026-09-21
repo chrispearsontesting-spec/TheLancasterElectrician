@@ -17,7 +17,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .btn{width:100%;border:0;border-radius:999px;padding:13px;font-weight:800;margin-top:8px;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;border:1px solid var(--ring)}
 .ghost{background:radial-gradient(circle at 50% 28%,#5c5c5c 0%,#2a2a2a 45%,#121212 80%);color:#fff;border:1px solid var(--ring)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
 .prices{background:linear-gradient(180deg,#1a1d24 0%,#12141a 100%);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px 14px 12px;margin:0 0 16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
 .prices .kicker{color:#9aa3b0;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
@@ -59,13 +58,13 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <input id="from"/>
 <label>To</label>
 <input id="to"/>
-<div class="opts">
-  <label class="opt"><input type="checkbox" id="isReturn" checked/> Return</label>
-  <label class="opt"><input type="checkbox" id="isYear"/> Yearly commute</label>
-</div>
 <div>
   <label id="mpgLabel">Diesel MPG</label>
   <input id="mpgOverride" type="number" step="0.1" value="38"/>
+</div>
+<div class="opts hide">
+  <label class="opt"><input type="checkbox" id="isReturn" checked/> Return</label>
+  <label class="opt"><input type="checkbox" id="isYear"/> Yearly commute</label>
 </div>
 <div id="yearBox" class="hide">
   <div class="row">

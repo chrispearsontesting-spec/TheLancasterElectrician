@@ -1,10 +1,7 @@
 function drawRoute(geo){
   if(!map){
-    map=L.map("map",{zoomControl:false}).setView([54.05,-2.7],9);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
-      maxZoom:19,
-      attribution:"\u00a9 OpenStreetMap \u00a9 CARTO"
-    }).addTo(map);
+    map=L.map("map",{zoomControl:false,attributionControl:false}).setView([54.05,-2.7],9);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{maxZoom:19}).addTo(map);
   }
   if(line) map.removeLayer(line);
   line=L.geoJSON(geo,{style:{color:"#2563eb",weight:5,opacity:.95}}).addTo(map);

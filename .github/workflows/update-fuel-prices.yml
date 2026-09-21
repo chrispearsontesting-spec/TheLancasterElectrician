@@ -15,34 +15,53 @@ jobs:
           python3 - <<'PY'
           import json, urllib.request, datetime, time
           UA={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36","Accept":"application/json"}
-          def latest(url):
+          def get(url):
               last=None
               for i in range(3):
                   try:
                       req=urllib.request.Request(url, headers=UA)
                       with urllib.request.urlopen(req, timeout=30) as r:
-                          j=json.load(r)
-                      if j.get("summary") and j["summary"].get("currentAvg"):
-                          return float(j["summary"]["currentAvg"])
-                      t=j.get("trends") or j.get("data") or []
-                      if not t: raise RuntimeError("no trends")
-                      last=t[-1]
-                      return float(last.get("avgPricePence") or last.get("average_price"))
+                          return json.load(r)
                   except Exception as e:
                       last=e
                       time.sleep(2+i)
               raise last
-          p=latest("https://fuelcosts.co.uk/api/prices/history?type=uk&fuel=E10&days=3&aggregate=daily")
-          d=latest("https://fuelcosts.co.uk/api/prices/history?type=uk&fuel=B7_STANDARD&days=3&aggregate=daily")
-          if not (80 < p < 400 and 80 < d < 400):
-              raise SystemExit("bad prices %s %s"%(p,d))
+          def from_fuelcosts():
+              def one(fuel):
+                  j=get("https://fuelcosts.co.uk/api/prices/history?type=uk&fuel="+fuel+"&days=3&aggregate=daily")
+                  if j.get("summary") and j["summary"].get("currentAvg"):
+                      return float(j["summary"]["currentAvg"])
+                  t=j.get("trends") or j.get("data") or []
+                  if not t: raise RuntimeError("no trends")
+                  last=t[-1]
+                  return float(last.get("avgPricePence") or last.get("average_price"))
+              return one("E10"), one("B7_STANDARD"), "fuelcosts.co.uk daily UK average"
+          def from_utilhub():
+              j=get("https://utilhub.co.uk/assets/data/uk-fuel-prices.json")
+              latest=j.get("latest") or {}
+              p=float(latest.get("petrolPencePerLitre") or latest.get("petrol"))
+              d=float(latest.get("dieselPencePerLitre") or latest.get("diesel"))
+              return p, d, "DESNZ weekly official (via UtilHub)"
+          p=d=src=None
+          errors=[]
+          for fn in (from_fuelcosts, from_utilhub):
+              try:
+                  p,d,src=fn()
+                  if 80 < p < 400 and 80 < d < 400:
+                      break
+                  raise RuntimeError("out of range %s %s"%(p,d))
+              except Exception as e:
+                  errors.append(str(e))
+                  p=d=src=None
+          if p is None:
+              raise SystemExit("both sources failed: "+"; ".join(errors))
           today=datetime.datetime.utcnow().strftime("%d %b %Y")
           out={
             "date": today,
             "petrol_ppl": round(p,1),
             "diesel_ppl": round(d,1),
             "electric_pkwh": 26.1,
-            "source": "UK pump average "+today
+            "source": src+" "+today
           }
           open("garage/prices.json","w").write(json.dumps(out, indent=2)+"\n")
           print(out)

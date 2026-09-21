@@ -1,7 +1,7 @@
 {
   "date": "21 Sep 2026",
-  "petrol_ppl": 172.2,
-  "diesel_ppl": 196.3,
+  "petrol_ppl": 172.3,
+  "diesel_ppl": 196.5,
   "electric_pkwh": 26.1,
-  "source": "UK pump average 21 Sep 2026"
+  "source": "fuelcosts.co.uk daily UK average 21 Sep 2026"
 }

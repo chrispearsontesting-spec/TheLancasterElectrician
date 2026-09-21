@@ -32,7 +32,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .err{color:#e7b1a0;font-size:13px;min-height:16px}
 .muted{color:var(--dim);font-size:12px}
 #map{height:220px;border-radius:14px;margin-top:10px;border:1px solid var(--line);background:#e8eef4}
-#map .leaflet-control-attribution{background:rgba(255,255,255,.8)!important;color:#4b5563!important}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .triple{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
 .triple.withYear{grid-template-columns:1fr 1fr 1fr}
@@ -56,11 +55,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
   </div>
   <p class="when" id="priceWhen"></p>
 </div>
-<p class="muted" id="libLine" style="display:none"></p>
-<p class="car" id="carLine" style="display:none"></p>
-<input id="plate" type="hidden"/>
-<input id="q" type="hidden"/>
-<span class="hint" id="qHint" style="display:none"></span>
 <label>From</label>
 <input id="from"/>
 <label>To</label>
@@ -85,7 +79,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 </div>
 <button class="btn" id="go" type="button">Check route</button>
 <p class="err" id="err"></p>
-<div id="map"></div>
+<div id="map" class="hide"></div>
 <div class="card hide" id="result">
   <b id="rTitle">Route</b>
   <p class="muted" id="rMeta"></p>
@@ -110,6 +104,8 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 </div>
 <a class="btn ghost" href="timeline.html" style="display:block;text-align:center;text-decoration:none;margin-top:12px">Journey log</a>
 <a class="btn ghost" href="home.html" style="display:block;text-align:center;text-decoration:none;margin-top:8px">Back</a>
+<input id="plate" type="hidden"/>
+<input id="q" type="hidden"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="trip-specs.js"></script>

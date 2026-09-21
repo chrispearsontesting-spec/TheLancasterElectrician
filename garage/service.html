@@ -1,1 +1,115 @@
-PLACEHOLDER_SVC
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<link rel="stylesheet" href="./ui.css"/>
+<title>Job estimates</title>
+<style>
+:root{--bg:#0b0c0f;--ink:#f3efe6;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:#9aa3b0;font-size:13px;margin:0 0 16px}
+label{display:block;color:#9aa3b0;font-size:12px;margin:10px 0 4px}
+select,input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:12px;font-size:16px}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.go{background:#2a2e36;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-weight:800;font-size:14px;white-space:nowrap}
+.status{min-height:22px;margin:8px 0 4px;font-size:13px;color:#9aa3b0}
+.status.ok{color:#9fd8ff;font-weight:700}
+.card{background:#14161b;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:14px 0}
+.card h2{margin:0;padding:14px 14px 8px;font-size:15px;font-weight:800}
+.item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.note{padding:10px 14px 14px;color:#9aa3b0;font-size:12px;line-height:1.4}
+.hide{display:none}
+.btns{padding:0 14px 14px}
+.btn{display:block;background:#2a2e36;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:12px;padding:13px;font-weight:800;font-size:15px;text-align:center;width:100%;margin-top:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>Job estimates</h1>
+<p class="sub" id="carLine">Volvo XC60 D5</p>
+<label>Search a part or job</label>
+<form id="qForm"><div class="row"><input type="search" id="qBox" placeholder="e.g. timing belt kit" autocomplete="off"/><button class="go" type="submit">Search</button></div></form>
+<p class="status" id="status"></p>
+<label>Or pick a common job</label>
+<select id="jobPick"><option value="">Select a job</option></select>
+<div class="card hide" id="quoteBox"><div id="quotes"></div><p class="note" id="jobNote"></p></div>
+<div class="card"><h2>Where to buy</h2><div class="btns"><a class="btn" id="btnGsf" target="_blank" rel="noopener" href="#">GSF Car Parts</a><a class="btn" id="btnEbay" target="_blank" rel="noopener" href="#">eBay</a></div></div>
+<div class="card"><h2>How-to guides</h2><div class="btns"><a class="btn" id="btnYt" target="_blank" rel="noopener" href="#">YouTube</a><a class="btn" id="btnHaynes" target="_blank" rel="noopener" href="#">Haynes</a></div></div>
+<a class="btn" href="home.html">Back</a>
+<script src="./jobs-data.js"></script>
+<script>
+function car(){
+  try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s.cars[s.i]||s.cars[0]}catch(e){}
+  return {nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel"};
+}
+function qname(c){return String(c.nick||c.name||"").trim()||"car"}
+function clsOf(c){
+  var n=(qname(c)+" "+String(c.make||"")+" "+String(c.model||"")+" "+String(c.fuel||"")).toLowerCase();
+  if(/ferrari|lamborghini|mclaren|bugatti|pagani|koenigsegg|aston martin/.test(n)) return {k:"exotic",m:3.2,lab:"exotic",indie:120,dealer:240};
+  if(/rolls-royce|rolls royce|bentley|maybach|phantom|cullinan|flying spur|mulsanne/.test(n)) return {k:"luxury",m:2.2,lab:"luxury",indie:95,dealer:190};
+  if(/911|cayman|boxster|amg |\\bm3\\b|\\bm4\\b|\\bm5\\b|rs3|rs4|rs5|rs6|rs7|\\br8\\b|supra|gt-r|gtr |corvette|civic type r|gr yaris|gr86|lotus|alpine a110|focus rs|megane rs/.test(n)) return {k:"sports",m:1.7,lab:"sports",indie:75,dealer:150};
+  if(/range rover|defender|discovery|xc90|xc60|xc40|x5|x6|x7|q7|q8|gle|gls|glc|cayenne|macan|touareg|land cruiser/.test(n)) return {k:"prem_suv",m:1.55,lab:"premium SUV",indie:70,dealer:140};
+  if(/qashqai|tiguan|kuga|sportage|tucson|rav4|cr-v|karoq|ateca|outlander|santa fe|sorento|forester|cx-5|cx5|kodiaq|arteon|sharan|touran/.test(n)) return {k:"suv",m:1.25,lab:"SUV",indie:62,dealer:115};
+  if(/bmw|mercedes|benz|audi|porsche|lexus|jaguar|land rover|volvo|mini cooper|maserati|alfa romeo|infiniti/.test(n)) return {k:"premium",m:1.4,lab:"premium",indie:68,dealer:130};
+  if(/fiesta|corsa|polo|ibiza|fabia|yaris|jazz|swift|i20|clio|208|c3|micra|adam/.test(n)) return {k:"small",m:0.85,lab:"small car",indie:58,dealer:100};
+  if(/aygo|108|107|i10|picanto|up!|citigo|spark|c1/.test(n)) return {k:"city",m:0.75,lab:"city car",indie:55,dealer:95};
+  if(/transit|vivaro|sprinter|crafter|ducato|boxer|relay|trafic|transporter|amarok|navara|hilux|ranger|l200/.test(n)) return {k:"van",m:1.2,lab:"van / pickup",indie:60,dealer:105};
+  return {k:"family",m:1,lab:"family car",indie:60,dealer:110};
+}
+function gbp(n){return "\u00a3"+Math.round(n/10)*10}
+function row(n,p){return "<div class='item'><span>"+n+"</span><b>"+p+"</b></div>"}
+function term(){
+  var typed=document.getElementById("qBox").value.trim();
+  if(typed)return typed;
+  var id=document.getElementById("jobPick").value;
+  var job=WORK.filter(function(w){return w.id===id})[0];
+  return job?job.buy:"";
+}
+function links(){
+  var name=qname(car()), buy=term()||"service kit";
+  var q=encodeURIComponent(name+" "+buy);
+  document.getElementById("btnGsf").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+q;
+  document.getElementById("btnEbay").href="https://www.ebay.co.uk/sch/i.html?_nkw="+q;
+  document.getElementById("btnYt").href="https://www.youtube.com/results?search_query="+encodeURIComponent(name+" "+buy+" how to UK");
+  document.getElementById("btnHaynes").href="https://uk.haynes.com/search?q="+encodeURIComponent(name);
+}
+function draw(){
+  var c=car(), name=qname(c), cls=clsOf(c);
+  document.getElementById("carLine").textContent=name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"")+" \u00b7 "+cls.lab+" estimate";
+  var typed=document.getElementById("qBox").value.trim();
+  var id=document.getElementById("jobPick").value;
+  var job=WORK.filter(function(w){return w.id===id})[0];
+  if(job && !typed){
+    var m=cls.m;
+    var partsLo=job.plo*m, partsHi=job.phi*m;
+    var indLo=job.hrs*cls.indie+partsLo;
+    var indHi=job.hrs*cls.indie+partsHi;
+    var dealLo=job.hrs*cls.dealer+partsLo*1.35;
+    var dealHi=job.hrs*cls.dealer+partsHi*1.45;
+    document.getElementById("quotes").innerHTML=
+      row("DIY (parts only)",gbp(partsLo)+"\u2013"+gbp(partsHi))+
+      row("Local garage",gbp(indLo)+"\u2013"+gbp(indHi))+
+      row("Main dealer",gbp(dealLo)+"\u2013"+gbp(dealHi))+
+      row("Labour used",job.hrs+" hrs \u00b7 indie \u00a3"+cls.indie+"/hr \u00b7 dealer \u00a3"+cls.dealer+"/hr");
+    document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"North West 2026 estimate for a "+cls.lab+". Local garage is a typical Lancaster / Lancashire independent. Main dealer is franchise labour plus dearer parts. DIY is parts only. Not a quote.";
+    document.getElementById("quoteBox").className="card";
+  }else document.getElementById("quoteBox").className="card hide";
+  links();
+}
+var sel=document.getElementById("jobPick");
+sel.innerHTML="<option value=''>Select a job</option>"+WORK.map(function(w){return "<option value='"+w.id+"'>"+w.name+"</option>"}).join("");
+sel.onchange=function(){document.getElementById("qBox").value="";draw()};
+document.getElementById("qForm").addEventListener("submit",function(e){e.preventDefault();document.getElementById("status").textContent="Search ready — GSF, eBay and YouTube now use that part.";document.getElementById("status").className="status ok";draw();});
+(function(){
+  var p=new URLSearchParams(location.search);
+  if(p.get("job")) sel.value=p.get("job");
+  if(p.get("q")) document.getElementById("qBox").value=p.get("q");
+  draw();
+})();
+</script>
+</body>
+</html>

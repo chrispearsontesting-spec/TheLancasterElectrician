@@ -43,11 +43,13 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <input id="q" type="hidden"/>
 <span class="hint" id="qHint" style="display:none"></span>
 <div class="card" style="margin-top:8px">
-  <div class="row">
-    <div><label>MPG</label><input id="mpgOverride" type="number" step="0.1" value="38"/></div>
-    <div><label>PHEV electric mi</label><input id="evRange" type="number" placeholder="auto"/></div>
-  </div>
   <p class="muted" id="priceLine"></p>
+  <label id="mpgLabel">UK MPG</label>
+  <input id="mpgOverride" type="number" step="0.1" value="38"/>
+  <div id="phevBox" class="hide">
+    <label>Electric range (miles)</label>
+    <input id="evRange" type="number" placeholder="e.g. 30"/>
+  </div>
 </div>
 <label>From</label>
 <input id="from"/>

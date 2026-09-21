@@ -63,10 +63,16 @@ function car(){
 }
 function qname(c){return String(c.nick||c.name||"").trim()||"car"}
 function clsOf(c){
-  var n=qname(c).toLowerCase()+" "+String(c.fuel||"");
-  if(/bmw|mercedes|benz|audi|porsche|lexus|jaguar|land rover|range rover|volvo|mini cooper|maserati|alfa romeo/.test(n)) return {k:"premium",m:1.4,lab:"premium"};
-  if(/xc60|xc90|xc40|x5|x3|q5|q7|touareg|sharan|discovery|defender|rav4|cr-v|sportage|tucson|kuga|qashqai|tiguan|karoq|ateca|tucson|outlander|santa fe|forester/.test(n)) return {k:"suv",m:1.2,lab:"SUV"};
-  if(/fiesta|corsa|polo|ibiza|fabia|yaris|aygo|108|107|i10|i20|picanto|up!|citigo|adam|micra|swift|jazz/.test(n)) return {k:"small",m:0.85,lab:"small car"};
+  var n=(qname(c)+" "+String(c.make||"")+" "+String(c.model||"")+" "+String(c.fuel||"")).toLowerCase();
+  if(/ferrari|lamborghini|mclaren|bugatti|pagani|koenigsegg|aston martin/.test(n)) return {k:"exotic",m:3.2,lab:"exotic"};
+  if(/rolls-royce|rolls royce|bentley|maybach|phantom|cullinan|flying spur|mulsanne/.test(n)) return {k:"luxury",m:2.2,lab:"luxury"};
+  if(/911|cayman|boxster|amg |\\bm3\\b|\\bm4\\b|\\bm5\\b|rs3|rs4|rs5|rs6|rs7|\\br8\\b|supra|gt-r|gtr |corvette|civic type r|gr yaris|gr86|lotus|alpine a110|focus rs|megane rs/.test(n)) return {k:"sports",m:1.7,lab:"sports"};
+  if(/range rover|defender|discovery|xc90|xc60|xc40|x5|x6|x7|q7|q8|gle|gls|glc|cayenne|macan|touareg|land cruiser/.test(n)) return {k:"prem_suv",m:1.55,lab:"premium SUV"};
+  if(/qashqai|tiguan|kuga|sportage|tucson|rav4|cr-v|karoq|ateca|outlander|santa fe|sorento|forester|cx-5|cx5|hybrid q4|kodiac|kodiaq|arteon|sharan|touran/.test(n)) return {k:"suv",m:1.25,lab:"SUV"};
+  if(/bmw|mercedes|benz|audi|porsche|lexus|jaguar|land rover|volvo|mini cooper|maserati|alfa romeo|infiniti/.test(n)) return {k:"premium",m:1.4,lab:"premium"};
+  if(/fiesta|corsa|polo|ibiza|fabia|yaris|jazz|swift|i20|clio|208|c3|micra|adam/.test(n)) return {k:"small",m:0.85,lab:"small car"};
+  if(/aygo|108|107|i10|picanto|up!|citigo|spark|ka \\b|c1|108 /.test(n)) return {k:"city",m:0.75,lab:"city car"};
+  if(/transit|vivaro|sprinter|crafter|ducato|boxer|relay|trafic|transporter|amarok|navara|hilux|ranger|l200/.test(n)) return {k:"van",m:1.2,lab:"van / pickup"};
   return {k:"family",m:1,lab:"family car"};
 }
 function gbp(n){return "\u00a3"+Math.round(n/10)*10}

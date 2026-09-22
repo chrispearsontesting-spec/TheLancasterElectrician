@@ -4,105 +4,111 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
+<meta name="screen-orientation" content="landscape"/>
 <title>Drive test</title>
 <style>
-:root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12)}
+:root{--bg:#050608;--ink:#f3efe6;--dim:#9aa3b0}
 *{box-sizing:border-box}
-body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(12px + env(safe-area-inset-top)) 14px 24px}
-h1{font-size:22px;margin:0 0 6px}
-.note{color:var(--dim);font-size:13px;margin:0 0 12px}
-video{width:100%;height:180px;object-fit:cover;background:#111;border-radius:14px;border:1px solid var(--line)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-.stat{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px}
-.stat span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase}
-.stat b{display:block;font-size:24px;margin-top:4px}
-label{display:block;color:var(--dim);font-size:12px;margin:8px 0 4px}
-input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px;font-size:16px}
-.btn{width:100%;border:0;border-radius:999px;padding:14px;font-weight:800;margin-top:8px;background:#2a2a2a;color:#fff;border:1px solid #6b7280}
-.err{color:#e7b1a0;min-height:18px;font-size:13px}
-a{color:#9fd8ff;display:block;text-align:center;margin-top:14px;text-decoration:none}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+.stage{position:fixed;inset:0;background:#000}
+#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
+#front{position:absolute;right:12px;top:12px;width:28vw;max-width:220px;height:18vw;max-height:140px;object-fit:cover;background:#111;border-radius:12px;border:2px solid rgba(255,255,255,.35);z-index:3}
+.ticker{position:absolute;left:12px;bottom:12px;z-index:4;background:rgba(8,8,10,.78);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:10px 14px;display:flex;gap:16px;align-items:baseline}
+.ticker b{font-size:28px}
+.ticker span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase}
+.hud{position:absolute;left:12px;top:12px;z-index:4;display:flex;gap:8px;align-items:center}
+.btn{border:0;border-radius:999px;padding:10px 16px;font-weight:800;background:#2a2a2a;color:#fff;border:1px solid #6b7280}
+.rec{color:#ef4444;font-weight:800;font-size:13px}
+.err{position:absolute;left:12px;bottom:72px;color:#e7b1a0;font-size:13px;z-index:4}
+.hint{position:absolute;right:12px;bottom:12px;color:#9aa3b0;font-size:12px;z-index:4;text-align:right}
+.hint a{color:#9fd8ff;text-decoration:none}
 </style>
 </head>
 <body>
-<h1>Drive test</h1>
-<p class="note">Keep this page open and the screen on. Allow location and camera when asked. This is a foreground test only.</p>
-<video id="cam" playsinline muted autoplay></video>
-<div class="stats">
-  <div class="stat"><span>Miles</span><b id="miles">0.00</b></div>
-  <div class="stat"><span>Cost</span><b id="cost">£0.00</b></div>
-  <div class="stat"><span>Speed</span><b id="speed">0 mph</b></div>
-  <div class="stat"><span>Time</span><b id="mins">0 min</b></div>
+<div class="stage">
+  <video id="rear" playsinline muted autoplay></video>
+  <video id="front" playsinline muted autoplay></video>
+  <div class="hud">
+    <button class="btn" id="go" type="button">Start</button>
+    <span class="rec" id="rec"></span>
+  </div>
+  <div class="ticker">
+    <div><span>Cost</span><b id="cost">£0.00</b></div>
+    <div><span>Miles</span><b id="miles">0.00</b></div>
+    <div><span>Speed</span><b id="speed">0</b></div>
+  </div>
+  <p class="err" id="err"></p>
+  <p class="hint">Turn the phone sideways. Keep this page open.<br/><a href="home.html">Back</a></p>
 </div>
-<label>UK MPG</label>
-<input id="mpg" type="number" step="0.1" value="38"/>
-<label>Pence per litre</label>
-<input id="ppl" type="number" step="0.1" value="195.2"/>
-<button class="btn" id="go" type="button">Start</button>
-<p class="err" id="err"></p>
-<a href="home.html">Back</a>
 <script>
-function garage(){
+function garageMpg(){
   try{
     var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
     var c=s&&s.cars&&(s.cars[s.i]||s.cars[0]);
-    if(c&&c.mpg) document.getElementById("mpg").value=c.mpg;
-  }catch(e){}
+    return c&&+c.mpg?+c.mpg:38;
+  }catch(e){return 38}
 }
 function hav(a,b){
   var R=3958.8,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
   var x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
 }
-function money(n){return "\u00a3"+n.toFixed(2)}
-var watch=null,last=null,miles=0,t0=0,wake=null,stream=null;
-function tick(){
-  var mpg=parseFloat(document.getElementById("mpg").value)||38;
-  var ppl=parseFloat(document.getElementById("ppl").value)||195.2;
+var watch=null,last=null,miles=0,wake=null,streams=[],mpg=garageMpg(),ppl=195.2;
+function tick(spd){
   var litres=miles/Math.max(mpg,1)*4.54609;
   document.getElementById("miles").textContent=miles.toFixed(2);
-  document.getElementById("cost").textContent=money(litres*(ppl/100));
-  document.getElementById("mins").textContent=t0?Math.round((Date.now()-t0)/60000)+" min":"0 min";
+  document.getElementById("cost").textContent="\u00a3"+(litres*(ppl/100)).toFixed(2);
+  if(spd!=null) document.getElementById("speed").textContent=Math.round(spd)+" mph";
 }
-async function startCam(){
+async function oneCam(mode,el){
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280}},audio:false});
-    document.getElementById("cam").srcObject=stream;
-  }catch(e){document.getElementById("err").textContent="Camera off — location still works."}
+    var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:mode},width:{ideal:1280}},audio:false});
+    el.srcObject=s;streams.push(s);return true;
+  }catch(e){
+    try{
+      var s2=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:mode}},audio:false});
+      el.srcObject=s2;streams.push(s2);return true;
+    }catch(e2){return false}
+  }
+}
+async function startCams(){
+  var rear=await oneCam("environment",document.getElementById("rear"));
+  var front=await oneCam("user",document.getElementById("front"));
+  if(!rear) document.getElementById("err").textContent="Rear camera not available.";
+  else if(!front) document.getElementById("err").textContent="Front camera not available on this phone at the same time. Rear still running.";
 }
 function startGps(){
-  if(!navigator.geolocation){document.getElementById("err").textContent="No GPS on this browser.";return}
+  if(!navigator.geolocation){document.getElementById("err").textContent="No GPS.";return}
   watch=navigator.geolocation.watchPosition(function(p){
     var here={lat:p.coords.latitude,lon:p.coords.longitude};
-    if(p.coords.speed!=null&&p.coords.speed>=0){
-      document.getElementById("speed").textContent=Math.round(p.coords.speed*2.23694)+" mph";
-    }
+    var mph=p.coords.speed!=null&&p.coords.speed>=0?p.coords.speed*2.23694:null;
     if(last && p.coords.accuracy<=40){
       var d=hav(last,here);
       if(d>0.002 && d<1.5) miles+=d;
     }
-    last=here;
-    tick();
+    last=here;tick(mph);
   },function(e){document.getElementById("err").textContent=e.message||"Location blocked";},{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
 }
 async function start(){
   document.getElementById("err").textContent="";
-  miles=0;last=null;t0=Date.now();
+  miles=0;last=null;mpg=garageMpg();
   if(navigator.wakeLock){try{wake=await navigator.wakeLock.request("screen")}catch(e){}}
-  await startCam();
+  try{await screen.orientation.lock("landscape")}catch(e){}
+  await startCams();
   startGps();
   document.getElementById("go").textContent="Stop";
+  document.getElementById("rec").textContent="REC";
 }
 function stop(){
   if(watch!=null) navigator.geolocation.clearWatch(watch);
   watch=null;
-  if(stream) stream.getTracks().forEach(function(t){t.stop()});
-  stream=null;
+  streams.forEach(function(s){s.getTracks().forEach(function(t){t.stop()})});
+  streams=[];
   if(wake){try{wake.release()}catch(e){}}
   document.getElementById("go").textContent="Start";
-  tick();
+  document.getElementById("rec").textContent="";
 }
 document.getElementById("go").onclick=function(){watch?stop():start()};
-garage();
 </script>
 </body>
 </html>

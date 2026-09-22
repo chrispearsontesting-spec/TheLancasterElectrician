@@ -11,14 +11,14 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
 .stage{position:fixed;inset:0;background:#000}
-#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
+#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111;transform:rotate(180deg)}
 #front{position:absolute;right:12px;top:12px;width:28vw;max-width:220px;height:18vw;max-height:140px;object-fit:cover;background:#111;border-radius:12px;border:2px solid rgba(255,255,255,.35);z-index:3}
 .ticker{position:absolute;left:12px;bottom:12px;z-index:4;background:rgba(8,8,10,.78);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:10px 14px;display:flex;gap:16px;align-items:baseline}
 .ticker b{font-size:28px}
 .ticker span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase}
 .hud{position:absolute;left:12px;top:12px;z-index:4;display:flex;gap:8px;align-items:center}
 .btn{border:0;border-radius:999px;padding:10px 16px;font-weight:800;background:#2a2a2a;color:#fff;border:1px solid #6b7280}
-.rec{color:#ef4444;font-weight:800;font-size:13px}
+.rec{color:#9aa3b0;font-weight:800;font-size:13px}
 .err{position:absolute;left:12px;bottom:72px;color:#e7b1a0;font-size:13px;z-index:4}
 .hint{position:absolute;right:12px;bottom:12px;color:#9aa3b0;font-size:12px;z-index:4;text-align:right}
 .hint a{color:#9fd8ff;text-decoration:none}
@@ -30,7 +30,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
   <video id="front" playsinline muted autoplay></video>
   <div class="hud">
     <button class="btn" id="go" type="button">Start</button>
-    <span class="rec" id="rec"></span>
+    <button class="btn" id="flip" type="button">Flip rear</button>
+    <span class="rec" id="rec">Preview only</span>
   </div>
   <div class="ticker">
     <div><span>Cost</span><b id="cost">£0.00</b></div>
@@ -53,7 +54,7 @@ function hav(a,b){
   var x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
 }
-var watch=null,last=null,miles=0,wake=null,streams=[],mpg=garageMpg(),ppl=195.2;
+var watch=null,last=null,miles=0,wake=null,streams=[],mpg=garageMpg(),ppl=195.2,rot=180;
 function tick(spd){
   var litres=miles/Math.max(mpg,1)*4.54609;
   document.getElementById("miles").textContent=miles.toFixed(2);
@@ -97,7 +98,6 @@ async function start(){
   await startCams();
   startGps();
   document.getElementById("go").textContent="Stop";
-  document.getElementById("rec").textContent="REC";
 }
 function stop(){
   if(watch!=null) navigator.geolocation.clearWatch(watch);
@@ -106,9 +106,12 @@ function stop(){
   streams=[];
   if(wake){try{wake.release()}catch(e){}}
   document.getElementById("go").textContent="Start";
-  document.getElementById("rec").textContent="";
 }
 document.getElementById("go").onclick=function(){watch?stop():start()};
+document.getElementById("flip").onclick=function(){
+  rot=(rot+180)%360;
+  document.getElementById("rear").style.transform="rotate("+rot+"deg)";
+};
 </script>
 </body>
 </html>

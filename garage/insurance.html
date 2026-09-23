@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>Insurance</title>
+<style>
+:root{--bg:#0b0c0f;--ink:#f3efe6;--ice:#9fd8ff;--ring:#6b7280;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:440px;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:#9aa3b0;margin:0 0 16px;font-size:14px}
+.card{background:#14161b;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.when{color:var(--ice);font-size:20px;font-weight:800;margin:0}
+.left{color:#9aa3b0;font-size:13px;margin:6px 0 0}
+.btn{display:block;width:100%;text-align:center;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;text-decoration:none;border:1px solid var(--ring);border-radius:999px;padding:14px;font-weight:800;font-size:15px;margin-top:10px}
+.note{color:#9aa3b0;font-size:13px;line-height:1.45}
+iframe{width:100%;height:240px;border:0;border-radius:12px;background:#111;display:none}
+iframe.on{display:block;margin-top:10px}
+</style>
+</head>
+<body>
+<h1>Insurance</h1>
+<p class="sub" id="who">Policy</p>
+<div class="card">
+  <p class="when" id="exp">—</p>
+  <p class="left" id="left">Expiry</p>
+</div>
+<div class="card">
+  <p class="note">Upload the PDF your insurer emailed (policy or certificate of motor insurance). It stays on this phone only.</p>
+  <iframe id="view" title="Policy PDF"></iframe>
+  <p class="left" id="pdfName">No document yet</p>
+  <input id="pick" type="file" accept="application/pdf" hidden/>
+  <button class="btn" type="button" id="up">Upload policy PDF</button>
+  <button class="btn" type="button" id="openPdf" style="display:none">View document</button>
+</div>
+<a class="btn" id="renew" href="#">Renew</a>
+<a class="btn" id="insurer" href="#" target="_blank" rel="noopener">Insurer website</a>
+<a class="btn" href="home.html">Back</a>
+<script>
+function state(){
+  try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
+  return {i:0,cars:[{plate:"",ins:"",insWeb:"",nick:"Car"}]};
+}
+function car(){var s=state();return s.cars[s.i]||s.cars[0]}
+function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"YOUR REG"}
+function nice(iso){if(!iso)return "Set date in Edit";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
+function daysLeft(iso){
+  if(!iso)return null;
+  var end=new Date(iso+"T12:00:00"),now=new Date();now.setHours(12,0,0,0);
+  return Math.round((end-now)/86400000);
+}
+function leftTxt(iso){
+  var days=daysLeft(iso);
+  if(days==null)return "Set expiry in Edit";
+  if(days<0)return Math.abs(days)+" days overdue";
+  if(days===0)return "Due today";
+  return days+" days left";
+}
+function key(){return "gt.insPdf."+String((car().plate||"none")).toUpperCase().replace(/[^A-Z0-9]/g,"")}
+function db(){
+  return new Promise(function(res,rej){
+    var r=indexedDB.open("dipstick",1);
+    r.onupgradeneeded=function(){r.result.createObjectStore("files")};
+    r.onsuccess=function(){res(r.result)};
+    r.onerror=function(){rej(r.error)};
+  });
+}
+async function getPdf(){
+  try{
+    var d=await db();
+    return await new Promise(function(res,rej){
+      var t=d.transaction("files").objectStore("files").get(key());
+      t.onsuccess=function(){res(t.result||null)};
+      t.onerror=function(){rej(t.error)};
+    });
+  }catch(e){return null}
+}
+async function putPdf(blob,name){
+  var d=await db();
+  return new Promise(function(res,rej){
+    var t=d.transaction("files","readwrite").objectStore("files").put({blob:blob,name:name,at:Date.now()},key());
+    t.onsuccess=function(){res()};
+    t.onerror=function(){rej(t.error)};
+  });
+}
+var url=null;
+async function show(){
+  var rec=await getPdf();
+  var frame=document.getElementById("view");
+  var open=document.getElementById("openPdf");
+  if(url) URL.revokeObjectURL(url);
+  if(!rec||!rec.blob){
+    document.getElementById("pdfName").textContent="No document yet";
+    frame.className="";open.style.display="none";return;
+  }
+  url=URL.createObjectURL(rec.blob);
+  document.getElementById("pdfName").textContent=rec.name||"Policy PDF";
+  frame.src=url;frame.className="on";
+  open.style.display="block";
+  open.onclick=function(){window.open(url,"_blank")};
+}
+var c=car();
+document.getElementById("who").textContent=(c.nick||c.name||"Car")+" · "+plate(c.plate);
+document.getElementById("exp").textContent=nice(c.ins);
+document.getElementById("left").textContent=leftTxt(c.ins);
+var insUrl=c.insWeb||"https://www.gov.uk/vehicle-insurance";
+document.getElementById("renew").href=insUrl;
+document.getElementById("insurer").href=insUrl;
+if(!c.insWeb) document.getElementById("insurer").style.display="none";
+document.getElementById("up").onclick=function(){document.getElementById("pick").click()};
+document.getElementById("pick").onchange=async function(){
+  var f=this.files&&this.files[0];
+  if(!f)return;
+  await putPdf(f,f.name);
+  show();
+};
+show();
+</script>
+</body>
+</html>

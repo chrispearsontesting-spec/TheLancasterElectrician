@@ -123,11 +123,10 @@ function paint(){
   var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
   var bd=beltDue(c), tl=tyreLeft(c);
   var taxUrl="https://www.gov.uk/vehicle-tax";
-  var insUrl=c.insWeb||"https://www.gov.uk/vehicle-insurance";
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
     row("Tax",c.tax,"",[{lab:"Renew",href:taxUrl}])+
-    row("Insurance",c.ins,"",[{lab:"Renew",href:insUrl}])+
+    row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?"":"",[{lab:"Book change",job:"belt"}])+
     "<div class='item'><div><h3>Tyres</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";

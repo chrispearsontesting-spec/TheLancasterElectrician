@@ -4,22 +4,21 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
-<meta name="screen-orientation" content="landscape"/>
-<title>Drive test</title>
+<title>Drive</title>
 <style>
 :root{--bg:#050608;--ink:#f3efe6;--dim:#9aa3b0}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
 .stage{position:fixed;inset:0;background:#000}
-#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111;transform:rotate(180deg)}
+#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
 #front{position:absolute;right:12px;top:12px;width:28vw;max-width:220px;height:18vw;max-height:140px;object-fit:cover;background:#111;border-radius:12px;border:2px solid rgba(255,255,255,.35);z-index:3}
 .ticker{position:absolute;left:12px;bottom:12px;z-index:4;background:rgba(8,8,10,.78);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:10px 14px;display:flex;gap:16px;align-items:baseline}
-.ticker b{font-size:28px}
+.ticker b{font-size:26px}
 .ticker span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase}
-.hud{position:absolute;left:12px;top:12px;z-index:4;display:flex;gap:8px;align-items:center}
+.hud{position:absolute;left:12px;top:12px;z-index:4;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn{border:0;border-radius:999px;padding:10px 16px;font-weight:800;background:#2a2a2a;color:#fff;border:1px solid #6b7280}
-.rec{color:#9aa3b0;font-weight:800;font-size:13px}
-.err{position:absolute;left:12px;bottom:72px;color:#e7b1a0;font-size:13px;z-index:4}
+.rec{color:#fca5a5;font-weight:800;font-size:13px}
+.err{position:absolute;left:12px;bottom:72px;color:#e7b1a0;font-size:13px;z-index:4;max-width:70%}
 .hint{position:absolute;right:12px;bottom:12px;color:#9aa3b0;font-size:12px;z-index:4;text-align:right}
 .hint a{color:#9fd8ff;text-decoration:none}
 </style>
@@ -30,8 +29,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
   <video id="front" playsinline muted autoplay></video>
   <div class="hud">
     <button class="btn" id="go" type="button">Start</button>
-    <button class="btn" id="flip" type="button">Flip rear</button>
-    <span class="rec" id="rec">Preview only</span>
+    <span class="rec" id="rec">Ready</span>
   </div>
   <div class="ticker">
     <div><span>Cost</span><b id="cost">£0.00</b></div>
@@ -39,78 +37,179 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
     <div><span>Speed</span><b id="speed">0</b></div>
   </div>
   <p class="err" id="err"></p>
-  <p class="hint">Turn the phone sideways. Keep this page open.<br/><a href="home.html">Back</a></p>
+  <p class="hint">Keep this page open while driving.<br/><a href="calendar.html">Calendar</a> · <a href="home.html">Back</a></p>
 </div>
 <script>
-function garageMpg(){
+function garage(){
   try{
     var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
-    var c=s&&s.cars&&(s.cars[s.i]||s.cars[0]);
-    return c&&+c.mpg?+c.mpg:38;
-  }catch(e){return 38}
+    return s&&s.cars&&(s.cars[s.i]||s.cars[0])||{};
+  }catch(e){return {}}
 }
 function hav(a,b){
   var R=3958.8,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
   var x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
 }
-var watch=null,last=null,miles=0,wake=null,streams=[],mpg=garageMpg(),ppl=195.2,rot=180;
+function idb(){
+  return new Promise(function(res,rej){
+    var r=indexedDB.open("dipstick",2);
+    r.onupgradeneeded=function(){
+      var d=r.result;
+      if(!d.objectStoreNames.contains("files")) d.createObjectStore("files");
+      if(!d.objectStoreNames.contains("clips")) d.createObjectStore("clips");
+    };
+    r.onsuccess=function(){res(r.result)};
+    r.onerror=function(){rej(r.error)};
+  });
+}
+async function putClip(id,blob){
+  var d=await idb();
+  return new Promise(function(res,rej){
+    var t=d.transaction("clips","readwrite").objectStore("clips").put(blob,id);
+    t.onsuccess=function(){res()};
+    t.onerror=function(){rej(t.error)};
+  });
+}
+var watch=null,last=null,miles=0,wake=null,streams=[],rec=null,chunks=[],started=0,startPos=null;
+var mpg=38,ppl=197.1,rearRot=180,frontRot=0,on=false;
+document.getElementById("rear").style.transform="rotate("+rearRot+"deg)";
 function tick(spd){
   var litres=miles/Math.max(mpg,1)*4.54609;
   document.getElementById("miles").textContent=miles.toFixed(2);
   document.getElementById("cost").textContent="\u00a3"+(litres*(ppl/100)).toFixed(2);
-  if(spd!=null) document.getElementById("speed").textContent=Math.round(spd)+" mph";
+  if(spd!=null) document.getElementById("speed").textContent=Math.round(spd);
 }
+function costNow(){return miles/Math.max(mpg,1)*4.54609*(ppl/100)}
 async function oneCam(mode,el){
   try{
     var s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:mode},width:{ideal:1280}},audio:false});
-    el.srcObject=s;streams.push(s);return true;
+    el.srcObject=s;streams.push(s);return s;
   }catch(e){
     try{
       var s2=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:mode}},audio:false});
-      el.srcObject=s2;streams.push(s2);return true;
-    }catch(e2){return false}
+      el.srcObject=s2;streams.push(s2);return s2;
+    }catch(e2){return null}
   }
 }
-async function startCams(){
-  var rear=await oneCam("environment",document.getElementById("rear"));
-  var front=await oneCam("user",document.getElementById("front"));
-  if(!rear) document.getElementById("err").textContent="Rear camera not available.";
-  else if(!front) document.getElementById("err").textContent="Front camera not available on this phone at the same time. Rear still running.";
+function mime(){
+  var opts=["video/webm;codecs=vp8","video/webm","video/mp4"];
+  for(var i=0;i<opts.length;i++) if(window.MediaRecorder&&MediaRecorder.isTypeSupported(opts[i])) return opts[i];
+  return "";
+}
+function startRec(stream){
+  chunks=[];
+  var type=mime();
+  try{
+    rec=type?new MediaRecorder(stream,{mimeType:type}):new MediaRecorder(stream);
+  }catch(e){
+    document.getElementById("err").textContent="This browser cannot record video.";
+    rec=null;return;
+  }
+  rec.ondataavailable=function(e){if(e.data&&e.data.size) chunks.push(e.data)};
+  rec.start(1000);
 }
 function startGps(){
   if(!navigator.geolocation){document.getElementById("err").textContent="No GPS.";return}
   watch=navigator.geolocation.watchPosition(function(p){
     var here={lat:p.coords.latitude,lon:p.coords.longitude};
+    if(!startPos) startPos=here;
+    last=here;
     var mph=p.coords.speed!=null&&p.coords.speed>=0?p.coords.speed*2.23694:null;
-    if(last && p.coords.accuracy<=40){
-      var d=hav(last,here);
-      if(d>0.002 && d<1.5) miles+=d;
+    if(last && p.coords.accuracy<=45){
+      /* distance added after first fix pair */
     }
-    last=here;tick(mph);
+  },function(e){document.getElementById("err").textContent=e.message||"Location blocked";},{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
+  var prev=null;
+  navigator.geolocation.clearWatch(watch);
+  watch=navigator.geolocation.watchPosition(function(p){
+    var here={lat:p.coords.latitude,lon:p.coords.longitude};
+    if(!startPos) startPos=here;
+    var mph=p.coords.speed!=null&&p.coords.speed>=0?p.coords.speed*2.23694:null;
+    if(prev && p.coords.accuracy<=45){
+      var d=hav(prev,here);
+      if(d>0.002 && d<2) miles+=d;
+    }
+    prev=here;last=here;tick(mph);
   },function(e){document.getElementById("err").textContent=e.message||"Location blocked";},{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
 }
 async function start(){
   document.getElementById("err").textContent="";
-  miles=0;last=null;mpg=garageMpg();
+  miles=0;last=null;startPos=null;chunks=[];started=Date.now();
+  var g=garage();mpg=+g.mpg||38;
+  try{
+    var pr=await fetch("prices.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()});
+    var fuel=String(g.fuel||"diesel").toLowerCase();
+    ppl=fuel.indexOf("petrol")>=0?+pr.petrol_ppl:+pr.diesel_ppl;
+  }catch(e){}
   if(navigator.wakeLock){try{wake=await navigator.wakeLock.request("screen")}catch(e){}}
   try{await screen.orientation.lock("landscape")}catch(e){}
-  await startCams();
+  var rear=await oneCam("environment",document.getElementById("rear"));
+  var front=await oneCam("user",document.getElementById("front"));
+  if(!rear) document.getElementById("err").textContent="Rear camera not available.";
+  else if(!front) document.getElementById("err").textContent="Front camera not available at the same time. Recording the road camera.";
+  if(rear) startRec(rear);
   startGps();
+  on=true;
   document.getElementById("go").textContent="Stop";
+  document.getElementById("rec").textContent="REC";
+}
+function saveTrip(blob){
+  var id="d"+started;
+  var trip={
+    id:id,
+    when:started,
+    end:Date.now(),
+    miles:+miles.toFixed(2),
+    cost:+costNow().toFixed(2),
+    mpg:mpg,
+    ppl:ppl,
+    from:startPos?startPos.lat.toFixed(4)+","+startPos.lon.toFixed(4):"",
+    to:last?last.lat.toFixed(4)+","+last.lon.toFixed(4):"",
+    hasClip:!!(blob&&blob.size)
+  };
+  var list=[];
+  try{list=JSON.parse(localStorage.getItem("gt.driveLog")||"[]")}catch(e){}
+  list.unshift(trip);
+  localStorage.setItem("gt.driveLog",JSON.stringify(list.slice(0,200)));
+  if(blob&&blob.size){
+    var name="dipstick-"+new Date(started).toISOString().slice(0,16).replace(/[:T]/g,"-")+".webm";
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=name;
+    a.click();
+    putClip(id,blob).catch(function(){});
+  }
 }
 function stop(){
+  on=false;
   if(watch!=null) navigator.geolocation.clearWatch(watch);
   watch=null;
-  streams.forEach(function(s){s.getTracks().forEach(function(t){t.stop()})});
-  streams=[];
-  if(wake){try{wake.release()}catch(e){}}
-  document.getElementById("go").textContent="Start";
+  function finish(blob){
+    saveTrip(blob);
+    streams.forEach(function(s){s.getTracks().forEach(function(t){t.stop()})});
+    streams=[];
+    if(wake){try{wake.release()}catch(e){}}
+    document.getElementById("go").textContent="Start";
+    document.getElementById("rec").textContent="Saved";
+  }
+  if(rec&&rec.state!=="inactive"){
+    rec.onstop=function(){
+      var type=rec.mimeType||"video/webm";
+      finish(new Blob(chunks,{type:type}));
+      rec=null;
+    };
+    try{rec.stop()}catch(e){finish(null)}
+  }else finish(null);
 }
-document.getElementById("go").onclick=function(){watch?stop():start()};
-document.getElementById("flip").onclick=function(){
-  rot=(rot+180)%360;
-  document.getElementById("rear").style.transform="rotate("+rot+"deg)";
+document.getElementById("go").onclick=function(){on?stop():start()};
+document.getElementById("rear").onclick=function(){
+  rearRot=(rearRot+180)%360;
+  this.style.transform="rotate("+rearRot+"deg)";
+};
+document.getElementById("front").onclick=function(){
+  frontRot=(frontRot+180)%360;
+  this.style.transform="rotate("+frontRot+"deg)";
 };
 </script>
 </body>

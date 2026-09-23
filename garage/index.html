@@ -52,10 +52,10 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <div class="prices">
   <p class="kicker">UK average fuel price</p>
   <div class="pgrid" id="priceGrid">
-    <div class="pcell"><span>Diesel</span><b id="pDiesel">195.2p</b><em>per litre</em></div>
-    <div class="pcell"><span>Petrol</span><b id="pPetrol">171.1p</b><em>per litre</em></div>
+    <div class="pcell"><span>Diesel</span><b id="pDiesel">197.1p</b><em>per litre</em></div>
+    <div class="pcell"><span>Petrol</span><b id="pPetrol">172.9p</b><em>per litre</em></div>
   </div>
-  <p class="when" id="priceWhen"></p>
+  <p class="when" id="priceWhen">23 Sep 2026 · UK national average</p>
 </div>
 <label>From</label>
 <input id="from" autocomplete="off" placeholder="Start typing a place"/>
@@ -117,12 +117,28 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <script src="cars-uk-6.js"></script>
 <script src="cars-uk-7.js"></script>
 <script src="./trip-engine.js"></script>
-<script src="./route-app.js"></script>
-<script src="./route-prices.js"></script>
+<script src="./route-app.js?v=23"></script>
+<script src="./route-prices.js?v=23"></script>
 <script src="./route-map.js"></script>
 <script src="./route-save.js"></script>
 <script src="./place-suggest.js"></script>
 <script src="./route-clear.js"></script>
-<script>if(typeof paintPrices==="function")paintPrices();</script>
+<script>
+(function(){
+  function apply(p){
+    if(!p)return;
+    if(document.getElementById("pDiesel")&&p.diesel_ppl) document.getElementById("pDiesel").textContent=(+p.diesel_ppl).toFixed(1)+"p";
+    if(document.getElementById("pPetrol")&&p.petrol_ppl) document.getElementById("pPetrol").textContent=(+p.petrol_ppl).toFixed(1)+"p";
+    if(document.getElementById("priceWhen")&&p.date) document.getElementById("priceWhen").textContent=p.date+" \u00b7 UK national average";
+    if(window.PRICE){
+      if(+p.diesel_ppl) PRICE.diesel=+p.diesel_ppl;
+      if(+p.petrol_ppl) PRICE.petrol=+p.petrol_ppl;
+      if(+p.electric_pkwh) PRICE.electric=+p.electric_pkwh;
+      if(p.date) PRICE.date=p.date;
+    }
+  }
+  fetch("prices.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(apply).catch(function(){});
+})();
+</script>
 </body>
 </html>

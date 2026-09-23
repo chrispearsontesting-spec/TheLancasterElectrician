@@ -15,7 +15,7 @@ h1{font-size:22px;margin:0 0 4px}
 .when{color:var(--ice);font-size:20px;font-weight:800;margin:0}
 .left{color:#9aa3b0;font-size:13px;margin:6px 0 0}
 .btn{display:block;width:100%;text-align:center;background:radial-gradient(circle at 50% 20%,#6e6e6e 0%,#2c2c2c 40%,#101010 78%);color:#fff;text-decoration:none;border:1px solid var(--ring);border-radius:999px;padding:14px;font-weight:800;font-size:15px;margin-top:10px}
-.note{color:#9aa3b0;font-size:13px;line-height:1.45}
+.note{color:#9aa3b0;font-size:13px;line-height:1.45;margin:0}
 iframe{width:100%;height:240px;border:0;border-radius:12px;background:#111;display:none}
 iframe.on{display:block;margin-top:10px}
 </style>
@@ -34,6 +34,11 @@ iframe.on{display:block;margin-top:10px}
   <input id="pick" type="file" accept="application/pdf" hidden/>
   <button class="btn" type="button" id="up">Upload policy PDF</button>
   <button class="btn" type="button" id="openPdf" style="display:none">View document</button>
+</div>
+<div class="card">
+  <p class="note">Opens your mail already filtered for insurer / renewal emails. Nothing is copied into Dipstick.</p>
+  <a class="btn" id="gmail" href="#" target="_blank" rel="noopener">Insurer emails in Gmail</a>
+  <a class="btn" id="outlook" href="#" target="_blank" rel="noopener">Insurer emails in Outlook</a>
 </div>
 <a class="btn" id="renew" href="#">Renew</a>
 <a class="btn" id="insurer" href="#" target="_blank" rel="noopener">Insurer website</a>
@@ -85,6 +90,12 @@ async function putPdf(blob,name){
     t.onerror=function(){rej(t.error)};
   });
 }
+function mailQuery(c){
+  var q='(from:(admiral.com OR admiralgroup.co.uk OR aviva.com OR directline.com OR churchill.com OR lv.com OR hastingsdirect.com OR esure.com OR morethan.com OR axa.co.uk OR zurich.co.uk OR nfumutual.co.uk OR gocompare.com OR comparethemarket.com) OR subject:(insurance OR renewal OR policy OR "motor insurance"))';
+  var p=String(c.plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(p) q+=' ("'+p+'" OR "'+plate(p)+'")';
+  return q;
+}
 var url=null;
 async function show(){
   var rec=await getPdf();
@@ -109,6 +120,9 @@ var insUrl=c.insWeb||"https://www.gov.uk/vehicle-insurance";
 document.getElementById("renew").href=insUrl;
 document.getElementById("insurer").href=insUrl;
 if(!c.insWeb) document.getElementById("insurer").style.display="none";
+var q=mailQuery(c);
+document.getElementById("gmail").href="https://mail.google.com/mail/u/0/#search/"+encodeURIComponent(q);
+document.getElementById("outlook").href="https://outlook.live.com/mail/0/search?q="+encodeURIComponent(q);
 document.getElementById("up").onclick=function(){document.getElementById("pick").click()};
 document.getElementById("pick").onchange=async function(){
   var f=this.files&&this.files[0];

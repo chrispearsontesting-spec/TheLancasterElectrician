@@ -21,4 +21,19 @@ function paintPrices(){
     }
   }
   if(document.getElementById("priceWhen")) document.getElementById("priceWhen").textContent=(PRICE.date||"")+" \u00b7 UK national average";
+  if(document.getElementById("priceLine")) document.getElementById("priceLine").textContent="Diesel "+PRICE.diesel+"p \u00b7 Petrol "+PRICE.petrol+"p \u00b7 "+PRICE.date+" UK average";
 }
+function loadLivePrices(){
+  fetch("prices.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(p){
+    if(+p.petrol_ppl) PRICE.petrol=+p.petrol_ppl;
+    if(+p.diesel_ppl) PRICE.diesel=+p.diesel_ppl;
+    if(+p.electric_pkwh) PRICE.electric=+p.electric_pkwh;
+    if(p.date) PRICE.date=p.date;
+    if(p.source) PRICE.source=p.source;
+    paintPrices();
+    if(typeof lastTrip!=="undefined"&&lastTrip&&typeof paintResult==="function"){
+      paintResult(lastTrip.title,lastTrip.oneMiles||lastTrip.miles,lastTrip.oneSecs||lastTrip.secs,lastTrip.roads);
+    }
+  }).catch(function(){paintPrices()});
+}
+loadLivePrices();

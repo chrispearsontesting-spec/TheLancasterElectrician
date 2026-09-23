@@ -54,7 +54,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
 </div><p class="dots" id="dots">Car 1 of 1</p></div>
 <button class="btn wide" type="button" id="datesToggle">Reminders</button>
 <div class="card hide" id="dues"></div>
-<a class="btn wide" href="drive.html">Drive test</a>
+<a class="btn wide" href="drive-hub.html">Drive</a>
 <a class="btn wide" href="service.html">Service cost estimates</a>
 <a class="btn wide" href="./">Route costs</a>
 <a class="btn wide" href="buy.html">Buying guide</a>
@@ -93,7 +93,7 @@ input,select{width:100%;background:#171a20;border:1px solid var(--line);color:va
   var btn=document.getElementById("datesToggle");
   function setOpen(on){
     dues.classList.toggle("hide",!on);
-    btn.textContent=on?"Reminders ▲":"Reminders";
+    btn.textContent=on?"Reminders \u25b2":"Reminders";
     try{sessionStorage.setItem("gt.datesOpen",on?"1":"0")}catch(e){}
   }
   setOpen(sessionStorage.getItem("gt.datesOpen")==="1");

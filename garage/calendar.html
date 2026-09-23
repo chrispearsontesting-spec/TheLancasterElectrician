@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
-<title>Calendar</title>
+<title>Drive diary</title>
 <style>
 :root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12);--ring:#6b7280;--ice:#9fd8ff}
 *{box-sizing:border-box}
@@ -22,13 +22,15 @@ h1{font-size:22px;margin:0 0 6px}
 .day .n{font-size:12px;font-weight:800}
 .day .dot{display:block;width:6px;height:6px;border-radius:50%;background:#9fd8ff;margin-top:6px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
-.card b{display:block}
-.muted{color:var(--dim);font-size:13px;margin:4px 0 0}
+.card b{display:block;font-size:16px}
+.muted{color:var(--dim);font-size:13px;margin:4px 0 0;line-height:1.4}
+.kv{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:14px}
+.kv span{color:var(--dim)}
 </style>
 </head>
 <body>
-<h1>Journey calendar</h1>
-<p class="muted">Trips logged when you press Start on Drive. Tap a day.</p>
+<h1>Drive diary</h1>
+<p class="muted">Tap a day. Each trip shows start, finish, miles and cost at your saved mpg.</p>
 <div class="nav">
   <button class="btn" type="button" id="prev">Prev</button>
   <b id="label"></b>
@@ -37,8 +39,8 @@ h1{font-size:22px;margin:0 0 6px}
 <div class="grid" id="dows"></div>
 <div class="grid" id="grid"></div>
 <div id="list"></div>
-<a class="btn wide" href="drive.html">Drive</a>
-<a class="btn wide" href="home.html">Back</a>
+<a class="btn wide" href="drive.html">Let’s drive</a>
+<a class="btn wide" href="drive-hub.html">Back</a>
 <script>
 var view=new Date();
 view.setDate(1);
@@ -75,11 +77,13 @@ function render(sel){
   var items=sel&&map[sel]?map[sel]:[];
   var box=document.getElementById("list");
   if(!sel){box.innerHTML="<p class='muted'>Tap a day with a blue dot.</p>";return}
-  if(!items.length){box.innerHTML="<p class='muted'>No Drive trips on "+sel+".</p>";return}
+  if(!items.length){box.innerHTML="<p class='muted'>No trips on this day yet.</p>";return}
   box.innerHTML=items.map(function(t){
     var tm=new Date(t.when).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
     var end=t.end?new Date(t.end).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
-    return "<div class='card'><b>"+tm+(end?" – "+end:"")+"</b><p class='muted'>"+(+t.miles||0).toFixed(2)+" mi · £"+(+t.cost||0).toFixed(2)+" · "+(t.mpg||"-")+" mpg</p>"+(t.hasClip?"<p class='muted'>Clip saved on this phone (Downloads / Dipstick calendar player later).</p>":"")+"</div>";
+    var from=t.from||"Start not stored";
+    var to=t.to||"Finish not stored";
+    return "<div class='card'><b>"+from+" → "+to+"</b><p class='muted'>"+tm+(end?" – "+end:"")+"</p><div class='kv'><span>Miles</span><b>"+(+t.miles||0).toFixed(2)+"</b></div><div class='kv'><span>Cost</span><b>£"+(+t.cost||0).toFixed(2)+"</b></div><div class='kv'><span>MPG used</span><b>"+(t.mpg||"-")+"</b></div></div>";
   }).join("");
 }
 var selected=key(new Date());

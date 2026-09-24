@@ -1,20 +1,43 @@
-/* Grok-like rows: flat dark chips, soft corners, no metal disc */
-html,body{background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-h1,h2,.name,b.title{font-weight:650;letter-spacing:-.02em}
-.muted,.left,.dots,.kicker{color:#8b8b8b}
-a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost{
+html,body{
+  background:#0b0c0e !important;
+  color:#f2f2f2 !important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif !important;
+}
+h1,h2,.name,b.title{font-weight:650 !important;letter-spacing:-.02em;color:#f2f2f2 !important}
+.muted,.left,.dots,.kicker,.sub{color:#8b8b8b !important}
+a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost,
+.nameRow button,.sug{
   background:#1c1c1e !important;
   color:#f2f2f2 !important;
-  text-decoration:none;
+  text-decoration:none !important;
   border:0 !important;
-  border-radius:18px !important;
   box-shadow:none !important;
   font-weight:600 !important;
   letter-spacing:-.01em;
 }
+a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost{
+  border-radius:18px !important;
+}
 .btn.wide,a.wide{
+  display:block !important;
+  width:100% !important;
   padding:16px 18px !important;
   font-size:16px !important;
   text-align:left !important;
+  margin-top:10px !important;
 }
+.nameRow button{
+  border-radius:50% !important;
+  background:#1c1c1e !important;
+}
+.card,.panel,.acc,.prices,.route{
+  background:#141416 !important;
+  border:1px solid #2a2a2e !important;
+}
+input,select{
+  background:#161618 !important;
+  color:#f2f2f2 !important;
+  border:1px solid #2a2a2e !important;
+}
+.bar{background:#141416 !important}
 .btn:after{display:none !important}

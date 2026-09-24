@@ -18,11 +18,6 @@ function plateYear(p){
   }
   return null;
 }
-function ncapBadgeHtml(c){
-  var r=window.ncapFor?window.ncapFor(c.nick||c.name,plateYear(c.plate)):null;
-  var label=(r&&!r.none&&window.ncapStars)?window.ncapStars(r.stars):"NCAP \u2014";
-  return "<button type='button' class='ncapBadge' id='ncapBadge'>"+label+"</button>";
-}
 function openNcap(){
   var c=car();
   var r=window.ncapFor?window.ncapFor(c.nick||c.name,plateYear(c.plate)):{none:true};
@@ -117,7 +112,7 @@ function paint(){
   var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
   var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
   hero.style.backgroundImage=c.photo?"none":"";
-  hero.innerHTML=img+hint+ncapBadgeHtml(c)+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
+  hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
   document.getElementById("caption").textContent=c.nick||c.name||"Car";
   document.getElementById("dots").textContent="Car "+(s.i+1)+" of "+s.cars.length;
   var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
@@ -171,7 +166,7 @@ function openSheet(mode){
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
 }
-document.getElementById("hero").onclick=function(e){if(e.target.closest(".ncapBadge")){openNcap();return;}document.getElementById("photoPick").click()};
+document.getElementById("hero").onclick=function(){document.getElementById("photoPick").click()};
 document.getElementById("ncapClose").onclick=function(){document.getElementById("ncapSheet").className="sheet"};
 document.getElementById("photoPick").onchange=function(){savePic(this.files&&this.files[0])};
 document.getElementById("prev").onclick=function(){var s=state();s.i=(s.i-1+s.cars.length)%s.cars.length;save(s);paint()};

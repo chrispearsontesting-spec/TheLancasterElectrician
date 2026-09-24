@@ -5,20 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Drive</title>
-<link rel="stylesheet" href="./ui.css"/>
+<link rel="stylesheet" href="./ui.css?v=24"/>
 <style>
 *{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{margin:0 auto;max-width:440px;padding:calc(18px + env(safe-area-inset-top)) 16px 28px}
-h1{font-size:28px;margin:8px 0 8px}
-.muted{font-size:14px;line-height:1.45;margin:0 0 22px}
-.btn{display:block;width:100%;margin-top:10px}
+h1{font-size:28px;margin:8px 0 8px;font-weight:650;letter-spacing:-.02em;color:#f2f2f2}
+.muted{font-size:14px;line-height:1.45;margin:0 0 22px;color:#8b8b8b}
+.btn{
+  display:block;width:100%;margin-top:10px;padding:16px 18px;
+  background:#1c1c1e;color:#f2f2f2;text-decoration:none;
+  border:0;border-radius:18px;font-weight:600;font-size:16px;text-align:left;
+}
 </style>
 </head>
 <body>
 <h1>Drive</h1>
 <p class="muted">Start a journey to record the road, track miles by GPS, and log start and finish on the diary. Keep the page open while you drive.</p>
-<a class="btn wide" href="drive.html">Let’s drive</a>
-<a class="btn wide" href="calendar.html">Drive diary</a>
-<a class="btn wide" href="home.html">Back</a>
+<a class="btn" href="drive.html">Let’s drive</a>
+<a class="btn" href="calendar.html">Drive diary</a>
+<a class="btn" href="home.html">Back</a>
 </body>
 </html>

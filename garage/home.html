@@ -30,7 +30,6 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .btn{display:inline-block;background:#1c1c1e;color:#f2f2f2;text-decoration:none;border:0;border-radius:18px;padding:8px 12px;font-weight:600;font-size:13px;text-align:center;min-width:92px;cursor:pointer}
 .wide{display:block;padding:16px 18px;border-radius:18px;font-size:16px;width:100%;margin-top:10px;background:#1c1c1e;color:#f2f2f2;border:0;text-align:left;font-weight:600}
-.drop a{display:block;padding:14px 18px;color:#cfcfcf;text-decoration:none;font-size:15px;font-weight:600;border-top:1px solid #2a2a2e}
 .sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
 .sheet.on{display:block}
 .panel{background:#141416;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
@@ -52,31 +51,12 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <button type="button" id="next">&#8594;</button>
 <button type="button" id="btnEdit">&#9998;</button>
 </div><p class="dots" id="dots">Car 1 of 1</p></div>
-
-<button class="btn wide acc" type="button" data-acc="dues">Reminders</button>
+<button class="btn wide" type="button" id="datesToggle">Reminders</button>
 <div class="card hide" id="dues"></div>
-
-<button class="btn wide acc" type="button" data-acc="driveBox">Drive</button>
-<div class="card hide drop" id="driveBox">
-  <a href="drive.html">Let’s drive</a>
-  <a href="calendar.html">Drive diary</a>
-</div>
-
-<button class="btn wide acc" type="button" data-acc="serviceBox">Service cost estimates</button>
-<div class="card hide drop" id="serviceBox">
-  <a href="service.html">Open estimates</a>
-</div>
-
-<button class="btn wide acc" type="button" data-acc="routeBox">Route costs</button>
-<div class="card hide drop" id="routeBox">
-  <a href="./">Open route costs</a>
-</div>
-
-<button class="btn wide acc" type="button" data-acc="buyBox">Buying guide</button>
-<div class="card hide drop" id="buyBox">
-  <a href="buy.html">Open buying guide</a>
-</div>
-
+<a class="btn wide" href="drive-hub.html">Drive</a>
+<a class="btn wide" href="service.html">Service cost estimates</a>
+<a class="btn wide" href="./">Route costs</a>
+<a class="btn wide" href="buy.html">Buying guide</a>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
 <label>Name</label><input id="fName"/>
@@ -108,17 +88,15 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="./home-insure.js"></script>
 <script>
 (function(){
-  document.querySelectorAll(".acc").forEach(function(btn){
-    var id=btn.getAttribute("data-acc");
-    var box=document.getElementById(id);
-    var label=btn.textContent.replace(/\s*[\u25b2\u25bc]$/,"");
-    function setOpen(on){
-      if(!box)return;
-      box.classList.toggle("hide",!on);
-      btn.textContent=on?label+" \u25b2":label;
-    }
-    btn.onclick=function(){setOpen(box.classList.contains("hide"))};
-  });
+  var dues=document.getElementById("dues");
+  var btn=document.getElementById("datesToggle");
+  function setOpen(on){
+    dues.classList.toggle("hide",!on);
+    btn.textContent=on?"Reminders \u25b2":"Reminders";
+    try{sessionStorage.setItem("gt.datesOpen",on?"1":"0")}catch(e){}
+  }
+  setOpen(sessionStorage.getItem("gt.datesOpen")==="1");
+  btn.onclick=function(){setOpen(dues.classList.contains("hide"))};
 })();
 </script>
 </body>

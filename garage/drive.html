@@ -109,8 +109,7 @@ function tick(spd){
   if(spd!=null) document.getElementById("speed").textContent=Math.round(spd);
 }
 function costNow(){return miles/Math.max(mpg,1)*4.54609*(ppl/100)}
-function isNight(){var h=new Date().getHours();return h>=19||h<7}
-async function dashSettings(track, night){
+async function dashSettings(track){
   if(!track||!track.getCapabilities) return;
   var cap=track.getCapabilities()||{};
   var adv={};
@@ -118,7 +117,6 @@ async function dashSettings(track, night){
   if(cap.focusMode&&cap.focusMode.indexOf("continuous")>=0) adv.focusMode="continuous";
   if(cap.exposureMode&&cap.exposureMode.indexOf("continuous")>=0) adv.exposureMode="continuous";
   if(cap.whiteBalanceMode&&cap.whiteBalanceMode.indexOf("continuous")>=0) adv.whiteBalanceMode="continuous";
-  if(night&&cap.exposureCompensation) adv.exposureCompensation=cap.exposureCompensation.max;
   try{
     await track.applyConstraints({
       width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30},
@@ -127,18 +125,17 @@ async function dashSettings(track, night){
   }catch(e){}
 }
 async function oneCam(mode,el){
-  var night=mode==="environment"&&isNight();
   var video={facingMode:{ideal:mode},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}};
   try{
     var s=await navigator.mediaDevices.getUserMedia({video:video,audio:false});
     el.srcObject=s;streams.push(s);
-    await dashSettings(s.getVideoTracks()[0],night);
+    await dashSettings(s.getVideoTracks()[0]);
     return s;
   }catch(e){
     try{
       var s2=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:mode}},audio:false});
       el.srcObject=s2;streams.push(s2);
-      await dashSettings(s2.getVideoTracks()[0],night);
+      await dashSettings(s2.getVideoTracks()[0]);
       return s2;
     }catch(e2){return null}
   }
@@ -185,7 +182,6 @@ async function start(){
   var front=await oneCam("user",document.getElementById("front"));
   if(!rear) document.getElementById("err").textContent="Rear camera not available.";
   else if(!front) document.getElementById("err").textContent="Front camera not available together. Recording the road camera.";
-  else if(isNight()) document.getElementById("err").textContent="Night exposure on. Keep the phone charged and the windscreen clean.";
   if(rear) startRec(rear);
   startGps();
   on=true;

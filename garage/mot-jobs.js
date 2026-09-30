@@ -75,7 +75,7 @@ window.classifyMotJobs=function(tests){
       row.est=window.motJobEstimate(id);
     });
   });
-  var done=[],check=[],id,row,lastMajor,laterPass;
+  var done=[],check=[],id,row,lastMajor;
   function laterPassed(afterDate){
     return rows.some(function(t){
       var d=dateOf(t);
@@ -106,7 +106,7 @@ window.classifyMotJobs=function(tests){
   return {done:done,check:check};
 };
 function jobRow(j,tag,tagClass,note){
-  var price=j.est?("Indie estimate £"+j.est.lo+"–£"+j.est.hi):"See Service costs";
+  var price=j.est?("£"+j.est.lo+"–£"+j.est.hi):"See Service costs";
   return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+tagClass+"'>"+tag+"</span>"+(j.est?j.est.name:"Job")+" · "+j.date+"</button><div class='more'><p>"+j.text+"</p><p><b>"+price+"</b></p><p class='muted'>"+note+"</p><a class='btn grey' href='service.html?job="+encodeURIComponent(j.id)+"'>Open estimate</a></div></div>";
 }
 window.paintMotJobs=function(tests){
@@ -115,27 +115,25 @@ window.paintMotJobs=function(tests){
   if(!box) return;
   var split=window.classifyMotJobs(tests);
   var done=split.done||[], check=split.check||[];
-  if(count) count.textContent=String(done.length+check.length);
+  var totalLo=0,totalHi=0,i;
+  for(i=0;i<done.length;i++) if(done[i].est){totalLo+=done[i].est.lo;totalHi+=done[i].est.hi}
+  if(count) count.textContent=done.length?("£"+totalLo+"–£"+totalHi):"";
   if(!done.length && !check.length){
     box.innerHTML="<p class='muted'>No priced MOT items in the last five years.</p>";
     return;
   }
   var html="";
-  var totalLo=0,totalHi=0,i;
-  if(check.length){
-    html+="<p class='muted'><b>Check these</b> — advisory or still open on the latest MOT. Do not assume they have been done.</p>";
-    for(i=0;i<check.length;i++){
-      html+=jobRow(check[i], check[i].kind==="open-major"?"Still open":"Check", check[i].kind==="open-major"?"high":"med",
-        "Ask to see it done, or budget to do it yourself.");
-    }
-  }
   if(done.length){
-    html+="<p class='muted'><b>Likely already done</b> — major / dangerous fail, then a later pass. Still an estimate, not a receipt.</p>";
-    for(i=0;i<done.length;i++){
-      if(done[i].est){totalLo+=done[i].est.lo;totalHi+=done[i].est.hi}
-      html+=jobRow(done[i],"Likely done","low","Needed a pass after this fail.");
+    html+="<p class='muted'>Major fails that later passed. Value at today’s indie rates, not the old invoice.</p>";
+    for(i=0;i<done.length;i++) html+=jobRow(done[i],"Carried out","low","Needed a pass after this fail.");
+    html+="<p><b>Carried out, last 5 years: £"+totalLo+"–£"+totalHi+".</b></p>";
+  }
+  if(check.length){
+    html+="<p class='muted'>Still to check — advisory or open on the latest MOT.</p>";
+    for(i=0;i<check.length;i++){
+      html+=jobRow(check[i], check[i].kind==="open-major"?"Open":"Check", check[i].kind==="open-major"?"high":"med",
+        "Not treated as done.");
     }
-    html+="<p><b>Work that looks already paid for, at today’s prices: £"+totalLo+"–£"+totalHi+".</b></p>";
   }
   box.innerHTML=html;
 };

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <link rel="manifest" href="./manifest.json"/>
-<link rel="stylesheet" href="./ui.css?v=26"/>
+<link rel="stylesheet" href="./ui.css?v=27"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -89,7 +89,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="plate-fill.js"></script>
 <script src="./home-app.js"></script>
 <script src="./home-insure.js"></script>
-<script src="./icons.js"></script>
+<script src="./icons.js?v=27"></script>
 <script>
 (function(){
   var dues=document.getElementById("dues");
@@ -97,7 +97,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
   function lab(){return btn.querySelector(".lab")||btn}
   function setOpen(on){
     dues.classList.toggle("hide",!on);
-    lab().textContent=on?"Reminders ":"Reminders";
+    lab().textContent="Reminders";
     try{sessionStorage.setItem("gt.datesOpen",on?"1":"0")}catch(e){}
   }
   setOpen(sessionStorage.getItem("gt.datesOpen")==="1");

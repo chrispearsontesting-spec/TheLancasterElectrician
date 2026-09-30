@@ -1,11 +1,16 @@
 window.ratingsHtml=function(name,year,fuel,plate,co2){
-  var tax=window.vedAnnual?window.vedAnnual({year:year,fuel:fuel,plate:plate,co2:co2}):{label:"Tax",note:""};
+  var f=String(fuel||name||"").toLowerCase();
+  var ev=/electric|electricity|bev|\bev\b|tesla/.test(f);
+  if((co2==null||co2==="") && ev) co2=0;
+  var tax=window.vedAnnual?window.vedAnnual({year:year,fuel:ev?"electric":fuel,plate:plate,co2:co2}):{label:"Tax",note:""};
   var n=window.ncapFor?window.ncapFor(name,year):{none:true};
   var stars=n.none?"Not rated":(window.ncapStars?window.ncapStars(n.stars):"");
   var co2Label=co2!=null? (co2+" g/km") : "With DVLA";
-  var co2Note=co2!=null
-    ? ("This car is recorded at "+co2+" g/km. That figure sets the pre-2017 tax band and is used for clean-air rules.")
-    : "DVLA Vehicle Enquiry returns official CO\u2082 for the plate. Until that key is live we only know the year from the registration.";
+  var co2Note=co2===0
+    ? "Battery-electric cars are recorded as 0 g/km tailpipe CO\u2082. That is official for tax and clean-air rules. Grid electricity is separate."
+    : (co2!=null
+      ? ("This car is recorded at "+co2+" g/km. That figure sets the pre-2017 tax band and is used for clean-air rules.")
+      : "MOT history does not include CO\u2082. The official gram figure comes from DVLA Vehicle Enquiry. Until that key is live we only infer 0 g/km for pure electrics.");
   var ncapBody=(window.ncapExplain?window.ncapExplain(n):"")+
     " <a class='btn grey' href='"+(window.ncapUrl?window.ncapUrl(n):"https://www.euroncap.com/en")+"' target='_blank' rel='noopener'>Official rating page</a>"+
     " <a class='btn grey' href='https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/' target='_blank' rel='noopener'>All Euro NCAP models</a>";

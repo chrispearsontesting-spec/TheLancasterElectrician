@@ -3,7 +3,7 @@ window.MOT_JOB_MAP=[
   {id:"fpads",keys:/brake (pad|disc)|pads worn|discs worn|brake lining/i},
   {id:"caliper",keys:/caliper|seized brake/i},
   {id:"damp",keys:/shock absorber|damper|suspension unit leaking/i},
-  {id:"spring",keys:/coil spring|broken spring/i},
+  {id:"spring",keys:/coil spring|road spring|broken spring|fractured spring|spring fractured|spring broken/i},
   {id:"wishbone",keys:/wishbone|lower arm|suspension arm/i},
   {id:"bush",keys:/bush worn|bushes worn|control arm bush|subframe mount/i},
   {id:"balljoint",keys:/ball joint/i},
@@ -33,9 +33,10 @@ window.classifyMotJobs=function(tests){
   function textOf(d){return d.text||d.comment||d.failureText||""}
   function typeOf(d){return String(d.type||d.dangerous||"").toUpperCase()}
   function dateOf(t){return (t.completedDate||t.completeddate||"").slice(0,10)}
+  function resultOf(t){return String(t.testResult||t.testresult||"").toUpperCase()}
   function isMajor(d){
     var t=typeOf(d);
-    if(/ADVISORY|MINOR|PRS/.test(t) && !/DANGEROUS|MAJOR/.test(t)) return false;
+    if(/ADVISORY|MINOR/.test(t) && !/DANGEROUS|MAJOR/.test(t)) return false;
     if(/DANGEROUS|MAJOR|FAIL|FAILURE/.test(t)) return true;
     if(d.dangerous===true || d.dangerous==="true") return true;
     return false;
@@ -52,9 +53,14 @@ window.classifyMotJobs=function(tests){
     }
     return null;
   }
-  var rows=(tests||[]).slice().sort(function(a,b){return dateOf(b).localeCompare(dateOf(a))});
+  var rows=(tests||[]).slice().sort(function(a,b){
+    var c=dateOf(b).localeCompare(dateOf(a));
+    if(c) return c;
+    return /PASS/.test(resultOf(b)) - /PASS/.test(resultOf(a));
+  });
   if(!rows.length) return {done:[],check:[]};
   var latest=dateOf(rows[0]);
+  var currentPass=/PASS/.test(resultOf(rows[0]));
   var yearAgo=new Date(); yearAgo.setFullYear(yearAgo.getFullYear()-1);
   var yearCut=yearAgo.toISOString().slice(0,10);
   var five=new Date(); five.setFullYear(five.getFullYear()-5);
@@ -71,36 +77,25 @@ window.classifyMotJobs=function(tests){
       row.dates.push(date);
       if(isMajor(d)) row.majors.push(date);
       if(isAdvisory(d)) row.advisories.push(date);
-      row.texts[date]=textOf(d);
+      if(isMajor(d) || !row.texts[date]) row.texts[date]=textOf(d);
       row.est=window.motJobEstimate(id);
     });
   });
-  var done=[],check=[],id,row,lastMajor;
-  function laterPassed(afterDate){
-    return rows.some(function(t){
-      var d=dateOf(t);
-      var res=String(t.testResult||t.testresult||"");
-      return d>afterDate && /PASS/i.test(res);
-    });
-  }
+  var done=[],check=[],id,row,lastMajor,lastAdv;
   for(id in byId){
     row=byId[id];
     lastMajor=row.majors.sort().slice(-1)[0];
-    if(lastMajor && lastMajor<latest && laterPassed(lastMajor)){
+    lastAdv=row.advisories.sort().slice(-1)[0];
+    if(lastMajor && currentPass){
       done.push({id:id,date:lastMajor,text:row.texts[lastMajor]||"",est:row.est,kind:"done"});
-    } else {
-      var lastAdv=row.advisories.sort().slice(-1)[0];
-      var recent=lastMajor && lastMajor>=yearCut;
-      var recentAdv=lastAdv && lastAdv>=yearCut;
-      if(recent || recentAdv || (lastMajor && lastMajor===latest)){
-        check.push({
-          id:id,
-          date:lastMajor||lastAdv,
-          text:row.texts[lastMajor||lastAdv]||"",
-          est:row.est,
-          kind: lastMajor && lastMajor===latest ? "open-major" : "advisory"
-        });
-      }
+      continue;
+    }
+    if(lastMajor && !currentPass && lastMajor===latest){
+      check.push({id:id,date:lastMajor,text:row.texts[lastMajor]||"",est:row.est,kind:"open-major"});
+      continue;
+    }
+    if(lastAdv && lastAdv>=yearCut){
+      check.push({id:id,date:lastAdv,text:row.texts[lastAdv]||"",est:row.est,kind:"advisory"});
     }
   }
   return {done:done,check:check};
@@ -124,12 +119,12 @@ window.paintMotJobs=function(tests){
   }
   var html="";
   if(done.length){
-    html+="<p class='muted'>Major fails that later passed. Value at today’s indie rates, not the old invoice.</p>";
-    for(i=0;i<done.length;i++) html+=jobRow(done[i],"Carried out","low","Needed a pass after this fail.");
+    html+="<p class='muted'>Fail or dangerous items, then a current pass. Priced at today’s indie rates.</p>";
+    for(i=0;i<done.length;i++) html+=jobRow(done[i],"Carried out","low","Had to be put right for the current MOT.");
     html+="<p><b>Carried out, last 5 years: £"+totalLo+"–£"+totalHi+".</b></p>";
   }
   if(check.length){
-    html+="<p class='muted'>Still to check — advisory or open on the latest MOT.</p>";
+    html+="<p class='muted'>Advised or still open. Not counted in the total.</p>";
     for(i=0;i<check.length;i++){
       html+=jobRow(check[i], check[i].kind==="open-major"?"Open":"Check", check[i].kind==="open-major"?"high":"med",
         "Not treated as done.");

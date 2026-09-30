@@ -59,6 +59,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <div class="acc"><button type="button" class="accBtn">Known weak points <span class="count" id="faultCount"></span></button><div class="accBody" id="faults"></div></div>
   <div class="acc"><button type="button" class="accBtn">Should already have been done</button><div class="accBody"><ul id="dues"></ul></div></div>
   <div class="acc"><button type="button" class="accBtn">On the viewing</button><div class="accBody"><ul id="views"></ul></div></div>
+  <div class="acc"><button type="button" class="accBtn">Costly jobs flagged <span class="count" id="motJobCount">0</span></button><div class="accBody" id="motJobs"><p class="muted">Load a plate. We match last-five-year MOT fails to tyres, brakes, suspension and similar, then show today’s indie estimate.</p></div></div>
   <div class="acc"><button type="button" class="accBtn">Major MOT failures <span class="count" id="motMajorCount">0</span></button><div class="accBody" id="motMajors"><p class="muted">Load a plate to see official fails.</p></div></div>
   <div class="acc"><button type="button" class="accBtn">MOT history <span class="count" id="motHistCount"></span></button><div class="accBody"><div id="motBox"><p class="muted">Official tests load here.</p></div><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a></div></div>
 </div>
@@ -75,12 +76,14 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="faults-extra.js"></script>
 <script src="faults-classic.js"></script>
 <script src="models-classic.js"></script>
+<script src="jobs-data.js"></script>
 <script src="jobs-advice.js"></script>
 <script src="ved.js"></script>
 <script src="ncap.js"></script>
 <script src="ncap-url.js"></script>
 <script src="ratings-ui.js"></script>
 <script src="mot-config.js"></script>
+<script src="mot-jobs.js"></script>
 <script src="mot-client.js"></script>
 <script>
 function $(id){return document.getElementById(id)}

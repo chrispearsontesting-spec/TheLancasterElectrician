@@ -18,10 +18,11 @@ a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost,
 a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost{
   border-radius:18px !important;
 }
-.btn.wide,a.wide{
+.btn.wide,a.wide,a.btn.wide,button.wide{
   display:flex !important;
   align-items:center !important;
-  gap:12px !important;
+  justify-content:flex-start !important;
+  gap:14px !important;
   width:100% !important;
   padding:16px 18px !important;
   font-size:16px !important;
@@ -31,18 +32,18 @@ a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost{
 a.btn,button.btn{
   display:inline-flex !important;
   align-items:center !important;
-  justify-content:center !important;
+  justify-content:flex-start !important;
   gap:8px !important;
 }
 .ico{
   display:inline-flex !important;
-  width:18px !important;
-  height:18px !important;
-  flex:0 0 18px !important;
+  width:22px !important;
+  height:22px !important;
+  flex:0 0 22px !important;
   color:#f2f2f2 !important;
-  opacity:.92;
+  opacity:.95;
 }
-.ico svg{width:18px;height:18px;display:block}
+.ico svg{width:22px;height:22px;display:block}
 .nameRow button{
   border-radius:50% !important;
   background:#1c1c1e !important;

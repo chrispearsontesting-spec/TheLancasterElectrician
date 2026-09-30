@@ -2,25 +2,25 @@
   if(window.__dipstickIcons) return;
   window.__dipstickIcons=true;
   var S={
-    cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3.5v3M16 3.5v3M3.5 10h17"/></svg>',
-    wheel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5"/></svg>',
-    wrench:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 7a4 4 0 0 1-5.7 3.6L4 15v4h4l4.4-4.3A4 4 0 1 1 14 7z"/><path d="M16.5 16.5l3 3"/></svg>',
-    map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 4l6 2 5-2v16l-5 2-6-2-5 2V6z"/><path d="M9 4v16M15 6v16"/></svg>',
-    search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>',
-    cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 10l5-2v8l-5-2z"/></svg>',
-    pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s6-6.2 6-11a6 6 0 1 0-12 0c0 4.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg>',
-    book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H20v16H7.5A2.5 2.5 0 0 0 5 21.5z"/><path d="M5 5.5v16"/></svg>',
-    back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 6l-6 6 6 6"/></svg>',
-    save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 5h11l3 3v11H5z"/><path d="M8 5v5h8M8 19v-6h8v6"/></svg>',
-    play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M10 9l6 3-6 3z"/></svg>',
-    box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 8l9-4 9 4-9 4z"/><path d="M3 8v8l9 4 9-4V8"/><path d="M12 12v8"/></svg>',
-    mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M4 8l8 6 8-6"/></svg>',
-    phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3.5h3.5L12 7l-2 2a12 12 0 0 0 5 5l2-2 3.5 1.5V17A3.5 3.5 0 0 1 17 20.5 14.5 14.5 0 0 1 3.5 7 3.5 3.5 0 0 1 7 3.5z"/></svg>',
-    shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l8 3v6c0 5-3.4 8.2-8 9.5C7.4 20.2 4 17 4 12V6z"/></svg>',
-    star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3.5l2.4 5.6 6.1.6-4.6 4 1.4 6-5.3-3.2-5.3 3.2 1.4-6-4.6-4 6.1-.6z"/></svg>',
-    coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.2c.6-.8 1.5-1.2 2.5-1.2 1.7 0 2.7 1 2.7 2.2 0 2.8-5.4 1.6-5.4 4.2 0 1.2 1.1 2.2 2.8 2.2 1.1 0 2-.4 2.6-1.2"/></svg>',
-    check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M8 12.2l2.6 2.6L16 9.5"/></svg>',
-    hist:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg>'
+    cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3.5v3M16 3.5v3M4 10h16"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></svg>',
+    wheel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="2.2"/><path d="M12 9.8V4.8M7.4 14.8L4.8 16.6M16.6 14.8l2.6 1.8"/></svg>',
+    wrench:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5c2.2 0 4 1.8 4 4 0 .5-.1 1-.3 1.5L20 18l-2 2-8.1-8.3A4 4 0 1 1 8 4.5z"/><path d="M8 6.2v2.2H5.8"/><path d="M14.5 5.5l4 4M16.2 3.8l4 4"/></svg>',
+    map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4.5l7 2.2 4.5-1.7v14.5l-4.5 1.7-7-2.2-4.5 1.7V6.2z"/><path d="M8.5 4.5v14.3M15.5 6.7v14.3"/></svg>',
+    search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="6.2"/><path d="M16.2 16.2L21 21"/></svg>',
+    cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 10.2l5-2.2v8.2l-5-2.2z"/></svg>',
+    pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6.2-6 6.2-11A6.2 6.2 0 0 0 5.8 10c0 5 6.2 11 6.2 11z"/><circle cx="12" cy="10" r="2.1"/></svg>',
+    book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6a2.4 2.4 0 0 1 2.4-2.4H20v15.2H7.4A2.4 2.4 0 0 0 5 21.2z"/><path d="M5 6v15.2"/></svg>',
+    back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>',
+    save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h11.2L20 8.8V20H5z"/><path d="M8 5v5h8M8 20v-6h8v6"/></svg>',
+    play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M10 9.2l5.4 2.8L10 14.8z"/></svg>',
+    box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.2L12 4.5l8.5 3.7L12 12z"/><path d="M3.5 8.2v8.2L12 20l8.5-3.6V8.2"/><path d="M12 12v8"/></svg>',
+    mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="6" width="17.6" height="12" rx="2"/><path d="M4.2 8l7.8 5.4L19.8 8"/></svg>',
+    phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.2 3.8h3.2l1.2 3.2-2 1.8a11 11 0 0 0 5 5l1.8-2 3.2 1.2v3.2A3.2 3.2 0 0 1 16.4 20 14.2 14.2 0 0 1 4 7.6a3.2 3.2 0 0 1 3.2-3.8z"/></svg>',
+    shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l8 2.8v6.2c0 4.8-3.3 8-8 9.2-4.7-1.2-8-4.4-8-9.2V6z"/></svg>',
+    star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.6l2.3 5.4 5.9.5-4.5 3.8 1.4 5.8L12 16.2 6.9 19.1l1.4-5.8L3.8 9.5l5.9-.5z"/></svg>',
+    coin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.2v9.6"/></svg>',
+    check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M8.2 12.2l2.5 2.5 5.1-5.2"/></svg>',
+    hist:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.6V12l3.2 2"/></svg>'
   };
   function kind(el){
     var t=((el.getAttribute("data-ico")||"")+" "+(el.textContent||"")+" "+(el.getAttribute("href")||"")+" "+(el.id||"")).toLowerCase();

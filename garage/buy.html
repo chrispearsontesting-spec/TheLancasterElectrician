@@ -41,16 +41,17 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .saved p{margin:6px 0}
 ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.45}
 .hint{margin-top:10px;font-size:12px;color:var(--dim)}
+.hide{display:none}
 </style>
 </head>
 <body>
 <h1>Buying guide</h1>
 <p class="sub">Enter the plate. Make and model come from MOT.</p>
 <label>Registration</label>
-<input id="plate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/>
+<input id="plate" type="text" value="" placeholder="AB12 CDE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"/>
 <button class="btn" type="button" id="go">Look up</button>
 <p class="muted" id="status"></p>
-<div class="card">
+<div class="card hide" id="resultCard">
   <b id="carName">—</b>
   <p class="muted" id="carMeta"></p>
   <div class="acc"><button type="button" class="accBtn">Safety and tax</button><div class="accBody" id="ratings"></div></div>
@@ -59,15 +60,14 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <div class="acc"><button type="button" class="accBtn">What to look for <span class="count" id="faultCount"></span></button><div class="accBody" id="faults"></div></div>
   <div class="acc"><button type="button" class="accBtn">Ask the seller</button><div class="accBody"><p class="muted">History to request</p><ul id="dues"></ul><p class="muted" style="margin-top:12px">On the viewing</p><ul id="views"></ul></div></div>
 </div>
-<div class="row">
+<div class="row hide" id="actionRow">
   <a class="btn grey" id="yt" href="#" target="_blank" rel="noopener">YouTube</a>
   <a class="btn grey" id="parts" href="#" target="_blank" rel="noopener">Parts</a>
 </div>
-<button class="btn grey" type="button" id="saveBtn">Save this car</button>
+<button class="btn grey hide" type="button" id="saveBtn">Save this car</button>
 <div class="card saved">
-  <div class="acc"><button type="button" class="accBtn">Saved cars</button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Viewing page</a></div></div>
+  <div class="acc open"><button type="button" class="accBtn">Saved cars</button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Viewing page</a></div></div>
 </div>
-<p class="hint">No MOT match? You can still type a model after lookup in the address bar with ?q=</p>
 <a class="btn grey" href="home.html">Back</a>
 <script src="cars-uk-1.js"></script>
 <script src="faults.js"></script>
@@ -85,9 +85,6 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="mot-client.js"></script>
 <script>
 function $(id){return document.getElementById(id)}
-function garageCar(){
-  try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");return s&&s.cars&&s.cars.length?(s.cars[s.i]||s.cars[0]):null}catch(e){return null}
-}
 function loadView(){try{return JSON.parse(localStorage.getItem("gt.viewings.v1")||"[]")}catch(e){return []}}
 function saveView(list){localStorage.setItem("gt.viewings.v1",JSON.stringify(list))}
 var SUFFIX={A:1983,B:1984,C:1985,D:1986,E:1987,F:1988,G:1989,H:1990,J:1991,K:1992,L:1993,M:1994,N:1995,P:1996,R:1997,S:1998,T:1999,V:1999,W:2000,X:2000,Y:2001};
@@ -181,23 +178,20 @@ function paint(car){
   var raw=String(car.plate||"").replace(/\s/g,"");
   $("motLink").href=raw?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(raw):"https://www.gov.uk/check-mot-history";
   $("status").textContent=title;
+  $("resultCard").classList.remove("hide");
+  $("actionRow").classList.remove("hide");
+  $("saveBtn").classList.remove("hide");
   paintSaved();
 }
 function run(){
   var plate=$("plate").value.trim();
-  var fallback=new URLSearchParams(location.search).get("q")||"";
-  if(!plate && !fallback){$("status").textContent="Enter a registration.";return}
+  if(!plate){$("status").textContent="Enter a registration.";return}
   $("status").textContent="Looking up MOT…";
   var yearGuess=plateYear(plate);
-  function finish(name, fuel, year, skipMotPaint){
-    paint({name:name,plate:plate,fuel:fuel||guessFuel(name),year:year||yearGuess});
-    if(!skipMotPaint && window.loadMotHistory) window.loadMotHistory(plate);
-  }
-  if(!plate){ finish(fallback,"",yearGuess,true); return; }
-  if(!window.fetchMotVehicle){ finish(fallback||"Car","",yearGuess); return; }
+  if(!window.fetchMotVehicle){ paint({name:"Car",plate:plate,fuel:"",year:yearGuess}); return; }
   window.fetchMotVehicle(plate).then(function(info){
-    var name=(info&&info.name)||fallback||"";
-    if(!name){$("status").textContent="No MOT match. Try again or add ?q=Make+Model to the URL.";paintSaved();return}
+    var name=(info&&info.name)||"";
+    if(!name){$("status").textContent="No MOT match for that plate.";paintSaved();return}
     var fuel=guessFuel((info&&info.fuel?info.fuel+" ":"")+name);
     var year=(info&&info.year)||yearGuess;
     paint({name:name,plate:plate,fuel:fuel,year:year});
@@ -228,11 +222,14 @@ $("saveBtn").onclick=function(){
 };
 $("plate").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
 (function init(){
-  var p=new URLSearchParams(location.search);
-  if(p.get("plate"))$("plate").value=p.get("plate");
-  var g=garageCar();
-  if(!$("plate").value)$("plate").value=(g&&g.plate)||"";
-  if($("plate").value)run(); else paintSaved();
+  $("plate").value="";
+  var fromSaved=new URLSearchParams(location.search).get("plate")||"";
+  paintSaved();
+  if(fromSaved){
+    $("plate").value=fromSaved;
+    run();
+    if(history.replaceState) history.replaceState({}, "", "buy.html");
+  }
 })();
 </script>
 </body>

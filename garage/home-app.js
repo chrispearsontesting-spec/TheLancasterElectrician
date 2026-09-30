@@ -9,25 +9,6 @@ function state(){
   return {i:0,cars:[seed()]};
 }
 function save(s){localStorage.setItem("gt.garage",JSON.stringify(s))}
-function plateYear(p){
-  var k=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-  if(/^[A-Z]{2}\d{2}[A-Z]{3}$/.test(k)){
-    var n=parseInt(k.slice(2,4),10);
-    if(n>=1&&n<=49)return 2000+n;
-    if(n>=50&&n<=99)return 2000+(n-50);
-  }
-  return null;
-}
-function openNcap(){
-  var c=car();
-  var r=window.ncapFor?window.ncapFor(c.nick||c.name,plateYear(c.plate)):{none:true};
-  document.getElementById("ncapTitle").textContent=r.none?"Euro NCAP":("Euro NCAP "+(window.ncapStars?window.ncapStars(r.stars):""));
-  document.getElementById("ncapBody").textContent=window.ncapExplain?window.ncapExplain(r):"Euro NCAP crash test rating for this generation.";
-  var model=window.ncapUrl?window.ncapUrl(r):"https://www.euroncap.com/en";
-  var all=window.ncapAllUrl||"https://www.euroncap.com/en/ratings-rewards/latest-safety-ratings/";
-  document.getElementById("ncapLinks").innerHTML="<a class='btn wide' href='"+model+"' target='_blank' rel='noopener'>Official rating for this car</a><a class='btn wide' href='"+all+"' target='_blank' rel='noopener'>All Euro NCAP models</a>";
-  document.getElementById("ncapSheet").className="sheet on";
-}
 function car(){var s=state();return s.cars[s.i]||s.cars[0]}
 function nice(iso){if(!iso)return "Set date";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
 function daysLeft(iso){
@@ -77,10 +58,10 @@ function jobCopy(c,kind){
   var pl=plate(c.plate);
   var garage=c.motName||"the garage";
   var map={
-    mot:{title:"Book MOT",subject:"MOT booking — "+pl,body:"Hi "+garage+",\n\nPlease could I book an MOT for my "+name+" ("+pl+").\n\nThanks"},
-    service:{title:"Book full service",subject:"Full service booking — "+pl,body:"Hi "+garage+",\n\nPlease could I book a full service for my "+name+" ("+pl+").\n\nThanks"},
-    belt:{title:"Book timing belt change",subject:"Timing belt change — "+pl,body:"Hi "+garage+",\n\nPlease could I book a timing belt change for my "+name+" ("+pl+").\n\nThanks"},
-    tyre:{title:"Book tyre change",subject:"Tyre change — "+pl,body:"Hi "+garage+",\n\nPlease could I book new tyres / a tyre change for my "+name+" ("+pl+").\n\nThanks"}
+    mot:{title:"Book MOT",subject:"MOT booking \u2014 "+pl,body:"Hi "+garage+",\n\nPlease could I book an MOT for my "+name+" ("+pl+").\n\nThanks"},
+    service:{title:"Book full service",subject:"Full service booking \u2014 "+pl,body:"Hi "+garage+",\n\nPlease could I book a full service for my "+name+" ("+pl+").\n\nThanks"},
+    belt:{title:"Book timing belt change",subject:"Timing belt change \u2014 "+pl,body:"Hi "+garage+",\n\nPlease could I book a timing belt change for my "+name+" ("+pl+").\n\nThanks"},
+    tyre:{title:"Book tyre change",subject:"Tyre change \u2014 "+pl,body:"Hi "+garage+",\n\nPlease could I book new tyres for my "+name+" ("+pl+").\n\nThanks"}
   };
   return map[kind]||map.service;
 }
@@ -117,10 +98,9 @@ function paint(){
   document.getElementById("dots").textContent="Car "+(s.i+1)+" of "+s.cars.length;
   var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
   var bd=beltDue(c), tl=tyreLeft(c);
-  var taxUrl="https://www.gov.uk/vehicle-tax";
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
-    row("Tax",c.tax,"",[{lab:"Renew",href:taxUrl}])+
+    row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"}])+
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?"":"",[{lab:"Book change",job:"belt"}])+
@@ -146,9 +126,9 @@ function lookupPlate(){
   if(!window.fillFromPlate)return;
   var p=document.getElementById("fPlate").value;
   var hint=document.getElementById("plateHint");
-  if(hint) hint.textContent="Looking up MOT…";
+  if(hint) hint.textContent="Looking up MOT\u2026";
   window.fillFromPlate(p,function(info){
-    if(!info){ if(hint) hint.textContent="No MOT match yet — type the name if you know it."; return; }
+    if(!info){ if(hint) hint.textContent="No MOT match yet \u2014 type the name if you know it."; return; }
     window.applyPlateFields(info,{name:"fName",fuel:"fFuel",mot:"fMot",status:"plateHint"});
   });
 }
@@ -177,21 +157,29 @@ function openSheet(mode){
   document.getElementById("sheet").className="sheet on";
   if(c.plate) lookupPlate();
 }
-document.getElementById("hero").onclick=function(){document.getElementById("photoPick").click()};
-document.getElementById("ncapClose").onclick=function(){document.getElementById("ncapSheet").className="sheet"};
-document.getElementById("photoPick").onchange=function(){savePic(this.files&&this.files[0])};
-document.getElementById("prev").onclick=function(){var s=state();s.i=(s.i-1+s.cars.length)%s.cars.length;save(s);paint()};
-document.getElementById("next").onclick=function(){var s=state();s.i=(s.i+1)%s.cars.length;save(s);paint()};
-document.getElementById("btnAdd").onclick=function(){openSheet("add")};
-document.getElementById("btnEdit").onclick=function(){openSheet("edit")};
-document.getElementById("dues").addEventListener("click",function(e){
+function step(dir){
+  var s=state();
+  if(!s.cars.length) return;
+  s.i=(s.i+dir+s.cars.length)%s.cars.length;
+  save(s);paint();
+}
+function on(id,fn){var el=document.getElementById(id); if(el) el.onclick=fn;}
+on("hero",function(){document.getElementById("photoPick").click()});
+on("photoPick",null);
+var pick=document.getElementById("photoPick");
+if(pick) pick.onchange=function(){savePic(this.files&&this.files[0])};
+on("prev",function(){step(-1)});
+on("next",function(){step(1)});
+on("btnAdd",function(){openSheet("add")});
+on("btnEdit",function(){openSheet("edit")});
+var dues=document.getElementById("dues");
+if(dues) dues.addEventListener("click",function(e){
   var b=e.target.closest("[data-job]");
-  if(!b)return;
-  openBook(b.getAttribute("data-job"));
+  if(b) openBook(b.getAttribute("data-job"));
 });
-document.getElementById("btnClose").onclick=function(){document.getElementById("sheet").className="sheet"};
-document.getElementById("btnCClose").onclick=function(){document.getElementById("contact").className="sheet"};
-document.getElementById("btnSave").onclick=function(){
+on("btnClose",function(){document.getElementById("sheet").className="sheet"});
+on("btnCClose",function(){document.getElementById("contact").className="sheet"});
+on("btnSave",function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
   c.nick=document.getElementById("fName").value||"Car";
@@ -211,7 +199,21 @@ document.getElementById("btnSave").onclick=function(){
   c.insWeb=document.getElementById("fInsWeb").value;
   if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}
   save(s);paint();document.getElementById("sheet").className="sheet";
-};
+});
+var swipeAt=0;
+function swipeStart(e){swipeAt=e.changedTouches?e.changedTouches[0].clientX:e.clientX}
+function swipeEnd(e){
+  var x=e.changedTouches?e.changedTouches[0].clientX:e.clientX;
+  var d=x-swipeAt;
+  if(Math.abs(d)<40) return;
+  step(d<0?1:-1);
+}
+["hero","caption"].forEach(function(id){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.addEventListener("touchstart",swipeStart,{passive:true});
+  el.addEventListener("touchend",swipeEnd);
+});
 if(!localStorage.getItem("gt.garage")) save({i:0,cars:[seed()]});
 paint();
-if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js");}
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){});}

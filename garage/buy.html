@@ -22,11 +22,11 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .high{background:#5b1d1d;color:#fecaca}
 .med{background:#4a3514;color:#fde68a}
 .low{background:#1e3a34;color:#a7f3d0}
-.count{float:right;color:var(--dim);font-size:12px;font-weight:700}
+.count{float:right;color:var(--dim);font-size:12px;font-weight:700;max-width:46%;text-align:right}
 .acc{border-bottom:1px solid var(--line)}
 .acc:last-child{border-bottom:0}
 .accBtn{width:100%;background:none;border:0;color:var(--ink);text-align:left;padding:14px 0;font-size:16px;font-weight:800;cursor:pointer}
-.accBtn:after{content:"+";float:right;color:var(--dim);font-weight:700}
+.accBtn:after{content:"+";float:right;color:var(--dim);font-weight:700;margin-left:8px}
 .acc.open .accBtn:after{content:"\2212"}
 .accBody{display:none;padding:0 0 12px}
 .acc.open .accBody{display:block}
@@ -54,10 +54,10 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <b id="carName">—</b>
   <p class="muted" id="carMeta"></p>
   <div class="acc"><button type="button" class="accBtn">Safety and tax</button><div class="accBody" id="ratings"></div></div>
+  <div class="acc"><button type="button" class="accBtn">MOT work, last 5 years <span class="count" id="motJobCount"></span></button><div class="accBody" id="motJobs"><p class="muted">Major fails that later passed, plus items to check from the latest test.</p></div></div>
+  <div class="acc"><button type="button" class="accBtn">MOT history <span class="count" id="motHistCount"></span></button><div class="accBody"><div id="motMajors"></div><div id="motBox"><p class="muted">Official tests load here.</p></div><span id="motMajorCount" hidden>0</span><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Official MOT site</a></div></div>
   <div class="acc"><button type="button" class="accBtn">What to look for <span class="count" id="faultCount"></span></button><div class="accBody" id="faults"></div></div>
   <div class="acc"><button type="button" class="accBtn">Ask the seller</button><div class="accBody"><p class="muted">History to request</p><ul id="dues"></ul><p class="muted" style="margin-top:12px">On the viewing</p><ul id="views"></ul></div></div>
-  <div class="acc"><button type="button" class="accBtn">Likely already done <span class="count" id="motJobCount">0</span></button><div class="accBody" id="motJobs"><p class="muted">Fails from the last five years, priced as indie estimates.</p></div></div>
-  <div class="acc"><button type="button" class="accBtn">MOT record <span class="count" id="motHistCount"></span></button><div class="accBody"><div id="motMajors"></div><div id="motBox"><p class="muted">Official tests load here.</p></div><span id="motMajorCount" hidden>0</span><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Official MOT site</a></div></div>
 </div>
 <div class="row">
   <a class="btn grey" id="yt" href="#" target="_blank" rel="noopener">YouTube</a>

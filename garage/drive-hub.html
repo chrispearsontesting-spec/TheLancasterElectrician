@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Drive</title>
-<link rel="stylesheet" href="./ui.css?v=25"/>
+<link rel="stylesheet" href="./ui.css?v=26"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -13,7 +13,7 @@ body{margin:0 auto;max-width:440px;padding:calc(18px + env(safe-area-inset-top))
 h1{font-size:28px;margin:8px 0 8px;font-weight:650;letter-spacing:-.02em;color:#f2f2f2}
 .muted{font-size:14px;line-height:1.45;margin:0 0 22px;color:#8b8b8b}
 .btn{
-  display:block;width:100%;margin-top:10px;padding:16px 18px;
+  display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:16px 18px;
   background:#1c1c1e;color:#f2f2f2;text-decoration:none;
   border:0;border-radius:18px;font-weight:600;font-size:16px;text-align:left;
 }
@@ -21,10 +21,11 @@ h1{font-size:28px;margin:8px 0 8px;font-weight:650;letter-spacing:-.02em;color:#
 </head>
 <body>
 <h1>Drive</h1>
-<p class="muted">Track logs miles and cost without filming. Keep this page open while you drive. Auto-start when the car Bluetooth connects needs the Play Store app — a website cannot listen for that in the background.</p>
-<a class="btn" href="drive.html?track=1">Track journey</a>
-<a class="btn" href="drive.html">Record dashcam</a>
-<a class="btn" href="calendar.html">Drive diary</a>
-<a class="btn" href="home.html">Back</a>
+<p class="muted">Track logs miles and cost without filming. Keep this page open while you drive.</p>
+<a class="btn" href="drive.html?track=1" data-ico="pin">Track journey</a>
+<a class="btn" href="drive.html" data-ico="cam">Record dashcam</a>
+<a class="btn" href="calendar.html" data-ico="cal">Drive diary</a>
+<a class="btn" href="home.html" data-ico="back">Back</a>
+<script src="./icons.js"></script>
 </body>
 </html>

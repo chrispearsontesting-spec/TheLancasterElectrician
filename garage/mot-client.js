@@ -1,3 +1,14 @@
+window.motLabel = function (raw) {
+  var t = String(raw || "").toUpperCase();
+  if (/DANGEROUS/.test(t) || t === "TRUE") return "Dangerous";
+  if (/MAJOR/.test(t)) return "Major fail";
+  if (/ADVISORY/.test(t)) return "Advisory";
+  if (/MINOR/.test(t)) return "Minor";
+  if (/PRS/.test(t)) return "Fixed on the day";
+  if (/FAIL/.test(t)) return "Fail";
+  if (/PASS/.test(t)) return "Pass";
+  return raw || "Note";
+};
 window.fetchMotVehicle = function (plate) {
   var raw = String(plate || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   var proxy = window.MOT_PROXY || "";
@@ -99,9 +110,9 @@ window.loadMotHistory = function (plate) {
     });
     if (majors.length) {
       setMajors(
-        "<p class='muted'>Fail / major / dangerous items. Later tests usually show they were put right.</p>" +
+        "<p class='muted'>These were fail, major or dangerous items. A later pass usually means they were put right.</p>" +
         majors.map(function (m) {
-          return "<div class='fault'><button type='button' class='faultBtn'><span class='tag high'>" + (m.type || "FAIL") + "</span>" + m.date + "</button><div class='more'><p>" + m.text + "</p><p class='muted'>Result that day: " + m.result + "</p></div></div>";
+          return "<div class='fault'><button type='button' class='faultBtn'><span class='tag high'>" + window.motLabel(m.type) + "</span>" + m.date + "</button><div class='more'><p>" + m.text + "</p><p class='muted'>Result that day: " + window.motLabel(m.result) + "</p></div></div>";
         }).join(""),
         majors.length
       );
@@ -116,11 +127,10 @@ window.loadMotHistory = function (plate) {
       var unit = t.odometerUnit || "mi";
       var list = defectsOf(t);
       var adv = list.map(function (x) {
-        var label = typeOf(x) || "NOTE";
-        return "<li><b>" + label + ".</b> " + textOf(x) + "</li>";
+        return "<li><b>" + window.motLabel(typeOf(x)) + ".</b> " + textOf(x) + "</li>";
       }).join("");
       var cls = /FAIL/i.test(result) ? "high" : "low";
-      return "<div class='fault'><button type='button' class='faultBtn'><span class='tag " + cls + "'>" + result + "</span>" + date + (miles ? (" \u00b7 " + miles + " " + unit) : "") + "</button><div class='more'>" + (adv ? ("<ul>" + adv + "</ul>") : "<p>No defects listed for this test.</p>") + "</div></div>";
+      return "<div class='fault'><button type='button' class='faultBtn'><span class='tag " + cls + "'>" + window.motLabel(result) + "</span>" + date + (miles ? (" \u00b7 " + miles + " " + unit) : "") + "</button><div class='more'>" + (adv ? ("<ul>" + adv + "</ul>") : "<p>No defects listed for this test.</p>") + "</div></div>";
     }).join("");
     box.innerHTML = html;
     return info;

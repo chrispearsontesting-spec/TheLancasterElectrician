@@ -29,17 +29,20 @@ window.motJobEstimate=function(id){
   return {name:j.name,lo:lo,hi:hi,hrs:j.hrs};
 };
 window.classifyMotJobs=function(tests){
-  var cut=new Date(); cut.setFullYear(cut.getFullYear()-5);
-  var seen={},out=[],i,t,list,x,text,date,typ;
   function defectsOf(tt){return tt.defects||tt.rfrAndComments||tt.rfrAndComment||[]}
   function textOf(d){return d.text||d.comment||d.failureText||""}
-  function typeOf(d){return String(d.type||"").toUpperCase()}
-  function isSerious(d,result){
+  function typeOf(d){return String(d.type||d.dangerous||"").toUpperCase()}
+  function dateOf(t){return (t.completedDate||t.completeddate||"").slice(0,10)}
+  function isMajor(d){
     var t=typeOf(d);
-    if(/DANGEROUS|MAJOR|FAIL|PRS/.test(t)) return true;
-    if(d.dangerous===true) return true;
-    if(/FAIL/i.test(result||"")) return true;
+    if(/ADVISORY|MINOR|PRS/.test(t) && !/DANGEROUS|MAJOR/.test(t)) return false;
+    if(/DANGEROUS|MAJOR|FAIL|FAILURE/.test(t)) return true;
+    if(d.dangerous===true || d.dangerous==="true") return true;
     return false;
+  }
+  function isAdvisory(d){
+    var t=typeOf(d);
+    return /ADVISORY|MINOR/.test(t) && !isMajor(d);
   }
   function matchJob(s){
     var k,m;
@@ -49,39 +52,90 @@ window.classifyMotJobs=function(tests){
     }
     return null;
   }
-  for(i=0;i<(tests||[]).length;i++){
-    t=tests[i];
-    date=(t.completedDate||t.completeddate||"").slice(0,10);
-    if(date && new Date(date+"T12:00:00")<cut) continue;
-    list=defectsOf(t);
-    for(var n=0;n<list.length;n++){
-      x=list[n];
-      if(!isSerious(x,t.testResult||t.testresult)) continue;
-      text=textOf(x);
-      var id=matchJob(text);
-      if(!id||seen[id]) continue;
-      seen[id]=true;
-      typ=typeOf(x)||"FAIL";
-      var est=window.motJobEstimate(id);
-      out.push({id:id,date:date,text:text,type:typ,est:est});
+  var rows=(tests||[]).slice().sort(function(a,b){return dateOf(b).localeCompare(dateOf(a))});
+  if(!rows.length) return {done:[],check:[]};
+  var latest=dateOf(rows[0]);
+  var yearAgo=new Date(); yearAgo.setFullYear(yearAgo.getFullYear()-1);
+  var yearCut=yearAgo.toISOString().slice(0,10);
+  var five=new Date(); five.setFullYear(five.getFullYear()-5);
+  var fiveCut=five.toISOString().slice(0,10);
+  var byId={};
+  rows.forEach(function(t){
+    var date=dateOf(t);
+    if(!date||date<fiveCut) return;
+    defectsOf(t).forEach(function(d){
+      var id=matchJob(textOf(d));
+      if(!id) return;
+      if(!byId[id]) byId[id]={id:id,dates:[],majors:[],advisories:[],texts:{}};
+      var row=byId[id];
+      row.dates.push(date);
+      if(isMajor(d)) row.majors.push(date);
+      if(isAdvisory(d)) row.advisories.push(date);
+      row.texts[date]=textOf(d);
+      row.est=window.motJobEstimate(id);
+    });
+  });
+  var done=[],check=[],id,row,lastMajor,laterPass;
+  function laterPassed(afterDate){
+    return rows.some(function(t){
+      var d=dateOf(t);
+      var res=String(t.testResult||t.testresult||"");
+      return d>afterDate && /PASS/i.test(res);
+    });
+  }
+  for(id in byId){
+    row=byId[id];
+    lastMajor=row.majors.sort().slice(-1)[0];
+    if(lastMajor && lastMajor<latest && laterPassed(lastMajor)){
+      done.push({id:id,date:lastMajor,text:row.texts[lastMajor]||"",est:row.est,kind:"done"});
+    } else {
+      var lastAdv=row.advisories.sort().slice(-1)[0];
+      var recent=lastMajor && lastMajor>=yearCut;
+      var recentAdv=lastAdv && lastAdv>=yearCut;
+      if(recent || recentAdv || (lastMajor && lastMajor===latest)){
+        check.push({
+          id:id,
+          date:lastMajor||lastAdv,
+          text:row.texts[lastMajor||lastAdv]||"",
+          est:row.est,
+          kind: lastMajor && lastMajor===latest ? "open-major" : "advisory"
+        });
+      }
     }
   }
-  return out;
+  return {done:done,check:check};
 };
+function jobRow(j,tag,tagClass,note){
+  var price=j.est?("Indie estimate £"+j.est.lo+"–£"+j.est.hi):"See Service costs";
+  return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+tagClass+"'>"+tag+"</span>"+(j.est?j.est.name:"Job")+" · "+j.date+"</button><div class='more'><p>"+j.text+"</p><p><b>"+price+"</b></p><p class='muted'>"+note+"</p><a class='btn grey' href='service.html?job="+encodeURIComponent(j.id)+"'>Open estimate</a></div></div>";
+}
 window.paintMotJobs=function(tests){
   var box=document.getElementById("motJobs");
   var count=document.getElementById("motJobCount");
   if(!box) return;
-  var jobs=window.classifyMotJobs(tests);
-  if(count) count.textContent=jobs.length?String(jobs.length):"0";
-  if(!jobs.length){
-    box.innerHTML="<p class='muted'>No likely big jobs in the last five years from MOT fails we can price (tyres, brakes, suspension and similar).</p>";
+  var split=window.classifyMotJobs(tests);
+  var done=split.done||[], check=split.check||[];
+  if(count) count.textContent=String(done.length+check.length);
+  if(!done.length && !check.length){
+    box.innerHTML="<p class='muted'>No priced MOT items in the last five years.</p>";
     return;
   }
-  var totalLo=0,totalHi=0;
-  box.innerHTML="<p class='muted'>Each item failed or was marked major / dangerous, then the car passed later. Treat as <b>likely fixed</b> so it could be sold or driven as it is today. Prices are indie estimates now, not the old bill.</p>"+jobs.map(function(j){
-    var price=j.est?("Likely spend today £"+j.est.lo+"–£"+j.est.hi):"See Service costs";
-    if(j.est){totalLo+=j.est.lo;totalHi+=j.est.hi}
-    return "<div class='fault'><button type='button' class='faultBtn'><span class='tag med'>Likely fixed</span>"+(j.est?j.est.name:"Job")+" · "+j.date+"</button><div class='more'><p>"+j.text+"</p><p><b>"+price+"</b></p><p class='muted'>Estimate only. MOT does not show the receipt.</p><a class='btn grey' href='service.html?job="+encodeURIComponent(j.id)+"'>Open estimate</a></div></div>";
-  }).join("")+"<p><b>To bring a similar car to this condition today: £"+totalLo+"–£"+totalHi+".</b></p><p class='muted'>Add these up only as a guide when you compare asking prices.</p>";
+  var html="";
+  var totalLo=0,totalHi=0,i;
+  if(check.length){
+    html+="<p class='muted'><b>Check these</b> — advisory or still open on the latest MOT. Do not assume they have been done.</p>";
+    for(i=0;i<check.length;i++){
+      html+=jobRow(check[i], check[i].kind==="open-major"?"Still open":"Check", check[i].kind==="open-major"?"high":"med",
+        "Ask to see it done, or budget to do it yourself.");
+    }
+  }
+  if(done.length){
+    html+="<p class='muted'><b>Likely already done</b> — major / dangerous fail, then a later pass. Still an estimate, not a receipt.</p>";
+    for(i=0;i<done.length;i++){
+      if(done[i].est){totalLo+=done[i].est.lo;totalHi+=done[i].est.hi}
+      html+=jobRow(done[i],"Likely done","low","Needed a pass after this fail.");
+    }
+    html+="<p><b>Work that looks already paid for, at today’s prices: £"+totalLo+"–£"+totalHi+".</b></p>";
+  }
+  box.innerHTML=html;
 };

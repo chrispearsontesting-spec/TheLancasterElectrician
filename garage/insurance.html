@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Insurance</title>
-<link rel="stylesheet" href="./ui.css?v=25"/>
+<link rel="stylesheet" href="./ui.css?v=28"/>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
@@ -14,7 +14,7 @@ h1{font-size:22px;margin:0 0 4px;font-weight:650}
 .card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:14px;margin-bottom:12px}
 .when{color:#cfcfcf;font-size:20px;font-weight:650;margin:0}
 .left{color:#8b8b8b;font-size:13px;margin:6px 0 0}
-.btn{display:block;width:100%;text-align:left;background:#1c1c1e;color:#f2f2f2;text-decoration:none;border:0;border-radius:18px;padding:16px 18px;font-weight:600;font-size:16px;margin-top:10px}
+.btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#1c1c1e;color:#f2f2f2;text-decoration:none;border:0;border-radius:18px;padding:16px 18px;font-weight:600;font-size:16px;margin-top:10px}
 .btn[disabled]{opacity:.45}
 .note{color:#8b8b8b;font-size:13px;line-height:1.45;margin:0}
 iframe{width:100%;height:240px;border:0;border-radius:12px;background:#111;display:none}
@@ -33,19 +33,20 @@ iframe.on{display:block;margin-top:10px}
   <iframe id="view" title="Policy PDF"></iframe>
   <p class="left" id="pdfName">No document yet</p>
   <input id="pick" type="file" accept="application/pdf" hidden/>
-  <button class="btn" type="button" id="up">Upload policy PDF</button>
-  <button class="btn" type="button" id="openPdf" style="display:none">View document</button>
+  <button class="btn" type="button" id="up" data-ico="box">Upload policy PDF</button>
+  <button class="btn" type="button" id="openPdf" data-ico="play" style="display:none">View document</button>
 </div>
-<a class="btn" id="renew" href="#">Renew</a>
-<button class="btn" type="button" id="gmailSoon" disabled>Gmail inbox — coming in the app</button>
-<a class="btn" href="home.html">Back</a>
+<a class="btn" id="renew" data-ico="cal" href="#">Renew</a>
+<button class="btn" type="button" id="gmailSoon" data-ico="mail" disabled>Gmail inbox — coming in the app</button>
+<a class="btn" href="home.html" data-ico="back">Back</a>
+<script src="./icons.js?v=28"></script>
 <script>
 function state(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
   return {i:0,cars:[{plate:"",ins:"",insWeb:"",nick:"Car"}]};
 }
 function car(){var s=state();return s.cars[s.i]||s.cars[0]}
-function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"YOUR REG"}
+function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"No plate yet"}
 function nice(iso){if(!iso)return "Set date in Edit";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
 function daysLeft(iso){
   if(!iso)return null;
@@ -99,7 +100,7 @@ async function show(){
   url=URL.createObjectURL(rec.blob);
   document.getElementById("pdfName").textContent=rec.name||"Policy PDF";
   frame.src=url;frame.className="on";
-  open.style.display="block";
+  open.style.display="flex";
   open.onclick=function(){window.open(url,"_blank")};
 }
 var c=car();

@@ -13,6 +13,7 @@
     back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>',
     save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h11.2L20 8.8V20H5z"/><path d="M8 5v5h8M8 20v-6h8v6"/></svg>',
     play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M10 9.2l5.4 2.8L10 14.8z"/></svg>',
+    yt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="3.2"/><path d="M10.2 9.4l5.2 2.6-5.2 2.6z"/></svg>',
     box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.2L12 4.5l8.5 3.7L12 12z"/><path d="M3.5 8.2v8.2L12 20l8.5-3.6V8.2"/><path d="M12 12v8"/></svg>',
     mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="6" width="17.6" height="12" rx="2"/><path d="M4.2 8l7.8 5.4L19.8 8"/></svg>',
     phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.2 3.8h3.2l1.2 3.2-2 1.8a11 11 0 0 0 5 5l1.8-2 3.2 1.2v3.2A3.2 3.2 0 0 1 16.4 20 14.2 14.2 0 0 1 4 7.6a3.2 3.2 0 0 1 3.2-3.8z"/></svg>',
@@ -23,25 +24,28 @@
     hist:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.6V12l3.2 2"/></svg>'
   };
   function kind(el){
-    var t=((el.getAttribute("data-ico")||"")+" "+(el.textContent||"")+" "+(el.getAttribute("href")||"")+" "+(el.id||"")).toLowerCase();
+    var forced=el.getAttribute("data-ico");
+    if(forced && S[forced]) return forced;
+    var t=((el.textContent||"")+" "+(el.getAttribute("href")||"")+" "+(el.id||"")).toLowerCase();
+    if(/youtube/.test(t)) return "yt";
     if(/back|close|btnclose/.test(t)) return "back";
     if(/remind|calendar|diary/.test(t)) return "cal";
     if(/dashcam|record|camera/.test(t)) return "cam";
     if(/track journey|gps/.test(t)) return "pin";
-    if(/drive(?! diary)/.test(t)) return "wheel";
-    if(/service|wrench|estimate|clutch|repair/.test(t)) return "wrench";
-    if(/route|map|trip|journey log/.test(t)) return "map";
-    if(/buy|guide|look up|search/.test(t)) return "search";
-    if(/youtube|how-to|play/.test(t)) return "play";
-    if(/gsf|euro car|ebay|parts|haynes|where to buy/.test(t)) return "box";
+    if(/\bdrive\b/.test(t) && !/diary/.test(t)) return "wheel";
+    if(/service cost|wrench|repair/.test(t)) return "wrench";
+    if(/route cost|journey log|\bmap\b/.test(t)) return "map";
+    if(/where to buy|gsf|euro car|ebay|haynes|parts/.test(t)) return "box";
+    if(/how-to|how to/.test(t)) return "play";
+    if(/buying guide|look up/.test(t)) return "search";
     if(/email|gmail|mail/.test(t)) return "mail";
     if(/call|phone/.test(t)) return "phone";
-    if(/policy|insur|shield/.test(t)) return "shield";
-    if(/ncap|safety|star/.test(t)) return "star";
-    if(/tax|cost|£|price|renew/.test(t)) return "coin";
-    if(/save|saved/.test(t)) return "save";
-    if(/history|mot record|official mot/.test(t)) return "hist";
-    if(/book mot|book service|book change|view history/.test(t)) return "check";
+    if(/policy|insur/.test(t)) return "shield";
+    if(/ncap|safety/.test(t)) return "star";
+    if(/renew|tax/.test(t)) return "coin";
+    if(/\bsave\b/.test(t)) return "save";
+    if(/history|mot record/.test(t)) return "hist";
+    if(/book mot|book service|book change/.test(t)) return "check";
     return "";
   }
   function decorate(el){

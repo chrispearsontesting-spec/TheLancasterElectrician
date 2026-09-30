@@ -40,36 +40,34 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .saved a{color:var(--ice);font-weight:800;text-decoration:none}
 .saved p{margin:6px 0}
 ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.45}
+.hint{margin-top:10px;font-size:12px;color:var(--dim)}
 </style>
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">One screen. Tap a heading to open it.</p>
-<label>Number plate</label>
-<input id="plate" type="text" placeholder="L806 DKH" autocapitalize="characters"/>
-<label>Car search</label>
-<input id="q" type="text" placeholder="e.g. Ford Fiesta EcoBoost"/>
-<button class="btn" type="button" id="go">Show guide</button>
-<button class="btn grey" type="button" id="saveBtn">Save to viewings</button>
+<p class="sub">Enter the plate. Make and model come from MOT.</p>
+<label>Registration</label>
+<input id="plate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/>
+<button class="btn" type="button" id="go">Look up</button>
 <p class="muted" id="status"></p>
 <div class="card">
-  <b id="carName">Car</b>
+  <b id="carName">—</b>
   <p class="muted" id="carMeta"></p>
-  <div class="acc"><button type="button" class="accBtn">Ratings</button><div class="accBody" id="ratings"></div></div>
-  <div class="acc"><button type="button" class="accBtn">Known weak points <span class="count" id="faultCount"></span></button><div class="accBody" id="faults"></div></div>
-  <div class="acc"><button type="button" class="accBtn">Should already have been done</button><div class="accBody"><ul id="dues"></ul></div></div>
-  <div class="acc"><button type="button" class="accBtn">On the viewing</button><div class="accBody"><ul id="views"></ul></div></div>
-  <div class="acc"><button type="button" class="accBtn">Costly jobs flagged <span class="count" id="motJobCount">0</span></button><div class="accBody" id="motJobs"><p class="muted">Load a plate. We match last-five-year MOT fails to tyres, brakes, suspension and similar, then show today’s indie estimate.</p></div></div>
-  <div class="acc"><button type="button" class="accBtn">Major MOT failures <span class="count" id="motMajorCount">0</span></button><div class="accBody" id="motMajors"><p class="muted">Load a plate to see official fails.</p></div></div>
-  <div class="acc"><button type="button" class="accBtn">MOT history <span class="count" id="motHistCount"></span></button><div class="accBody"><div id="motBox"><p class="muted">Official tests load here.</p></div><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Open official MOT history</a></div></div>
+  <div class="acc"><button type="button" class="accBtn">Safety and tax</button><div class="accBody" id="ratings"></div></div>
+  <div class="acc"><button type="button" class="accBtn">What to look for <span class="count" id="faultCount"></span></button><div class="accBody" id="faults"></div></div>
+  <div class="acc"><button type="button" class="accBtn">Ask the seller</button><div class="accBody"><p class="muted">History to request</p><ul id="dues"></ul><p class="muted" style="margin-top:12px">On the viewing</p><ul id="views"></ul></div></div>
+  <div class="acc"><button type="button" class="accBtn">Likely already done <span class="count" id="motJobCount">0</span></button><div class="accBody" id="motJobs"><p class="muted">Fails from the last five years, priced as indie estimates.</p></div></div>
+  <div class="acc"><button type="button" class="accBtn">MOT record <span class="count" id="motHistCount"></span></button><div class="accBody"><div id="motMajors"></div><div id="motBox"><p class="muted">Official tests load here.</p></div><span id="motMajorCount" hidden>0</span><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Official MOT site</a></div></div>
 </div>
 <div class="row">
   <a class="btn grey" id="yt" href="#" target="_blank" rel="noopener">YouTube</a>
   <a class="btn grey" id="parts" href="#" target="_blank" rel="noopener">Parts</a>
 </div>
+<button class="btn grey" type="button" id="saveBtn">Save this car</button>
 <div class="card saved">
-  <div class="acc"><button type="button" class="accBtn">Saved viewings</button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Open viewing page</a></div></div>
+  <div class="acc"><button type="button" class="accBtn">Saved cars</button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Viewing page</a></div></div>
 </div>
+<p class="hint">No MOT match? You can still type a model after lookup in the address bar with ?q=</p>
 <a class="btn grey" href="home.html">Back</a>
 <script src="cars-uk-1.js"></script>
 <script src="faults.js"></script>
@@ -108,9 +106,9 @@ function plateYear(p){
 function cap(s){return String(s||"").replace(/\b\w/g,function(c){return c.toUpperCase()})}
 function guessFuel(text){
   var t=String(text||"").toLowerCase();
-  if(/\b(ev|electric|leaf)\b/.test(t))return "electric";
+  if(/\b(ev|electric|leaf|bev)\b/.test(t))return "electric";
   if(/\b(hybrid|phev|prius|recharge)\b/.test(t))return "hybrid";
-  if(/\b(d5|d4|tdi|diesel|td4)\b/.test(t))return "diesel";
+  if(/\b(diesel|d5|d4|tdi|td4|cdti)\b/.test(t))return "diesel";
   return "petrol";
 }
 function findClassic(name){
@@ -147,13 +145,13 @@ function paintSaved(){
   var list=loadView();
   if(!list.length){$("savedList").innerHTML="<p class='muted'>None yet.</p>";return}
   $("savedList").innerHTML=list.map(function(c){
-    return "<p><a href='buy.html?plate="+encodeURIComponent(c.plate||"")+"&q="+encodeURIComponent(c.name||"")+"'>"+(c.name||"Car")+(c.plate?(" \u00b7 "+c.plate):"")+"</a></p>";
+    return "<p><a href='buy.html?plate="+encodeURIComponent(c.plate||"")+"'>"+(c.name||"Car")+(c.plate?(" \u00b7 "+c.plate):"")+"</a></p>";
   }).join("");
 }
 function faultBlock(f,pack){
   var adv=(window.adviceFor?window.adviceFor(f.t,pack):{})||{};
   var href="service.html?job="+encodeURIComponent(adv.job||"beltwp")+"&q="+encodeURIComponent(adv.buy||f.t);
-  return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+f.s+"'>"+f.s+"</span>"+f.t+"</button><div class='more'><p>"+(f.d||"")+"</p><p><b>When it is due.</b> "+(adv.interval||"")+"</p><p><b>What to ask for.</b> "+(adv.detail||"")+"</p><a class='btn grey' href='"+href+"'>Likely cost and parts</a></div></div>";
+  return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+f.s+"'>"+f.s+"</span>"+f.t+"</button><div class='more'><p>"+(f.d||"")+"</p><p><b>When it is due.</b> "+(adv.interval||"")+"</p><p><b>What to ask for.</b> "+(adv.detail||"")+"</p><a class='btn grey' href='"+href+"'>Likely cost</a></div></div>";
 }
 function paint(car){
   var classic=findClassic(car.name);
@@ -174,7 +172,7 @@ function paint(car){
   var faults=pack.faults||[];
   $("faults").innerHTML=faults.map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>Generic checks still apply.</p>";
   $("faultCount").textContent=faults.length?String(faults.length):"";
-  $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("");
+  $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("")||"<li>Full service history and cambelt / chain proof.</li>";
   var views=(year&&year<2001&&window.VIEW_CHECKS_CLASSIC)?window.VIEW_CHECKS_CLASSIC:(window.VIEW_CHECKS||[]);
   $("views").innerHTML=views.map(function(x){return "<li>"+x+"</li>"}).join("");
   var q=classic?(classic[0]+" "+classic[1]):car.name;
@@ -182,17 +180,29 @@ function paint(car){
   $("parts").href="https://www.gsfcarparts.com/catalogsearch/result/?q="+encodeURIComponent(q);
   var raw=String(car.plate||"").replace(/\s/g,"");
   $("motLink").href=raw?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(raw):"https://www.gov.uk/check-mot-history";
-  if(window.loadMotHistory)window.loadMotHistory(raw);
-  $("status").textContent=pack.k?("Guide ready for "+pack.name):("Checks ready for "+title);
+  $("status").textContent=title;
   paintSaved();
 }
 function run(){
-  try{
-    var plate=$("plate").value.trim(), q=$("q").value.trim(), g=garageCar();
-    var name=q||(g&&(g.nick||g.name))||"";
-    if(!name){$("status").textContent="Type a make and model first.";return}
-    paint({name:name,plate:plate,fuel:guessFuel(name),year:plateYear(plate)});
-  }catch(err){$("status").textContent="Search error: "+err.message}
+  var plate=$("plate").value.trim();
+  var fallback=new URLSearchParams(location.search).get("q")||"";
+  if(!plate && !fallback){$("status").textContent="Enter a registration.";return}
+  $("status").textContent="Looking up MOT…";
+  var yearGuess=plateYear(plate);
+  function finish(name, fuel, year, skipMotPaint){
+    paint({name:name,plate:plate,fuel:fuel||guessFuel(name),year:year||yearGuess});
+    if(!skipMotPaint && window.loadMotHistory) window.loadMotHistory(plate);
+  }
+  if(!plate){ finish(fallback,"",yearGuess,true); return; }
+  if(!window.fetchMotVehicle){ finish(fallback||"Car","",yearGuess); return; }
+  window.fetchMotVehicle(plate).then(function(info){
+    var name=(info&&info.name)||fallback||"";
+    if(!name){$("status").textContent="No MOT match. Try again or add ?q=Make+Model to the URL.";paintSaved();return}
+    var fuel=guessFuel((info&&info.fuel?info.fuel+" ":"")+name);
+    var year=(info&&info.year)||yearGuess;
+    paint({name:name,plate:plate,fuel:fuel,year:year});
+    if(window.loadMotHistory) window.loadMotHistory(plate);
+  });
 }
 document.addEventListener("click",function(e){
   var acc=e.target.closest(".accBtn");
@@ -214,18 +224,15 @@ $("saveBtn").onclick=function(){
   for(i=0;i<list.length;i++)if(list[i].id===id)found=i;
   var row={id:id,name:current.title||current.name,plate:current.plate||"",year:current.year,fuel:current.fuel,ticks:{}};
   if(found>=0)list[found]=Object.assign(list[found],row); else list.unshift(row);
-  saveView(list);$("status").textContent="Saved to viewings: "+row.name;paintSaved();
+  saveView(list);$("status").textContent="Saved: "+row.name;paintSaved();
 };
-$("q").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
 $("plate").addEventListener("keydown",function(e){if(e.key==="Enter")run()});
 (function init(){
   var p=new URLSearchParams(location.search);
   if(p.get("plate"))$("plate").value=p.get("plate");
-  if(p.get("q"))$("q").value=p.get("q");
   var g=garageCar();
   if(!$("plate").value)$("plate").value=(g&&g.plate)||"";
-  if(!$("q").value)$("q").value=(g&&(g.nick||g.name))||"";
-  if($("q").value)run(); else paintSaved();
+  if($("plate").value)run(); else paintSaved();
 })();
 </script>
 </body>

@@ -9,9 +9,10 @@
 :root{--bg:#050608;--ink:#f3efe6;--dim:#9aa3b0}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
-.stage{position:fixed;inset:0;background:#000}
+.stage{position:fixed;inset:0;background:#0b0c0e}
 #rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
 #front{position:absolute;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));width:26vw;max-width:200px;height:16vw;max-height:120px;object-fit:cover;background:#111;border-radius:12px;border:2px solid rgba(255,255,255,.35);z-index:3}
+body.track #rear,body.track #front,body.track #flip{display:none}
 .top{position:absolute;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));z-index:4;display:flex;gap:8px;align-items:center}
 .dock{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;align-items:center;padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.65))}
 .ticker{display:flex;gap:18px;align-items:baseline;margin-bottom:8px}
@@ -45,6 +46,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
   </div>
 </div>
 <script>
+var trackOnly=/track=1/.test(location.search);
+if(trackOnly) document.body.classList.add("track");
 function garage(){
   try{
     var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
@@ -178,21 +181,23 @@ async function start(){
     ppl=fuel.indexOf("petrol")>=0?+pr.petrol_ppl:+pr.diesel_ppl;
   }catch(e){}
   if(navigator.wakeLock){try{wake=await navigator.wakeLock.request("screen")}catch(e){}}
-  var rear=await oneCam("environment",document.getElementById("rear"));
-  var front=await oneCam("user",document.getElementById("front"));
-  if(!rear) document.getElementById("err").textContent="Rear camera not available.";
-  else if(!front) document.getElementById("err").textContent="Front camera not available together. Recording the road camera.";
-  if(rear) startRec(rear);
+  if(!trackOnly){
+    var rear=await oneCam("environment",document.getElementById("rear"));
+    var front=await oneCam("user",document.getElementById("front"));
+    if(!rear) document.getElementById("err").textContent="Rear camera not available.";
+    else if(!front) document.getElementById("err").textContent="Front camera not available together. Recording the road camera.";
+    if(rear) startRec(rear);
+  }
   startGps();
   on=true;
   document.getElementById("go").textContent="Stop";
-  document.getElementById("rec").textContent="REC";
+  document.getElementById("rec").textContent=trackOnly?"TRACKING":"REC";
 }
 async function saveTrip(blob){
   var id="d"+started;
   var fromName=await placeName(startPos);
   var toName=await placeName(last);
-  var trip={id:id,when:started,end:Date.now(),miles:+miles.toFixed(2),cost:+costNow().toFixed(2),mpg:mpg,ppl:ppl,from:fromName,to:toName,hasClip:!!(blob&&blob.size)};
+  var trip={id:id,when:started,end:Date.now(),miles:+miles.toFixed(2),cost:+costNow().toFixed(2),mpg:mpg,ppl:ppl,from:fromName,to:toName,hasClip:!!(blob&&blob.size),trackOnly:trackOnly};
   var list=[];
   try{list=JSON.parse(localStorage.getItem("gt.driveLog")||"[]")}catch(e){}
   list.unshift(trip);
@@ -230,6 +235,7 @@ document.getElementById("front").onclick=function(){
   frontRot=(frontRot+180)%360;
   this.style.transform="rotate("+frontRot+"deg)";
 };
+if(trackOnly) document.getElementById("rec").textContent="Track ready";
 purgeClips();
 </script>
 </body>

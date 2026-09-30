@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <link rel="manifest" href="./manifest.json"/>
-<link rel="stylesheet" href="./ui.css?v=25"/>
+<link rel="stylesheet" href="./ui.css?v=26"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -28,14 +28,13 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .when{margin:4px 0 0;color:#cfcfcf;font-size:17px;font-weight:650}
 .left{margin:2px 0 0;color:#8b8b8b;font-size:12px}
 .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
-.btn{display:inline-block;background:#1c1c1e;color:#f2f2f2;text-decoration:none;border:0;border-radius:18px;padding:8px 12px;font-weight:600;font-size:13px;text-align:center;min-width:92px;cursor:pointer}
-.wide{display:block;padding:16px 18px;border-radius:18px;font-size:16px;width:100%;margin-top:10px;background:#1c1c1e;color:#f2f2f2;border:0;text-align:left;font-weight:600}
+.btn{display:inline-flex;align-items:center;background:#1c1c1e;color:#f2f2f2;text-decoration:none;border:0;border-radius:18px;padding:8px 12px;font-weight:600;font-size:13px;text-align:center;min-width:92px;cursor:pointer}
+.wide{display:flex;align-items:center;gap:12px;padding:16px 18px;border-radius:18px;font-size:16px;width:100%;margin-top:10px;background:#1c1c1e;color:#f2f2f2;border:0;text-align:left;font-weight:600}
 .sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
 .sheet.on{display:block}
 .panel{background:#141416;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
 label{display:block;color:#8b8b8b;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
-.ncapBadge{position:absolute;left:10px;bottom:10px;z-index:3;background:rgba(8,8,10,.72);color:#cfcfcf;border:1px solid #2a2a2e;border-radius:10px;padding:5px 8px;font-size:12px;font-weight:650;cursor:pointer}
 .cFlash .when,.cFlash .left{color:#ef4444;animation:flashRed .85s ease-in-out infinite}
 .cOver .when,.cOver .left{color:#ff2a2a;animation:flashRed .55s ease-in-out infinite}
 @keyframes flashRed{0%,100%{opacity:1}50%{opacity:.28}}
@@ -51,12 +50,12 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <button type="button" id="next">&#8594;</button>
 <button type="button" id="btnEdit">&#9998;</button>
 </div><p class="dots" id="dots">Car 1 of 1</p></div>
-<button class="btn wide" type="button" id="datesToggle">Reminders</button>
+<button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
 <div class="card hide" id="dues"></div>
-<a class="btn wide" href="drive-hub.html">Drive</a>
-<a class="btn wide" href="service.html">Service cost estimates</a>
-<a class="btn wide" href="./">Route costs</a>
-<a class="btn wide" href="buy.html">Buying guide</a>
+<a class="btn wide" href="drive-hub.html" data-ico="wheel">Drive</a>
+<a class="btn wide" href="service.html" data-ico="wrench">Service cost estimates</a>
+<a class="btn wide" href="./" data-ico="map">Route costs</a>
+<a class="btn wide" href="buy.html" data-ico="search">Buying guide</a>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
 <label>Number plate</label><input id="fPlate" style="text-transform:uppercase" placeholder="AB12 CDE"/>
@@ -78,11 +77,11 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <label>Garage phone</label><input id="fPhone" type="tel"/>
 <label>Garage email</label><input id="fEmail" type="email"/>
 <label>Insurer website</label><input id="fInsWeb"/>
-<button class="btn wide" type="button" id="btnSave">Save</button>
-<button class="btn wide" type="button" id="btnClose">Back</button>
+<button class="btn wide" type="button" id="btnSave" data-ico="save">Save</button>
+<button class="btn wide" type="button" id="btnClose" data-ico="back">Back</button>
 </div></div>
-<div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn wide" type="button" id="btnCClose">Back</button></div></div>
-<div class="sheet" id="ncapSheet"><div class="panel"><h2 id="ncapTitle">Euro NCAP</h2><p id="ncapBody"></p><div id="ncapLinks"></div><button class="btn wide" type="button" id="ncapClose">Back</button></div></div>
+<div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn wide" type="button" id="btnCClose" data-ico="back">Back</button></div></div>
+<div class="sheet" id="ncapSheet"><div class="panel"><h2 id="ncapTitle">Euro NCAP</h2><p id="ncapBody"></p><div id="ncapLinks"></div><button class="btn wide" type="button" id="ncapClose" data-ico="back">Back</button></div></div>
 <script src="ncap.js"></script>
 <script src="ncap-url.js"></script>
 <script src="mot-config.js"></script>
@@ -90,13 +89,15 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="plate-fill.js"></script>
 <script src="./home-app.js"></script>
 <script src="./home-insure.js"></script>
+<script src="./icons.js"></script>
 <script>
 (function(){
   var dues=document.getElementById("dues");
   var btn=document.getElementById("datesToggle");
+  function lab(){return btn.querySelector(".lab")||btn}
   function setOpen(on){
     dues.classList.toggle("hide",!on);
-    btn.textContent=on?"Reminders \u25b2":"Reminders";
+    lab().textContent=on?"Reminders ":"Reminders";
     try{sessionStorage.setItem("gt.datesOpen",on?"1":"0")}catch(e){}
   }
   setOpen(sessionStorage.getItem("gt.datesOpen")==="1");

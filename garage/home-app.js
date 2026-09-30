@@ -142,6 +142,16 @@ function savePic(f){
   };
   r.readAsDataURL(f);
 }
+function lookupPlate(){
+  if(!window.fillFromPlate)return;
+  var p=document.getElementById("fPlate").value;
+  var hint=document.getElementById("plateHint");
+  if(hint) hint.textContent="Looking up MOT…";
+  window.fillFromPlate(p,function(info){
+    if(!info){ if(hint) hint.textContent="No MOT match yet — type the name if you know it."; return; }
+    window.applyPlateFields(info,{name:"fName",fuel:"fFuel",mot:"fMot",status:"plateHint"});
+  });
+}
 function openSheet(mode){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
@@ -165,6 +175,7 @@ function openSheet(mode){
   document.getElementById("fInsWeb").value=c.insWeb||"";
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
+  if(c.plate) lookupPlate();
 }
 document.getElementById("hero").onclick=function(){document.getElementById("photoPick").click()};
 document.getElementById("ncapClose").onclick=function(){document.getElementById("ncapSheet").className="sheet"};

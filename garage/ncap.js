@@ -76,10 +76,21 @@ window.NCAP=[
 {k:["suzuki","swift"],y0:2017,y1:2026,stars:3,tested:2017,old:false},
 {k:["fiat","500"],y0:2007,y1:2023,stars:3,tested:2007,old:true},
 {k:["tesla","model 3"],y0:2019,y1:2026,stars:5,tested:2019,old:false},
-{k:["tesla","model y"],y0:2022,y1:2026,stars:5,tested:2022,old:false}
+{k:["tesla","model y"],y0:2022,y1:2026,stars:5,tested:2022,old:false},
+{k:["tesla","model s"],y0:2014,y1:2026,stars:5,tested:2014,old:true},
+{k:["tesla","model x"],y0:2015,y1:2026,stars:5,tested:2015,old:true}
 ];
+function ncapHay(name){
+  var h=String(name||"").toLowerCase().replace(/-/g," ");
+  h=h.replace(/model3/g,"model 3").replace(/modely/g,"model y").replace(/models/g,"model s").replace(/modelx/g,"model x");
+  if(/tesla/.test(h) && /\by\b/.test(h) && h.indexOf("model y")<0) h+=" model y";
+  if(/tesla/.test(h) && /\bx\b/.test(h) && h.indexOf("model x")<0) h+=" model x";
+  if(/tesla/.test(h) && /\bs\b/.test(h) && h.indexOf("model s")<0 && h.indexOf("model 3")<0) h+=" model s";
+  if(/tesla/.test(h) && /\b3\b/.test(h) && h.indexOf("model 3")<0) h+=" model 3";
+  return h;
+}
 window.ncapFor=function(name,year){
-  var hay=String(name||"").toLowerCase();
+  var hay=ncapHay(name);
   var list=window.NCAP||[],best=null,score=0,i,j;
   for(i=0;i<list.length;i++){
     var p=list[i],ok=true;

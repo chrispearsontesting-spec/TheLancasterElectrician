@@ -75,13 +75,13 @@ window.paintMotJobs=function(tests){
   var jobs=window.classifyMotJobs(tests);
   if(count) count.textContent=jobs.length?String(jobs.length):"0";
   if(!jobs.length){
-    box.innerHTML="<p class='muted'>No costly fail items in the last five years that we can match to tyres, brakes, suspension and similar.</p>";
+    box.innerHTML="<p class='muted'>No likely big jobs in the last five years from MOT fails we can price (tyres, brakes, suspension and similar).</p>";
     return;
   }
   var totalLo=0,totalHi=0;
-  box.innerHTML="<p class='muted'>Items that failed or were marked major / dangerous in the last five years. They are usually put right to pass the retest. Figures are today’s independent-garage estimates, not what was paid then.</p>"+jobs.map(function(j){
-    var price=j.est?("Indie estimate now £"+j.est.lo+"–£"+j.est.hi):"See Service costs";
+  box.innerHTML="<p class='muted'>Each item failed or was marked major / dangerous, then the car passed later. Treat as <b>likely fixed</b> so it could be sold or driven as it is today. Prices are indie estimates now, not the old bill.</p>"+jobs.map(function(j){
+    var price=j.est?("Likely spend today £"+j.est.lo+"–£"+j.est.hi):"See Service costs";
     if(j.est){totalLo+=j.est.lo;totalHi+=j.est.hi}
-    return "<div class='fault'><button type='button' class='faultBtn'><span class='tag med'>"+(j.est?j.est.name:"Job")+"</span>"+j.date+"</button><div class='more'><p>"+j.text+"</p><p><b>"+price+"</b></p><p class='muted'>Not proof of a receipt — proof it had to be dealt with to pass.</p><a class='btn grey' href='service.html?job="+encodeURIComponent(j.id)+"'>Open estimate</a></div></div>";
-  }).join("")+"<p class='muted'>If all of these were done at a local garage today, ballpark £"+totalLo+"–£"+totalHi+".</p>";
+    return "<div class='fault'><button type='button' class='faultBtn'><span class='tag med'>Likely fixed</span>"+(j.est?j.est.name:"Job")+" · "+j.date+"</button><div class='more'><p>"+j.text+"</p><p><b>"+price+"</b></p><p class='muted'>Estimate only. MOT does not show the receipt.</p><a class='btn grey' href='service.html?job="+encodeURIComponent(j.id)+"'>Open estimate</a></div></div>";
+  }).join("")+"<p><b>To bring a similar car to this condition today: £"+totalLo+"–£"+totalHi+".</b></p><p class='muted'>Add these up only as a guide when you compare asking prices.</p>";
 };

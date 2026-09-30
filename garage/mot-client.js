@@ -6,18 +6,19 @@ window.loadMotHistory = function (plate) {
   if (!box) return;
   var raw = String(plate || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   var proxy = window.MOT_PROXY || "";
+  function jobs(tests){ if(window.paintMotJobs) window.paintMotJobs(tests||[]); }
   function setMajors(html, n) {
     if (majorsBox) majorsBox.innerHTML = html || "<p class='muted'>No major or dangerous failures on record.</p>";
     if (majorCount) majorCount.textContent = n ? String(n) : "0";
   }
   if (!proxy) {
     box.innerHTML = "<p class='muted'>MOT proxy not pointed yet. Official history link still works below.</p>";
-    setMajors("", 0);
+    setMajors("", 0); jobs([]);
     return;
   }
   if (!raw) {
     box.innerHTML = "<p class='muted'>Enter a plate to load MOT history.</p>";
-    setMajors("", 0);
+    setMajors("", 0); jobs([]);
     return;
   }
   box.innerHTML = "<p class='muted'>Loading official MOT history…</p>";
@@ -27,13 +28,14 @@ window.loadMotHistory = function (plate) {
     .then(function (res) {
       if (!res.ok) {
         box.innerHTML = "<p class='muted'>MOT lookup failed. Use the official link below.</p>";
-        setMajors("", 0);
+        setMajors("", 0); jobs([]);
         return;
       }
       var d = res.j || {};
       var tests = d.motTests || d.MotTests || [];
       var name = [d.make, d.model].filter(Boolean).join(" ");
       if (histCount) histCount.textContent = String(tests.length || 0);
+      jobs(tests);
       if (!tests.length) {
         box.innerHTML = (name ? "<p><b>" + name + "</b></p>" : "") + "<p class='muted'>No tests returned.</p>";
         setMajors("", 0);
@@ -97,6 +99,6 @@ window.loadMotHistory = function (plate) {
     })
     .catch(function () {
       box.innerHTML = "<p class='muted'>Could not reach the MOT proxy.</p>";
-      setMajors("", 0);
+      setMajors("", 0); jobs([]);
     });
 };

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <link rel="manifest" href="./manifest.json"/>
-<link rel="stylesheet" href="./ui.css?v=27"/>
+<link rel="stylesheet" href="./ui.css?v=28"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -46,10 +46,10 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <div class="bar"><div class="nameRow">
 <button type="button" id="btnAdd">+</button>
 <button type="button" id="prev">&#8592;</button>
-<div class="name" id="caption">Volvo XC60 D5</div>
+<div class="name" id="caption">Your car</div>
 <button type="button" id="next">&#8594;</button>
 <button type="button" id="btnEdit">&#9998;</button>
-</div><p class="dots" id="dots">Car 1 of 1</p></div>
+</div><p class="dots" id="dots">Add a car</p></div>
 <button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
 <div class="card hide" id="dues"></div>
 <a class="btn wide" href="drive-hub.html" data-ico="wheel">Drive</a>
@@ -81,7 +81,6 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <button class="btn wide" type="button" id="btnClose" data-ico="back">Back</button>
 </div></div>
 <div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn wide" type="button" id="btnCClose" data-ico="back">Back</button></div></div>
-<div class="sheet" id="ncapSheet"><div class="panel"><h2 id="ncapTitle">Euro NCAP</h2><p id="ncapBody"></p><div id="ncapLinks"></div><button class="btn wide" type="button" id="ncapClose" data-ico="back">Back</button></div></div>
 <script src="ncap.js"></script>
 <script src="ncap-url.js"></script>
 <script src="mot-config.js"></script>
@@ -89,7 +88,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="plate-fill.js"></script>
 <script src="./home-app.js"></script>
 <script src="./home-insure.js"></script>
-<script src="./icons.js?v=27"></script>
+<script src="./icons.js?v=28"></script>
 <script>
 (function(){
   var dues=document.getElementById("dues");

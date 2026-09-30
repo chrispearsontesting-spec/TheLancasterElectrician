@@ -59,8 +59,9 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <a class="btn wide" href="buy.html">Buying guide</a>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
-<label>Name</label><input id="fName"/>
-<label>Number plate</label><input id="fPlate" style="text-transform:uppercase"/>
+<label>Number plate</label><input id="fPlate" style="text-transform:uppercase" placeholder="AB12 CDE"/>
+<p class="left" id="plateHint">Make and model fill from MOT.</p>
+<label>Name</label><input id="fName" placeholder="Fills automatically"/>
 <label>MOT</label><input id="fMot" type="date"/>
 <label>Tax</label><input id="fTax" type="date"/>
 <label>Insurance</label><input id="fIns" type="date"/>
@@ -84,6 +85,9 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <div class="sheet" id="ncapSheet"><div class="panel"><h2 id="ncapTitle">Euro NCAP</h2><p id="ncapBody"></p><div id="ncapLinks"></div><button class="btn wide" type="button" id="ncapClose">Back</button></div></div>
 <script src="ncap.js"></script>
 <script src="ncap-url.js"></script>
+<script src="mot-config.js"></script>
+<script src="mot-client.js"></script>
+<script src="plate-fill.js"></script>
 <script src="./home-app.js"></script>
 <script src="./home-insure.js"></script>
 <script>
@@ -97,6 +101,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
   }
   setOpen(sessionStorage.getItem("gt.datesOpen")==="1");
   btn.onclick=function(){setOpen(dues.classList.contains("hide"))};
+  if(window.bindPlateField) window.bindPlateField({plate:"fPlate",name:"fName",fuel:"fFuel",mot:"fMot",status:"plateHint"});
 })();
 </script>
 </body>

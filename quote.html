@@ -4,71 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get an EICR Quote | The Lancaster Electrician</title>
-    <meta name="description" content="Request an EICR quote as a homeowner or landlord. Different questions for each so Chris can price Standard and Gold accurately.">
+    <meta name="description" content="Request an EICR quote in Lancaster as a homeowner or landlord. Separate questions for each, so Standard and Gold can be priced properly.">
+    <link rel="canonical" href="https://thelancasterelectrician.com/quote.html">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: linear-gradient(180deg, #0f172a, #1e2937);
-            min-height: 100vh;
-            color: #1e2937;
-            padding: 20px 16px;
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #1e2937; min-height: 100vh; }
+        a { color: inherit; }
+        .top { background: #0b1220; color: #94a3b8; padding: 14px 22px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+        .top a { color: #bfdbfe; text-decoration: none; font-weight: 600; }
+        .wrap { max-width: 880px; margin: 0 auto; padding: 36px 20px 56px; }
+        h1 { color: white; font-size: 36px; letter-spacing: -0.03em; line-height: 1.15; }
+        .lead { color: #cbd5e1; font-size: 17px; line-height: 1.6; margin: 12px 0 28px; max-width: 640px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .choice { display: block; text-decoration: none; background: white; border-radius: 20px; padding: 28px 24px; border: 1px solid #e2e8f0; min-height: 220px; }
+        .choice:hover { transform: translateY(-2px); }
+        .choice.gold { border: 2px solid #f59e0b; background: linear-gradient(180deg, #fffbeb, #fff 46%); }
+        .kicker { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #2563eb; }
+        .choice.gold .kicker { color: #b45309; }
+        h2 { font-size: 24px; margin: 8px 0 10px; color: #0f172a; }
+        p { font-size: 15.5px; line-height: 1.6; color: #475569; }
+        .alt { margin-top: 22px; color: #cbd5e1; font-size: 15px; }
+        .alt a { color: #86efac; font-weight: 700; }
+        @media (max-width: 720px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 30px; }
         }
-        .wrap { max-width: 640px; margin: 40px auto; }
-        .card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0,0,0,.35);
-        }
-        .header {
-            padding: 36px 24px 28px;
-            text-align: center;
-            color: white;
-            background: linear-gradient(115deg, #1e3a8a 0%, #2563eb 55%, #1e3a8a 100%);
-        }
-        .header h1 { font-size: 28px; font-weight: 800; line-height: 1.15; }
-        .header p { margin-top: 10px; opacity: .95; font-size: 16px; }
-        .content { padding: 28px 22px 36px; }
-        .choice {
-            display: block;
-            text-decoration: none;
-            color: inherit;
-            border: 2px solid #e2e8f0;
-            border-radius: 18px;
-            padding: 22px 18px;
-            margin: 14px 0;
-            background: #f8fafc;
-        }
-        .choice.gold { border-color: #f59e0b; background: #fffbeb; }
-        .choice h2 { font-size: 20px; margin-bottom: 6px; color: #0f172a; }
-        .choice p { font-size: 15px; line-height: 1.5; color: #64748b; }
-        .back { display: block; text-align: center; margin-top: 18px; color: #93c5fd; }
     </style>
 </head>
 <body>
-<div class="wrap">
-    <div class="card">
-        <div class="header">
-            <h1>Get your EICR quote</h1>
-            <p>Choose the option that fits you. The questions are different so the quote is accurate.</p>
-        </div>
-        <div class="content">
+    <div class="top">
+        <a href="index.html">The Lancaster Electrician</a>
+        <a href="https://wa.me/447587590435">WhatsApp 07587 590435</a>
+    </div>
+    <div class="wrap">
+        <h1>Get your EICR quote</h1>
+        <p class="lead">Choose the option that fits. The questions are different, so the price is based on the property rather than a guess.</p>
+        <div class="grid">
             <a class="choice" href="quote-homeowner.html">
-                <h2>I am a homeowner</h2>
-                <p>This is the home you live in, or a house or flat you are buying or selling. Owner-occupiers are not usually under the same legal testing cycle as landlords, but an EICR is still useful for a sale, insurance, or to check the wiring is safe.</p>
+                <div class="kicker">Homeowner</div>
+                <h2>I live here, or I am buying or selling</h2>
+                <p>Owner-occupiers are not on the same legal testing cycle as landlords. An EICR is still the right check for a sale, insurance, or peace of mind.</p>
             </a>
             <a class="choice gold" href="quote-landlord.html">
-                <h2>I am a landlord or agent</h2>
-                <p>This property is rented, or you manage it. In England a rented home needs a valid EICR — at least every 5 years, sooner if the last report says so, and you need a current report when a new tenancy starts. Gold adds a QR record on the board so the dates are easy to keep.</p>
+                <div class="kicker">Landlord or agent</div>
+                <h2>This property is rented, or I manage it</h2>
+                <p>In England a private rented home needs a valid EICR at least every five years, and a current report when a new tenancy starts if the last one is out of date. Gold keeps that date on the board.</p>
             </a>
-            <p style="text-align:center;margin-top:20px;font-size:14px;color:#64748b;">
-                Or <a href="https://wa.me/447587590435?text=Hi%20Chris%2C%20I%27d%20like%20an%20EICR%20quote." style="color:#25D366;font-weight:700;">message on WhatsApp</a>
-            </p>
         </div>
+        <p class="alt">Prefer not to fill in a form? <a href="https://wa.me/447587590435?text=Hi%20Chris%2C%20I%27d%20like%20an%20EICR%20quote.">Message Chris on WhatsApp</a>.</p>
     </div>
-    <a class="back" href="index.html">Back to homepage</a>
-</div>
 </body>
 </html>

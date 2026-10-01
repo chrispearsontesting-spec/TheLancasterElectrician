@@ -1,0 +1,30 @@
+Dipstick — Play / PWABuilder pack
+
+Start URL
+https://thelancasterelectrician.com/garage/home.html
+
+Privacy URL
+https://thelancasterelectrician.com/garage/privacy.html
+
+Short description (80)
+MOT, tax, insurance, service estimates and route costs in one place.
+
+Full description
+Dipstick keeps a car in one place. Reminders for MOT, tax, insurance, service, timing belt and tyres. Route costs from today's UK fuel price. Service estimates for a local garage, a main dealer and DIY. Buying guide from the registration, with MOT history. Optional dashcam and drive diary on the phone.
+
+No account. Dates and documents stay on the device.
+
+Icons
+https://thelancasterelectrician.com/garage/icon-192.png
+https://thelancasterelectrician.com/garage/icon-512.png
+
+Screenshots to capture on the phone (portrait)
+1. Home with the car photo and reminders open
+2. Buying guide after a plate lookup
+3. Service cost estimate for a job
+4. Route cost with the map
+5. Drive hub
+
+Category: Auto & vehicles
+Content rating: Everyone
+Contact: the email on the Lancaster Electrician site

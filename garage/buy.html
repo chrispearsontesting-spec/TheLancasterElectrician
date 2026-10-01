@@ -43,6 +43,7 @@ input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);colo
 .saved p{margin:6px 0}
 ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.45}
 .hide{display:none}
+.crow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -66,6 +67,11 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <a class="btn grey" id="parts" data-ico="box" href="#" target="_blank" rel="noopener">Parts</a>
 </div>
 <button class="btn grey hide" type="button" id="saveBtn" data-ico="save">Save this car</button>
+<div class="card" id="compareCard">
+  <b>Running cost compare</b>
+  <p class="muted">Ten miles at today's prices. Same figures appear on a real route.</p>
+  <div id="compareBody"></div>
+</div>
 <div class="card saved">
   <div class="acc open"><button type="button" class="accBtn"><span class="lab">Saved cars</span><span class="chev">+</span></button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Viewing page</a></div></div>
 </div>
@@ -85,6 +91,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="mot-jobs.js"></script>
 <script src="mot-client.js"></script>
 <script src="./icons.js?v=28"></script>
+<script src="./compare.js?v=31"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function loadView(){try{return JSON.parse(localStorage.getItem("gt.viewings.v1")||"[]")}catch(e){return []}}

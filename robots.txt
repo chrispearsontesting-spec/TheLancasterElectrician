@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /LAN-
+Disallow: /thankyou.html
+Disallow: /upload.html
+Disallow: /upload-thanks.html
+
+Sitemap: https://thelancasterelectrician.com/sitemap.xml

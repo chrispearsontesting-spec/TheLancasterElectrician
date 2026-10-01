@@ -56,12 +56,14 @@ jobs:
           if p is None:
               raise SystemExit("both sources failed: "+"; ".join(errors))
           today=datetime.datetime.utcnow().strftime("%d %b %Y")
+          # Ofgem single-rate cap 1 Oct-31 Dec 2026 is 26.32p/kWh. Economy 7 night is about 14p. Cap changes quarterly, not daily.
           out={
             "date": today,
             "petrol_ppl": round(p,1),
             "diesel_ppl": round(d,1),
-            "electric_pkwh": 26.1,
-            "source": src+" "+today
+            "electric_pkwh": 26.32,
+            "offpeak_pkwh": 14.0,
+            "source": src+" "+today+"; electric Ofgem cap and typical Economy 7 night"
           }
           open("garage/prices.json","w").write(json.dumps(out, indent=2)+"\n")
           print(out)

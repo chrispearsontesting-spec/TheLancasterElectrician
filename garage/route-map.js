@@ -2,15 +2,27 @@ function drawRoute(geo){
   var el=document.getElementById("map");
   if(el) el.classList.remove("hide");
   if(map){ try{ map.remove(); }catch(e){} map=null; line=null; }
-  map=L.map("map",{zoomControl:false,attributionControl:true}).setView([54.05,-2.7],9);
-  map.attributionControl.setPrefix("");
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
-    maxZoom:19,
-    subdomains:"abcd",
-    attribution:"\u00a9 OpenStreetMap \u00a9 CARTO"
-  }).addTo(map);
-  line=L.geoJSON(geo,{style:{color:"#1a73e8",weight:5,opacity:.95,lineCap:"round"}}).addTo(map);
-  setTimeout(function(){map.invalidateSize();map.fitBounds(line.getBounds(),{padding:[24,24]})},80);
+  if(!window.maplibregl){ el.textContent="Map could not load."; return; }
+  map=new maplibregl.Map({
+    container:"map",
+    style:"https://tiles.openfreemap.org/styles/bright",
+    center:[-2.7,54.05],
+    zoom:9,
+    attributionControl:true
+  });
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}), "top-right");
+  map.on("load", function(){
+    map.addSource("route",{type:"geojson",data:geo});
+    map.addLayer({id:"route",type:"line",source:"route",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#1a73e8","line-width":5}});
+    var coords=(geo&&geo.coordinates)||[];
+    if(!coords.length) return;
+    var b=coords.reduce(function(a,c){
+      a[0]=Math.min(a[0],c[0]); a[1]=Math.min(a[1],c[1]);
+      a[2]=Math.max(a[2],c[0]); a[3]=Math.max(a[3],c[1]);
+      return a;
+    },[180,90,-180,-90]);
+    map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:28,duration:0});
+  });
 }
 function showRouteExtras(){
   var opts=document.querySelector(".opts");

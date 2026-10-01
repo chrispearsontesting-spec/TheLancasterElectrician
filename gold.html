@@ -4,111 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>How the Gold EICR works | The Lancaster Electrician</title>
-    <meta name="description" content="Gold EICR for landlords in Lancaster: QR code on the consumer unit, digital certificates, photos, history and a simple overview of every rental.">
+    <meta name="description" content="Gold EICR for landlords in Lancaster: a QR code on the consumer unit, digital certificate, photos, history and one overview for every rental.">
+    <link rel="canonical" href="https://thelancasterelectrician.com/gold.html">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: linear-gradient(180deg, #0f172a, #1e2937);
-            min-height: 100vh;
-            color: #1e2937;
-            padding: 20px 16px 40px;
-        }
-        .wrap { max-width: 720px; margin: 0 auto; }
-        .card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
-        }
-        .header {
-            padding: 36px 28px 30px;
-            text-align: center;
-            color: white;
-            background: linear-gradient(115deg, #92400e 0%, #d97706 45%, #f59e0b 100%);
-        }
-        .header h1 { font-size: 28px; font-weight: 800; line-height: 1.15; }
-        .header p { margin-top: 8px; font-size: 16px; opacity: 0.95; }
-        .content { padding: 28px 24px 36px; }
-        h2 { font-size: 20px; color: #0f172a; margin: 26px 0 10px; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; color: #1e2937; }
+        a { color: inherit; }
+        .top { background: #0b1220; color: #94a3b8; padding: 14px 28px; display: flex; justify-content: space-between; }
+        .top a { color: #bfdbfe; text-decoration: none; font-weight: 600; }
+        .hero { background: linear-gradient(115deg, #92400e, #d97706 55%, #f59e0b); color: white; padding: 56px 28px; }
+        .hero-inner, .wrap { max-width: 980px; margin: 0 auto; }
+        .hero h1 { font-size: 40px; letter-spacing: -0.03em; max-width: 680px; }
+        .hero p { margin-top: 12px; font-size: 18px; max-width: 640px; line-height: 1.55; }
+        .wrap { padding: 36px 20px 64px; }
+        .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 22px; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 24px; }
+        h2 { font-size: 22px; margin-bottom: 10px; }
         p, li { font-size: 16px; line-height: 1.6; color: #334155; }
-        p { margin-bottom: 12px; }
-        ol, ul { padding-left: 20px; margin-bottom: 14px; }
-        li { margin: 6px 0; }
-        .step {
-            background: #fffbeb;
-            border-left: 5px solid #f59e0b;
-            padding: 14px 16px;
-            border-radius: 10px;
-            margin: 12px 0;
-        }
-        .warn {
-            background: #fef2f2;
-            border-left: 5px solid #dc2626;
-            padding: 14px 16px;
-            border-radius: 10px;
-            margin: 16px 0;
-        }
-        .btns { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
-        .btns a {
-            display: block;
-            text-align: center;
-            padding: 14px;
-            border-radius: 14px;
-            color: white;
-            font-weight: 600;
-            text-decoration: none;
-        }
-        .gold { background: #d97706; }
+        ul, ol { padding-left: 18px; }
+        li { margin: 7px 0; }
+        .warn { background: #fef2f2; border-left: 4px solid #dc2626; padding: 14px 16px; border-radius: 10px; margin: 16px 0; }
+        .step { background: #fffbeb; border-radius: 12px; padding: 12px 14px; margin: 8px 0; }
+        .btns { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+        .btns a { display: block; text-align: center; text-decoration: none; color: white; font-weight: 700; border-radius: 12px; padding: 13px; }
+        .gold { background: #d97706; color: #1c1917; }
         .blue { background: #2563eb; }
-        .green { background: #25D366; }
-        .grey { background: #475569; }
+        .green { background: #16a34a; }
+        @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .hero h1 { font-size: 32px; } }
     </style>
 </head>
 <body>
-<div class="wrap">
-    <div class="card">
-        <div class="header">
-            <h1>How the Gold EICR works</h1>
-            <p>For landlords, agents and homeowners</p>
+    <div class="top">
+        <a href="index.html">The Lancaster Electrician</a>
+        <a href="quote.html">Get a quote</a>
+    </div>
+    <section class="hero">
+        <div class="hero-inner">
+            <h1>The test is the same. Gold is what happens to the record.</h1>
+            <p>A QR sticker goes on the consumer unit. Scan it and the certificate, photos and older reports are on one page for that property.</p>
         </div>
-        <div class="content">
-            <p>An EICR is an Electrical Installation Condition Report. It is the formal inspection and test of the fixed wiring in a property, carried out to BS 7671. For rented homes in England it is normally required at least every five years, and when a new tenancy starts if the last report is out of date.</p>
-
-            <div class="warn">
-                <strong>Why this matters.</strong> An expired or missing EICR can cause problems if there is a claim after an electrical fire or injury. Insurers can reduce or refuse a claim where the installation was not properly maintained or certified. A current report is the simple way to show you have taken safety seriously.
+    </section>
+    <div class="wrap">
+        <div class="grid">
+            <div>
+                <div class="card">
+                    <h2>What an EICR is</h2>
+                    <p>An Electrical Installation Condition Report is the formal inspection and test of the fixed wiring, carried out to BS 7671. For private rented homes in England it is normally required at least every five years, and a current report is needed when a new tenancy starts if the last one is out of date.</p>
+                    <div class="warn"><strong>Why landlords ask.</strong> If a report is missing or out of date, an insurer can question whether the electrics were being maintained. After an electrical fire or injury, that can affect a claim.</div>
+                    <h2>What Gold adds</h2>
+                    <ul>
+                        <li>QR sticker on the consumer unit</li>
+                        <li>Current certificate and photos of the installation</li>
+                        <li>Older certificates kept as a history, where you have them</li>
+                        <li>A clear due date, with a warning once the five-year window has passed</li>
+                        <li>A troubleshooting guide from the same code</li>
+                        <li>One overview page if you have more than one rental</li>
+                    </ul>
+                </div>
+                <div class="card" style="margin-top:16px;">
+                    <h2>How it works</h2>
+                    <div class="step"><strong>1.</strong> The EICR is carried out at the property.</div>
+                    <div class="step"><strong>2.</strong> The sticker goes on the distribution board.</div>
+                    <div class="step"><strong>3.</strong> The certificate and photos are added to that property’s page.</div>
+                    <div class="step"><strong>4.</strong> You, a tenant, a buyer or another electrician can scan it without searching email.</div>
+                    <div class="step"><strong>5.</strong> On a portfolio page, a button turns red when a report is overdue.</div>
+                </div>
             </div>
-
-            <h2>What you get with Gold</h2>
-            <p>The test itself is the same professional EICR as the Standard package. Gold adds a digital record that stays with the property.</p>
-            <ul>
-                <li>QR sticker on the consumer unit (fuse board)</li>
-                <li>Scan it to open that property's page on this website</li>
-                <li>Current certificate, photos of the installation, and older reports in one place</li>
-                <li>Clear next-due date, with a red warning when a test has expired</li>
-                <li>Troubleshooting guide from the same QR code</li>
-                <li>For landlords with more than one property: one overview page with a button per rental</li>
-            </ul>
-
-            <h2>How it works in practice</h2>
-            <div class="step"><strong>1.</strong> Chris carries out the EICR at the property.</div>
-            <div class="step"><strong>2.</strong> A QR sticker goes on the distribution board.</div>
-            <div class="step"><strong>3.</strong> The certificate and photos are added to that property's page.</div>
-            <div class="step"><strong>4.</strong> You, a tenant or a future electrician scan the code and see the history without hunting through emails.</div>
-            <div class="step"><strong>5.</strong> If you have several rentals, your landlord page lists them all. A button turns red when a report is overdue.</div>
-
-            <h2>See an example</h2>
-            <p>This demonstration shows how a multi-property overview looks, including an expired test in red and a current test in green.</p>
-
-            <div class="btns">
-                <a class="gold" href="landlord-example.html">View example landlord page</a>
-                <a class="blue" href="quote.html">Request a Gold quote</a>
-                <a class="green" href="https://wa.me/447587590435">WhatsApp Chris</a>
-                <a class="grey" href="index.html">Back to homepage</a>
-            </div>
+            <aside class="card">
+                <h2>See it, then ask for a price</h2>
+                <p>The example page shows an expired test in red, a current test in green, and one due soon.</p>
+                <div class="btns">
+                    <a class="blue" href="landlord-example.html">View the example landlord page</a>
+                    <a class="gold" href="quote.html">Request a Gold quote</a>
+                    <a class="green" href="https://wa.me/447587590435">WhatsApp Chris</a>
+                </div>
+            </aside>
         </div>
     </div>
-</div>
 </body>
 </html>

@@ -1,0 +1,34 @@
+name: Check UK mpg table
+on:
+  schedule:
+    - cron: "0 7 1 * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: See if VCA latest file changed
+        run: |
+          python3 - <<'PY'
+          import json, urllib.request, datetime, hashlib
+          opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
+          opener.open("https://carfueldata.vehicle-certification-agency.gov.uk/downloads/default.aspx", timeout=40)
+          req=urllib.request.Request("https://carfueldata.vehicle-certification-agency.gov.uk/downloads/create_latest_data_csv.asp?id=6", headers={"User-Agent":"Mozilla/5.0"})
+          data=opener.open(req, timeout=60).read()
+          digest=hashlib.sha256(data).hexdigest()[:12]
+          today=datetime.datetime.utcnow().strftime("%d %b %Y")
+          meta={"built":"06 Oct 2026","checked":today,"latestHash":digest,"source":"Vehicle Certification Agency","note":"If latestHash changes, the new-car table has updated and the lookup should be rebuilt."}
+          open("garage/mpg-meta.json","w").write(json.dumps(meta, indent=2)+"\n")
+          print(meta)
+          PY
+      - name: Commit check
+        run: |
+          git config user.name "fuel-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add garage/mpg-meta.json
+          git diff --cached --quiet && echo "No change" && exit 0
+          git commit -m "chore: monthly VCA mpg check"
+          git push

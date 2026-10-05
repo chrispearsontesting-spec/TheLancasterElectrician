@@ -1,0 +1,7 @@
+{
+  "built": "06 Oct 2026",
+  "source": "Vehicle Certification Agency car fuel data",
+  "coverage": "July 2000 to October 2026 official figures",
+  "rows": 23738,
+  "note": "Earlier than 2000 is not published. Newer cars use WLTP low as urban and extra-high as extra-urban."
+}

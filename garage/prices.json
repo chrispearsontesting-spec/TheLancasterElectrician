@@ -1,8 +1,8 @@
 {
-  "date": "04 Oct 2026",
-  "petrol_ppl": 176.1,
-  "diesel_ppl": 200.1,
+  "date": "05 Oct 2026",
+  "petrol_ppl": 176.3,
+  "diesel_ppl": 200.3,
   "electric_pkwh": 26.32,
   "offpeak_pkwh": 14.0,
-  "source": "fuelcosts.co.uk daily UK average 04 Oct 2026; electric Ofgem cap and typical Economy 7 night"
+  "source": "fuelcosts.co.uk daily UK average 05 Oct 2026; electric Ofgem cap and typical Economy 7 night"
 }

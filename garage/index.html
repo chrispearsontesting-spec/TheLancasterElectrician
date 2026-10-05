@@ -26,7 +26,8 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .prices{background:linear-gradient(180deg,#1a1d24 0%,#12141a 100%);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px 14px 12px;margin:0 0 16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
 .prices .kicker{color:#9aa3b0;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.pcell{background:#0e1014;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 8px;text-align:center}
+.pcell{background:#0e1014;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 8px;text-align:center;color:inherit;width:100%;cursor:pointer}
+.pcell.on{border-color:#9fd8ff;background:#1a2733;box-shadow:inset 0 0 0 1px #9fd8ff}
 .pcell span{display:block;color:#9aa3b0;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .pcell b{display:block;color:#f3efe6;font-size:22px;margin-top:4px;font-weight:800}
 .pcell em{display:block;color:#9fd8ff;font-size:11px;font-style:normal;margin-top:2px}
@@ -56,10 +57,10 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <div class="prices">
   <p class="kicker">UK average fuel price</p>
   <div class="pgrid" id="priceGrid">
-    <div class="pcell"><span>Diesel</span><b id="pDiesel">199.9p</b><em>per litre</em></div>
-    <div class="pcell"><span>Petrol</span><b id="pPetrol">174.8p</b><em>per litre</em></div>
-    <div class="pcell"><span>Off-peak</span><b id="pOff">14.0p</b><em>per kWh</em></div>
-    <div class="pcell"><span>Day rate</span><b id="pPeak">26.3p</b><em>per kWh</em></div>
+    <button class="pcell on" type="button" data-fuel="diesel"><span>Diesel</span><b id="pDiesel">199.9p</b><em>per litre</em></button>
+    <button class="pcell" type="button" data-fuel="petrol"><span>Petrol</span><b id="pPetrol">174.8p</b><em>per litre</em></button>
+    <button class="pcell" type="button" data-fuel="offpeak"><span>Off-peak</span><b id="pOff">14.0p</b><em>per kWh</em></button>
+    <button class="pcell" type="button" data-fuel="peak"><span>Day rate</span><b id="pPeak">26.3p</b><em>per kWh</em></button>
   </div>
   <p class="when" id="priceWhen">23 Sep 2026 · UK national average</p>
 </div>
@@ -68,8 +69,9 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <label>To</label>
 <input id="to" autocomplete="off" placeholder="Start typing a place"/>
 <div>
-  <label id="mpgLabel">Diesel MPG</label>
-  <input id="mpgOverride" type="number" step="0.1" value="38"/>
+  <label id="mpgLabel">Diesel</label>
+  <p class="muted" id="fuelNote">Using this car. Tap a price above to change fuel.</p>
+  <input id="mpgOverride" type="number" step="0.1" value="38" hidden/>
 </div>
 <div id="phevBox" class="hide">
   <label>Electric range (miles)</label>
@@ -133,7 +135,8 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <script src="./route-save.js"></script>
 <script src="./place-suggest.js"></script>
 <script src="./route-clear.js"></script>
-<script src="./compare.js?v=31"></script>
+<script src="./fuel-pick.js?v=33"></script>
+<script src="./compare.js?v=33"></script>
 <script>
 (function(){
   function apply(p){

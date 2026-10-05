@@ -1,35 +1,35 @@
 window.FUEL_PICK=window.FUEL_PICK||"diesel";
 window.CYCLE=window.CYCLE||"combined";
-function listMatch(name){
-  var hay=String(name||"").toLowerCase();
-  var list=window.TRIPS||[];
+function mpgRow(){
+  var c=window.car||{};
+  var hay=String(c.name||c.nick||"").toLowerCase();
+  var list=window.MPG_UK||[];
   var best=null, score=0, i;
+  var want=window.FUEL_PICK==="offpeak"||window.FUEL_PICK==="peak"?"electric":window.FUEL_PICK;
   for(i=0;i<list.length;i++){
     var row=list[i];
-    if(hay.indexOf(String(row[1]||"").toLowerCase())<0) continue;
-    var pts=String(row[1]||"").length+(hay.indexOf(String(row[0]||"").toLowerCase())>=0?20:0);
+    var model=String(row[1]||"").toLowerCase();
+    if(model.length<3||hay.indexOf(model)<0) continue;
+    var fuel=String(row[3]||"").toLowerCase();
+    var pts=model.length;
+    if(hay.indexOf(String(row[0]||"").toLowerCase())>=0) pts+=20;
+    if(want==="electric"&&fuel.indexOf("elect")>=0) pts+=30;
+    if(want==="diesel"&&fuel.indexOf("diesel")>=0) pts+=25;
+    if(want==="petrol"&&fuel.indexOf("petrol")>=0) pts+=25;
     if(pts>score){ best=row; score=pts; }
   }
-  return score>=4?best:null;
-}
-function baseMpg(kind){
-  var c=window.car||{};
-  if(c.kind===kind&&+c.mpg) return +c.mpg;
-  var row=listMatch(c.name||c.nick||"");
-  if(row&&kind!=="electric"&&+row[6]) return +row[6];
-  if(kind==="diesel") return 45;
-  if(kind==="petrol") return 40;
-  if(kind==="hybrid") return 55;
-  return 3.5;
+  return score>=8?best:null;
 }
 function cycleMpg(kind){
   var box=document.getElementById("mpgOverride");
   if(window.CYCLE==="custom"&&box&&+box.value) return +box.value;
-  var combined=baseMpg(kind);
-  if(kind==="electric") return combined;
-  if(window.CYCLE==="urban") return Math.round(combined*0.78);
-  if(window.CYCLE==="extra") return Math.round(combined*1.16);
-  return combined;
+  var row=mpgRow();
+  if(kind==="electric") return (row&&row[7])||3.5;
+  if(!row) return kind==="diesel"?45:kind==="petrol"?40:55;
+  var urban=row[4], extra=row[5], comb=row[6];
+  if(window.CYCLE==="urban") return urban||comb||45;
+  if(window.CYCLE==="extra") return extra||comb||45;
+  return comb||urban||extra||45;
 }
 function markCycles(){
   var nodes=document.querySelectorAll(".cycle");
@@ -43,19 +43,15 @@ function markFuel(){
   var electric=pick==="offpeak"||pick==="peak";
   var kind=electric?"electric":pick;
   var fig=cycleMpg(kind);
+  var row=mpgRow();
   var note=document.getElementById("fuelNote");
   var lab=document.getElementById("mpgLabel");
   var box=document.getElementById("mpgOverride");
-  var phev=document.getElementById("phevBox");
-  if(phev) phev.className="hide";
   if(box){ box.hidden=window.CYCLE!=="custom"; if(window.CYCLE!=="custom") box.value=String(fig); }
   if(lab) lab.textContent=electric?"Miles per kWh":"Economy";
   var cycleName={urban:"Urban",extra:"Extra-urban",combined:"Combined",custom:"Custom"}[window.CYCLE]||"Combined";
-  if(note){
-    if(electric) note.textContent=cycleName+". Using "+fig+" miles per kWh. Custom lets you type your own.";
-    else if(window.CYCLE==="combined"||window.CYCLE==="custom") note.textContent=cycleName+". Using "+fig+" mpg. Urban and extra-urban are estimated from the combined figure until the official table is loaded.";
-    else note.textContent=cycleName+". Using "+fig+" mpg, estimated from the combined figure. Official urban and extra-urban arrive with the VCA table.";
-  }
+  var src=row?(row[0]+" "+row[1]+" "+(row[2]||"")+" \u00b7 "+(row[8]||"official")):"typical, this model is not in the official table";
+  if(note) note.textContent=cycleName+". Using "+fig+(electric?" miles per kWh. ":" mpg. ")+src;
   if(window.car) car.kind=kind;
 }
 function refreshFuel(){
@@ -68,8 +64,7 @@ function wrapCosts(){
   window.costs=function(miles,secs){
     var pick=window.FUEL_PICK||"diesel";
     var P=window.PRICE||{};
-    var UK=4.54609;
-    var mins=(+secs||0)/60;
+    var UK=4.54609, mins=(+secs||0)/60;
     if(pick==="offpeak"||pick==="peak"){
       var mpk=cycleMpg("electric")||3.5;
       var rate=(pick==="offpeak"?(+P.offpeak||14):(+P.electric||26.32))/100;
@@ -78,8 +73,7 @@ function wrapCosts(){
     }
     var mpg=cycleMpg(pick);
     var ppl=((pick==="diesel"?P.diesel:P.petrol)||0)/100;
-    var ecoL=miles/Math.max(mpg,1)*UK;
-    var qL=miles/Math.max(mpg*0.8,1)*UK;
+    var ecoL=miles/Math.max(mpg,1)*UK, qL=miles/Math.max(mpg*0.8,1)*UK;
     return {ecoGBP:ecoL*ppl,quickGBP:qL*ppl,ecoMin:mins,quickMin:mins*0.88,ecoUse:ecoL.toFixed(1)+" L",quickUse:qL.toFixed(1)+" L"};
   };
   window.__fuelWrapped=true;

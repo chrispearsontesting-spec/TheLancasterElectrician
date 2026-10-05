@@ -46,6 +46,9 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .mode b{display:block;font-size:22px;margin-top:2px}
 .split{background:#171a20;border:1px solid var(--line);border-radius:12px;padding:10px 8px}
 .hide{display:none}
+.cycles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.cycle{border:1px solid rgba(255,255,255,.12);background:#171a20;color:#f3efe6;border-radius:12px;padding:10px 8px;font-weight:700}
+.cycle.on{border-color:#9fd8ff;background:#1a2733}
 .opts{display:flex;gap:8px;margin-top:10px}
 .opt{flex:1;display:flex;align-items:center;gap:8px;background:#171a20;border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);font-size:14px;font-weight:600}
 .opt input{width:18px;height:18px;accent-color:#9aa3b0;padding:0;margin:0}
@@ -69,8 +72,14 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <label>To</label>
 <input id="to" autocomplete="off" placeholder="Start typing a place"/>
 <div>
-  <label id="mpgLabel">Diesel</label>
-  <p class="muted" id="fuelNote">Using this car. Tap a price above to change fuel.</p>
+  <label id="mpgLabel">Economy</label>
+  <div class="cycles" id="cycles">
+    <button class="cycle" type="button" data-cycle="urban">Urban</button>
+    <button class="cycle" type="button" data-cycle="extra">Extra-urban</button>
+    <button class="cycle on" type="button" data-cycle="combined">Combined</button>
+    <button class="cycle" type="button" data-cycle="custom">Custom</button>
+  </div>
+  <p class="muted" id="fuelNote">Combined figure. Type a custom number if yours differs.</p>
   <input id="mpgOverride" type="number" step="0.1" value="38"/>
 </div>
 <div id="phevBox" class="hide">
@@ -135,7 +144,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <script src="./route-save.js"></script>
 <script src="./place-suggest.js"></script>
 <script src="./route-clear.js"></script>
-<script src="./fuel-pick.js?v=34"></script>
+<script src="./fuel-pick.js?v=35"></script>
 <script src="./compare.js?v=33"></script>
 <script>
 (function(){

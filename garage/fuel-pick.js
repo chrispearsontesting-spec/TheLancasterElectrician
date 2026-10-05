@@ -22,14 +22,13 @@ function mpgRow(){
 }
 function cycleMpg(kind){
   var box=document.getElementById("mpgOverride");
-  if(window.CYCLE==="custom"&&box&&+box.value) return +box.value;
   var row=mpgRow();
-  if(kind==="electric") return (row&&row[7])||3.5;
-  if(!row) return kind==="diesel"?45:kind==="petrol"?40:55;
-  var urban=row[4], extra=row[5], comb=row[6];
-  if(window.CYCLE==="urban") return urban||comb||45;
-  if(window.CYCLE==="extra") return extra||comb||45;
-  return comb||urban||extra||45;
+  if(!row) return (box&&+box.value)||(kind==="electric"?3.5:kind==="diesel"?45:40);
+  if(window.CYCLE==="custom"&&box&&+box.value) return +box.value;
+  if(kind==="electric") return row[7]||3.5;
+  if(window.CYCLE==="urban") return row[4]||row[6]||45;
+  if(window.CYCLE==="extra") return row[5]||row[6]||45;
+  return row[6]||row[4]||row[5]||45;
 }
 function markCycles(){
   var nodes=document.querySelectorAll(".cycle");
@@ -38,26 +37,35 @@ function markCycles(){
 function markFuel(){
   var cells=document.querySelectorAll(".pcell[data-fuel]");
   for(var i=0;i<cells.length;i++) cells[i].className="pcell"+(cells[i].getAttribute("data-fuel")===window.FUEL_PICK?" on":"");
-  markCycles();
   var pick=window.FUEL_PICK;
   var electric=pick==="offpeak"||pick==="peak";
   var kind=electric?"electric":pick;
-  var fig=cycleMpg(kind);
   var row=mpgRow();
+  var cycles=document.getElementById("cycles");
   var note=document.getElementById("fuelNote");
   var lab=document.getElementById("mpgLabel");
   var box=document.getElementById("mpgOverride");
-  if(box){ box.hidden=window.CYCLE!=="custom"; if(window.CYCLE!=="custom") box.value=String(fig); }
-  if(lab) lab.textContent=electric?"Miles per kWh":"Economy";
-  var cycleName={urban:"Urban",extra:"Extra-urban",combined:"Combined",custom:"Custom"}[window.CYCLE]||"Combined";
-  var src=row?(row[0]+" "+row[1]+" "+(row[2]||"")+" \u00b7 "+(row[8]||"official")):"typical, this model is not in the official table";
-  if(note) note.textContent=cycleName+". Using "+fig+(electric?" miles per kWh. ":" mpg. ")+src;
+  if(!row){
+    if(cycles) cycles.className="cycles hide";
+    window.CYCLE="custom";
+    if(lab) lab.textContent=electric?"Miles per kWh":"Miles per gallon";
+    if(box){ box.hidden=false; if(!+box.value) box.value=electric?"3.5":"40"; box.placeholder=electric?"e.g. 3.5":"e.g. 40"; }
+    if(note) note.textContent="Not in the UK table. Type the figure for this car.";
+  }else{
+    if(cycles) cycles.className="cycles";
+    markCycles();
+    var fig=cycleMpg(kind);
+    if(box){ box.hidden=window.CYCLE!=="custom"; if(window.CYCLE!=="custom") box.value=String(fig); }
+    if(lab) lab.textContent=electric?"Miles per kWh":"Economy";
+    var cycleName={urban:"Urban",extra:"Extra-urban",combined:"Combined",custom:"Custom"}[window.CYCLE]||"Combined";
+    if(note) note.textContent=cycleName+". Using "+fig+(electric?" miles per kWh. ":" mpg. ")+row[0]+" "+row[1]+" "+(row[2]||"")+" \u00b7 "+(row[8]||"official");
+  }
   if(window.car) car.kind=kind;
 }
 function refreshFuel(){
   if(window.lastTrip&&typeof paintResult==="function") paintResult(lastTrip.title,lastTrip.oneMiles||lastTrip.miles,lastTrip.oneSecs||lastTrip.secs,lastTrip.roads);
 }
-function pickFuel(kind){ window.FUEL_PICK=kind; markFuel(); refreshFuel(); }
+function pickFuel(kind){ window.FUEL_PICK=kind; if(window.CYCLE==="custom") window.CYCLE="combined"; markFuel(); refreshFuel(); }
 function pickCycle(cycle){ window.CYCLE=cycle; markFuel(); refreshFuel(); }
 function wrapCosts(){
   if(window.__fuelWrapped||typeof costs!=="function") return;

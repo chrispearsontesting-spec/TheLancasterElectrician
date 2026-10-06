@@ -48,7 +48,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">Enter the plate. Make, model, fuel and engine size come from MOT. Trim is not guessed.</p>
+<p class="sub">Make, model, fuel and engine size come from MOT. The litre figure is worked out from that size.</p>
 <label>Registration</label>
 <input id="plate" type="text" value="" placeholder="AB12 CDE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"/>
 <button class="btn" type="button" id="go" data-ico="search">Look up</button>
@@ -56,7 +56,6 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <div class="card hide" id="resultCard">
   <b id="carName">—</b>
   <p class="muted" id="carMeta"></p>
-  <div class="acc"><button type="button" class="accBtn"><span class="lab">Safety and tax</span><span class="chev">+</span></button><div class="accBody" id="ratings"></div></div>
   <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT work, last 5 years</span><span class="count" id="motJobCount"></span><span class="chev">+</span></button><div class="accBody" id="motJobs"><p class="muted">Major fails that later passed, plus items to check from the latest test.</p></div></div>
   <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT history</span><span class="count" id="motHistCount"></span><span class="chev">+</span></button><div class="accBody"><div id="motMajors"></div><div id="motBox"><p class="muted">Official tests load here.</p></div><span id="motMajorCount" hidden>0</span><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Official MOT site</a></div></div>
   <div class="acc"><button type="button" class="accBtn"><span class="lab">What to look for</span><span class="count" id="faultCount"></span><span class="chev">+</span></button><div class="accBody" id="faults"></div></div>
@@ -162,23 +161,27 @@ function faultBlock(f,pack){
   var pri={high:"High",med:"Medium",low:"Low"}[f.s]||f.s;
   return "<div class='fault'><button type='button' class='faultBtn'><span class='tag "+f.s+"'>"+pri+"</span>"+f.t+"</button><div class='more'><p>"+(f.d||"")+"</p><p><b>When it is due.</b> "+(adv.interval||"")+"</p><p><b>What to ask for.</b> "+(adv.detail||"")+"</p><a class='btn grey' href='"+href+"'>Likely cost</a></div></div>";
 }
+function litres(cc){
+  var n=parseInt(cc,10);
+  if(!n||n<500)return "";
+  return (Math.round(n/100)/10).toFixed(1).replace(/\.0$/,"")+" litre";
+}
 function paint(car){
   var classic=findClassic(car.name);
   var year=car.year||null;
-  var pack=matchFault(car.name,year)||eraPack(year,car.fuel)||eraPack(classic?classic[2]:null,car.fuel)||{};
+  if(classic&&year&&(year<classic[2]||year>classic[3]))classic=null;
+  var pack=matchFault(car.name,year)||eraPack(year,car.fuel)||{};
   var title=car.name||"Car";
-  if(pack.k&&pack.name)title=pack.name;
-  else if(classic){title=cap(classic[0]+" "+classic[1]);if(classic[2])title+=" ("+classic[2]+"-"+classic[3]+")"}
+  if(!car.name&&pack.k&&pack.name)title=pack.name;
+  else if(!car.name&&classic){title=cap(classic[0]+" "+classic[1]);if(classic[2])title+=" ("+classic[2]+"-"+classic[3]+")"}
   current={name:car.name,plate:car.plate,year:year,title:title,fuel:car.fuel};
   $("carName").textContent=title;
   var meta=[];
   if(car.plate)meta.push(car.plate);
-  if(car.engine)meta.push(car.engine+" cc");
+  if(car.engine)meta.push(litres(car.engine)+" \u00b7 "+car.engine+" cc");
   if(car.fuel)meta.push(car.fuel);
   if(year)meta.push(year);
-  else if(pack.engine)meta.push(pack.engine);
   $("carMeta").textContent=meta.join(" \u00b7 ");
-  if(window.ratingsHtml)$("ratings").innerHTML=window.ratingsHtml(title,year,car.fuel,car.plate);
   var faults=pack.faults||[];
   $("faults").innerHTML=faults.map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>Generic checks still apply.</p>";
   $("faultCount").textContent=faults.length?String(faults.length):"";

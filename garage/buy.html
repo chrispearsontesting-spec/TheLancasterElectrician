@@ -17,6 +17,9 @@ input[type=text],input[type=number],select{width:100%;background:#171a20;border:
 .btn{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:18px;padding:14px 16px;font-weight:600;margin-top:8px;background:#1c1c1e;color:var(--ink);text-align:left;text-decoration:none}
 .grey{background:#1c1c1e;color:var(--ink)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmpGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmpCol{background:#171a20;border-radius:12px;padding:10px}
+.win{color:#d7b56d;font-weight:700}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
 .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;margin-right:8px}
 .high{background:#5b1d1d;color:#fecaca}
@@ -70,15 +73,23 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <div class="acc" id="compareCard">
     <button type="button" class="accBtn"><span class="lab">Compare cars</span><span class="chev">+</span></button>
     <div class="accBody">
-      <p class="muted">Enter two plates. Fuel is taken from MOT. Miles per gallon fills when the official table has that model. Otherwise type it.</p>
-      <label>First plate</label>
-      <div class="row"><input id="cmpAPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/><button class="btn grey" type="button" id="cmpAGo">Find</button></div>
-      <p class="muted" id="cmpAName"></p>
-      <input id="cmpAMpg" type="number" inputmode="decimal" placeholder="Miles per gallon, or miles per kWh"/>
-      <label>Second plate</label>
-      <div class="row"><input id="cmpBPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/><button class="btn grey" type="button" id="cmpBGo">Find</button></div>
-      <p class="muted" id="cmpBName"></p>
-      <input id="cmpBMpg" type="number" inputmode="decimal" placeholder="Miles per gallon, or miles per kWh"/>
+      <p class="muted">Two plates. Fuel comes from MOT. Combined economy fills only when the table agrees. Otherwise a box appears.</p>
+      <div class="cmpGrid">
+        <div>
+          <label>First plate</label>
+          <input id="cmpAPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/>
+          <button class="btn grey" type="button" id="cmpAGo">Find</button>
+          <p class="muted" id="cmpAName"></p>
+          <input id="cmpAMpg" class="hide" type="number" inputmode="decimal" placeholder="Miles per gallon"/>
+        </div>
+        <div>
+          <label>Second plate</label>
+          <input id="cmpBPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/>
+          <button class="btn grey" type="button" id="cmpBGo">Find</button>
+          <p class="muted" id="cmpBName"></p>
+          <input id="cmpBMpg" class="hide" type="number" inputmode="decimal" placeholder="Miles per gallon"/>
+        </div>
+      </div>
       <button class="btn grey" type="button" id="cmpGo">Compare</button>
       <div id="compareBody"></div>
     </div>
@@ -264,24 +275,30 @@ function fuelKey(fuel){
   if(f.indexOf("diesel")>=0) return "diesel";
   return "petrol";
 }
-function officialMpg(name,fuel){
-  var list=window.MPG_UK||[], hay=String(name||"").toLowerCase(), best=null, score=0, i;
-  var want=String(fuel||"").toLowerCase();
+function sureMpg(name,fuel){
+  var list=window.MPG_UK||[], hay=String(name||"").toLowerCase(), want=String(fuel||"").toLowerCase();
+  var hits=[], i;
   for(i=0;i<list.length;i++){
-    var row=list[i], model=String(row[1]||"").toLowerCase();
+    var row=list[i], make=String(row[0]||"").toLowerCase(), model=String(row[1]||"").toLowerCase();
     if(model.length<3||hay.indexOf(model)<0) continue;
-    var pts=model.length;
-    if(hay.indexOf(String(row[0]||"").toLowerCase())>=0) pts+=20;
-    if(want && String(row[3]||"").toLowerCase().indexOf(want.slice(0,4))>=0) pts+=25;
-    if(pts>score){best=row;score=pts}
+    if(make && hay.indexOf(make)<0) continue;
+    var rf=String(row[3]||"").toLowerCase();
+    if(want && rf.indexOf(want.slice(0,4))<0) continue;
+    var fig=want==="electric" ? row[7] : row[6];
+    if(fig) hits.push(+fig);
   }
-  return score>=10 && best && best[6] ? best[6] : "";
+  if(!hits.length) return null;
+  hits.sort(function(a,b){return a-b});
+  var mid=hits[Math.floor(hits.length/2)];
+  var close=hits.filter(function(n){return Math.abs(n-mid)/mid<0.12});
+  if(close.length<Math.max(1,Math.ceil(hits.length*0.6))) return null;
+  return Math.round(mid*10)/10;
 }
 function monthCost(mpg,fuel){
   var P=window.PRICE||{petrol:174.8,diesel:199.9,electric:26.32,offpeak:14};
   var f=String(fuel||"petrol").toLowerCase();
-  if(f.indexOf("elect")>=0 && f.indexOf("hybrid")<0) return 1000/Math.max(+mpg||3.5,0.4)*((+P.offpeak||14)/100);
-  var ppl=(f.indexOf("diesel")>=0?P.diesel:P.petrol)||0;
+  if(f==="electric") return 1000/Math.max(+mpg||3.5,0.4)*((+P.offpeak||14)/100);
+  var ppl=(f==="diesel"?P.diesel:P.petrol)||0;
   return 1000/Math.max(+mpg||1,1)*4.54609*(ppl/100);
 }
 var cmpCars={a:{fuel:"petrol",name:""},b:{fuel:"petrol",name:""}};
@@ -290,36 +307,44 @@ function fillCompare(car){
   $("cmpAPlate").value=car.plate;
   findCompare("a");
 }
+function sideId(side){return side.toUpperCase()}
 function findCompare(side){
-  var plate=$("cmp"+side.toUpperCase()+"Plate").value.trim();
-  var nameEl=$("cmp"+side.toUpperCase()+"Name");
-  var mpgEl=$("cmp"+side.toUpperCase()+"Mpg");
+  var plate=$("cmp"+sideId(side)+"Plate").value.trim();
+  var nameEl=$("cmp"+sideId(side)+"Name");
+  var mpgEl=$("cmp"+sideId(side)+"Mpg");
   if(!plate){nameEl.textContent="Enter a plate.";return}
-  nameEl.textContent="Looking up MOT…";
+  nameEl.textContent="Looking up…";
   window.fetchMotVehicle(plate).then(function(info){
-    if(!info||!info.name){nameEl.textContent="No MOT match.";return}
+    if(!info||!info.name){nameEl.textContent="No MOT match.";mpgEl.className="hide";return}
     var fuel=fuelKey(info.fuel||guessFuel(info.name));
-    cmpCars[side]={fuel:fuel,name:info.name,plate:plate};
-    var mpg=officialMpg(info.name,fuel);
-    if(mpg) mpgEl.value=mpg;
-    nameEl.textContent=info.name+" · "+fuel+(info.engine?" · "+info.engine+" cc":"")+(mpg?"":" · type the economy");
+    var mpg=sureMpg(info.name,fuel);
+    cmpCars[side]={fuel:fuel,name:info.name,plate:plate,mpg:mpg};
+    if(mpg){
+      mpgEl.value=mpg;
+      mpgEl.className="hide";
+      nameEl.textContent=info.name+" · "+fuel+" · "+mpg+(fuel==="electric"?" miles/kWh":" mpg");
+    }else{
+      mpgEl.value="";
+      mpgEl.className="";
+      mpgEl.placeholder=fuel==="electric"?"Miles per kWh":"Miles per gallon";
+      nameEl.textContent=info.name+" · "+fuel+" · type the figure";
+    }
   });
 }
 function runCompare(){
+  ["a","b"].forEach(function(side){
+    var el=$("cmp"+sideId(side)+"Mpg");
+    if(el && el.value) cmpCars[side].mpg=+el.value;
+  });
   var a=cmpCars.a, b=cmpCars.b;
   if(!a.name||!b.name){$("compareBody").innerHTML="<p class='muted'>Find both plates first.</p>";return}
-  if(!$("cmpAMpg").value||!$("cmpBMpg").value){$("compareBody").innerHTML="<p class='muted'>Enter the economy for any car the table does not know.</p>";return}
-  var ac=monthCost($("cmpAMpg").value,a.fuel);
-  var bc=monthCost($("cmpBMpg").value,b.fuel);
-  var gap=Math.abs(ac-bc);
-  $("compareBody").innerHTML=
-    "<div class='crow'><span>"+a.name+" / month</span><b>£"+ac.toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>A year</span><b>£"+(ac*12).toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>"+b.name+" / month</span><b>£"+bc.toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>A year</span><b>£"+(bc*12).toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>Save with "+(ac<=bc?a.name:b.name)+"</span><b>£"+gap.toFixed(0)+" / month</b></div>"+
-    "<div class='crow'><span>A year</span><b>£"+(gap*12).toFixed(0)+"</b></div>"+
-    "<p class='muted'>1,000 miles a month. Fuel type comes from MOT. Electric uses the night rate.</p>";
+  if(!a.mpg||!b.mpg){$("compareBody").innerHTML="<p class='muted'>Enter the figure where the box is showing.</p>";return}
+  var ac=monthCost(a.mpg,a.fuel), bc=monthCost(b.mpg,b.fuel);
+  var gap=Math.abs(ac-bc), winner=ac<=bc?a:b;
+  function col(car,cost){
+    return "<div class='cmpCol'><b>"+car.name+"</b><p class='muted'>"+car.fuel+" · "+car.mpg+(car.fuel==="electric"?" miles/kWh":" mpg")+"</p><div class='crow'><span>Month</span><b>£"+cost.toFixed(0)+"</b></div><div class='crow'><span>Year</span><b>£"+(cost*12).toFixed(0)+"</b></div></div>";
+  }
+  $("compareBody").innerHTML="<div class='cmpGrid' style='margin-top:12px'>"+col(a,ac)+col(b,bc)+"</div><p class='win'>"+winner.name+" saves £"+gap.toFixed(0)+" a month, £"+(gap*12).toFixed(0)+" a year.</p><p class='muted'>1,000 miles a month. Electric uses the night rate.</p>";
 }
 $("cmpAGo").onclick=function(){findCompare("a")};
 $("cmpBGo").onclick=function(){findCompare("b")};

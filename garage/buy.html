@@ -66,24 +66,23 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <a class="btn grey" id="parts" data-ico="box" href="#" target="_blank" rel="noopener">Parts</a>
 </div>
 <button class="btn grey hide" type="button" id="saveBtn" data-ico="save">Save this car</button>
-<div class="card" id="compareCard">
-  <b>Compare two cars</b>
-  <p class="muted">1,000 miles a month. Uses each car's fuel and the miles per gallon you enter, or the official combined figure when we have one.</p>
-  <label>This car</label>
-  <input id="cmpAName" type="text" placeholder="Audi A4"/>
-  <div class="row">
-    <select id="cmpAFuel"><option>petrol</option><option>diesel</option><option>electric</option></select>
-    <input id="cmpAMpg" type="number" inputmode="decimal" placeholder="mpg or miles/kWh"/>
+<div class="card">
+  <div class="acc" id="compareCard">
+    <button type="button" class="accBtn"><span class="lab">Compare cars</span><span class="chev">+</span></button>
+    <div class="accBody">
+      <p class="muted">Enter two plates. Fuel is taken from MOT. Miles per gallon fills when the official table has that model. Otherwise type it.</p>
+      <label>First plate</label>
+      <div class="row"><input id="cmpAPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/><button class="btn grey" type="button" id="cmpAGo">Find</button></div>
+      <p class="muted" id="cmpAName"></p>
+      <input id="cmpAMpg" type="number" inputmode="decimal" placeholder="Miles per gallon, or miles per kWh"/>
+      <label>Second plate</label>
+      <div class="row"><input id="cmpBPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/><button class="btn grey" type="button" id="cmpBGo">Find</button></div>
+      <p class="muted" id="cmpBName"></p>
+      <input id="cmpBMpg" type="number" inputmode="decimal" placeholder="Miles per gallon, or miles per kWh"/>
+      <button class="btn grey" type="button" id="cmpGo">Compare</button>
+      <div id="compareBody"></div>
+    </div>
   </div>
-  <label>Second car</label>
-  <select id="cmpBPick"><option value="">Saved car, or type below</option></select>
-  <input id="cmpBName" type="text" placeholder="Second car"/>
-  <div class="row">
-    <select id="cmpBFuel"><option>petrol</option><option>diesel</option><option>electric</option></select>
-    <input id="cmpBMpg" type="number" inputmode="decimal" placeholder="mpg or miles/kWh"/>
-  </div>
-  <button class="btn grey" type="button" id="cmpGo">Compare</button>
-  <div id="compareBody"></div>
 </div>
 <div class="card saved">
   <div class="acc open"><button type="button" class="accBtn"><span class="lab">Saved cars</span><span class="chev">+</span></button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Viewing page</a></div></div>
@@ -259,6 +258,12 @@ document.addEventListener("click",function(e){
   box.className=box.className.indexOf("open")>=0?"fault":"fault open";
 });
 
+function fuelKey(fuel){
+  var f=String(fuel||"").toLowerCase();
+  if(f.indexOf("elect")>=0 && f.indexOf("hybrid")<0) return "electric";
+  if(f.indexOf("diesel")>=0) return "diesel";
+  return "petrol";
+}
 function officialMpg(name,fuel){
   var list=window.MPG_UK||[], hay=String(name||"").toLowerCase(), best=null, score=0, i;
   var want=String(fuel||"").toLowerCase();
@@ -275,50 +280,50 @@ function officialMpg(name,fuel){
 function monthCost(mpg,fuel){
   var P=window.PRICE||{petrol:174.8,diesel:199.9,electric:26.32,offpeak:14};
   var f=String(fuel||"petrol").toLowerCase();
-  if(f.indexOf("elect")>=0) return 1000/Math.max(+mpg||3.5,0.4)*((+P.offpeak||14)/100);
+  if(f.indexOf("elect")>=0 && f.indexOf("hybrid")<0) return 1000/Math.max(+mpg||3.5,0.4)*((+P.offpeak||14)/100);
   var ppl=(f.indexOf("diesel")>=0?P.diesel:P.petrol)||0;
   return 1000/Math.max(+mpg||1,1)*4.54609*(ppl/100);
 }
+var cmpCars={a:{fuel:"petrol",name:""},b:{fuel:"petrol",name:""}};
 function fillCompare(car){
-  if(!$("cmpAName")) return;
-  if(car&&car.name){
-    $("cmpAName").value=car.name;
-    var fuel=String(car.fuel||"petrol").toLowerCase();
-    $("cmpAFuel").value=fuel.indexOf("diesel")>=0?"diesel":fuel.indexOf("elect")>=0?"electric":"petrol";
-    var mpg=officialMpg(car.name,$("cmpAFuel").value);
-    if(mpg) $("cmpAMpg").value=mpg;
-  }
-  var list=loadView(), pick=$("cmpBPick"), prev=pick.value;
-  pick.innerHTML="<option value=''>Saved car, or type below</option>"+list.map(function(c,i){
-    return "<option value='"+i+"'>"+(c.name||"Car")+(c.plate?" · "+c.plate:"")+"</option>";
-  }).join("");
-  if(prev) pick.value=prev;
+  if(!car||!car.plate||!$("cmpAPlate")) return;
+  $("cmpAPlate").value=car.plate;
+  findCompare("a");
+}
+function findCompare(side){
+  var plate=$("cmp"+side.toUpperCase()+"Plate").value.trim();
+  var nameEl=$("cmp"+side.toUpperCase()+"Name");
+  var mpgEl=$("cmp"+side.toUpperCase()+"Mpg");
+  if(!plate){nameEl.textContent="Enter a plate.";return}
+  nameEl.textContent="Looking up MOT…";
+  window.fetchMotVehicle(plate).then(function(info){
+    if(!info||!info.name){nameEl.textContent="No MOT match.";return}
+    var fuel=fuelKey(info.fuel||guessFuel(info.name));
+    cmpCars[side]={fuel:fuel,name:info.name,plate:plate};
+    var mpg=officialMpg(info.name,fuel);
+    if(mpg) mpgEl.value=mpg;
+    nameEl.textContent=info.name+" · "+fuel+(info.engine?" · "+info.engine+" cc":"")+(mpg?"":" · type the economy");
+  });
 }
 function runCompare(){
-  var a=monthCost($("cmpAMpg").value,$("cmpAFuel").value);
-  var b=monthCost($("cmpBMpg").value,$("cmpBFuel").value);
-  if(!$("cmpAMpg").value||!$("cmpBMpg").value){$("compareBody").innerHTML="<p class='muted'>Enter a miles per gallon figure for both cars. Electric uses miles per kWh.</p>";return}
-  var save=b-a;
-  var who=save>0?$("cmpAName").value||"This car":$("cmpBName").value||"Second car";
+  var a=cmpCars.a, b=cmpCars.b;
+  if(!a.name||!b.name){$("compareBody").innerHTML="<p class='muted'>Find both plates first.</p>";return}
+  if(!$("cmpAMpg").value||!$("cmpBMpg").value){$("compareBody").innerHTML="<p class='muted'>Enter the economy for any car the table does not know.</p>";return}
+  var ac=monthCost($("cmpAMpg").value,a.fuel);
+  var bc=monthCost($("cmpBMpg").value,b.fuel);
+  var gap=Math.abs(ac-bc);
   $("compareBody").innerHTML=
-    "<div class='crow'><span>"+($("cmpAName").value||"This car")+" / month</span><b>£"+a.toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>A year</span><b>£"+(a*12).toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>"+($("cmpBName").value||"Second car")+" / month</span><b>£"+b.toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>A year</span><b>£"+(b*12).toFixed(0)+"</b></div>"+
-    "<div class='crow'><span>Save with "+who+"</span><b>£"+Math.abs(save).toFixed(0)+" / month</b></div>"+
-    "<div class='crow'><span>A year</span><b>£"+Math.abs(save*12).toFixed(0)+"</b></div>"+
-    "<p class='muted'>1,000 miles a month. Electric uses the night rate. Petrol and diesel use today's price.</p>";
+    "<div class='crow'><span>"+a.name+" / month</span><b>£"+ac.toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>A year</span><b>£"+(ac*12).toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>"+b.name+" / month</span><b>£"+bc.toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>A year</span><b>£"+(bc*12).toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>Save with "+(ac<=bc?a.name:b.name)+"</span><b>£"+gap.toFixed(0)+" / month</b></div>"+
+    "<div class='crow'><span>A year</span><b>£"+(gap*12).toFixed(0)+"</b></div>"+
+    "<p class='muted'>1,000 miles a month. Fuel type comes from MOT. Electric uses the night rate.</p>";
 }
+$("cmpAGo").onclick=function(){findCompare("a")};
+$("cmpBGo").onclick=function(){findCompare("b")};
 $("cmpGo").onclick=runCompare;
-$("cmpBPick").onchange=function(){
-  var list=loadView(), row=list[this.value];
-  if(!row) return;
-  $("cmpBName").value=row.name||"";
-  var fuel=String(row.fuel||"petrol").toLowerCase();
-  $("cmpBFuel").value=fuel.indexOf("diesel")>=0?"diesel":fuel.indexOf("elect")>=0?"electric":"petrol";
-  var mpg=officialMpg(row.name,$("cmpBFuel").value);
-  if(mpg) $("cmpBMpg").value=mpg;
-};
 
 $("go").onclick=run;
 $("saveBtn").onclick=function(){

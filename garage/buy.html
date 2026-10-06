@@ -89,7 +89,9 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="ratings-ui.js"></script>
 <script src="mot-config.js"></script>
 <script src="mot-jobs.js"></script>
-<script src="mot-client.js"></script>
+<script src="mpg-uk.js?v=36"></script>
+<script src="trim.js?v=38"></script>
+<script src="mot-client.js?v=38"></script>
 <script src="./icons.js?v=28"></script>
 <script src="./compare.js?v=31"></script>
 <script>
@@ -171,9 +173,12 @@ function paint(car){
   $("carName").textContent=title;
   var meta=[];
   if(car.plate)meta.push(car.plate);
-  if(pack.engine)meta.push(pack.engine);
+  if(car.trim&&car.trim.desc)meta.push(car.trim.desc);
+  if(car.engine)meta.push(car.engine+" cc");
+  if(car.trim&&car.trim.mpg)meta.push(car.trim.mpg+" mpg combined");
+  else if(pack.engine)meta.push(pack.engine);
   else if(car.fuel)meta.push(car.fuel);
-  if(year)meta.push("reg ~"+year);
+  if(year)meta.push(year);
   $("carMeta").textContent=meta.join(" \u00b7 ");
   if(window.ratingsHtml)$("ratings").innerHTML=window.ratingsHtml(title,year,car.fuel,car.plate);
   var faults=pack.faults||[];
@@ -205,7 +210,9 @@ function run(){
     if(!name){$("status").textContent="No MOT match for that plate.";paintSaved();return}
     var fuel=guessFuel((info&&info.fuel?info.fuel+" ":"")+name);
     var year=(info&&info.year)||yearGuess;
-    paint({name:name,plate:plate,fuel:fuel,year:year});
+    var trim=window.trimFor?trimFor(info):null;
+    if(trim&&trim.badge && name.toUpperCase().indexOf(trim.badge)<0) name=name+" "+trim.badge;
+    paint({name:name,plate:plate,fuel:fuel,year:year,engine:info&&info.engine,trim:trim});
     if(window.loadMotHistory) window.loadMotHistory(plate);
   });
 }

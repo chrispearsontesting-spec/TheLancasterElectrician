@@ -85,8 +85,14 @@ function btns(list){
     return "<a class='btn' href='"+b.href+"'>"+b.lab+"</a>";
   }).join("")+"</div>";
 }
+function mark(iso){
+  var d=daysLeft(iso);
+  if(d==null) return "";
+  if(d<=31) return "<span class='mark bad'>\u2715</span>";
+  return "<span class='mark ok'>\u2713</span>";
+}
 function row(title,iso,extra,buttons){
-  return "<div class='item"+tone(iso)+"'><div><h3>"+title+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
@@ -104,7 +110,7 @@ function paint(){
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?"":"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item'><div><h3>Tyres</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";
+    "<div class='item"+(tl!=null&&tl<=15?" cFlash":"")+"'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";
 }
 function savePic(f){
   if(!f)return;

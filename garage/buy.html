@@ -92,7 +92,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="trim.js?v=38"></script>
 <script src="mot-client.js?v=38"></script>
 <script src="./icons.js?v=28"></script>
-<script src="./compare.js?v=31"></script>
+<script src="./compare.js?v=39"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function loadView(){try{return JSON.parse(localStorage.getItem("gt.viewings.v1")||"[]")}catch(e){return []}}
@@ -214,6 +214,7 @@ function paint(car){
   $("actionRow").classList.remove("hide");
   $("saveBtn").classList.remove("hide");
   paintSaved();
+  if(window.paintCompare) window.paintCompare(10);
   if(window.dipstickIcons) window.dipstickIcons();
 }
 function run(){

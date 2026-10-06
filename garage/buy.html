@@ -182,10 +182,26 @@ function paint(car){
   if(car.fuel)meta.push(car.fuel);
   if(year)meta.push(year);
   $("carMeta").textContent=meta.join(" \u00b7 ");
-  var faults=pack.faults||[];
-  $("faults").innerHTML=faults.map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>Generic checks still apply.</p>";
+  function smallEngine(car){
+    var cc=parseInt(car.engine,10)||0;
+    var name=String(car.name||"").toLowerCase();
+    if(/ecoboost|puretech|1\.0|1\.2/.test(name)) return true;
+    return cc>=900 && cc<=1300;
+  }
+  function relevant(f){
+    var blob=((f.t||"")+" "+(f.d||"")).toLowerCase();
+    if(blob.indexOf("wet belt")<0 && blob.indexOf("1.0")<0 && blob.indexOf("1.2")<0 && blob.indexOf("puretech")<0) return true;
+    return smallEngine(car);
+  }
+  var faults=(pack.faults||[]).filter(relevant);
+  $("faults").innerHTML=faults.map(function(f){return faultBlock(f,pack)}).join("")||"<p class='muted'>No model-specific faults for this engine. Check history, leaks and warning lights.</p>";
   $("faultCount").textContent=faults.length?String(faults.length):"";
-  $("dues").innerHTML=(pack.due||[]).map(function(x){return "<li>"+x+"</li>"}).join("")||"<li>Full service history and cambelt / chain proof.</li>";
+  var dues=(pack.due||[]).filter(function(x){
+    var s=String(x).toLowerCase();
+    if(s.indexOf("wet")<0 && s.indexOf("1.0")<0 && s.indexOf("1.2")<0) return true;
+    return smallEngine(car);
+  });
+  $("dues").innerHTML=dues.map(function(x){return "<li>"+x+"</li>"}).join("")||"<li>Full service history and cambelt or chain proof, if this engine uses one.</li>";
   var views=(year&&year<2001&&window.VIEW_CHECKS_CLASSIC)?window.VIEW_CHECKS_CLASSIC:(window.VIEW_CHECKS||[]);
   $("views").innerHTML=views.map(function(x){return "<li>"+x+"</li>"}).join("");
   var q=classic?(classic[0]+" "+classic[1]):car.name;

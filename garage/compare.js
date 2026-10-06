@@ -34,5 +34,5 @@ if(typeof paintResult==="function"){
     paintCompare(miles);
   };
 }
-if(document.getElementById("compareBody")) paintCompare(10);
+if(document.getElementById("compareBody")&&!document.getElementById("cmpGo")) paintCompare(10);
 window.paintCompare=paintCompare;

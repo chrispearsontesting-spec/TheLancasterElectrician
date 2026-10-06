@@ -13,7 +13,7 @@ body{margin:0 auto;max-width:480px;background:var(--bg);color:var(--ink);font-fa
 h1{font-size:22px;margin:0 0 4px}
 .sub{color:var(--dim);font-size:13px;margin:0 0 14px}
 label{display:block;color:var(--dim);font-size:12px;margin:8px 0 4px}
-input[type=text]{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:11px;font-size:16px}
+input[type=text],input[type=number],select{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:11px;font-size:16px}
 .btn{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:18px;padding:14px 16px;font-weight:600;margin-top:8px;background:#1c1c1e;color:var(--ink);text-align:left;text-decoration:none}
 .grey{background:#1c1c1e;color:var(--ink)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -67,8 +67,22 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 </div>
 <button class="btn grey hide" type="button" id="saveBtn" data-ico="save">Save this car</button>
 <div class="card" id="compareCard">
-  <b>Running cost compare</b>
-  <p class="muted">Ten miles at today's prices. Same figures appear on a real route.</p>
+  <b>Compare two cars</b>
+  <p class="muted">1,000 miles a month. Uses each car's fuel and the miles per gallon you enter, or the official combined figure when we have one.</p>
+  <label>This car</label>
+  <input id="cmpAName" type="text" placeholder="Audi A4"/>
+  <div class="row">
+    <select id="cmpAFuel"><option>petrol</option><option>diesel</option><option>electric</option></select>
+    <input id="cmpAMpg" type="number" inputmode="decimal" placeholder="mpg or miles/kWh"/>
+  </div>
+  <label>Second car</label>
+  <select id="cmpBPick"><option value="">Saved car, or type below</option></select>
+  <input id="cmpBName" type="text" placeholder="Second car"/>
+  <div class="row">
+    <select id="cmpBFuel"><option>petrol</option><option>diesel</option><option>electric</option></select>
+    <input id="cmpBMpg" type="number" inputmode="decimal" placeholder="mpg or miles/kWh"/>
+  </div>
+  <button class="btn grey" type="button" id="cmpGo">Compare</button>
   <div id="compareBody"></div>
 </div>
 <div class="card saved">
@@ -214,7 +228,7 @@ function paint(car){
   $("actionRow").classList.remove("hide");
   $("saveBtn").classList.remove("hide");
   paintSaved();
-  if(window.paintCompare) window.paintCompare(10);
+  if(window.fillCompare) window.fillCompare(car);
   if(window.dipstickIcons) window.dipstickIcons();
 }
 function run(){
@@ -244,6 +258,68 @@ document.addEventListener("click",function(e){
   var box=b.parentNode;
   box.className=box.className.indexOf("open")>=0?"fault":"fault open";
 });
+
+function officialMpg(name,fuel){
+  var list=window.MPG_UK||[], hay=String(name||"").toLowerCase(), best=null, score=0, i;
+  var want=String(fuel||"").toLowerCase();
+  for(i=0;i<list.length;i++){
+    var row=list[i], model=String(row[1]||"").toLowerCase();
+    if(model.length<3||hay.indexOf(model)<0) continue;
+    var pts=model.length;
+    if(hay.indexOf(String(row[0]||"").toLowerCase())>=0) pts+=20;
+    if(want && String(row[3]||"").toLowerCase().indexOf(want.slice(0,4))>=0) pts+=25;
+    if(pts>score){best=row;score=pts}
+  }
+  return score>=10 && best && best[6] ? best[6] : "";
+}
+function monthCost(mpg,fuel){
+  var P=window.PRICE||{petrol:174.8,diesel:199.9,electric:26.32,offpeak:14};
+  var f=String(fuel||"petrol").toLowerCase();
+  if(f.indexOf("elect")>=0) return 1000/Math.max(+mpg||3.5,0.4)*((+P.offpeak||14)/100);
+  var ppl=(f.indexOf("diesel")>=0?P.diesel:P.petrol)||0;
+  return 1000/Math.max(+mpg||1,1)*4.54609*(ppl/100);
+}
+function fillCompare(car){
+  if(!$("cmpAName")) return;
+  if(car&&car.name){
+    $("cmpAName").value=car.name;
+    var fuel=String(car.fuel||"petrol").toLowerCase();
+    $("cmpAFuel").value=fuel.indexOf("diesel")>=0?"diesel":fuel.indexOf("elect")>=0?"electric":"petrol";
+    var mpg=officialMpg(car.name,$("cmpAFuel").value);
+    if(mpg) $("cmpAMpg").value=mpg;
+  }
+  var list=loadView(), pick=$("cmpBPick"), prev=pick.value;
+  pick.innerHTML="<option value=''>Saved car, or type below</option>"+list.map(function(c,i){
+    return "<option value='"+i+"'>"+(c.name||"Car")+(c.plate?" · "+c.plate:"")+"</option>";
+  }).join("");
+  if(prev) pick.value=prev;
+}
+function runCompare(){
+  var a=monthCost($("cmpAMpg").value,$("cmpAFuel").value);
+  var b=monthCost($("cmpBMpg").value,$("cmpBFuel").value);
+  if(!$("cmpAMpg").value||!$("cmpBMpg").value){$("compareBody").innerHTML="<p class='muted'>Enter a miles per gallon figure for both cars. Electric uses miles per kWh.</p>";return}
+  var save=b-a;
+  var who=save>0?$("cmpAName").value||"This car":$("cmpBName").value||"Second car";
+  $("compareBody").innerHTML=
+    "<div class='crow'><span>"+($("cmpAName").value||"This car")+" / month</span><b>£"+a.toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>A year</span><b>£"+(a*12).toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>"+($("cmpBName").value||"Second car")+" / month</span><b>£"+b.toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>A year</span><b>£"+(b*12).toFixed(0)+"</b></div>"+
+    "<div class='crow'><span>Save with "+who+"</span><b>£"+Math.abs(save).toFixed(0)+" / month</b></div>"+
+    "<div class='crow'><span>A year</span><b>£"+Math.abs(save*12).toFixed(0)+"</b></div>"+
+    "<p class='muted'>1,000 miles a month. Electric uses the night rate. Petrol and diesel use today's price.</p>";
+}
+$("cmpGo").onclick=runCompare;
+$("cmpBPick").onchange=function(){
+  var list=loadView(), row=list[this.value];
+  if(!row) return;
+  $("cmpBName").value=row.name||"";
+  var fuel=String(row.fuel||"petrol").toLowerCase();
+  $("cmpBFuel").value=fuel.indexOf("diesel")>=0?"diesel":fuel.indexOf("elect")>=0?"electric":"petrol";
+  var mpg=officialMpg(row.name,$("cmpBFuel").value);
+  if(mpg) $("cmpBMpg").value=mpg;
+};
+
 $("go").onclick=run;
 $("saveBtn").onclick=function(){
   if(!current.name)run();

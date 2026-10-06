@@ -17,9 +17,10 @@ input[type=text],input[type=number],select{width:100%;background:#171a20;border:
 .btn{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:18px;padding:14px 16px;font-weight:600;margin-top:8px;background:#1c1c1e;color:var(--ink);text-align:left;text-decoration:none}
 .grey{background:#1c1c1e;color:var(--ink)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cmpGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmpGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.cmpGrid .btn{margin-top:8px}
 .cmpCol{background:#171a20;border-radius:12px;padding:10px}
-.win{color:#d7b56d;font-weight:700}
+.win{color:#d7b56d;font-weight:700;margin:12px 0 4px}
 .card{background:#14161b;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
 .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;margin-right:8px}
 .high{background:#5b1d1d;color:#fecaca}
@@ -73,7 +74,6 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <div class="acc" id="compareCard">
     <button type="button" class="accBtn"><span class="lab">Compare cars</span><span class="chev">+</span></button>
     <div class="accBody">
-      <p class="muted">Two plates. Fuel comes from MOT. Combined economy fills only when the table agrees. Otherwise a box appears.</p>
       <div class="cmpGrid">
         <div>
           <label>First plate</label>
@@ -116,7 +116,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="trim.js?v=38"></script>
 <script src="mot-client.js?v=38"></script>
 <script src="./icons.js?v=28"></script>
-<script src="./compare.js?v=39"></script>
+<script src="./compare.js?v=40"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function loadView(){try{return JSON.parse(localStorage.getItem("gt.viewings.v1")||"[]")}catch(e){return []}}

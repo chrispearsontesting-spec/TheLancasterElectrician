@@ -84,20 +84,42 @@ function paint(){
     });
   });
   $("work").innerHTML=jobs.length?jobs.map(function(j){return "<div class='row'><div><b>"+j.date+"</b><p class='muted'>"+j.text+"</p></div><span class='tag fail'>Had to be fixed</span></div>"}).join("")+"<p class='muted'>A current MOT means these fails were put right.</p>":"<p class='muted'>No major fails in the last five years.</p>";
-  var advice={};
-  tests.forEach(function(t){
-    if(+yearOf(t)<cut) return;
-    defects(t).forEach(function(x){
-      if(isMajor(x)) return;
-      var s=textOf(x).toLowerCase();
-      var key=/tyre/.test(s)?"Tyres":/brake/.test(s)?"Brakes":/suspension|spring|arm|bush/.test(s)?"Suspension":/exhaust|corrosion/.test(s)?"Exhaust or corrosion":"";
-      if(key) advice[key]=textOf(x);
-    });
-  });
-  var future=Object.keys(advice).map(function(k){return "<div class='row'><div><b>"+k+"</b><p class='muted'>Advised, not a fail. Check it is done. "+advice[k]+"</p></div></div>"});
-  var age=tests.length?(new Date().getFullYear()-+(tests[tests.length-1].completedDate||"2010").slice(0,4)):0;
-  if(age>=5) future.push("<div class='row'><div><b>Service and belt</b><p class='muted'>Over five years of tests. Ask for the cambelt or chain invoice if the engine uses one. A full service is the usual next cost.</p></div></div>");
-  $("future").innerHTML=(future.join("")||"<p class='muted'>Nothing in the recent tests points to a likely bill.</p>")+"<p class='muted'>Likely, not a quote. It uses this car's own tests.</p>";
+  var latest=tests[0]||{};
+  var milesNow=parseInt(String(latest.odometerValue||"").replace(/[^0-9]/g,""),10)||0;
+  var firstYear=+(tests[tests.length-1].completedDate||"").slice(0,4)||new Date().getFullYear();
+  var age=window.motYear?new Date().getFullYear()-window.motYear:new Date().getFullYear()-firstYear;
+  function lastHit(re){
+    var i, j, list, hit=null;
+    for(i=0;i<tests.length;i++){
+      list=defects(tests[i]);
+      for(j=0;j<list.length;j++){
+        if(!re.test(textOf(list[j]).toLowerCase())) continue;
+        hit={date:ukDate(tests[i].completedDate), major:isMajor(list[j]), text:textOf(list[j]), miles:parseInt(String(tests[i].odometerValue||"").replace(/[^0-9]/g,""),10)||0};
+        return hit;
+      }
+    }
+    return null;
+  }
+  function line(title, life, cost, hit, soon){
+    var state=soon?"Due soon":"Plan for";
+    var note=life;
+    if(hit&&hit.major){ state="Seen in a fail"; note="Last recorded "+hit.date+". A fail usually means it was put right. "+life; }
+    else if(hit){ state="Advised"; note="MOT said: "+hit.text+". "+life; }
+    return "<div class='row'><div><b>"+title+"</b><p class='muted'>"+state+". "+note+" Guide "+cost+".</p></div></div>";
+  }
+  var tyre=lastHit(/tyre/);
+  var brake=lastHit(/brake/);
+  var sus=lastHit(/suspension|spring|arm|bush/);
+  var exh=lastHit(/exhaust|corrosion/);
+  var future=[
+    line("Tyres","A set often lasts 20,000 to 30,000 miles, or about five years.", "£250 to £500", tyre, !!(tyre&&!tyre.major) || age>=6),
+    line("Brakes","Pads are often 25,000 to 40,000 miles. Discs last longer.", "£150 to £350 an axle", brake, !!(brake&&!brake.major)),
+    line("Suspension","Bushes, arms and springs commonly need attention after 60,000 miles or eight to ten years.", "£150 to £400 a corner", sus, age>=8 || !!(sus&&!sus.major)),
+    line("Exhaust","A section often lasts eight to twelve years, sooner if corrosion was advised.", "£150 to £400", exh, age>=8 || !!(exh&&!exh.major)),
+    line("Service","Due every year, or 10,000 to 12,000 miles.", "£150 to £300", null, true),
+    line("Timing belt","Many belts are five years or 60,000 to 100,000 miles. A chain has no set date. Ask for the invoice.", milesNow>80000||age>=5?"£400 to £900 if it is a belt":"Check the schedule", null, age>=5||milesNow>80000)
+  ];
+  $("future").innerHTML=future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+"About "+age+" years on record. Typical life, not a quote, and only for this car.</p>";
 }
 $("tabHist").onclick=function(){show("hist")};
 $("tabWork").onclick=function(){show("work")};
@@ -109,6 +131,7 @@ else{
   fetchMotVehicle(plate).then(function(info){
     $("title").textContent=(info&&info.name)||"MOT";
     tests=(info&&info.tests)||[];
+    window.motYear=info&&info.year;
     paint();
   });
 }

@@ -54,14 +54,25 @@ function textOf(x){return x.text||x.comment||""}
 function typeOf(x){return String(x.type||"").toUpperCase()}
 function isMajor(x){return /DANGEROUS|MAJOR|FAIL|PRS/.test(typeOf(x))}
 function yearOf(t){return (t.completedDate||"").slice(0,4)}
+function ukDate(s){
+  var d=String(s||"").slice(0,10);
+  var p=d.split("-");
+  if(p.length<3) return d;
+  return p[2]+"/"+p[1]+"/"+p[0];
+}
+function miles(n){
+  var x=String(n||"").replace(/[^0-9]/g,"");
+  if(!x) return "";
+  return x.replace(/\B(?=(\d{3})+(?!\d))/g,",");
+}
 function paint(){
   if(!tests.length){$("hist").innerHTML="<p class='muted'>No tests returned.</p>";return}
   $("hist").innerHTML=tests.slice(0,16).map(function(t){
     var result=t.testResult||"";
-    var date=(t.completedDate||"").slice(0,10);
-    var miles=t.odometerValue?(" · "+t.odometerValue+" mi"):"";
+    var date=ukDate(t.completedDate);
+    var milesTxt=t.odometerValue?(" · "+miles(t.odometerValue)+" mi"):"";
     var list=defects(t).map(function(x){return "<p class='muted'>"+textOf(x)+"</p>"}).join("");
-    return "<div class='row'><div><b>"+date+miles+"</b>"+(list||"<p class='muted'>No defects listed.</p>")+"</div><span class='tag "+(/FAIL/i.test(result)?"fail":"pass")+"'>"+(/FAIL/i.test(result)?"Fail":"Pass")+"</span></div>";
+    return "<div class='row'><div><b>"+date+milesTxt+"</b>"+(list||"<p class='muted'>No defects listed.</p>")+"</div><span class='tag "+(/FAIL/i.test(result)?"fail":"pass")+"'>"+(/FAIL/i.test(result)?"Fail":"Pass")+"</span></div>";
   }).join("");
   var cut=new Date().getFullYear()-5;
   var jobs=[];
@@ -69,7 +80,7 @@ function paint(){
     if(+yearOf(t)<cut) return;
     defects(t).forEach(function(x){
       if(!isMajor(x)) return;
-      jobs.push({date:(t.completedDate||"").slice(0,10), text:textOf(x)});
+      jobs.push({date:ukDate(t.completedDate), text:textOf(x)});
     });
   });
   $("work").innerHTML=jobs.length?jobs.map(function(j){return "<div class='row'><div><b>"+j.date+"</b><p class='muted'>"+j.text+"</p></div><span class='tag fail'>Had to be fixed</span></div>"}).join("")+"<p class='muted'>A current MOT means these fails were put right.</p>":"<p class='muted'>No major fails in the last five years.</p>";

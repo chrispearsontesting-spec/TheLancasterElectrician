@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>MOT</title>
+<link rel="stylesheet" href="./ui.css?v=28"/>
+<style>
+body{margin:0 auto;max-width:480px;background:#0b0c0f;color:#f3efe6;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
+h1{font-size:22px;margin:0}
+.sub{color:#9aa3b0;font-size:13px;margin:4px 0 12px}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tabs button{border:0;border-radius:14px;background:#1c1c1e;color:#f3efe6;padding:12px 6px;font-weight:700}
+.tabs button.on{background:#2a2e36;color:#d7b56d}
+.card{background:#14161b;border-radius:14px;padding:12px;margin-top:10px}
+.row{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.row:last-child{border-bottom:0}
+.tag{font-size:11px;font-weight:800;border-radius:999px;padding:3px 8px}
+.pass{background:#1e3a34;color:#a7f3d0}
+.fail{background:#5b1d1d;color:#fecaca}
+.muted{color:#9aa3b0;font-size:13px}
+.btn{display:flex;width:100%;border:0;border-radius:18px;padding:14px 16px;margin-top:10px;background:#1c1c1e;color:#f3efe6;text-decoration:none;font-weight:700}
+.hide{display:none}
+</style>
+</head>
+<body>
+<h1 id="title">MOT</h1>
+<p class="sub" id="sub">Enter a plate from the home page.</p>
+<div class="tabs">
+  <button type="button" id="tabHist" class="on">History</button>
+  <button type="button" id="tabWork">Recent work</button>
+  <button type="button" id="tabFuture">Future costs</button>
+</div>
+<div id="hist" class="card"></div>
+<div id="work" class="card hide"></div>
+<div id="future" class="card hide"></div>
+<a class="btn" id="official" href="https://www.gov.uk/check-mot-history">Official MOT site</a>
+<a class="btn" href="home.html">Back</a>
+<script src="mot-config.js"></script>
+<script src="mot-client.js"></script>
+<script>
+function $(id){return document.getElementById(id)}
+var plate=new URLSearchParams(location.search).get("plate")||"";
+var tests=[];
+function show(which){
+  ["hist","work","future"].forEach(function(id){$(id).className=id===which?"card":"card hide"});
+  $("tabHist").className=which==="hist"?"on":"";
+  $("tabWork").className=which==="work"?"on":"";
+  $("tabFuture").className=which==="future"?"on":"";
+}
+function defects(t){return t.defects||t.rfrAndComments||t.rfrAndComment||[]}
+function textOf(x){return x.text||x.comment||""}
+function typeOf(x){return String(x.type||"").toUpperCase()}
+function isMajor(x){return /DANGEROUS|MAJOR|FAIL|PRS/.test(typeOf(x))}
+function yearOf(t){return (t.completedDate||"").slice(0,4)}
+function paint(){
+  if(!tests.length){$("hist").innerHTML="<p class='muted'>No tests returned.</p>";return}
+  $("hist").innerHTML=tests.slice(0,16).map(function(t){
+    var result=t.testResult||"";
+    var date=(t.completedDate||"").slice(0,10);
+    var miles=t.odometerValue?(" · "+t.odometerValue+" mi"):"";
+    var list=defects(t).map(function(x){return "<p class='muted'>"+textOf(x)+"</p>"}).join("");
+    return "<div class='row'><div><b>"+date+miles+"</b>"+(list||"<p class='muted'>No defects listed.</p>")+"</div><span class='tag "+(/FAIL/i.test(result)?"fail":"pass")+"'>"+(/FAIL/i.test(result)?"Fail":"Pass")+"</span></div>";
+  }).join("");
+  var cut=new Date().getFullYear()-5;
+  var jobs=[];
+  tests.forEach(function(t){
+    if(+yearOf(t)<cut) return;
+    defects(t).forEach(function(x){
+      if(!isMajor(x)) return;
+      jobs.push({date:(t.completedDate||"").slice(0,10), text:textOf(x)});
+    });
+  });
+  $("work").innerHTML=jobs.length?jobs.map(function(j){return "<div class='row'><div><b>"+j.date+"</b><p class='muted'>"+j.text+"</p></div><span class='tag fail'>Had to be fixed</span></div>"}).join("")+"<p class='muted'>A current MOT means these fails were put right.</p>":"<p class='muted'>No major fails in the last five years.</p>";
+  var advice={};
+  tests.forEach(function(t){
+    if(+yearOf(t)<cut) return;
+    defects(t).forEach(function(x){
+      if(isMajor(x)) return;
+      var s=textOf(x).toLowerCase();
+      var key=/tyre/.test(s)?"Tyres":/brake/.test(s)?"Brakes":/suspension|spring|arm|bush/.test(s)?"Suspension":/exhaust|corrosion/.test(s)?"Exhaust or corrosion":"";
+      if(key) advice[key]=textOf(x);
+    });
+  });
+  var future=Object.keys(advice).map(function(k){return "<div class='row'><div><b>"+k+"</b><p class='muted'>Advised, not a fail. Check it is done. "+advice[k]+"</p></div></div>"});
+  var age=tests.length?(new Date().getFullYear()-+(tests[tests.length-1].completedDate||"2010").slice(0,4)):0;
+  if(age>=5) future.push("<div class='row'><div><b>Service and belt</b><p class='muted'>Over five years of tests. Ask for the cambelt or chain invoice if the engine uses one. A full service is the usual next cost.</p></div></div>");
+  $("future").innerHTML=(future.join("")||"<p class='muted'>Nothing in the recent tests points to a likely bill.</p>")+"<p class='muted'>Likely, not a quote. It uses this car's own tests.</p>";
+}
+$("tabHist").onclick=function(){show("hist")};
+$("tabWork").onclick=function(){show("work")};
+$("tabFuture").onclick=function(){show("future")};
+if(!plate||!window.fetchMotVehicle){$("hist").innerHTML="<p class='muted'>Open this from Reminders after a plate is saved.</p>"}
+else{
+  $("sub").textContent=plate;
+  $("official").href="https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(plate.replace(/\s/g,""));
+  fetchMotVehicle(plate).then(function(info){
+    $("title").textContent=(info&&info.name)||"MOT";
+    tests=(info&&info.tests)||[];
+    paint();
+  });
+}
+</script>
+</body>
+</html>

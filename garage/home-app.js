@@ -102,7 +102,7 @@ function paint(){
   hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
   document.getElementById("caption").textContent=c.nick||c.name||"Car";
   document.getElementById("dots").textContent="Car "+(s.i+1)+" of "+s.cars.length;
-  var motUrl=c.plate?"https://www.check-mot.service.gov.uk/results?registration="+encodeURIComponent(String(c.plate).replace(/\s/g,"")):"https://www.gov.uk/check-mot-history";
+  var motUrl=c.plate?("mot.html?plate="+encodeURIComponent(String(c.plate).replace(/\s/g,""))):"mot.html";
   var bd=beltDue(c), tl=tyreLeft(c);
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+

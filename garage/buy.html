@@ -51,6 +51,12 @@ input[type=text],input[type=number],select{width:100%;background:#171a20;border:
 .saved p{margin:6px 0}
 ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.45}
 .hide{display:none}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.tabs button{border:0;border-radius:12px;background:#1c1c1e;color:#f3efe6;padding:10px 4px;font-weight:700}
+.tabs button.on{color:#d7b56d}
+.tag{font-size:11px;font-weight:800;border-radius:999px;padding:3px 8px}
+.pass{background:#1e3a34;color:#a7f3d0}
+.fail{background:#5b1d1d;color:#fecaca}
 .crow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
 </style>
 </head>
@@ -65,7 +71,13 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   <b id="carName">—</b>
   <p class="muted" id="carMeta"></p>
   <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT work, last 5 years</span><span class="count" id="motJobCount"></span><span class="chev">+</span></button><div class="accBody" id="motJobs"><p class="muted">Major fails that later passed, plus items to check from the latest test.</p></div></div>
-  <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT history</span><span class="count" id="motHistCount"></span><span class="chev">+</span></button><div class="accBody"><div id="motMajors"></div><div id="motBox"><p class="muted">Official tests load here.</p></div><span id="motMajorCount" hidden>0</span><a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Official MOT site</a></div></div>
+  <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT history</span><span class="count" id="motHistCount"></span><span class="chev">+</span></button><div class="accBody">
+  <div class="tabs"><button type="button" id="tabHist" class="on">History</button><button type="button" id="tabWork">Recent work</button><button type="button" id="tabFuture">Future costs</button></div>
+  <div id="hist"><p class="muted">Official tests load here.</p></div>
+  <div id="work" class="hide"></div>
+  <div id="future" class="hide"></div>
+  <a class="btn grey" id="motLink" href="https://www.gov.uk/check-mot-history" target="_blank" rel="noopener">Official MOT site</a>
+</div></div>
   <div class="acc"><button type="button" class="accBtn"><span class="lab">What to look for</span><span class="count" id="faultCount"></span><span class="chev">+</span></button><div class="accBody" id="faults"></div></div>
   <div class="acc"><button type="button" class="accBtn"><span class="lab">Ask the seller</span><span class="chev">+</span></button><div class="accBody"><p class="muted">History to request</p><ul id="dues"></ul><p class="muted" style="margin-top:12px">On the viewing</p><ul id="views"></ul></div></div>
 </div>
@@ -119,6 +131,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="mpg-uk.js?v=36"></script>
 <script src="trim.js?v=38"></script>
 <script src="mot-client.js?v=38"></script>
+<script src="mot-view.js?v=43"></script>
 <script src="./icons.js?v=28"></script>
 <script src="./compare.js?v=40"></script>
 <script>
@@ -258,6 +271,7 @@ function run(){
     var year=(info&&info.year)||yearGuess;
     paint({name:name,plate:plate,fuel:(info&&info.fuel)||fuel,year:year,engine:info&&info.engine});
     if(window.loadMotHistory) window.loadMotHistory(plate);
+    if(window.paintMotView) window.paintMotView(info.tests, info.year);
   });
 }
 document.addEventListener("click",function(e){
@@ -354,6 +368,9 @@ $("cmpAGo").onclick=function(){findCompare("a")};
 $("cmpBGo").onclick=function(){findCompare("b")};
 $("cmpGo").onclick=runCompare;
 
+$("tabHist").onclick=function(){showMotTab("hist")};
+$("tabWork").onclick=function(){showMotTab("work")};
+$("tabFuture").onclick=function(){showMotTab("future")};
 $("go").onclick=run;
 $("saveBtn").onclick=function(){
   if(!current.name)run();

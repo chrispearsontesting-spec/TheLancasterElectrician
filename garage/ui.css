@@ -84,3 +84,20 @@ input,select{
 }
 .bar{background:#141416 !important}
 .btn:after{display:none !important}
+
+.accBtn{
+  width:100% !important;
+  min-height:52px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  background:#1c1c1e !important;
+  color:#f2f2f2 !important;
+  border:0 !important;
+  border-radius:18px !important;
+  padding:14px 16px !important;
+  font-size:16px !important;
+  font-weight:600 !important;
+  margin-top:10px !important;
+}
+.accBtn .chev{font-size:18px}

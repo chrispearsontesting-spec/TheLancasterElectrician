@@ -19,6 +19,7 @@ h1{font-size:22px;margin:0 0 4px;font-weight:650}
 .note{color:#8b8b8b;font-size:13px;line-height:1.45;margin:0}
 iframe{width:100%;height:240px;border:0;border-radius:12px;background:#111;display:none}
 iframe.on{display:block;margin-top:10px}
+#doc canvas{width:100%;height:auto;border-radius:12px;margin-top:10px;background:#111}
 </style>
 </head>
 <body>
@@ -30,15 +31,15 @@ iframe.on{display:block;margin-top:10px}
 </div>
 <div class="card">
   <p class="note">Upload the PDF your insurer emailed. It stays on this phone only.</p>
-  <iframe id="view" title="Policy PDF"></iframe>
   <p class="left" id="pdfName">No document yet</p>
   <input id="pick" type="file" accept="application/pdf" hidden/>
   <button class="btn" type="button" id="up" data-ico="box">Upload policy PDF</button>
-  <button class="btn" type="button" id="openPdf" data-ico="play" style="display:none">View document</button>
+  <div id="doc"></div>
 </div>
 <a class="btn" id="renew" data-ico="cal" href="#">Renew</a>
 <button class="btn" type="button" id="gmailSoon" data-ico="mail" disabled>Gmail inbox — coming in the app</button>
 <a class="btn" href="home.html" data-ico="back">Back</a>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="./icons.js?v=28"></script>
 <script>
 function state(){
@@ -87,21 +88,30 @@ async function putPdf(blob,name){
     t.onerror=function(){rej(t.error)};
   });
 }
-var url=null;
 async function show(){
   var rec=await getPdf();
-  var frame=document.getElementById("view");
-  var open=document.getElementById("openPdf");
-  if(url) URL.revokeObjectURL(url);
+  var doc=document.getElementById("doc");
+  doc.innerHTML="";
   if(!rec||!rec.blob){
     document.getElementById("pdfName").textContent="No document yet";
-    frame.className="";open.style.display="none";return;
+    return;
   }
-  url=URL.createObjectURL(rec.blob);
   document.getElementById("pdfName").textContent=rec.name||"Policy PDF";
-  frame.src=url;frame.className="on";
-  open.style.display="flex";
-  open.onclick=function(){window.open(url,"_blank")};
+  if(!window.pdfjsLib){doc.innerHTML="<p class='left'>Saved. Open this page again to view it.</p>";return}
+  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  var data=await rec.blob.arrayBuffer();
+  var pdf=await pdfjsLib.getDocument({data:data}).promise;
+  var n=Math.min(pdf.numPages,8), i;
+  for(i=1;i<=n;i++){
+    var page=await pdf.getPage(i);
+    var scale=window.innerWidth>480?1.4:1.1;
+    var vp=page.getViewport({scale:scale});
+    var cv=document.createElement("canvas");
+    cv.width=vp.width;cv.height=vp.height;
+    await page.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+    doc.appendChild(cv);
+  }
+  if(pdf.numPages>n) doc.insertAdjacentHTML("beforeend","<p class='left'>First "+n+" pages. The full file is saved on this phone.</p>");
 }
 var c=car();
 document.getElementById("who").textContent=(c.nick||c.name||"Car")+" \u00b7 "+plate(c.plate);

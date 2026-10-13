@@ -37,6 +37,8 @@ label.btn{cursor:pointer}
 #docToggle{display:flex !important;justify-content:center !important;align-items:center !important;position:relative}
 #docToggle .chev{position:absolute;right:16px}
 label.btn,#renew{display:flex !important;justify-content:center !important;align-items:center !important}
+.accBtn{width:100%;min-height:52px;display:flex !important;align-items:center !important;justify-content:space-between !important;background:#1c1c1e !important;color:#f2f2f2 !important;border:0 !important;border-radius:18px !important;padding:14px 16px !important;font-size:16px !important;font-weight:600 !important;margin-top:10px}
+.accBtn .chev{font-size:18px}
 </style>
 </head>
 <body>
@@ -46,7 +48,7 @@ label.btn,#renew{display:flex !important;justify-content:center !important;align
 <label class="btn" for="pick" id="up" data-iconed="1">Upload policy PDF</label>
 <input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
 <div class="acc" id="docAcc">
-  <button type="button" class="btn" id="docToggle" data-iconed="1"><span>View policy</span><span class="chev">+</span></button>
+  <button type="button" class="accBtn" id="docToggle" data-iconed="1"><span class="lab">View policy</span><span class="chev">+</span></button>
   <div class="accBody" id="doc"></div>
 </div>
 <a class="btn" id="renew" data-iconed="1" href="#">Renew</a>

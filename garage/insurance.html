@@ -28,6 +28,7 @@ label.btn{cursor:pointer}
 .acc.open .accBody{display:block}
 .acc.open .chev{transform:rotate(45deg)}
 .chev{display:inline-block}
+#insDate{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 </style>
 </head>
 <body>
@@ -36,9 +37,8 @@ label.btn{cursor:pointer}
 <div class="card">
   <p class="when" id="exp">—</p>
   <p class="left" id="left">Expiry</p>
-  <label>Change expiry</label>
+  <button class="btn" type="button" id="saveDate">Change expiry</button>
   <input id="insDate" type="date"/>
-  <button class="btn" type="button" id="saveDate">Save date</button>
 </div>
 <div class="card">
   <p class="note">Upload the PDF your insurer emailed. It stays on this phone only.</p>
@@ -143,8 +143,14 @@ document.getElementById("exp").textContent=nice(c.ins);
 document.getElementById("left").textContent=leftTxt(c.ins);
 document.getElementById("insDate").value=c.ins||"";
 document.getElementById("saveDate").onclick=function(){
-  var s=state(), iso=document.getElementById("insDate").value;
+  var input=document.getElementById("insDate");
+  input.focus();
+  if(input.showPicker) input.showPicker();
+};
+document.getElementById("insDate").onchange=function(){
+  var iso=this.value;
   if(!iso) return;
+  var s=state();
   s.cars[s.i].ins=iso;
   localStorage.setItem("gt.garage", JSON.stringify(s));
   document.getElementById("exp").textContent=nice(iso);

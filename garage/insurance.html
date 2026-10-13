@@ -28,6 +28,9 @@ iframe.on{display:block;margin-top:10px}
 <div class="card">
   <p class="when" id="exp">—</p>
   <p class="left" id="left">Expiry</p>
+  <label>Change expiry</label>
+  <input id="insDate" type="date"/>
+  <button class="btn" type="button" id="saveDate">Save date</button>
 </div>
 <div class="card">
   <p class="note">Upload the PDF your insurer emailed. It stays on this phone only.</p>
@@ -117,6 +120,15 @@ var c=car();
 document.getElementById("who").textContent=(c.nick||c.name||"Car")+" \u00b7 "+plate(c.plate);
 document.getElementById("exp").textContent=nice(c.ins);
 document.getElementById("left").textContent=leftTxt(c.ins);
+document.getElementById("insDate").value=c.ins||"";
+document.getElementById("saveDate").onclick=function(){
+  var s=state(), iso=document.getElementById("insDate").value;
+  if(!iso) return;
+  s.cars[s.i].ins=iso;
+  localStorage.setItem("gt.garage", JSON.stringify(s));
+  document.getElementById("exp").textContent=nice(iso);
+  document.getElementById("left").textContent=leftTxt(iso);
+};
 document.getElementById("renew").href=c.insWeb||"https://www.gov.uk/vehicle-insurance";
 document.getElementById("up").onclick=function(){document.getElementById("pick").click()};
 document.getElementById("pick").onchange=async function(){

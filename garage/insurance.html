@@ -31,18 +31,26 @@ label.btn{cursor:pointer}
 .chev{display:inline-block}
 #insDate{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .split{display:flex !important;justify-content:space-between !important}
+.stack{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.stack > .btn,.stack label.btn,#docToggle{min-height:52px;padding:14px 16px !important;font-size:16px;font-weight:650}
+.split{display:flex !important;align-items:center !important;justify-content:space-between !important}
+#docToggle{display:flex !important;justify-content:center !important;align-items:center !important;position:relative}
+#docToggle .chev{position:absolute;right:16px}
+label.btn,#renew{display:flex !important;justify-content:center !important;align-items:center !important}
 </style>
 </head>
 <body>
+<div class="stack">
 <button class="btn split" type="button" id="saveDate" data-iconed="1"><span>Change expiry</span><span id="exp">—</span></button>
 <input id="insDate" type="date"/>
-<input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
 <label class="btn" for="pick" id="up" data-iconed="1">Upload policy PDF</label>
+<input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
 <div class="acc" id="docAcc">
   <button type="button" class="btn" id="docToggle" data-iconed="1"><span>View policy</span><span class="chev">+</span></button>
   <div class="accBody" id="doc"></div>
 </div>
 <a class="btn" id="renew" data-iconed="1" href="#">Renew</a>
+</div>
 <p class="left" id="pdfName" hidden></p>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="./icons.js?v=28"></script>

@@ -30,30 +30,20 @@ label.btn{cursor:pointer}
 #docAcc.open .chev{transform:rotate(45deg)}
 .chev{display:inline-block}
 #insDate{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.split{display:flex !important;justify-content:space-between !important}
 </style>
 </head>
 <body>
-<h1>Insurance</h1>
-<p class="sub" id="who">Policy</p>
-<div class="card">
-  <p class="when" id="exp">—</p>
-  <p class="left" id="left">Expiry</p>
-  <button class="btn" type="button" id="saveDate">Change expiry</button>
-  <input id="insDate" type="date"/>
+<button class="btn split" type="button" id="saveDate" data-iconed="1"><span>Change expiry</span><span id="exp">—</span></button>
+<input id="insDate" type="date"/>
+<input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
+<label class="btn" for="pick" id="up" data-iconed="1">Upload policy PDF</label>
+<div class="acc" id="docAcc">
+  <button type="button" class="btn" id="docToggle" data-iconed="1"><span>View policy</span><span class="chev">+</span></button>
+  <div class="accBody" id="doc"></div>
 </div>
-<div class="card">
-  <p class="note">Upload the PDF your insurer emailed. It stays on this phone only.</p>
-  <p class="left" id="pdfName">No document yet</p>
-  <input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
-  <label class="btn" for="pick" id="up">Upload policy PDF</label>
-  <div class="acc" id="docAcc">
-    <button type="button" class="btn" id="docToggle" data-iconed="1"><span>View policy</span><span class="chev">+</span></button>
-    <div class="accBody" id="doc"></div>
-  </div>
-</div>
-<a class="btn" id="renew" data-ico="cal" href="#">Renew</a>
-<button class="btn" type="button" id="gmailSoon" data-ico="mail" disabled>Gmail inbox — coming in the app</button>
-<a class="btn" href="home.html" data-ico="back">Back</a>
+<a class="btn" id="renew" data-iconed="1" href="#">Renew</a>
+<p class="left" id="pdfName" hidden></p>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="./icons.js?v=28"></script>
 <script>
@@ -139,9 +129,7 @@ async function show(){
   }
 }
 var c=car();
-document.getElementById("who").textContent=(c.nick||c.name||"Car")+" \u00b7 "+plate(c.plate);
 document.getElementById("exp").textContent=nice(c.ins);
-document.getElementById("left").textContent=leftTxt(c.ins);
 document.getElementById("insDate").value=c.ins||"";
 document.getElementById("saveDate").onclick=function(){
   var input=document.getElementById("insDate");
@@ -155,7 +143,6 @@ document.getElementById("insDate").onchange=function(){
   s.cars[s.i].ins=iso;
   localStorage.setItem("gt.garage", JSON.stringify(s));
   document.getElementById("exp").textContent=nice(iso);
-  document.getElementById("left").textContent=leftTxt(iso);
 };
 document.getElementById("renew").href=c.insWeb||"https://www.gov.uk/vehicle-insurance";
 var pick=document.getElementById("pick");

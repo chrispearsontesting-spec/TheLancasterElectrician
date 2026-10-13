@@ -20,6 +20,8 @@ h1{font-size:22px;margin:0 0 4px;font-weight:650}
 iframe{width:100%;height:240px;border:0;border-radius:12px;background:#111;display:none}
 iframe.on{display:block;margin-top:10px}
 #doc canvas{width:100%;height:auto;border-radius:12px;margin-top:10px;background:#111}
+#pick{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+label.btn{cursor:pointer}
 </style>
 </head>
 <body>
@@ -35,8 +37,8 @@ iframe.on{display:block;margin-top:10px}
 <div class="card">
   <p class="note">Upload the PDF your insurer emailed. It stays on this phone only.</p>
   <p class="left" id="pdfName">No document yet</p>
-  <input id="pick" type="file" accept=".pdf,application/pdf,*/*" hidden/>
-  <button class="btn" type="button" id="up" data-ico="box">Upload policy PDF</button>
+  <input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
+  <label class="btn" for="pick" id="up">Upload policy PDF</label>
   <div id="doc"></div>
 </div>
 <a class="btn" id="renew" data-ico="cal" href="#">Renew</a>
@@ -67,7 +69,7 @@ function leftTxt(iso){
 function key(){return "gt.insPdf."+String((car().plate||"none")).toUpperCase().replace(/[^A-Z0-9]/g,"")}
 function db(){
   return new Promise(function(res,rej){
-    var r=indexedDB.open("dipstick",1);
+    var r=indexedDB.open("dipstick",2);
     r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains("files")) r.result.createObjectStore("files")};
     r.onsuccess=function(){res(r.result)};
     r.onerror=function(){rej(r.error)};
@@ -140,20 +142,20 @@ document.getElementById("saveDate").onclick=function(){
   document.getElementById("left").textContent=leftTxt(iso);
 };
 document.getElementById("renew").href=c.insWeb||"https://www.gov.uk/vehicle-insurance";
-document.getElementById("up").onclick=function(){document.getElementById("pick").click()};
-document.getElementById("pick").onchange=async function(){
-  var f=this.files&&this.files[0];
-  if(!f)return;
-  document.getElementById("pdfName").textContent="Saving "+(f.name||"PDF")+"…";
+var pick=document.getElementById("pick");
+pick.addEventListener("change", async function(){
+  var f=pick.files&&pick.files[0];
+  if(!f){document.getElementById("pdfName").textContent="No file was returned. Try Downloads again.";return}
+  document.getElementById("pdfName").textContent="Got "+(f.name||"file")+" ("+Math.max(1,Math.round(f.size/1024))+" KB). Saving…";
   try{
-    var blob=f.type==="application/pdf"?f:new Blob([await f.arrayBuffer()],{type:"application/pdf"});
+    var bytes=await f.arrayBuffer();
+    var blob=new Blob([bytes],{type:"application/pdf"});
     await putPdf(blob,f.name||"policy.pdf");
     await show();
   }catch(e){
-    document.getElementById("pdfName").textContent="Could not save that file. Try again from Downloads.";
+    document.getElementById("pdfName").textContent="Could not save: "+(e&&e.message?e.message:"try a smaller PDF");
   }
-  this.value="";
-};
+});
 show();
 </script>
 </body>

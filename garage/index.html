@@ -53,6 +53,8 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 .opt{flex:1;display:flex;align-items:center;gap:8px;background:#171a20;border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);font-size:14px;font-weight:600}
 .opt input{width:18px;height:18px;accent-color:#9aa3b0;padding:0;margin:0}
 #yearBox{margin-top:8px}
+.routeActs,.routeActs a{display:flex !important;justify-content:center !important;align-items:center !important;text-align:center !important;font-size:16px !important}
+#go,a[href="timeline.html"],a[href="home.html"]{display:flex !important;justify-content:center !important;align-items:center !important;text-align:center !important;font-size:16px !important;margin-top:8px}
 </style>
 </head>
 <body>
@@ -85,6 +87,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
   <input id="evRange" type="number" placeholder="e.g. 30"/>
 </div>
 <button class="btn" id="go" type="button">Check route</button>
+  <a class="btn" href="timeline.html">Journey log</a>
 <p class="err" id="err"></p>
 <div id="map" class="hide"></div>
 <div class="card hide" id="result">
@@ -121,7 +124,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
     <div id="compareBody"></div>
   </div>
 <a class="btn ghost" href="timeline.html" style="display:block;text-align:center;text-decoration:none;margin-top:12px">Journey log</a>
-<a class="btn ghost" href="home.html" style="display:block;text-align:center;text-decoration:none;margin-top:8px">Back</a>
+<a class="btn" href="home.html">Back</a>
 <input id="plate" type="hidden"/>
 <input id="q" type="hidden"/>
 <div id="favs" class="hide"></div>

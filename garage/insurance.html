@@ -22,6 +22,12 @@ iframe.on{display:block;margin-top:10px}
 #doc canvas{width:100%;height:auto;border-radius:12px;margin-top:10px;background:#111}
 #pick{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 label.btn{cursor:pointer}
+.acc{margin-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+.accBtn{width:100%;display:flex;justify-content:space-between;align-items:center;background:transparent;color:#f3efe6;border:0;padding:12px 0;font-weight:700;font-size:15px}
+.accBody{display:none;padding-bottom:8px}
+.acc.open .accBody{display:block}
+.acc.open .chev{transform:rotate(45deg)}
+.chev{display:inline-block}
 </style>
 </head>
 <body>
@@ -39,7 +45,10 @@ label.btn{cursor:pointer}
   <p class="left" id="pdfName">No document yet</p>
   <input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
   <label class="btn" for="pick" id="up">Upload policy PDF</label>
-  <div id="doc"></div>
+  <div class="acc" id="docAcc">
+    <button type="button" class="accBtn" id="docToggle"><span>Policy document</span><span class="chev">+</span></button>
+    <div class="accBody" id="doc"></div>
+  </div>
 </div>
 <a class="btn" id="renew" data-ico="cal" href="#">Renew</a>
 <button class="btn" type="button" id="gmailSoon" data-ico="mail" disabled>Gmail inbox — coming in the app</button>
@@ -151,11 +160,17 @@ pick.addEventListener("change", async function(){
     var bytes=await f.arrayBuffer();
     var blob=new Blob([bytes],{type:"application/pdf"});
     await putPdf(blob,f.name||"policy.pdf");
-    await show();
+    await document.getElementById("docToggle").onclick=function(){
+  document.getElementById("docAcc").classList.toggle("open");
+};
+show();
   }catch(e){
     document.getElementById("pdfName").textContent="Could not save: "+(e&&e.message?e.message:"try a smaller PDF");
   }
 });
+document.getElementById("docToggle").onclick=function(){
+  document.getElementById("docAcc").classList.toggle("open");
+};
 show();
 </script>
 </body>

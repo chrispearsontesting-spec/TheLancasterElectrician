@@ -81,6 +81,7 @@ function openBook(kind){
 }
 function btns(list){
   return "<div class='acts'>"+list.map(function(b){
+    if(b.date) return "<button class='btn' type='button' data-date='"+b.date+"'>Date</button><input class='datePick' type='date' data-field='"+b.date+"' value='"+(b.value||"")+"'>";
     if(b.job) return "<button class='btn' type='button' data-job='"+b.job+"'>"+b.lab+"</button>";
     return "<a class='btn' href='"+b.href+"'>"+b.lab+"</a>";
   }).join("")+"</div>";
@@ -105,12 +106,12 @@ function paint(){
   var motUrl=c.plate?("mot.html?plate="+encodeURIComponent(String(c.plate).replace(/\s/g,""))):"mot.html";
   var bd=beltDue(c), tl=tyreLeft(c);
   document.getElementById("dues").innerHTML=
-    row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
-    row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"}])+
-    row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html"}])+
-    row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
-    row("Timing belt",bd,bd?"":"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=15?" cFlash":"")+"'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";
+    row("MOT",c.mot,"",[{date:"mot",value:c.mot},{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
+    row("Tax",c.tax,"",[{date:"tax",value:c.tax},{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"}])+
+    row("Insurance",c.ins,"",[{date:"ins",value:c.ins},{lab:"Policy",href:"insurance.html"}])+
+    row("Full service",c.oil,"",[{date:"oil",value:c.oil},{lab:"Book service",job:"service"}])+
+    row("Timing belt",bd,bd?"":"",[{date:"beltDate",value:c.beltDate},{lab:"Book change",job:"belt"}])+
+    "<div class='item"+(tl!=null&&tl<=15?" cFlash":"")+"'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{date:"tyreDate",value:c.tyreDate},{lab:"Book change",job:"tyre"}])+"</div>";
 }
 function savePic(f){
   if(!f)return;
@@ -180,8 +181,22 @@ on("btnAdd",function(){openSheet("add")});
 on("btnEdit",function(){openSheet("edit")});
 var dues=document.getElementById("dues");
 if(dues) dues.addEventListener("click",function(e){
+  var d=e.target.closest("[data-date]");
+  if(d){
+    var input=d.parentNode.querySelector("[data-field='"+d.getAttribute("data-date")+"']");
+    if(input){ input.className="datePick on"; input.focus(); if(input.showPicker) input.showPicker(); }
+    return;
+  }
   var b=e.target.closest("[data-job]");
   if(b) openBook(b.getAttribute("data-job"));
+});
+if(dues) dues.addEventListener("change",function(e){
+  var f=e.target.getAttribute("data-field");
+  if(!f) return;
+  var s=state();
+  s.cars[s.i][f]=e.target.value;
+  if(f==="beltDate") s.cars[s.i].beltYears="0";
+  save(s); paint();
 });
 on("btnClose",function(){document.getElementById("sheet").className="sheet"});
 on("btnCClose",function(){document.getElementById("contact").className="sheet"});

@@ -81,8 +81,8 @@ function openBook(kind){
 }
 function btns(list){
   return "<div class='acts'>"+list.map(function(b){
-    if(b.job) return "<button class='btn' type='button' data-job='"+b.job+"'>"+b.lab+"</button>";
-    return "<a class='btn' href='"+b.href+"'>"+b.lab+"</a>";
+    if(b.job) return "<button class='btn' type='button' data-iconed='1' data-job='"+b.job+"'>"+b.lab+"</button>";
+    return "<a class='btn' href='"+b.href+"' data-iconed='1'>"+b.lab+"</a>";
   }).join("")+"</div>";
 }
 function mark(iso){

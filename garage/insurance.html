@@ -35,7 +35,7 @@ iframe.on{display:block;margin-top:10px}
 <div class="card">
   <p class="note">Upload the PDF your insurer emailed. It stays on this phone only.</p>
   <p class="left" id="pdfName">No document yet</p>
-  <input id="pick" type="file" accept="application/pdf" hidden/>
+  <input id="pick" type="file" accept=".pdf,application/pdf,*/*" hidden/>
   <button class="btn" type="button" id="up" data-ico="box">Upload policy PDF</button>
   <div id="doc"></div>
 </div>
@@ -100,21 +100,31 @@ async function show(){
     return;
   }
   document.getElementById("pdfName").textContent=rec.name||"Policy PDF";
-  if(!window.pdfjsLib){doc.innerHTML="<p class='left'>Saved. Open this page again to view it.</p>";return}
-  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-  var data=await rec.blob.arrayBuffer();
-  var pdf=await pdfjsLib.getDocument({data:data}).promise;
-  var n=Math.min(pdf.numPages,8), i;
-  for(i=1;i<=n;i++){
-    var page=await pdf.getPage(i);
-    var scale=window.innerWidth>480?1.4:1.1;
-    var vp=page.getViewport({scale:scale});
-    var cv=document.createElement("canvas");
-    cv.width=vp.width;cv.height=vp.height;
-    await page.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
-    doc.appendChild(cv);
+  var blob=rec.blob.type==="application/pdf"?rec.blob:new Blob([rec.blob],{type:"application/pdf"});
+  var url=URL.createObjectURL(blob);
+  var open=document.createElement("a");
+  open.className="btn";
+  open.href=url;
+  open.target="_blank";
+  open.textContent="Open full PDF";
+  doc.appendChild(open);
+  try{
+    if(!window.pdfjsLib) return;
+    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    var data=await blob.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:data}).promise;
+    var n=Math.min(pdf.numPages,6), i;
+    for(i=1;i<=n;i++){
+      var page=await pdf.getPage(i);
+      var vp=page.getViewport({scale:1.2});
+      var cv=document.createElement("canvas");
+      cv.width=vp.width;cv.height=vp.height;
+      await page.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
+      doc.appendChild(cv);
+    }
+  }catch(e){
+    doc.insertAdjacentHTML("beforeend","<p class='left'>Saved. Use Open full PDF if the preview does not draw.</p>");
   }
-  if(pdf.numPages>n) doc.insertAdjacentHTML("beforeend","<p class='left'>First "+n+" pages. The full file is saved on this phone.</p>");
 }
 var c=car();
 document.getElementById("who").textContent=(c.nick||c.name||"Car")+" \u00b7 "+plate(c.plate);
@@ -134,8 +144,15 @@ document.getElementById("up").onclick=function(){document.getElementById("pick")
 document.getElementById("pick").onchange=async function(){
   var f=this.files&&this.files[0];
   if(!f)return;
-  await putPdf(f,f.name);
-  show();
+  document.getElementById("pdfName").textContent="Saving "+(f.name||"PDF")+"…";
+  try{
+    var blob=f.type==="application/pdf"?f:new Blob([await f.arrayBuffer()],{type:"application/pdf"});
+    await putPdf(blob,f.name||"policy.pdf");
+    await show();
+  }catch(e){
+    document.getElementById("pdfName").textContent="Could not save that file. Try again from Downloads.";
+  }
+  this.value="";
 };
 show();
 </script>

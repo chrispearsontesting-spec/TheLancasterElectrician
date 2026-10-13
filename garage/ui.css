@@ -30,10 +30,35 @@ a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost{
   margin-top:10px !important;
 }
 a.btn,button.btn{
-  display:inline-flex !important;
+  display:flex !important;
+  width:100% !important;
+  box-sizing:border-box !important;
   align-items:center !important;
-  justify-content:flex-start !important;
+  justify-content:center !important;
+  text-align:center !important;
   gap:8px !important;
+  min-height:52px !important;
+  padding:14px 16px !important;
+  font-size:16px !important;
+  font-weight:600 !important;
+  margin-top:10px !important;
+}
+.btn.wide,a.wide,a.btn.wide,button.wide{
+  justify-content:flex-start !important;
+  text-align:left !important;
+}
+.nameRow button{
+  width:44px !important;
+  min-height:44px !important;
+  margin-top:0 !important;
+  padding:0 !important;
+  font-size:18px !important;
+}
+.acts .btn{
+  min-height:0 !important;
+  margin-top:0 !important;
+  padding:6px 8px !important;
+  font-size:12px !important;
 }
 .ico{
   display:inline-flex !important;

@@ -42,7 +42,19 @@ window.paintMotView=function(tests, year){
   }
   if($("future")){
     var tyre=lastHit(/tyre/), brake=lastHit(/brake/), sus=lastHit(/suspension|spring|arm|bush/), exh=lastHit(/exhaust|corrosion/);
-    $("future").innerHTML=[
+    var soon=[], lo=0, hi=0;
+    function add(on, name, a, b){ if(on){ soon.push(name); lo+=a; hi+=b; } }
+    add(!!(tyre&&!tyre.major)||age>=6, "tyres", 250, 500);
+    add(!!(brake&&!brake.major), "brakes", 150, 350);
+    add(age>=8||!!(sus&&!sus.major), "suspension", 150, 400);
+    add(age>=8||!!(exh&&!exh.major), "exhaust", 150, 400);
+    add(true, "a service", 150, 300);
+    add(age>=5||milesNow>80000, "a timing belt check", 0, 900);
+    var summary="<p class='muted'><b>Next few years.</b> ";
+    if(soon.length) summary+="From this car's tests and age, plan for "+soon.join(", ")+". A rough independent-garage total is £"+lo+" to £"+hi+".";
+    else summary+="Nothing in the recent tests points to a big bill. A yearly service is the usual cost.";
+    summary+=" This is for this registration only, not a quote.</p>";
+    $("future").innerHTML=summary+[
       line("Tyres","A set often lasts 20,000 to 30,000 miles, or about five years.","£250 to £500",tyre,!!(tyre&&!tyre.major)||age>=6),
       line("Brakes","Pads are often 25,000 to 40,000 miles. Discs last longer.","£150 to £350 an axle",brake,!!(brake&&!brake.major)),
       line("Suspension","Bushes, arms and springs commonly need attention after 60,000 miles or eight to ten years.","£150 to £400 a corner",sus,age>=8||!!(sus&&!sus.major)),

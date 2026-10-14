@@ -10,6 +10,31 @@ export default {
     const plate = new URL(req.url).searchParams.get("plate") || "";
     const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, "");
     if (!clean) return new Response(JSON.stringify({ error: "Add ?plate=AB12CDE" }), { status: 400, headers });
+    if (new URL(req.url).searchParams.get("tax") === "1") {
+      const page = await fetch("https://vehicleenquiry.service.gov.uk/");
+      const html = await page.text();
+      const token = (html.match(/name="authenticity_token" value="([^"]+)"/) || [])[1] || "";
+      const cookie = page.headers.get("set-cookie") || "";
+      const post = await fetch("https://vehicleenquiry.service.gov.uk/?locale=en", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded", cookie },
+        body: new URLSearchParams({ utf8: "✓", authenticity_token: token, "wizard_vehicle_enquiry_capture_vrn[vrn]": clean }),
+        redirect: "manual"
+      });
+      const confirmHtml = await post.text();
+      const token2 = (confirmHtml.match(/name="authenticity_token" value="([^"]+)"/) || [])[1] || token;
+      const cookie2 = post.headers.get("set-cookie") || cookie;
+      const done = await fetch("https://vehicleenquiry.service.gov.uk/ConfirmVehicle?locale=en", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded", cookie: cookie2 },
+        body: new URLSearchParams({ utf8: "✓", authenticity_token: token2, "wizard_vehicle_enquiry_capture_confirm_vehicle[confirmed]": "Yes" })
+      });
+      const result = await done.text();
+      const text = result.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+      const tax = /SORN/i.test(text) ? "SORN" : (/Untaxed/i.test(text) ? "Untaxed" : (/Taxed/i.test(text) ? "Taxed" : "Unknown"));
+      const mot = (text.match(/MOT\s*(Expires|Expired)[:\s]*([0-9]{1,2} [A-Za-z]+ [0-9]{4})/i) || [])[0] || (/No MOT/i.test(text) ? "No MOT" : "");
+      return new Response(JSON.stringify({ plate: clean, tax, mot, raw: text.slice(0, 400) }), { headers });
+    }
     try {
       const tokenRes = await fetch(env.DVSA_TOKEN_URL, {
         method: "POST",

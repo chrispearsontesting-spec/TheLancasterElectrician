@@ -106,7 +106,7 @@ function paint(){
   var bd=beltDue(c), tl=tyreLeft(c);
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
-    row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"}])+
+    row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"},{lab:"Check tax",href:"https://vehicleenquiry.service.gov.uk/"}])+
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html"},{lab:"Renew",href:c.insWeb||"https://www.gov.uk/vehicle-insurance"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?"":"",[{lab:"Book change",job:"belt"}])+

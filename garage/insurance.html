@@ -22,10 +22,11 @@ iframe.on{display:block;margin-top:10px}
 #doc canvas{width:100%;height:auto;border-radius:12px;margin-top:10px;background:#111}
 #pick{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 label.btn{cursor:pointer}
-#docAcc{margin-top:8px;background:transparent !important;border:0 !important;padding:0}
-#docToggle{display:flex !important;justify-content:center !important;align-items:center !important;gap:8px !important;position:relative}
-#docToggle .chev{position:absolute;right:16px}
-#docAcc .accBody{display:none}
+#docAcc{background:#141416 !important;border:1px solid #2a2a2e !important;border-radius:18px;overflow:hidden;margin:14px 0;padding:0}
+#docToggle{width:100%;margin:0;background:transparent !important;border:0 !important;color:#f3efe6;font-size:16px;font-weight:600;text-align:left;padding:16px 18px;display:flex !important;align-items:center !important;justify-content:flex-start !important;gap:12px;border-radius:0}
+#docToggle .lab{flex:1;text-align:left}
+#docToggle .chev{margin-left:auto;color:#8b8b8b;font-size:18px}
+#docAcc .accBody{display:none;padding:0 14px 14px}
 #docAcc.open .accBody{display:block}
 #docAcc.open .chev{transform:rotate(45deg)}
 .chev{display:inline-block}
@@ -37,11 +38,7 @@ label.btn{cursor:pointer}
 #docToggle{display:flex !important;justify-content:center !important;align-items:center !important;position:relative}
 #docToggle .chev{position:absolute;right:16px}
 label.btn,#renew{display:flex !important;justify-content:center !important;align-items:center !important}
-#docAcc{background:#141416;border:1px solid #2a2a2e;border-radius:18px;overflow:hidden;margin:14px 0;padding:0}
-#docToggle{width:100%;margin:0;background:transparent !important;border:0 !important;color:#f3efe6;font-size:16px;font-weight:600;text-align:left;padding:16px 18px;display:flex !important;align-items:center;justify-content:flex-start !important;gap:12px;border-radius:18px}
-#docToggle .lab{flex:1}
-#docToggle .chev{margin-left:auto;color:#8b8b8b;font-size:18px}
-#docAcc .accBody{padding:0 14px 14px}
+
 </style>
 </head>
 <body>

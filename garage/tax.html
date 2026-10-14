@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Check tax</title>
+<link rel="stylesheet" href="./ui.css?v=46"/>
+<style>
+body{margin:0 auto;max-width:440px;padding:16px;font-family:-apple-system,sans-serif;background:#0b0c0e;color:#f2f2f2}
+h1{font-size:20px;margin:8px 0}
+.plate{display:flex;align-items:center;justify-content:center;background:#f5c518;color:#111;font-weight:800;font-size:28px;letter-spacing:2px;border-radius:8px;padding:10px 16px;margin:16px 0}
+.note{color:#9aa3b0;font-size:14px;line-height:1.4}
+input{width:100%;background:#161618;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:18px;margin:8px 0 12px}
+</style>
+</head>
+<body>
+<h1>Check tax</h1>
+<p class="note">GOV.UK will not take the plate from a link. It is filled in and copied here. Paste it on the next page and press Continue.</p>
+<div class="plate" id="plate">—</div>
+<input id="reg" readonly/>
+<button class="btn" type="button" id="go">Open GOV.UK check</button>
+<a class="btn" href="home.html" data-iconed="1">Back</a>
+<script>
+var plate=new URLSearchParams(location.search).get("plate")||"";
+plate=plate.toUpperCase().replace(/[^A-Z0-9]/g,"");
+document.getElementById("plate").textContent=plate||"—";
+document.getElementById("reg").value=plate;
+function copy(){ if(navigator.clipboard&&plate) navigator.clipboard.writeText(plate).catch(function(){}); }
+copy();
+document.getElementById("go").onclick=function(){
+  copy();
+  window.open("https://vehicleenquiry.service.gov.uk/","_blank");
+};
+</script>
+</body>
+</html>

@@ -11,13 +11,14 @@ export default {
     const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, "");
     if (!clean) return new Response(JSON.stringify({ error: "Add ?plate=AB12CDE" }), { status: 400, headers });
     if (new URL(req.url).searchParams.get("tax") === "1") {
-      const page = await fetch("https://vehicleenquiry.service.gov.uk/");
+      const browser = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", "Accept": "text/html" };
+      const page = await fetch("https://vehicleenquiry.service.gov.uk/", { headers: browser });
       const html = await page.text();
       const token = (html.match(/name="authenticity_token" value="([^"]+)"/) || [])[1] || "";
       const cookie = page.headers.get("set-cookie") || "";
       const post = await fetch("https://vehicleenquiry.service.gov.uk/?locale=en", {
         method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded", cookie },
+        headers: { ...browser, "content-type": "application/x-www-form-urlencoded", cookie },
         body: new URLSearchParams({ utf8: "✓", authenticity_token: token, "wizard_vehicle_enquiry_capture_vrn[vrn]": clean }),
         redirect: "manual"
       });
@@ -26,7 +27,7 @@ export default {
       const cookie2 = post.headers.get("set-cookie") || cookie;
       const done = await fetch("https://vehicleenquiry.service.gov.uk/ConfirmVehicle?locale=en", {
         method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded", cookie: cookie2 },
+        headers: { ...browser, "content-type": "application/x-www-form-urlencoded", cookie: cookie2 },
         body: new URLSearchParams({ utf8: "✓", authenticity_token: token2, "wizard_vehicle_enquiry_capture_confirm_vehicle[confirmed]": "Yes" })
       });
       const result = await done.text();

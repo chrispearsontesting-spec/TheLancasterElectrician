@@ -10,7 +10,7 @@
 body{margin:0 auto;max-width:480px;background:#0b0c0f;color:#f3efe6;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
 h1{font-size:22px;margin:0}
 .head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.status{flex:0 0 auto;background:#2f7d32;color:#fff;border-radius:10px;padding:6px 8px;text-align:center;font-weight:700;font-size:11px;line-height:1.15;min-width:72px;max-width:88px}
+.status{flex:0 0 auto;align-self:center;background:#2f7d32;color:#fff;border-radius:10px;padding:7px 9px;text-align:center;font-weight:700;font-size:11px;line-height:1.15;min-width:78px}
 .status b{display:block;font-size:12px;margin-bottom:1px}
 .status.bad{background:#c0392b}
 .sub{color:#9aa3b0;font-size:13px;margin:4px 0 12px}
@@ -75,7 +75,7 @@ function paint(){
       var nice=exp.slice(8,10).replace(/^0/,"")+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+exp.slice(5,7)-1]+" "+exp.slice(0,4);
       var overdue=new Date(exp+"T00:00:00")<new Date();
       status.className="status "+(overdue?"bad":"ok");
-      status.innerHTML="<b>"+(overdue?"MOT expired":"MOT pass")+"</b>"+nice;
+      status.innerHTML="<b>"+(overdue?"MOT expired":"MOT valid")+"</b>Exp. "+nice;
     } else status.innerHTML="<b>MOT</b>No date";
   }
   if(!tests.length){$("hist").innerHTML="<p class='muted'>No tests returned.</p>";return}

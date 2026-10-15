@@ -13,6 +13,7 @@ h1{font-size:18px;margin:8px 0}
 .ok{background:#2f7d32}.bad{background:#c0392b}.wait{background:#444}
 .box b{display:block;font-size:22px;margin-bottom:6px}
 a{color:#1d4ed8}
+.back{display:block;margin-top:16px;background:#1c1c1e;color:#f3efe6;text-align:center;text-decoration:none;border-radius:14px;padding:14px 16px;font-size:16px;font-weight:600}
 </style>
 </head>
 <body>
@@ -23,6 +24,7 @@ a{color:#1d4ed8}
 <div class="box wait" id="mot"><b>Checking…</b></div>
 <p id="note"></p>
 <a id="gov" href="https://vehicleenquiry.service.gov.uk/" target="_blank">Open the official GOV.UK page</a>
+<a class="back" href="home.html">Back</a>
 <script>
 var plate=new URLSearchParams(location.search).get("plate")||"";
 plate=plate.toUpperCase().replace(/[^A-Z0-9]/g,"");

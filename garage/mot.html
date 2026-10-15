@@ -9,6 +9,10 @@
 <style>
 body{margin:0 auto;max-width:480px;background:#0b0c0f;color:#f3efe6;font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
 h1{font-size:22px;margin:0}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.status{flex:0 0 auto;background:#2f7d32;color:#fff;border-radius:14px;padding:10px 12px;text-align:center;font-weight:700;font-size:13px;line-height:1.2;min-width:92px}
+.status b{display:block;font-size:14px}
+.status.bad{background:#c0392b}
 .sub{color:#9aa3b0;font-size:13px;margin:4px 0 12px}
 .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .tabs button{border:0;border-radius:14px;background:#1c1c1e;color:#f3efe6;padding:12px 6px;font-weight:700}
@@ -25,8 +29,7 @@ h1{font-size:22px;margin:0}
 </style>
 </head>
 <body>
-<h1 id="title">MOT</h1>
-<p class="sub" id="sub">Enter a plate from the home page.</p>
+<div class="head"><div><h1 id="title">MOT</h1><p class="sub" id="sub">Enter a plate from the home page.</p></div><div class="status ok" id="status">MOT</div></div>
 <div class="tabs">
   <button type="button" id="tabHist" class="on">History</button>
   <button type="button" id="tabWork">Recent work</button>
@@ -66,6 +69,15 @@ function miles(n){
   return x.replace(/\B(?=(\d{3})+(?!\d))/g,",");
 }
 function paint(){
+  var latest=tests[0]||{}, exp=latest.expiryDate||"", status=$("status");
+  if(status){
+    if(exp){
+      var nice=exp.slice(8,10).replace(/^0/,"")+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+exp.slice(5,7)-1]+" "+exp.slice(0,4);
+      var overdue=new Date(exp+"T00:00:00")<new Date();
+      status.className="status "+(overdue?"bad":"ok");
+      status.innerHTML="<b>"+(overdue?"MOT expired":"MOT pass")+"</b>"+nice;
+    } else status.innerHTML="<b>MOT</b>No date";
+  }
   if(!tests.length){$("hist").innerHTML="<p class='muted'>No tests returned.</p>";return}
   $("hist").innerHTML=tests.slice(0,16).map(function(t){
     var result=t.testResult||"";

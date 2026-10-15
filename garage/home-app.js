@@ -222,4 +222,27 @@ function swipeEnd(e){
 });
 if(!localStorage.getItem("gt.garage")) save({i:0,cars:[seed()]});
 paint();
+var dateSynced={};
+function syncDates(){
+  var c=car();
+  var plate=String(c.plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  if(!plate||dateSynced[plate]||!window.fetchMotVehicle) return;
+  dateSynced[plate]=1;
+  window.fetchMotVehicle(plate).then(function(info){
+    var exp="";
+    var tests=(info&&info.tests)||[];
+    var i;
+    for(i=0;i<tests.length;i++){
+      if(tests[i].expiryDate){exp=String(tests[i].expiryDate).slice(0,10);break;}
+    }
+    if(!exp) return;
+    var s=state();
+    if(s.cars[s.i]&&s.cars[s.i].mot!==exp){
+      s.cars[s.i].mot=exp;
+      save(s);
+      paint();
+    }
+  }).catch(function(){});
+}
+syncDates();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){});}

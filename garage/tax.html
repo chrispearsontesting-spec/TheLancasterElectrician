@@ -28,14 +28,20 @@ plate=plate.toUpperCase().replace(/[^A-Z0-9]/g,"");
 document.getElementById("plate").textContent=plate||"—";
 var proxy=(window.MOT_PROXY||"").replace(/\/$/,"");
 if(!proxy||!plate){ document.getElementById("tax").innerHTML="<b>No plate</b>"; }
-else fetch(proxy+"/?plate="+plate+"&tax=1").then(function(r){return r.json()}).then(function(d){
+else Promise.all([
+  fetch(proxy+"/?plate="+plate+"&tax=1").then(function(r){return r.json()}).catch(function(){return {}}),
+  fetch(proxy+"/?plate="+plate).then(function(r){return r.json()}).catch(function(){return {}})
+]).then(function(both){
+  var d=both[0]||{}, m=both[1]||{};
   var tax=document.getElementById("tax"), mot=document.getElementById("mot");
   var taxed=/taxed/i.test(d.tax)&&!/untaxed/i.test(d.tax);
   tax.className="box "+(d.tax==="SORN"||taxed?"ok":"bad");
   tax.innerHTML="<b>"+(d.tax||"Unknown")+"</b>";
-  var expired=/expired|no mot/i.test(d.mot||"");
-  mot.className="box "+(expired?"bad":"ok");
-  mot.innerHTML="<b>MOT</b>"+(d.mot||"No date returned");
+  var tests=m.motTests||[], latest=tests[0]||{}, exp=latest.expiryDate||"";
+  var nice=exp?exp.slice(8,10).replace(/^0/,"")+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+exp.slice(5,7)-1]+" "+exp.slice(0,4):"";
+  var due=exp?new Date(exp+"T00:00:00"):null, overdue=due&&due<new Date();
+  mot.className="box "+(overdue?"bad":"ok");
+  mot.innerHTML="<b>MOT</b>"+(nice?(overdue?"Expired: ":"Expires: ")+nice:"No date returned");
 }).catch(function(){
   document.getElementById("tax").className="box bad";
   document.getElementById("tax").innerHTML="<b>Could not check</b>";

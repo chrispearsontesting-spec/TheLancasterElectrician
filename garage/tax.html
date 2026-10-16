@@ -20,7 +20,6 @@ a{color:#1d4ed8}
 <h1>Check if a vehicle is taxed and has an MOT</h1>
 <div class="plate" id="plate">—</div>
 <div class="box wait" id="tax"><b>Checking…</b></div>
-<div class="box wait" id="cost"><b>Annual tax</b>Checking…</div>
 <div class="box wait" id="mot"><b>Checking…</b></div>
 <p id="note"></p>
 <a id="gov" href="https://vehicleenquiry.service.gov.uk/" target="_blank">Open the official GOV.UK page</a>
@@ -40,16 +39,6 @@ else Promise.all([
   var taxed=/taxed/i.test(d.tax)&&!/untaxed/i.test(d.tax);
   tax.className="box "+(d.tax==="SORN"||taxed?"ok":"bad");
   tax.innerHTML="<b>"+(d.tax||"Unknown")+"</b>";
-  var cost=document.getElementById("cost");
-  var year=+(m.registrationDate||"").slice(0,4)||0;
-  var fuel=String(m.fuelType||"").toLowerCase();
-  var cc=parseInt(m.engineSize,10)||0;
-  var amount=null, note="2026/27 rate. Updated each April.";
-  if(year>=2017){ amount=200; note="Standard rate from year 2. Extra if the list price was over £40k."; }
-  else if(year>=2001){ note="2001–2017 cars are taxed on CO₂. Exact cost arrives with DVLA. Typical family cars are £170–£275."; }
-  else if(year>0 && cc){ amount=cc<=1549?220:360; note="Pre-2001 rate, based on engine size."; }
-  cost.className="box "+(amount?"ok":"wait");
-  cost.innerHTML="<b>"+(amount?("£"+amount+" / year"):"CO₂ band")+"</b>"+note;
   var tests=m.motTests||[], latest=tests[0]||{}, exp=latest.expiryDate||"";
   var nice=exp?exp.slice(8,10).replace(/^0/,"")+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+exp.slice(5,7)-1]+" "+exp.slice(0,4):"";
   var due=exp?new Date(exp+"T00:00:00"):null, overdue=due&&due<new Date();

@@ -101,8 +101,10 @@ var DARK_LOGOS = ["BMW","MERCEDES-BENZ","MERCEDES","VOLKSWAGEN","VW"];
 
 
 var MODEL_BADGES = {
-  "S4":"badges/audi-s4.svg","RS4":"badges/audi-rs4.svg",
-  "M3":"badges/bmw-m3.svg","M5":"badges/bmw-m5.svg"
+  "S3":"badges/audi-s3.svg","S4":"badges/audi-s4.svg","RS3":"badges/audi-rs3.svg","RS4":"badges/audi-rs4.svg","RS6":"badges/audi-rs6.svg",
+  "M2":"badges/bmw-m2.svg","M3":"badges/bmw-m3.svg","M4":"badges/bmw-m4.svg","M5":"badges/bmw-m5.svg","M6":"badges/bmw-m6.svg",
+  "AMG":"badges/mercedes-amg.svg","GTI":"badges/vw-gti.svg","R":"badges/vw-r.svg",
+  "ST":"badges/ford-st.svg","RS":"badges/ford-rs.svg"
 };
 
 var BADGE_STYLES = {

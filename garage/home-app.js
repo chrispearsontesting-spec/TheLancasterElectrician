@@ -97,7 +97,7 @@ function row(title,iso,extra,buttons){
 
 
 
-var DARK_LOGOS = ["AUDI","BMW","MERCEDES-BENZ","MERCEDES","VOLKSWAGEN","VW"];
+var DARK_LOGOS = ["BMW","MERCEDES-BENZ","MERCEDES","VOLKSWAGEN","VW"];
 
 var BADGE_STYLES = {
   "VOLVO":"volvo","AUDI":"audi","BMW":"bmw","MERCEDES-BENZ":"mercedes","MERCEDES":"mercedes",

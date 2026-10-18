@@ -108,7 +108,7 @@ var BADGE_STYLES = {
 };
 
 var MAKE_LOGOS = {
-  "VOLVO":"volvo-logo.svg","AUDI":"audi-logo.svg","BMW":"bmw-logo.svg","FORD":"ford-logo.svg",
+  "VOLVO":"volvo-logo.svg","AUDI":"audi-silver.svg","BMW":"bmw-logo.svg","FORD":"ford-logo.svg",
   "VAUXHALL":"vauxhall-logo.svg","VOLKSWAGEN":"volkswagen-logo.svg","VW":"volkswagen-logo.svg",
   "TOYOTA":"toyota-logo.svg","MERCEDES-BENZ":"mercedes-benz-logo.svg","MERCEDES":"mercedes-benz-logo.svg",
   "NISSAN":"nissan-logo.svg","HONDA":"honda-logo.svg","HYUNDAI":"hyundai-logo.svg","KIA":"kia-logo.svg",
@@ -130,7 +130,10 @@ function carLogoHtml(name){
     if(up.indexOf(keys[i])===0){ make=keys[i]; model=up.slice(keys[i].length).trim(); break; }
   }
   var dark = make && DARK_LOGOS.indexOf(make)>=0 ? " dark" : "";
-  var logo = make && MAKE_LOGOS[make] ? '<img class="makeLogo'+dark+'" src="https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/'+MAKE_LOGOS[make]+'" alt="'+make+'">' : "";
+  var src = MAKE_LOGOS[make];
+  if(src && src.indexOf("http")!==0) src = src; // local file in garage/
+  else src = "https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/"+src;
+  var logo = make && MAKE_LOGOS[make] ? '<img class="makeLogo'+dark+'" src="'+src+'" alt="'+make+'">' : "";
   var style = make && BADGE_STYLES[make] ? BADGE_STYLES[make] : "";
   var badge = model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "";
   return logo + badge || name;

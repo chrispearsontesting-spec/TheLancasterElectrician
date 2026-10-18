@@ -95,6 +95,15 @@ function row(title,iso,extra,buttons){
   return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
+
+var BADGE_STYLES = {
+  "VOLVO":"volvo","AUDI":"audi","BMW":"bmw","MERCEDES-BENZ":"mercedes","MERCEDES":"mercedes",
+  "VOLKSWAGEN":"vw","VW":"vw","FORD":"ford","VAUXHALL":"vauxhall","TOYOTA":"toyota",
+  "NISSAN":"nissan","HONDA":"honda","HYUNDAI":"hyundai","KIA":"kia","LAND ROVER":"landrover",
+  "JAGUAR":"jaguar","MINI":"mini","PORSCHE":"porsche","TESLA":"tesla","SKODA":"skoda",
+  "PEUGEOT":"peugeot","RENAULT":"renault","MAZDA":"mazda","LEXUS":"lexus"
+};
+
 var MAKE_LOGOS = {
   "VOLVO":"volvo-logo.svg","AUDI":"audi-logo.svg","BMW":"bmw-logo.svg","FORD":"ford-logo.svg",
   "VAUXHALL":"vauxhall-logo.svg","VOLKSWAGEN":"volkswagen-logo.svg","VW":"volkswagen-logo.svg",
@@ -118,7 +127,8 @@ function carLogoHtml(name){
     if(up.indexOf(keys[i])===0){ make=keys[i]; model=up.slice(keys[i].length).trim(); break; }
   }
   var logo = make && MAKE_LOGOS[make] ? '<img class="makeLogo" src="https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/'+MAKE_LOGOS[make]+'" alt="'+make+'">' : "";
-  var badge = model ? '<span class="modelBadge">'+model+'</span>' : "";
+  var style = make && BADGE_STYLES[make] ? BADGE_STYLES[make] : "";
+  var badge = model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "";
   return logo + badge || name;
 }
 

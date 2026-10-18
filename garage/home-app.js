@@ -96,6 +96,9 @@ function row(title,iso,extra,buttons){
 }
 
 
+
+var DARK_LOGOS = ["AUDI","BMW","MERCEDES-BENZ","MERCEDES","VOLKSWAGEN","VW"];
+
 var BADGE_STYLES = {
   "VOLVO":"volvo","AUDI":"audi","BMW":"bmw","MERCEDES-BENZ":"mercedes","MERCEDES":"mercedes",
   "VOLKSWAGEN":"vw","VW":"vw","FORD":"ford","VAUXHALL":"vauxhall","TOYOTA":"toyota",
@@ -126,7 +129,8 @@ function carLogoHtml(name){
   for(var i=0;i<keys.length;i++){
     if(up.indexOf(keys[i])===0){ make=keys[i]; model=up.slice(keys[i].length).trim(); break; }
   }
-  var logo = make && MAKE_LOGOS[make] ? '<img class="makeLogo" src="https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/'+MAKE_LOGOS[make]+'" alt="'+make+'">' : "";
+  var dark = make && DARK_LOGOS.indexOf(make)>=0 ? " dark" : "";
+  var logo = make && MAKE_LOGOS[make] ? '<img class="makeLogo'+dark+'" src="https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/'+MAKE_LOGOS[make]+'" alt="'+make+'">' : "";
   var style = make && BADGE_STYLES[make] ? BADGE_STYLES[make] : "";
   var badge = model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "";
   return logo + badge || name;

@@ -130,10 +130,9 @@ function carLogoHtml(name){
     if(up.indexOf(keys[i])===0){ make=keys[i]; model=up.slice(keys[i].length).trim(); break; }
   }
   var dark = make && DARK_LOGOS.indexOf(make)>=0 ? " dark" : "";
-  var src = MAKE_LOGOS[make];
-  if(src && src.indexOf("http")!==0) src = src; // local file in garage/
-  else src = "https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/"+src;
-  var logo = make && MAKE_LOGOS[make] ? '<img class="makeLogo'+dark+'" src="'+src+'" alt="'+make+'">' : "";
+  var file = MAKE_LOGOS[make];
+  var src = (file.indexOf("http")===0 || file.indexOf("/")===0) ? file : (file==="audi-silver.svg" ? file : "https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/"+file);
+  var logo = make && file ? '<img class="makeLogo'+dark+'" src="'+src+'" alt="'+make+'">' : "";
   var style = make && BADGE_STYLES[make] ? BADGE_STYLES[make] : "";
   var badge = model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "";
   return logo + badge || name;

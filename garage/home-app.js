@@ -94,13 +94,41 @@ function mark(iso){
 function row(title,iso,extra,buttons){
   return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
+
+var MAKE_LOGOS = {
+  "VOLVO":"volvo-logo.svg","AUDI":"audi-logo.svg","BMW":"bmw-logo.svg","FORD":"ford-logo.svg",
+  "VAUXHALL":"vauxhall-logo.svg","VOLKSWAGEN":"volkswagen-logo.svg","VW":"volkswagen-logo.svg",
+  "TOYOTA":"toyota-logo.svg","MERCEDES-BENZ":"mercedes-benz-logo.svg","MERCEDES":"mercedes-benz-logo.svg",
+  "NISSAN":"nissan-logo.svg","HONDA":"honda-logo.svg","HYUNDAI":"hyundai-logo.svg","KIA":"kia-logo.svg",
+  "PEUGEOT":"peugeot-logo.svg","RENAULT":"renault-logo.svg","SKODA":"skoda-logo.svg","SEAT":"seat-logo.svg",
+  "CITROEN":"citroen-logo.svg","MINI":"mini-logo.svg","LAND ROVER":"land-rover-logo.svg","JAGUAR":"jaguar-logo.svg",
+  "MAZDA":"mazda-logo.svg","MITSUBISHI":"mitsubishi-logo.svg","SUZUKI":"suzuki-logo.svg","FIAT":"fiat-logo.svg",
+  "ALFA ROMEO":"alfa-romeo-logo.svg","PORSCHE":"porsche-logo.svg","TESLA":"tesla-logo.svg","LEXUS":"lexus-logo.svg",
+  "INFINITI":"infiniti-logo.svg","SUBARU":"subaru-logo.svg","DACIA":"dacia-logo.svg","MG":"mg-logo.svg",
+  "CUPRA":"cupra-logo.svg","POLESTAR":"polestar-logo.svg","GENESIS":"genesis-logo.svg","BENTLEY":"bentley-logo.svg",
+  "ASTON MARTIN":"aston-martin-logo.svg","ROLLS-ROYCE":"rolls-royce-logo.svg","FERRARI":"ferrari-logo.svg",
+  "LAMBORGHINI":"lamborghini-logo.svg","MASERATI":"maserati-logo.svg","JEEP":"jeep-logo.svg","CHRYSLER":"chrysler-logo.svg"
+};
+function carLogoHtml(name){
+  if(!name) return "";
+  var up = String(name).toUpperCase();
+  var make = "", model = up;
+  var keys = Object.keys(MAKE_LOGOS).sort(function(a,b){return b.length-a.length});
+  for(var i=0;i<keys.length;i++){
+    if(up.indexOf(keys[i])===0){ make=keys[i]; model=up.slice(keys[i].length).trim(); break; }
+  }
+  var logo = make && MAKE_LOGOS[make] ? '<img class="makeLogo" src="https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/'+MAKE_LOGOS[make]+'" alt="'+make+'">' : "";
+  var badge = model ? '<span class="modelBadge">'+model+'</span>' : "";
+  return logo + badge || name;
+}
+
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
   var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
   var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
   hero.style.backgroundImage=c.photo?"none":"";
   hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
-  document.getElementById("caption").textContent=c.nick||c.name||"Car";
+  document.getElementById("caption").innerHTML=carLogoHtml(c.nick||c.name||"Car");
   document.getElementById("dots").textContent="Car "+(s.i+1)+" of "+s.cars.length;
   var motUrl=c.plate?("mot.html?plate="+encodeURIComponent(String(c.plate).replace(/\s/g,""))+"#history"):"mot.html#history";
   var bd=beltDue(c), tl=tyreLeft(c);

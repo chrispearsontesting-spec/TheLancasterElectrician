@@ -1,4 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 32">
-  <rect x="1" y="1" width="78" height="30" rx="4" fill="#1a1a1a" stroke="#c0c0c0" stroke-width="1.5"/>
-  <text x="40" y="22" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-size="16" font-weight="900" fill="#e8e8e8" letter-spacing="1">S4</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 40">
+  <defs>
+    <linearGradient id="chrome" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#d0d0d0"/>
+      <stop offset="100%" stop-color="#888888"/>
+    </linearGradient>
+  </defs>
+  <polygon points="4,8 48,8 42,32 4,32" fill="#e10600"/>
+  <text x="62" y="28" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-size="22" font-weight="900" fill="url(#chrome)" stroke="#333" stroke-width="0.6">S4</text>
 </svg>

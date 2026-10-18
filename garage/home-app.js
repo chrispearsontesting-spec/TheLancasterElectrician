@@ -99,6 +99,12 @@ function row(title,iso,extra,buttons){
 
 var DARK_LOGOS = ["BMW","MERCEDES-BENZ","MERCEDES","VOLKSWAGEN","VW"];
 
+
+var MODEL_BADGES = {
+  "S4":"badges/audi-s4.svg","RS4":"badges/audi-rs4.svg",
+  "M3":"badges/bmw-m3.svg","M5":"badges/bmw-m5.svg"
+};
+
 var BADGE_STYLES = {
   "VOLVO":"volvo","AUDI":"audi","BMW":"bmw","MERCEDES-BENZ":"mercedes","MERCEDES":"mercedes",
   "VOLKSWAGEN":"vw","VW":"vw","FORD":"ford","VAUXHALL":"vauxhall","TOYOTA":"toyota",
@@ -134,7 +140,8 @@ function carLogoHtml(name){
   var src = (file.indexOf("http")===0 || file.indexOf("/")===0) ? file : (file==="audi-silver.svg" ? file : "https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/"+file);
   var logo = make && file ? '<img class="makeLogo'+dark+'" src="'+src+'" alt="'+make+'">' : "";
   var style = make && BADGE_STYLES[make] ? BADGE_STYLES[make] : "";
-  var badge = model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "";
+  var badgeFile = model && MODEL_BADGES[model];
+  var badge = badgeFile ? '<img class="modelBadgeImg" src="'+badgeFile+'" alt="'+model+'">' : (model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "");
   return logo + badge || name;
 }
 

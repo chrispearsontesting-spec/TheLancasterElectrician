@@ -19,9 +19,11 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .plate .uk{background:#003399;color:#fc0;padding:5px 4px;font-size:8px;line-height:1.1;text-align:center}
 .plate .reg{background:#f4d000;color:#111;padding:5px 7px;letter-spacing:.06em;font-size:13px}
 .bar{background:#141416;border-radius:0 0 18px 18px;padding:8px 12px 10px;margin-bottom:10px}
-.nameRow{display:grid;grid-template-columns:36px 36px 1fr 36px 36px;align-items:center;gap:8px;width:100%;padding:0;box-sizing:border-box}
-.nameRow button{width:36px;height:36px;border-radius:50%;border:0;background:#1c1c1e;color:#f2f2f2;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0}
-.name{display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px;width:100%}
+.nameRow{display:flex;align-items:center;justify-content:space-between;width:100%;padding:0;box-sizing:border-box;gap:0}
+.nameRow .side{display:flex;gap:8px;width:88px;justify-content:space-between}
+.nameRow .side.right{justify-content:flex-end}
+.nameRow button{width:36px;height:36px;border-radius:50%;border:0;background:#1c1c1e;color:#f2f2f2;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;flex-shrink:0}
+.name{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px}
 .makeLogo{height:20px;width:auto}
 .modelBadgeImg{height:22px;width:auto}
 .dots{text-align:center;color:#8b8b8b;font-size:12px;margin:6px 0 0}
@@ -73,11 +75,15 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <div class="hero" id="hero"></div>
 <div class="bar"><div class="nameRow">
+<div class="side left">
 <button type="button" id="btnAdd">+</button>
 <button type="button" id="prev">&#8592;</button>
+</div>
 <div class="name" id="caption">Your car</div>
+<div class="side right">
 <button type="button" id="next">&#8594;</button>
 <button type="button" id="btnEdit">&#9998;</button>
+</div>
 </div><p class="dots" id="dots">Add a car</p></div>
 <button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
 <div class="card hide" id="dues"></div>

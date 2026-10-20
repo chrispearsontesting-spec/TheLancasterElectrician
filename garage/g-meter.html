@@ -16,7 +16,8 @@ canvas#c{width:280px;height:280px;background:#141416;border-radius:50%;border:1p
 .vals{display:flex;gap:28px;margin:12px 0 4px;font-size:13px;text-align:center;min-height:48px}
 .vals b{font-size:20px;display:block;font-weight:650;font-variant-numeric:tabular-nums}
 .peaks{font-size:12px;color:#8b8b8b;margin:2px 0 10px;min-height:16px;font-variant-numeric:tabular-nums}
-.btn{margin:4px;padding:10px 16px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-decoration:none;display:inline-block;font-size:14px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}
+.btn{padding:10px 14px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-decoration:none;display:inline-block;font-size:14px}
 .btn.rec{background:#e10600}
 .btn.rec.on{background:#3dd68c;color:#111}
 .chart-wrap{width:100%;max-width:360px;margin-top:14px;display:none}
@@ -42,10 +43,12 @@ canvas#chart{width:100%;height:180px;background:#141416;border-radius:12px;borde
   <div>Tip<br><b id="tip">0°</b></div>
 </div>
 <div class="peaks">Peak lat <span id="pLat">0.00</span> · Peak long <span id="pLon">0.00</span> · Max tip <span id="pTip">0°</span></div>
+<div class="btns">
 <button class="btn" id="zero" type="button">Zero</button>
-<button class="btn rec" id="rec" type="button">Start recording</button>
-<button class="btn" id="allow" type="button">Allow sensors</button>
+<button class="btn rec" id="rec" type="button">Start</button>
+<button class="btn" id="allow" type="button">Sensors</button>
 <a class="btn" href="drive-hub.html">Back</a>
+</div>
 <div class="chart-wrap" id="chartWrap">
   <canvas id="chart"></canvas>
   <div class="legend">
@@ -93,6 +96,8 @@ const trail = [];
 const MAX_TRAIL = 40;
 let recording = false;
 let samples = [];
+let lastPos = null;
+let watchId = null;
 
 function drawGauge() {
   const w = 280, h = 280, cx = w/2, cy = h/2, r = 112;
@@ -243,8 +248,8 @@ function onMotion(e) {
   pTipEl.textContent = Math.round(peakTip) + '°';
   drawGauge();
   if (recording) {
-    samples.push({lat, lon});
-    if (samples.length > 800) samples.shift();
+    samples.push({lat, lon, glat: lastPos ? lastPos.lat : null, glon: lastPos ? lastPos.lon : null, t: Date.now()});
+    if (samples.length > 1200) samples.shift();
   }
 }
 
@@ -260,18 +265,46 @@ recBtn.onclick = () => {
     recording = true;
     samples = [];
     chartWrap.classList.remove('show');
-    recBtn.textContent = 'Stop recording';
+    recBtn.textContent = 'Stop';
     recBtn.classList.add('on');
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(pos => {
+        lastPos = {lat: pos.coords.latitude, lon: pos.coords.longitude};
+      }, () => {}, {enableHighAccuracy: true, maximumAge: 1000});
+    }
   } else {
     recording = false;
-    recBtn.textContent = 'Start recording';
+    recBtn.textContent = 'Start';
     recBtn.classList.remove('on');
+    if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
     if (samples.length > 2) {
       chartWrap.classList.add('show');
       drawChart();
+      showPeaks();
     }
   }
 };
+
+function showPeaks() {
+  const peaks = samples.filter(s => Math.abs(s.lat) > 0.7 || Math.abs(s.lon) > 0.7);
+  if (!peaks.length) return;
+  const withPos = peaks.filter(s => s.glat);
+  let html = '<b>High-G moments</b><br>';
+  if (withPos.length) {
+    // group roughly
+    const seen = new Set();
+    withPos.slice(0, 8).forEach(s => {
+      const key = s.glat.toFixed(4) + ',' + s.glon.toFixed(4);
+      if (seen.has(key)) return;
+      seen.add(key);
+      const g = Math.max(Math.abs(s.lat), Math.abs(s.lon)).toFixed(2);
+      html += g + ' G near <a href="https://www.google.com/maps?q=' + s.glat + ',' + s.glon + '" target="_blank" style="color:#73BDE0">map</a><br>';
+    });
+  } else {
+    html += 'GPS not available for this recording.<br>';
+  }
+  document.getElementById('comps').innerHTML += '<br>' + html;
+}
 
 allowBtn.onclick = async () => {
   try {

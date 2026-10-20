@@ -147,7 +147,7 @@ function paint(){
   add(age>=8||!!(exh&&!exh.major), "exhaust", 150, 400);
   add(true, "a service", 150, 300);
   add(age>=5||milesNow>80000, "a timing belt check", 0, 900);
-  var summary="<p class='muted'><b>Next few years.</b> "+(soon.length?("From this car's tests and age, plan for "+soon.join(", ")+". A rough independent-garage total is £"+lo+" to £"+hi+"."):"Nothing in the recent tests points to a big bill. A yearly service is the usual cost.")+" This is for this registration only, not a quote.</p>";
+  var summary="<p class='muted'><b>Next few years.</b> Plan for the items below.</p>";
   var future=[
     line("Tyres","A set often lasts 20,000 to 30,000 miles, or about five years.", "£250 to £500", tyre, !!(tyre&&!tyre.major) || age>=6),
     line("Brakes","Pads are often 25,000 to 40,000 miles. Discs last longer.", "£150 to £350 an axle", brake, !!(brake&&!brake.major)),
@@ -161,7 +161,7 @@ function paint(){
     var m=html.match(/\(\£(\d+) to \£(\d+)/);
     if(m){ best+=+m[1]; worst+=+m[2]; }
   });
-  var totals="<div class='row'><div><b>Best case total</b><p class='muted'>£"+best+"</p></div></div><div class='row'><div><b>Worst case total</b><p class='muted'>£"+worst+"</p></div></div>";
+  var totals="<div class='row' style='display:grid;grid-template-columns:1fr 1fr;gap:12px'><div><b>Best case</b><p class='muted'>£"+best+"</p></div><div><b>Worst case</b><p class='muted'>£"+worst+"</p></div></div>";
   $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+"About "+age+" years on record. Typical life, not a quote, and only for this car.</p>";
 }
 $("tabHist").onclick=function(){show("hist")};

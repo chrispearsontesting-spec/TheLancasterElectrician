@@ -51,6 +51,7 @@ canvas#chart{width:100%;height:160px;background:#141416;border-radius:12px;borde
     <span><i class="dot" style="background:#f5a623"></i> Long</span>
     <span><i class="dot" style="background:#e10600"></i> Tip</span>
   </div>
+  <button class="btn" id="dl" type="button" style="margin-top:8px">Download chart</button>
 </div>
 <p class="note">Rings at 0.5 / 1.0 / 1.5 G. Blue dot = live G. Red ball = tip (amber >15°, red >25°). Start recording to capture a chart.</p>
 <script>
@@ -123,33 +124,73 @@ function drawGauge() {
 function drawChart() {
   const w = chart.width, h = chart.height;
   cctx.clearRect(0,0,w,h);
-  if (!samples.length) return;
-  const pad = 8;
-  const maxG = 1.8;
-  const maxTip = 40;
+  if (samples.length < 2) return;
+  const padL = 36, padR = 12, padT = 22, padB = 28;
+  const maxG = 1.5;
   const n = samples.length;
-  function x(i){ return pad + (i/(n-1||1))*(w-pad*2); }
-  function yG(v){ return h/2 - (v/maxG)*(h/2 - pad); }
-  function yTip(v){ return h/2 - (v/maxTip)*(h/2 - pad); }
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
 
-  // zero line
-  cctx.strokeStyle = '#333';
-  cctx.beginPath(); cctx.moveTo(pad, h/2); cctx.lineTo(w-pad, h/2); cctx.stroke();
+  function x(i){ return padL + (i/(n-1))*(plotW); }
+  function yG(v){ return padT + plotH/2 - (v/maxG)*(plotH/2); }
 
-  function line(key, col, yFn) {
+  // background grid
+  cctx.strokeStyle = '#222';
+  cctx.lineWidth = 0.5;
+  cctx.font = '10px sans-serif';
+  cctx.fillStyle = '#888';
+  cctx.textAlign = 'right';
+  [-1.5,-1,-0.5,0,0.5,1,1.5].forEach(g => {
+    const yy = yG(g);
+    cctx.beginPath(); cctx.moveTo(padL, yy); cctx.lineTo(w-padR, yy); cctx.stroke();
+    cctx.fillText(g.toFixed(1), padL-4, yy+3);
+  });
+
+  // time labels bottom
+  cctx.textAlign = 'center';
+  cctx.fillStyle = '#888';
+  const secs = (n * 0.05).toFixed(0); // rough
+  cctx.fillText('0s', padL, h-8);
+  cctx.fillText(secs+'s', w-padR, h-8);
+  cctx.fillText('Time', w/2, h-8);
+
+  // title
+  cctx.textAlign = 'left';
+  cctx.fillStyle = '#ccc';
+  cctx.fillText('G-force', padL, 14);
+
+  function line(key, col) {
     cctx.strokeStyle = col;
-    cctx.lineWidth = 1.5;
+    cctx.lineWidth = 1.8;
+    cctx.lineJoin = 'round';
+    cctx.lineCap = 'round';
     cctx.beginPath();
     samples.forEach((s,i) => {
-      const yy = yFn(s[key]);
+      const yy = yG(s[key]);
       if (i===0) cctx.moveTo(x(i), yy); else cctx.lineTo(x(i), yy);
     });
     cctx.stroke();
   }
-  line('lat', '#73BDE0', yG);
-  line('lon', '#f5a623', yG);
-  line('tip', '#e10600', yTip);
+  line('lat', '#73BDE0');
+  line('lon', '#f5a623');
 }
+
+document.getElementById('dl').onclick = () => {
+  if (!samples.length) return;
+  // high-res export
+  const scale = 3;
+  const exp = document.createElement('canvas');
+  exp.width = chart.width * scale;
+  exp.height = chart.height * scale;
+  const ectx = exp.getContext('2d');
+  ectx.scale(scale, scale);
+  // redraw at higher res by temporarily swapping context logic is hard; just upscale current
+  ectx.drawImage(chart, 0, 0, chart.width, chart.height, 0, 0, chart.width, chart.height);
+  const a = document.createElement('a');
+  a.href = exp.toDataURL('image/jpeg', 0.95);
+  a.download = 'dipstick-g-chart.jpg';
+  a.click();
+};
 
 function onMotion(e) {
   const a = e.accelerationIncludingGravity || e.acceleration;

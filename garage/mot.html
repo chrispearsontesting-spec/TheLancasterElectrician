@@ -45,6 +45,12 @@ h1{font-size:22px;margin:0}
 <script>
 function $(id){return document.getElementById(id)}
 var plate=new URLSearchParams(location.search).get("plate")||"";
+if(!plate){
+  try{
+    var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
+    if(s&&s.cars&&s.cars.length) plate=(s.cars[s.i]||s.cars[0]).plate||"";
+  }catch(e){}
+}
 var tests=[];
 function show(which){
   ["hist","work","future"].forEach(function(id){$(id).className=id===which?"card":"card hide"});

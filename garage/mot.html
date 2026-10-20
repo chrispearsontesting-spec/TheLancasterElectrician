@@ -133,7 +133,7 @@ function paint(){
     var note=life;
     if(hit&&hit.major){ state="Seen in a fail"; note="Last recorded "+hit.date+". A fail usually means it was put right. "+life; }
     else if(hit){ state="Advised"; note="MOT said: "+hit.text+". "+life; }
-    return "<div class='row'><div><b>"+title+"</b> <b>("+cost+")</b><p class='muted'>"+state+". "+note+"</p></div></div>";
+    return "<div class='row' data-job='"+title+"'><div><b>"+title+"</b> <b>("+cost+")</b><p class='muted'>"+state+". "+note+"</p></div><label style='display:flex;align-items:center;gap:6px;font-size:13px'><input type='checkbox' class='done'> Done</label></div>";
   }
   var tyre=lastHit(/tyre/);
   var brake=lastHit(/brake/);
@@ -163,6 +163,17 @@ function paint(){
   });
   var totals="<div class='row' style='display:grid;grid-template-columns:1fr 1fr;gap:12px'><div><b>Best case</b><p class='muted'>£"+best+"</p></div><div><b>Worst case</b><p class='muted'>£"+worst+"</p></div></div>";
   $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+"About "+age+" years on record. Typical life, not a quote, and only for this car.</p>";
+  var done = JSON.parse(localStorage.getItem("gt.motDone")||"{}");
+  document.querySelectorAll("#future .done").forEach(function(cb){
+    var row = cb.closest(".row");
+    var job = row.getAttribute("data-job");
+    if(done[job]){ row.style.display="none"; cb.checked=true; }
+    cb.onchange = function(){
+      done[job] = cb.checked;
+      localStorage.setItem("gt.motDone", JSON.stringify(done));
+      row.style.display = cb.checked ? "none" : "";
+    };
+  });
 }
 $("tabHist").onclick=function(){show("hist")};
 $("tabWork").onclick=function(){show("work")};

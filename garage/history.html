@@ -23,6 +23,7 @@ input[type=file]{margin:8px 0}
 .upload-item{background:#1c1c1e;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
 .upload-item img{max-width:100%;border-radius:8px;margin-top:6px}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 <h1>History</h1>
@@ -49,7 +50,9 @@ input[type=file]{margin:8px 0}
   <button class="acc" type="button">Work & invoices <span>+</span></button>
   <div class="panel">
     <p class="note">Photograph or upload invoices and photos of work. Each upload is dated and added to the calendar.</p>
-    <input type="file" id="file" accept="image/*,application/pdf" capture="environment"/>
+    <input type="file" id="file" accept="image/*,application/pdf"/>
+    <label class="btn" for="cam" style="margin-top:6px">Take photo</label>
+    <input type="file" id="cam" accept="image/*" capture="environment" style="display:none"/>
     <input type="text" id="note" placeholder="Short note (e.g. Clutch replaced)" style="width:100%;padding:10px;border-radius:10px;border:0;background:#1c1c1e;color:#fff;margin:6px 0"/>
     <button class="btn" id="save" type="button">Save to history</button>
     <div id="uploads"></div>
@@ -98,6 +101,7 @@ function openDb(){
 }
 async function showIns(){
   const el=document.getElementById('insView');
+  el.innerHTML="";
   try{
     var d=await openDb();
     var rec=await new Promise(function(res,rej){
@@ -109,9 +113,31 @@ async function showIns(){
     if(!rec || !rec.blob){ el.innerHTML='<p class="note">No insurance document uploaded yet.</p>'; return; }
     var blob = rec.blob.type === "application/pdf" ? rec.blob : new Blob([rec.blob], {type:"application/pdf"});
     var url = URL.createObjectURL(blob);
-    el.innerHTML = '<a class="btn" href="'+url+'" target="_blank" style="margin-top:8px">Open insurance PDF</a><p class="note" style="margin-top:6px">'+(rec.name||"Policy")+'</p>';
+    var open = document.createElement("a");
+    open.className = "btn";
+    open.href = url;
+    open.target = "_blank";
+    open.textContent = "Open full PDF";
+    el.appendChild(open);
+    if(window.pdfjsLib){
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      var data = await blob.arrayBuffer();
+      var pdf = await pdfjsLib.getDocument({data:data}).promise;
+      var n = Math.min(pdf.numPages, 4);
+      for(var i=1;i<=n;i++){
+        var page = await pdf.getPage(i);
+        var vp = page.getViewport({scale:1.15});
+        var cv = document.createElement("canvas");
+        cv.width = vp.width; cv.height = vp.height;
+        cv.style.maxWidth = "100%";
+        cv.style.marginTop = "8px";
+        cv.style.borderRadius = "8px";
+        await page.render({canvasContext:cv.getContext("2d"), viewport:vp}).promise;
+        el.appendChild(cv);
+      }
+    }
   }catch(e){
-    el.innerHTML='<p class="note">Could not load document.</p>';
+    el.innerHTML = '<p class="note">Saved. Use Open full PDF if the preview does not draw.</p>';
   }
 }
 showIns();
@@ -140,7 +166,7 @@ try{
 render();
 
 document.getElementById('save').onclick = () => {
-  const file = document.getElementById('file').files[0];
+  const file = (document.getElementById('cam').files[0] || document.getElementById('file').files[0]);
   const note = document.getElementById('note').value.trim();
   if (!file) { alert('Choose a photo or PDF first'); return; }
   const reader = new FileReader();
@@ -165,7 +191,7 @@ render();
     const events = JSON.parse(localStorage.getItem('dipstick-cal-events') || '[]');
     events.push({ date: item.date, title: item.note, type: 'work' });
     localStorage.setItem('dipstick-cal-events', JSON.stringify(events));
-    document.getElementById('file').value = '';
+    document.getElementById('file').value = ''; document.getElementById('cam').value = '';
     document.getElementById('note').value = '';
     alert('Saved to history and calendar');
   };

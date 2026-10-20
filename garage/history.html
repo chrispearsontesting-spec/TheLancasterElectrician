@@ -41,7 +41,7 @@ input[type=file]{margin:8px 0}
   <button class="acc" type="button">MOT <span>+</span></button>
   <div class="panel">
     <p class="note">Full MOT history, recent work and future costs.</p>
-    <a class="btn" href="mot.html">View MOT history</a>
+    <a class="btn" id="motLink" href="mot.html">View MOT history</a>
   </div>
 </div>
 
@@ -101,6 +101,13 @@ document.getElementById('insFile').onchange = e => {
   r.readAsDataURL(f);
 };
 
+try{
+  var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
+  if(s&&s.cars&&s.cars.length){
+    var pl=(s.cars[s.i]||s.cars[0]).plate||"";
+    if(pl) document.getElementById("motLink").href="mot.html?plate="+encodeURIComponent(pl);
+  }
+}catch(e){}
 render();
 
 document.getElementById('save').onclick = () => {
@@ -117,7 +124,14 @@ document.getElementById('save').onclick = () => {
     };
     items.unshift(item);
     localStorage.setItem('dipstick-history', JSON.stringify(items));
-    render();
+    try{
+  var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
+  if(s&&s.cars&&s.cars.length){
+    var pl=(s.cars[s.i]||s.cars[0]).plate||"";
+    if(pl) document.getElementById("motLink").href="mot.html?plate="+encodeURIComponent(pl);
+  }
+}catch(e){}
+render();
     // simple calendar event via local storage the calendar page can read later
     const events = JSON.parse(localStorage.getItem('dipstick-cal-events') || '[]');
     events.push({ date: item.date, title: item.note, type: 'work' });

@@ -142,7 +142,7 @@ function drawChart() {
   cctx.clearRect(0,0,w,h);
   if (samples.length < 2) return;
   const padL = 38, padR = 14, padT = 24, padB = 30;
-  const maxG = 3;
+  const maxG = 4;
   const n = samples.length;
   const plotW = w - padL - padR;
   const plotH = h - padT - padB;
@@ -155,7 +155,7 @@ function drawChart() {
   cctx.font = '11px -apple-system, sans-serif';
   cctx.fillStyle = '#999';
   cctx.textAlign = 'right';
-  [-3,-2,-1,0,1,2,3].forEach(g => {
+  [-4,-3,-2,-1,0,1,2,3,4].forEach(g => {
     const yy = yG(g);
     cctx.beginPath(); cctx.moveTo(padL, yy); cctx.lineTo(w-padR, yy); cctx.stroke();
     cctx.fillText(g.toFixed(1), padL-6, yy+4);

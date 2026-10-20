@@ -7,32 +7,32 @@
 <title>G & Tip</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif;-webkit-font-smoothing:antialiased}
 body{display:flex;flex-direction:column;align-items:center;padding:12px;padding-top:calc(12px + env(safe-area-inset-top));min-height:100%}
 h1{font-size:20px;margin:4px 0 2px;font-weight:650}
 .muted{color:#8b8b8b;font-size:12px;margin:0 0 10px;text-align:center}
 .gauge-wrap{position:relative;width:280px;height:280px;flex-shrink:0}
-canvas#c{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
+canvas#c{width:280px;height:280px;background:#141416;border-radius:50%;border:1px solid #2a2a2e}
 .vals{display:flex;gap:28px;margin:12px 0 4px;font-size:13px;text-align:center;min-height:48px}
 .vals b{font-size:20px;display:block;font-weight:650;font-variant-numeric:tabular-nums}
 .peaks{font-size:12px;color:#8b8b8b;margin:2px 0 10px;min-height:16px;font-variant-numeric:tabular-nums}
 .btn{margin:4px;padding:10px 16px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-decoration:none;display:inline-block;font-size:14px}
 .btn.rec{background:#e10600}
 .btn.rec.on{background:#3dd68c;color:#111}
-.chart-wrap{width:100%;max-width:340px;margin-top:14px;display:none}
+.chart-wrap{width:100%;max-width:360px;margin-top:14px;display:none}
 .chart-wrap.show{display:block}
-canvas#chart{width:100%;height:160px;background:#141416;border-radius:12px;border:1px solid #2a2a2e}
+canvas#chart{width:100%;height:180px;background:#141416;border-radius:12px;border:1px solid #2a2a2e}
 .legend{display:flex;gap:14px;font-size:11px;color:#8b8b8b;margin-top:6px;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
 .dot{width:8px;height:8px;border-radius:50%}
-.note{font-size:11px;color:#6a6a6a;margin-top:12px;text-align:center;max-width:300px;line-height:1.4}
+.note{font-size:11px;color:#6a6a6a;margin-top:12px;text-align:center;max-width:320px;line-height:1.4}
 </style>
 </head>
 <body>
 <h1>G-force & Tip</h1>
 <p class="muted">Mount firmly · Zero when level</p>
 <div class="gauge-wrap">
-  <canvas id="c" width="280" height="280"></canvas>
+  <canvas id="c"></canvas>
 </div>
 <div class="vals">
   <div>Lateral<br><b id="lat">0.00</b></div>
@@ -45,20 +45,33 @@ canvas#chart{width:100%;height:160px;background:#141416;border-radius:12px;borde
 <button class="btn" id="allow" type="button">Allow sensors</button>
 <a class="btn" href="drive-hub.html">Back</a>
 <div class="chart-wrap" id="chartWrap">
-  <canvas id="chart" width="340" height="160"></canvas>
+  <canvas id="chart"></canvas>
   <div class="legend">
     <span><i class="dot" style="background:#73BDE0"></i> Lateral</span>
     <span><i class="dot" style="background:#f5a623"></i> Long</span>
-    <span><i class="dot" style="background:#e10600"></i> Tip</span>
   </div>
   <button class="btn" id="dl" type="button" style="margin-top:8px">Download chart</button>
 </div>
-<p class="note">Rings at 0.5 / 1.0 / 1.5 G. Blue dot = live G. Red ball = tip (amber >15°, red >25°). Start recording to capture a chart.</p>
+<p class="note">Rings at 0.5 / 1.0 / 1.5 G. Blue dot = live G. Tip ball: green <15°, amber 15–25°, red >25°. Start recording for a chart.</p>
 <script>
+const dpr = Math.min(window.devicePixelRatio || 2, 3);
 const c = document.getElementById('c');
 const ctx = c.getContext('2d');
 const chart = document.getElementById('chart');
 const cctx = chart.getContext('2d');
+
+function setupCanvas(canvas, cssW, cssH) {
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  const context = canvas.getContext('2d');
+  context.scale(dpr, dpr);
+  return context;
+}
+setupCanvas(c, 280, 280);
+setupCanvas(chart, 340, 180);
+
 const latEl = document.getElementById('lat');
 const lonEl = document.getElementById('lon');
 const tipEl = document.getElementById('tip');
@@ -74,12 +87,12 @@ let lat = 0, lon = 0, tip = 0;
 let peakLat = 0, peakLon = 0, peakTip = 0;
 let offsetX = 0, offsetY = 0;
 const trail = [];
-const MAX_TRAIL = 36;
+const MAX_TRAIL = 40;
 let recording = false;
 let samples = [];
 
 function drawGauge() {
-  const w = c.width, h = c.height, cx = w/2, cy = h/2, r = 112;
+  const w = 280, h = 280, cx = w/2, cy = h/2, r = 112;
   ctx.clearRect(0,0,w,h);
   ctx.strokeStyle = '#2a2a2e';
   ctx.lineWidth = 1;
@@ -94,25 +107,25 @@ function drawGauge() {
   ctx.stroke();
 
   trail.forEach((p,i) => {
-    ctx.fillStyle = `rgba(115,189,224,${(i+1)/trail.length*0.45})`;
-    ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `rgba(115,189,224,${(i+1)/trail.length*0.4})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, Math.PI*2); ctx.fill();
   });
 
   const absTip = Math.abs(tip);
   let tipCol = '#3dd68c';
   if (absTip > 25) tipCol = '#e10600';
   else if (absTip > 15) tipCol = '#f5a623';
-  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.5;
-  const tipY = cy - Math.cos(tip * Math.PI/180) * r * 0.1;
+  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.48;
+  const tipY = cy - Math.cos(tip * Math.PI/180) * r * 0.08;
   ctx.fillStyle = tipCol;
-  ctx.beginPath(); ctx.arc(tipX, tipY, 12, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tipX, tipY, 11, 0, Math.PI*2); ctx.fill();
 
   const scale = r / 1.5;
   const gx = cx + lat * scale;
   const gy = cy - lon * scale;
   ctx.fillStyle = '#73BDE0';
-  ctx.beginPath(); ctx.arc(gx, gy, 7, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(gx, gy, 6.5, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4; ctx.stroke();
 
   ctx.fillStyle = '#555';
   ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI*2); ctx.fill();
@@ -122,46 +135,43 @@ function drawGauge() {
 }
 
 function drawChart() {
-  const w = chart.width, h = chart.height;
+  const w = 340, h = 180;
   cctx.clearRect(0,0,w,h);
   if (samples.length < 2) return;
-  const padL = 36, padR = 12, padT = 22, padB = 28;
+  const padL = 38, padR = 14, padT = 24, padB = 30;
   const maxG = 1.5;
   const n = samples.length;
   const plotW = w - padL - padR;
   const plotH = h - padT - padB;
 
-  function x(i){ return padL + (i/(n-1))*(plotW); }
+  function x(i){ return padL + (i/(n-1))*plotW; }
   function yG(v){ return padT + plotH/2 - (v/maxG)*(plotH/2); }
 
-  // background grid
   cctx.strokeStyle = '#222';
-  cctx.lineWidth = 0.5;
-  cctx.font = '10px sans-serif';
-  cctx.fillStyle = '#888';
+  cctx.lineWidth = 0.6;
+  cctx.font = '11px -apple-system, sans-serif';
+  cctx.fillStyle = '#999';
   cctx.textAlign = 'right';
   [-1.5,-1,-0.5,0,0.5,1,1.5].forEach(g => {
     const yy = yG(g);
     cctx.beginPath(); cctx.moveTo(padL, yy); cctx.lineTo(w-padR, yy); cctx.stroke();
-    cctx.fillText(g.toFixed(1), padL-4, yy+3);
+    cctx.fillText(g.toFixed(1), padL-6, yy+4);
   });
 
-  // time labels bottom
   cctx.textAlign = 'center';
-  cctx.fillStyle = '#888';
-  const secs = (n * 0.05).toFixed(0); // rough
-  cctx.fillText('0s', padL, h-8);
-  cctx.fillText(secs+'s', w-padR, h-8);
-  cctx.fillText('Time', w/2, h-8);
+  cctx.fillStyle = '#999';
+  const approxSec = Math.max(1, Math.round(n * 0.04));
+  cctx.fillText('0s', padL, h-10);
+  cctx.fillText(approxSec+'s', w-padR, h-10);
 
-  // title
   cctx.textAlign = 'left';
-  cctx.fillStyle = '#ccc';
-  cctx.fillText('G-force', padL, 14);
+  cctx.fillStyle = '#ddd';
+  cctx.font = '12px -apple-system, sans-serif';
+  cctx.fillText('G-force', padL, 16);
 
   function line(key, col) {
     cctx.strokeStyle = col;
-    cctx.lineWidth = 1.8;
+    cctx.lineWidth = 2;
     cctx.lineJoin = 'round';
     cctx.lineCap = 'round';
     cctx.beginPath();
@@ -176,18 +186,17 @@ function drawChart() {
 }
 
 document.getElementById('dl').onclick = () => {
-  if (!samples.length) return;
-  // high-res export
-  const scale = 3;
+  if (samples.length < 2) return;
+  const scale = 4;
   const exp = document.createElement('canvas');
-  exp.width = chart.width * scale;
-  exp.height = chart.height * scale;
+  exp.width = 340 * scale;
+  exp.height = 180 * scale;
   const ectx = exp.getContext('2d');
   ectx.scale(scale, scale);
-  // redraw at higher res by temporarily swapping context logic is hard; just upscale current
-  ectx.drawImage(chart, 0, 0, chart.width, chart.height, 0, 0, chart.width, chart.height);
+  // redraw chart into export canvas by reusing logic is complex; draw current high-dpr canvas
+  ectx.drawImage(chart, 0, 0, chart.width/dpr, chart.height/dpr);
   const a = document.createElement('a');
-  a.href = exp.toDataURL('image/jpeg', 0.95);
+  a.href = exp.toDataURL('image/jpeg', 0.92);
   a.download = 'dipstick-g-chart.jpg';
   a.click();
 };
@@ -198,8 +207,7 @@ function onMotion(e) {
   const rawLat = ((a.x||0)/9.81) - offsetX;
   const rawLon = ((a.y||0)/9.81) - offsetY;
   const rawTip = Math.atan2(a.x||0, a.y||0) * 180 / Math.PI;
-  // light low-pass filter to cut road noise
-  const alpha = 0.25;
+  const alpha = 0.28;
   lat = lat * (1-alpha) + rawLat * alpha;
   lon = lon * (1-alpha) + rawLon * alpha;
   tip = tip * (1-alpha) + rawTip * alpha;
@@ -214,8 +222,8 @@ function onMotion(e) {
   pTipEl.textContent = Math.round(peakTip) + '°';
   drawGauge();
   if (recording) {
-    samples.push({lat, lon, tip: tip/10}); // tip scaled for chart
-    if (samples.length > 600) samples.shift();
+    samples.push({lat, lon});
+    if (samples.length > 800) samples.shift();
   }
 }
 

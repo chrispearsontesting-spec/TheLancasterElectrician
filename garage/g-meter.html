@@ -25,6 +25,8 @@ canvas#chart{width:100%;height:180px;background:#141416;border-radius:12px;borde
 .legend{display:flex;gap:14px;font-size:11px;color:#8b8b8b;margin-top:6px;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
 .dot{width:8px;height:8px;border-radius:50%}
+.comps{margin-top:10px;font-size:11px;color:#aaa;line-height:1.5}
+.comps b{color:#f2f2f2;font-weight:600}
 .note{font-size:11px;color:#6a6a6a;margin-top:12px;text-align:center;max-width:320px;line-height:1.4}
 </style>
 </head>
@@ -50,6 +52,7 @@ canvas#chart{width:100%;height:180px;background:#141416;border-radius:12px;borde
     <span><i class="dot" style="background:#73BDE0"></i> Lateral</span>
     <span><i class="dot" style="background:#f5a623"></i> Long</span>
   </div>
+  <div class="comps" id="comps"></div>
   <button class="btn" id="dl" type="button" style="margin-top:8px">Download chart</button>
 </div>
 <p class="note">Rings at 0.5 / 1.0 / 1.5 G. Blue dot = live G. Tip ball: green <15°, amber 15–25°, red >25°. Start recording for a chart.</p>
@@ -139,7 +142,7 @@ function drawChart() {
   cctx.clearRect(0,0,w,h);
   if (samples.length < 2) return;
   const padL = 38, padR = 14, padT = 24, padB = 30;
-  const maxG = 1.5;
+  const maxG = 3;
   const n = samples.length;
   const plotW = w - padL - padR;
   const plotH = h - padT - padB;
@@ -152,7 +155,7 @@ function drawChart() {
   cctx.font = '11px -apple-system, sans-serif';
   cctx.fillStyle = '#999';
   cctx.textAlign = 'right';
-  [-1.5,-1,-0.5,0,0.5,1,1.5].forEach(g => {
+  [-3,-2,-1,0,1,2,3].forEach(g => {
     const yy = yG(g);
     cctx.beginPath(); cctx.moveTo(padL, yy); cctx.lineTo(w-padR, yy); cctx.stroke();
     cctx.fillText(g.toFixed(1), padL-6, yy+4);
@@ -183,6 +186,24 @@ function drawChart() {
   }
   line('lat', '#73BDE0');
   line('lon', '#f5a623');
+  // fun comparisons based on peak
+  const peak = Math.max(peakLat, peakLon);
+  const comps = [
+    [0.3, 'Hard braking in a normal car'],
+    [0.8, 'Quick road car corner'],
+    [1.5, 'Hot hatch / sports car limit'],
+    [2.5, 'Rally car on loose surface'],
+    [4.0, 'F1 car in a fast corner'],
+    [5.0, 'Motorbike knee-down lean'],
+    [9.0, 'Fighter jet sustained turn'],
+    [20, 'Rocket launch (brief)']
+  ];
+  let html = '<b>How that compares</b><br>';
+  comps.forEach(([g, label]) => {
+    const mark = peak >= g ? '●' : '○';
+    html += mark + ' ' + g + ' G — ' + label + '<br>';
+  });
+  document.getElementById('comps').innerHTML = html;
 }
 
 document.getElementById('dl').onclick = () => {

@@ -8,23 +8,31 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
-body{display:flex;flex-direction:column;align-items:center;padding:14px;padding-top:calc(14px + env(safe-area-inset-top));min-height:100%}
-h1{font-size:20px;margin:6px 0 2px;font-weight:650}
-.muted{color:#8b8b8b;font-size:12px;margin:0 0 12px;text-align:center}
-.gauge-wrap{position:relative;width:300px;height:300px}
-canvas{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
-.vals{display:flex;gap:20px;margin:14px 0 6px;font-size:13px;text-align:center}
-.vals b{font-size:18px;display:block;font-weight:650}
-.peaks{font-size:12px;color:#8b8b8b;margin:4px 0 10px}
-.btn{margin:6px 4px;padding:10px 16px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-decoration:none;display:inline-block;font-size:14px}
-.note{font-size:11px;color:#6a6a6a;margin-top:14px;text-align:center;max-width:300px;line-height:1.4}
+body{display:flex;flex-direction:column;align-items:center;padding:12px;padding-top:calc(12px + env(safe-area-inset-top));min-height:100%}
+h1{font-size:20px;margin:4px 0 2px;font-weight:650}
+.muted{color:#8b8b8b;font-size:12px;margin:0 0 10px;text-align:center}
+.gauge-wrap{position:relative;width:280px;height:280px;flex-shrink:0}
+canvas#c{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
+.vals{display:flex;gap:28px;margin:12px 0 4px;font-size:13px;text-align:center;min-height:48px}
+.vals b{font-size:20px;display:block;font-weight:650;font-variant-numeric:tabular-nums}
+.peaks{font-size:12px;color:#8b8b8b;margin:2px 0 10px;min-height:16px;font-variant-numeric:tabular-nums}
+.btn{margin:4px;padding:10px 16px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-decoration:none;display:inline-block;font-size:14px}
+.btn.rec{background:#e10600}
+.btn.rec.on{background:#3dd68c;color:#111}
+.chart-wrap{width:100%;max-width:340px;margin-top:14px;display:none}
+.chart-wrap.show{display:block}
+canvas#chart{width:100%;height:160px;background:#141416;border-radius:12px;border:1px solid #2a2a2e}
+.legend{display:flex;gap:14px;font-size:11px;color:#8b8b8b;margin-top:6px;justify-content:center}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:8px;height:8px;border-radius:50%}
+.note{font-size:11px;color:#6a6a6a;margin-top:12px;text-align:center;max-width:300px;line-height:1.4}
 </style>
 </head>
 <body>
 <h1>G-force & Tip</h1>
-<p class="muted">Mount the phone firmly on the dash</p>
+<p class="muted">Mount firmly · Zero when level</p>
 <div class="gauge-wrap">
-  <canvas id="c" width="300" height="300"></canvas>
+  <canvas id="c" width="280" height="280"></canvas>
 </div>
 <div class="vals">
   <div>Lateral<br><b id="lat">0.00</b></div>
@@ -33,12 +41,23 @@ canvas{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
 </div>
 <div class="peaks">Peak lat <span id="pLat">0.00</span> · Peak long <span id="pLon">0.00</span> · Max tip <span id="pTip">0°</span></div>
 <button class="btn" id="zero" type="button">Zero</button>
+<button class="btn rec" id="rec" type="button">Start recording</button>
 <button class="btn" id="allow" type="button">Allow sensors</button>
 <a class="btn" href="drive-hub.html">Back</a>
-<p class="note">Rings show 0.5 / 1.0 / 1.5 G. Red ball = tip angle. Blue dot = live G. Trail fades. Tip turns amber over 15° and red over 25°.</p>
+<div class="chart-wrap" id="chartWrap">
+  <canvas id="chart" width="340" height="160"></canvas>
+  <div class="legend">
+    <span><i class="dot" style="background:#73BDE0"></i> Lateral</span>
+    <span><i class="dot" style="background:#f5a623"></i> Long</span>
+    <span><i class="dot" style="background:#e10600"></i> Tip</span>
+  </div>
+</div>
+<p class="note">Rings at 0.5 / 1.0 / 1.5 G. Blue dot = live G. Red ball = tip (amber >15°, red >25°). Start recording to capture a chart.</p>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const chart = document.getElementById('chart');
+const cctx = chart.getContext('2d');
 const latEl = document.getElementById('lat');
 const lonEl = document.getElementById('lon');
 const tipEl = document.getElementById('tip');
@@ -47,75 +66,97 @@ const pLonEl = document.getElementById('pLon');
 const pTipEl = document.getElementById('pTip');
 const allowBtn = document.getElementById('allow');
 const zeroBtn = document.getElementById('zero');
+const recBtn = document.getElementById('rec');
+const chartWrap = document.getElementById('chartWrap');
 
 let lat = 0, lon = 0, tip = 0;
 let peakLat = 0, peakLon = 0, peakTip = 0;
 let offsetX = 0, offsetY = 0;
 const trail = [];
-const MAX_TRAIL = 40;
+const MAX_TRAIL = 36;
+let recording = false;
+let samples = [];
 
-function draw() {
-  const w = canvas.width, h = canvas.height, cx = w/2, cy = h/2, r = 120;
+function drawGauge() {
+  const w = c.width, h = c.height, cx = w/2, cy = h/2, r = 112;
   ctx.clearRect(0,0,w,h);
-
-  // rings
   ctx.strokeStyle = '#2a2a2e';
   ctx.lineWidth = 1;
-  [0.5, 1.0, 1.5].forEach(g => {
+  [0.5,1,1.5].forEach(g => {
     ctx.beginPath();
-    ctx.arc(cx, cy, r * (g / 1.5), 0, Math.PI*2);
+    ctx.arc(cx, cy, r * (g/1.5), 0, Math.PI*2);
     ctx.stroke();
   });
-  // cross
   ctx.beginPath();
-  ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
-  ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+  ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy);
+  ctx.moveTo(cx, cy-r); ctx.lineTo(cx, cy+r);
   ctx.stroke();
 
-  // trail
-  trail.forEach((p, i) => {
-    const alpha = (i + 1) / trail.length * 0.5;
-    ctx.fillStyle = `rgba(115,189,224,${alpha})`;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
-    ctx.fill();
+  trail.forEach((p,i) => {
+    ctx.fillStyle = `rgba(115,189,224,${(i+1)/trail.length*0.45})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2); ctx.fill();
   });
 
-  // tip ball (colour by angle)
   const absTip = Math.abs(tip);
   let tipCol = '#3dd68c';
   if (absTip > 25) tipCol = '#e10600';
   else if (absTip > 15) tipCol = '#f5a623';
-  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.55;
-  const tipY = cy - Math.cos(tip * Math.PI/180) * r * 0.12;
+  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.5;
+  const tipY = cy - Math.cos(tip * Math.PI/180) * r * 0.1;
   ctx.fillStyle = tipCol;
-  ctx.beginPath(); ctx.arc(tipX, tipY, 13, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tipX, tipY, 12, 0, Math.PI*2); ctx.fill();
 
-  // live G dot
   const scale = r / 1.5;
   const gx = cx + lat * scale;
   const gy = cy - lon * scale;
   ctx.fillStyle = '#73BDE0';
-  ctx.beginPath(); ctx.arc(gx, gy, 8, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  ctx.beginPath(); ctx.arc(gx, gy, 7, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; ctx.stroke();
 
-  // centre
   ctx.fillStyle = '#555';
-  ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI*2); ctx.fill();
 
-  // store trail point
-  trail.push({x: gx, y: gy});
+  trail.push({x:gx, y:gy});
   if (trail.length > MAX_TRAIL) trail.shift();
+}
+
+function drawChart() {
+  const w = chart.width, h = chart.height;
+  cctx.clearRect(0,0,w,h);
+  if (!samples.length) return;
+  const pad = 8;
+  const maxG = 1.8;
+  const maxTip = 40;
+  const n = samples.length;
+  function x(i){ return pad + (i/(n-1||1))*(w-pad*2); }
+  function yG(v){ return h/2 - (v/maxG)*(h/2 - pad); }
+  function yTip(v){ return h/2 - (v/maxTip)*(h/2 - pad); }
+
+  // zero line
+  cctx.strokeStyle = '#333';
+  cctx.beginPath(); cctx.moveTo(pad, h/2); cctx.lineTo(w-pad, h/2); cctx.stroke();
+
+  function line(key, col, yFn) {
+    cctx.strokeStyle = col;
+    cctx.lineWidth = 1.5;
+    cctx.beginPath();
+    samples.forEach((s,i) => {
+      const yy = yFn(s[key]);
+      if (i===0) cctx.moveTo(x(i), yy); else cctx.lineTo(x(i), yy);
+    });
+    cctx.stroke();
+  }
+  line('lat', '#73BDE0', yG);
+  line('lon', '#f5a623', yG);
+  line('tip', '#e10600', yTip);
 }
 
 function onMotion(e) {
   const a = e.accelerationIncludingGravity || e.acceleration;
   if (!a || a.x == null) return;
-  lat = ((a.x || 0) / 9.81) - offsetX;
-  lon = ((a.y || 0) / 9.81) - offsetY;
-  tip = Math.atan2(a.x || 0, a.y || 0) * 180 / Math.PI;
+  lat = ((a.x||0)/9.81) - offsetX;
+  lon = ((a.y||0)/9.81) - offsetY;
+  tip = Math.atan2(a.x||0, a.y||0) * 180 / Math.PI;
   peakLat = Math.max(peakLat, Math.abs(lat));
   peakLon = Math.max(peakLon, Math.abs(lon));
   peakTip = Math.max(peakTip, Math.abs(tip));
@@ -125,7 +166,11 @@ function onMotion(e) {
   pLatEl.textContent = peakLat.toFixed(2);
   pLonEl.textContent = peakLon.toFixed(2);
   pTipEl.textContent = Math.round(peakTip) + '°';
-  draw();
+  drawGauge();
+  if (recording) {
+    samples.push({lat, lon, tip: tip/10}); // tip scaled for chart
+    if (samples.length > 600) samples.shift();
+  }
 }
 
 zeroBtn.onclick = () => {
@@ -133,6 +178,24 @@ zeroBtn.onclick = () => {
   offsetY = lon + offsetY;
   peakLat = peakLon = peakTip = 0;
   trail.length = 0;
+};
+
+recBtn.onclick = () => {
+  if (!recording) {
+    recording = true;
+    samples = [];
+    chartWrap.classList.remove('show');
+    recBtn.textContent = 'Stop recording';
+    recBtn.classList.add('on');
+  } else {
+    recording = false;
+    recBtn.textContent = 'Start recording';
+    recBtn.classList.remove('on');
+    if (samples.length > 2) {
+      chartWrap.classList.add('show');
+      drawChart();
+    }
+  }
 };
 
 allowBtn.onclick = async () => {
@@ -144,16 +207,15 @@ allowBtn.onclick = async () => {
     allowBtn.textContent = 'Listening';
     allowBtn.disabled = true;
   } catch(err) {
-    alert('Could not start: ' + (err.message || err));
+    alert('Could not start sensors');
   }
 };
 
-// auto on Android
 if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
   window.addEventListener('devicemotion', onMotion);
   allowBtn.style.display = 'none';
 }
-draw();
+drawGauge();
 </script>
 </body>
 </html>

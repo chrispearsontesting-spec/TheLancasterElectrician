@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>History</title>
+<link rel="stylesheet" href="./ui.css?v=46"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{margin:0 auto;max-width:440px;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
+h1{font-size:26px;margin:8px 0 16px;font-weight:650}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:16px;margin-bottom:12px;overflow:hidden}
+.acc{width:100%;background:none;border:0;color:#f2f2f2;text-align:left;padding:14px 16px;font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.acc span{color:#8b8b8b;font-size:18px}
+.panel{display:none;padding:0 16px 16px;border-top:1px solid #2a2a2e}
+.panel.open{display:block}
+.btn{display:block;width:100%;margin-top:8px;padding:12px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-align:center;text-decoration:none}
+input[type=file]{margin:8px 0}
+.note{font-size:13px;color:#8b8b8b;margin:8px 0}
+#uploads{margin-top:8px}
+.upload-item{background:#1c1c1e;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
+.upload-item img{max-width:100%;border-radius:8px;margin-top:6px}
+</style>
+</head>
+<body>
+<h1>History</h1>
+
+<div class="card">
+  <button class="acc" type="button">Insurance <span>+</span></button>
+  <div class="panel">
+    <p class="note">Upload or view the insurance document for this car.</p>
+    <a class="btn" href="insurance.html">Open insurance</a>
+  </div>
+</div>
+
+<div class="card">
+  <button class="acc" type="button">MOT <span>+</span></button>
+  <div class="panel">
+    <p class="note">Full MOT history, recent work and future costs.</p>
+    <a class="btn" href="mot.html">View MOT history</a>
+  </div>
+</div>
+
+<div class="card">
+  <button class="acc" type="button">Work & invoices <span>+</span></button>
+  <div class="panel">
+    <p class="note">Photograph or upload invoices and photos of work. Each upload is dated and added to the calendar.</p>
+    <input type="file" id="file" accept="image/*,application/pdf" capture="environment"/>
+    <input type="text" id="note" placeholder="Short note (e.g. Clutch replaced)" style="width:100%;padding:10px;border-radius:10px;border:0;background:#1c1c1e;color:#fff;margin:6px 0"/>
+    <button class="btn" id="save" type="button">Save to history</button>
+    <div id="uploads"></div>
+  </div>
+</div>
+
+<a class="btn" href="home.html" style="margin-top:16px">Back</a>
+
+<script>
+document.querySelectorAll('.acc').forEach(btn => {
+  btn.onclick = () => {
+    const panel = btn.nextElementSibling;
+    panel.classList.toggle('open');
+    btn.querySelector('span').textContent = panel.classList.contains('open') ? '–' : '+';
+  };
+});
+
+const uploadsEl = document.getElementById('uploads');
+let items = JSON.parse(localStorage.getItem('dipstick-history') || '[]');
+
+function render() {
+  uploadsEl.innerHTML = items.map(it => `
+    <div class="upload-item">
+      <strong>${it.date}</strong> — ${it.note || 'Work'}
+      ${it.type.startsWith('image') ? `<img src="${it.data}" alt=""/>` : `<p>PDF saved</p>`}
+    </div>
+  `).join('') || '<p class="note">No uploads yet.</p>';
+}
+render();
+
+document.getElementById('save').onclick = () => {
+  const file = document.getElementById('file').files[0];
+  const note = document.getElementById('note').value.trim();
+  if (!file) { alert('Choose a photo or PDF first'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const item = {
+      date: new Date().toLocaleDateString('en-GB'),
+      note: note || 'Work carried out',
+      type: file.type,
+      data: reader.result
+    };
+    items.unshift(item);
+    localStorage.setItem('dipstick-history', JSON.stringify(items));
+    render();
+    // simple calendar event via local storage the calendar page can read later
+    const events = JSON.parse(localStorage.getItem('dipstick-cal-events') || '[]');
+    events.push({ date: item.date, title: item.note, type: 'work' });
+    localStorage.setItem('dipstick-cal-events', JSON.stringify(events));
+    document.getElementById('file').value = '';
+    document.getElementById('note').value = '';
+    alert('Saved to history and calendar');
+  };
+  reader.readAsDataURL(file);
+};
+</script>
+</body>
+</html>

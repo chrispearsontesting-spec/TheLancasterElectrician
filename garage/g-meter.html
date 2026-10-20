@@ -30,7 +30,7 @@ canvas{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
   <div>Longitudinal<br><b id="lon">0.00</b></div>
   <div>Tip<br><b id="tip">0°</b></div>
 </div>
-<p class="note">The ball shows lean (tip). The crosshair shows G-force.</p>
+<p class="note">Tap Allow, then tilt the phone. If nothing moves: Chrome → lock icon → Site settings → Motion sensors → Allow, then reload.</p>
 <button class="btn" id="allow" type="button">Allow motion sensors</button>
 <a class="btn" href="drive-hub.html" style="margin-top:8px">Back</a>
 <script>
@@ -78,14 +78,17 @@ function onMotion(e) {
 allowBtn.onclick = async function() {
   try {
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-      const state = await DeviceMotionEvent.requestPermission();
-      if (state !== 'granted') {
-        alert('Permission was not granted');
-        return;
+      try {
+        const state = await DeviceMotionEvent.requestPermission();
+        if (state !== 'granted') {
+          alert('Permission blocked. In Chrome go to the lock icon → Site settings → Motion sensors → Allow, then reload.');
+        }
+      } catch (e) {
+        // ignore and still try to listen
       }
     }
     window.addEventListener('devicemotion', onMotion);
-    allowBtn.textContent = 'Sensors on';
+    allowBtn.textContent = 'Listening… tilt the phone';
     allowBtn.disabled = true;
   } catch (err) {
     alert('Error: ' + (err.message || err));

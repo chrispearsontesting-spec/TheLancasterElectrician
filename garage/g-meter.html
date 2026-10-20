@@ -39,67 +39,63 @@ const ctx = canvas.getContext('2d');
 const latEl = document.getElementById('lat');
 const lonEl = document.getElementById('lon');
 const tipEl = document.getElementById('tip');
+const allowBtn = document.getElementById('allow');
 let lat = 0, lon = 0, tip = 0;
-let peakLat = 0, peakLon = 0, peakTip = 0;
 
 function draw() {
   const w = canvas.width, h = canvas.height, cx = w/2, cy = h/2, r = 110;
   ctx.clearRect(0,0,w,h);
-  // outer circle
   ctx.strokeStyle = '#2a2a2e';
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
-  // crosshairs
   ctx.strokeStyle = '#333';
   ctx.beginPath(); ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy); ctx.moveTo(cx, cy-r); ctx.lineTo(cx, cy+r); ctx.stroke();
-  // tip ball (based on roll/pitch approximation)
-  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.7;
-  const tipY = cy - Math.cos(tip * Math.PI/180) * r * 0.15; // simple visual
+  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.65;
+  const tipY = cy + Math.cos(tip * Math.PI/180) * r * 0.15;
   ctx.fillStyle = '#e10600';
-  ctx.beginPath(); ctx.arc(tipX, tipY, 12, 0, Math.PI*2); ctx.fill();
-  // G-force dot
-  const gx = cx + lat * r * 0.8;
-  const gy = cy - lon * r * 0.8;
+  ctx.beginPath(); ctx.arc(tipX, tipY, 14, 0, Math.PI*2); ctx.fill();
+  const gx = cx + (lat || 0) * r * 0.7;
+  const gy = cy - (lon || 0) * r * 0.7;
   ctx.fillStyle = '#73BDE0';
-  ctx.beginPath(); ctx.arc(gx, gy, 8, 0, Math.PI*2); ctx.fill();
-  // centre
-  ctx.fillStyle = '#555';
+  ctx.beginPath(); ctx.arc(gx, gy, 9, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#666';
   ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill();
 }
 draw();
 
-document.getElementById('allow').onclick = async () => {
+function onMotion(e) {
+  const a = e.accelerationIncludingGravity || e.acceleration;
+  if (!a || (a.x == null && a.y == null)) return;
+  lat = (a.x || 0) / 9.81;
+  lon = (a.y || 0) / 9.81;
+  tip = Math.atan2(a.x || 0, a.y || 0) * 180 / Math.PI;
+  latEl.textContent = lat.toFixed(2);
+  lonEl.textContent = lon.toFixed(2);
+  tipEl.textContent = Math.round(Math.abs(tip)) + '°';
+  draw();
+}
+
+allowBtn.onclick = async function() {
   try {
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-      const perm = await DeviceMotionEvent.requestPermission();
-      if (perm !== 'granted') { alert('Permission denied'); return; }
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      const state = await DeviceMotionEvent.requestPermission();
+      if (state !== 'granted') {
+        alert('Permission was not granted');
+        return;
+      }
     }
-    startMotion();
-    document.getElementById('allow').style.display = 'none';
+    window.addEventListener('devicemotion', onMotion);
+    allowBtn.textContent = 'Sensors on';
+    allowBtn.disabled = true;
   } catch (err) {
-    alert('Could not start sensors: ' + err.message);
+    alert('Error: ' + (err.message || err));
   }
 };
-function startMotion() {
-  if (!window.DeviceMotionEvent) { alert('Motion sensors not supported'); return; }
-  window.addEventListener('devicemotion', e => {
-    const a = e.accelerationIncludingGravity;
-    if (!a) return;
-    // rough mapping – phone orientation dependent
-    lat = (a.x || 0) / 9.8;
-    lon = (a.y || 0) / 9.8;
-    tip = Math.atan2(a.x || 0, a.y || 0) * 180 / Math.PI;
-    peakLat = Math.max(peakLat, Math.abs(lat));
-    peakLon = Math.max(peakLon, Math.abs(lon));
-    peakTip = Math.max(peakTip, Math.abs(tip));
-    latEl.textContent = lat.toFixed(2);
-    lonEl.textContent = lon.toFixed(2);
-    tipEl.textContent = Math.round(tip) + '°';
-    draw();
-  });
-}
-} else {
-  document.querySelector('.note').textContent = 'Motion sensors not available on this device or browser.';
+
+// Auto-start on Android if no permission API (Chrome)
+if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
+  window.addEventListener('devicemotion', onMotion);
+  allowBtn.style.display = 'none';
 }
 </script>
 </body>

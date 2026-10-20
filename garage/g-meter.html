@@ -195,9 +195,14 @@ document.getElementById('dl').onclick = () => {
 function onMotion(e) {
   const a = e.accelerationIncludingGravity || e.acceleration;
   if (!a || a.x == null) return;
-  lat = ((a.x||0)/9.81) - offsetX;
-  lon = ((a.y||0)/9.81) - offsetY;
-  tip = Math.atan2(a.x||0, a.y||0) * 180 / Math.PI;
+  const rawLat = ((a.x||0)/9.81) - offsetX;
+  const rawLon = ((a.y||0)/9.81) - offsetY;
+  const rawTip = Math.atan2(a.x||0, a.y||0) * 180 / Math.PI;
+  // light low-pass filter to cut road noise
+  const alpha = 0.25;
+  lat = lat * (1-alpha) + rawLat * alpha;
+  lon = lon * (1-alpha) + rawLon * alpha;
+  tip = tip * (1-alpha) + rawTip * alpha;
   peakLat = Math.max(peakLat, Math.abs(lat));
   peakLon = Math.max(peakLon, Math.abs(lon));
   peakTip = Math.max(peakTip, Math.abs(tip));

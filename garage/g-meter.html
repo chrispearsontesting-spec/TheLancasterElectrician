@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>G & Tip</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100%}
+body{display:flex;flex-direction:column;align-items:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top))}
+h1{font-size:22px;margin:8px 0 4px;font-weight:650}
+.muted{color:#8b8b8b;font-size:13px;margin:0 0 16px;text-align:center}
+.gauge-wrap{position:relative;width:280px;height:280px;margin:10px auto}
+canvas{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
+.vals{display:flex;gap:24px;margin:16px 0;font-size:15px}
+.vals b{font-size:20px;display:block}
+.btn{margin-top:12px;padding:12px 20px;background:#1c1c1e;color:#fff;border:0;border-radius:14px;font-weight:600;text-decoration:none;display:inline-block}
+.note{font-size:12px;color:#7a7a7a;margin-top:20px;text-align:center;max-width:320px}
+</style>
+</head>
+<body>
+<h1>G-force & Tip</h1>
+<p class="muted">Mount the phone firmly. Works best fixed on the dash.</p>
+<div class="gauge-wrap">
+  <canvas id="c" width="280" height="280"></canvas>
+</div>
+<div class="vals">
+  <div>Lateral<br><b id="lat">0.00</b></div>
+  <div>Longitudinal<br><b id="lon">0.00</b></div>
+  <div>Tip<br><b id="tip">0°</b></div>
+</div>
+<p class="note">The ball shows lean (tip). The crosshair shows G-force. Peak values update as you drive.</p>
+<a class="btn" href="drive-hub.html">Back</a>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const latEl = document.getElementById('lat');
+const lonEl = document.getElementById('lon');
+const tipEl = document.getElementById('tip');
+let lat = 0, lon = 0, tip = 0;
+let peakLat = 0, peakLon = 0, peakTip = 0;
+
+function draw() {
+  const w = canvas.width, h = canvas.height, cx = w/2, cy = h/2, r = 110;
+  ctx.clearRect(0,0,w,h);
+  // outer circle
+  ctx.strokeStyle = '#2a2a2e';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+  // crosshairs
+  ctx.strokeStyle = '#333';
+  ctx.beginPath(); ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy); ctx.moveTo(cx, cy-r); ctx.lineTo(cx, cy+r); ctx.stroke();
+  // tip ball (based on roll/pitch approximation)
+  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.7;
+  const tipY = cy - Math.cos(tip * Math.PI/180) * r * 0.15; // simple visual
+  ctx.fillStyle = '#e10600';
+  ctx.beginPath(); ctx.arc(tipX, tipY, 12, 0, Math.PI*2); ctx.fill();
+  // G-force dot
+  const gx = cx + lat * r * 0.8;
+  const gy = cy - lon * r * 0.8;
+  ctx.fillStyle = '#73BDE0';
+  ctx.beginPath(); ctx.arc(gx, gy, 8, 0, Math.PI*2); ctx.fill();
+  // centre
+  ctx.fillStyle = '#555';
+  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill();
+}
+draw();
+
+if (window.DeviceMotionEvent) {
+  window.addEventListener('devicemotion', e => {
+    const a = e.accelerationIncludingGravity;
+    if (!a) return;
+    // rough mapping – phone orientation dependent
+    lat = (a.x || 0) / 9.8;
+    lon = (a.y || 0) / 9.8;
+    tip = Math.atan2(a.x || 0, a.y || 0) * 180 / Math.PI;
+    peakLat = Math.max(peakLat, Math.abs(lat));
+    peakLon = Math.max(peakLon, Math.abs(lon));
+    peakTip = Math.max(peakTip, Math.abs(tip));
+    latEl.textContent = lat.toFixed(2);
+    lonEl.textContent = lon.toFixed(2);
+    tipEl.textContent = Math.round(tip) + '°';
+    draw();
+  });
+} else {
+  document.querySelector('.note').textContent = 'Motion sensors not available on this device or browser.';
+}
+</script>
+</body>
+</html>

@@ -7,99 +7,153 @@
 <title>G & Tip</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100%}
-body{display:flex;flex-direction:column;align-items:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top))}
-h1{font-size:22px;margin:8px 0 4px;font-weight:650}
-.muted{color:#8b8b8b;font-size:13px;margin:0 0 16px;text-align:center}
-.gauge-wrap{position:relative;width:280px;height:280px;margin:10px auto}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{display:flex;flex-direction:column;align-items:center;padding:14px;padding-top:calc(14px + env(safe-area-inset-top));min-height:100%}
+h1{font-size:20px;margin:6px 0 2px;font-weight:650}
+.muted{color:#8b8b8b;font-size:12px;margin:0 0 12px;text-align:center}
+.gauge-wrap{position:relative;width:300px;height:300px}
 canvas{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
-.vals{display:flex;gap:24px;margin:16px 0;font-size:15px}
-.vals b{font-size:20px;display:block}
-.btn{margin-top:12px;padding:12px 20px;background:#1c1c1e;color:#fff;border:0;border-radius:14px;font-weight:600;text-decoration:none;display:inline-block}
-.note{font-size:12px;color:#7a7a7a;margin-top:20px;text-align:center;max-width:320px}
+.vals{display:flex;gap:20px;margin:14px 0 6px;font-size:13px;text-align:center}
+.vals b{font-size:18px;display:block;font-weight:650}
+.peaks{font-size:12px;color:#8b8b8b;margin:4px 0 10px}
+.btn{margin:6px 4px;padding:10px 16px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-decoration:none;display:inline-block;font-size:14px}
+.note{font-size:11px;color:#6a6a6a;margin-top:14px;text-align:center;max-width:300px;line-height:1.4}
 </style>
 </head>
 <body>
 <h1>G-force & Tip</h1>
-<p class="muted">Mount the phone firmly. Works best fixed on the dash.</p>
+<p class="muted">Mount the phone firmly on the dash</p>
 <div class="gauge-wrap">
-  <canvas id="c" width="280" height="280"></canvas>
+  <canvas id="c" width="300" height="300"></canvas>
 </div>
 <div class="vals">
   <div>Lateral<br><b id="lat">0.00</b></div>
-  <div>Longitudinal<br><b id="lon">0.00</b></div>
+  <div>Long<br><b id="lon">0.00</b></div>
   <div>Tip<br><b id="tip">0°</b></div>
 </div>
-<p class="note">Tap Allow, then tilt the phone. If nothing moves: Chrome → lock icon → Site settings → Motion sensors → Allow, then reload.</p>
-<button class="btn" id="allow" type="button">Allow motion sensors</button>
-<a class="btn" href="drive-hub.html" style="margin-top:8px">Back</a>
+<div class="peaks">Peak lat <span id="pLat">0.00</span> · Peak long <span id="pLon">0.00</span> · Max tip <span id="pTip">0°</span></div>
+<button class="btn" id="zero" type="button">Zero</button>
+<button class="btn" id="allow" type="button">Allow sensors</button>
+<a class="btn" href="drive-hub.html">Back</a>
+<p class="note">Rings show 0.5 / 1.0 / 1.5 G. Red ball = tip angle. Blue dot = live G. Trail fades. Tip turns amber over 15° and red over 25°.</p>
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 const latEl = document.getElementById('lat');
 const lonEl = document.getElementById('lon');
 const tipEl = document.getElementById('tip');
+const pLatEl = document.getElementById('pLat');
+const pLonEl = document.getElementById('pLon');
+const pTipEl = document.getElementById('pTip');
 const allowBtn = document.getElementById('allow');
+const zeroBtn = document.getElementById('zero');
+
 let lat = 0, lon = 0, tip = 0;
+let peakLat = 0, peakLon = 0, peakTip = 0;
+let offsetX = 0, offsetY = 0;
+const trail = [];
+const MAX_TRAIL = 40;
 
 function draw() {
-  const w = canvas.width, h = canvas.height, cx = w/2, cy = h/2, r = 110;
+  const w = canvas.width, h = canvas.height, cx = w/2, cy = h/2, r = 120;
   ctx.clearRect(0,0,w,h);
+
+  // rings
   ctx.strokeStyle = '#2a2a2e';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
-  ctx.strokeStyle = '#333';
-  ctx.beginPath(); ctx.moveTo(cx-r, cy); ctx.lineTo(cx+r, cy); ctx.moveTo(cx, cy-r); ctx.lineTo(cx, cy+r); ctx.stroke();
-  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.65;
-  const tipY = cy + Math.cos(tip * Math.PI/180) * r * 0.15;
-  ctx.fillStyle = '#e10600';
-  ctx.beginPath(); ctx.arc(tipX, tipY, 14, 0, Math.PI*2); ctx.fill();
-  const gx = cx + (lat || 0) * r * 0.7;
-  const gy = cy - (lon || 0) * r * 0.7;
+  ctx.lineWidth = 1;
+  [0.5, 1.0, 1.5].forEach(g => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * (g / 1.5), 0, Math.PI*2);
+    ctx.stroke();
+  });
+  // cross
+  ctx.beginPath();
+  ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+  ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+  ctx.stroke();
+
+  // trail
+  trail.forEach((p, i) => {
+    const alpha = (i + 1) / trail.length * 0.5;
+    ctx.fillStyle = `rgba(115,189,224,${alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // tip ball (colour by angle)
+  const absTip = Math.abs(tip);
+  let tipCol = '#3dd68c';
+  if (absTip > 25) tipCol = '#e10600';
+  else if (absTip > 15) tipCol = '#f5a623';
+  const tipX = cx + Math.sin(tip * Math.PI/180) * r * 0.55;
+  const tipY = cy - Math.cos(tip * Math.PI/180) * r * 0.12;
+  ctx.fillStyle = tipCol;
+  ctx.beginPath(); ctx.arc(tipX, tipY, 13, 0, Math.PI*2); ctx.fill();
+
+  // live G dot
+  const scale = r / 1.5;
+  const gx = cx + lat * scale;
+  const gy = cy - lon * scale;
   ctx.fillStyle = '#73BDE0';
-  ctx.beginPath(); ctx.arc(gx, gy, 9, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#666';
-  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(gx, gy, 8, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // centre
+  ctx.fillStyle = '#555';
+  ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI*2); ctx.fill();
+
+  // store trail point
+  trail.push({x: gx, y: gy});
+  if (trail.length > MAX_TRAIL) trail.shift();
 }
-draw();
 
 function onMotion(e) {
   const a = e.accelerationIncludingGravity || e.acceleration;
-  if (!a || (a.x == null && a.y == null)) return;
-  lat = (a.x || 0) / 9.81;
-  lon = (a.y || 0) / 9.81;
+  if (!a || a.x == null) return;
+  lat = ((a.x || 0) / 9.81) - offsetX;
+  lon = ((a.y || 0) / 9.81) - offsetY;
   tip = Math.atan2(a.x || 0, a.y || 0) * 180 / Math.PI;
+  peakLat = Math.max(peakLat, Math.abs(lat));
+  peakLon = Math.max(peakLon, Math.abs(lon));
+  peakTip = Math.max(peakTip, Math.abs(tip));
   latEl.textContent = lat.toFixed(2);
   lonEl.textContent = lon.toFixed(2);
   tipEl.textContent = Math.round(Math.abs(tip)) + '°';
+  pLatEl.textContent = peakLat.toFixed(2);
+  pLonEl.textContent = peakLon.toFixed(2);
+  pTipEl.textContent = Math.round(peakTip) + '°';
   draw();
 }
 
-allowBtn.onclick = async function() {
+zeroBtn.onclick = () => {
+  offsetX = lat + offsetX;
+  offsetY = lon + offsetY;
+  peakLat = peakLon = peakTip = 0;
+  trail.length = 0;
+};
+
+allowBtn.onclick = async () => {
   try {
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-      try {
-        const state = await DeviceMotionEvent.requestPermission();
-        if (state !== 'granted') {
-          alert('Permission blocked. In Chrome go to the lock icon → Site settings → Motion sensors → Allow, then reload.');
-        }
-      } catch (e) {
-        // ignore and still try to listen
-      }
+      try { await DeviceMotionEvent.requestPermission(); } catch(e){}
     }
     window.addEventListener('devicemotion', onMotion);
-    allowBtn.textContent = 'Listening… tilt the phone';
+    allowBtn.textContent = 'Listening';
     allowBtn.disabled = true;
-  } catch (err) {
-    alert('Error: ' + (err.message || err));
+  } catch(err) {
+    alert('Could not start: ' + (err.message || err));
   }
 };
 
-// Auto-start on Android if no permission API (Chrome)
+// auto on Android
 if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
   window.addEventListener('devicemotion', onMotion);
   allowBtn.style.display = 'none';
 }
+draw();
 </script>
 </body>
 </html>

@@ -30,8 +30,9 @@ canvas{background:#141416;border-radius:50%;border:1px solid #2a2a2e}
   <div>Longitudinal<br><b id="lon">0.00</b></div>
   <div>Tip<br><b id="tip">0°</b></div>
 </div>
-<p class="note">The ball shows lean (tip). The crosshair shows G-force. Peak values update as you drive.</p>
-<a class="btn" href="drive-hub.html">Back</a>
+<p class="note">The ball shows lean (tip). The crosshair shows G-force.</p>
+<button class="btn" id="allow" type="button">Allow motion sensors</button>
+<a class="btn" href="drive-hub.html" style="margin-top:8px">Back</a>
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -67,7 +68,20 @@ function draw() {
 }
 draw();
 
-if (window.DeviceMotionEvent) {
+document.getElementById('allow').onclick = async () => {
+  try {
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      const perm = await DeviceMotionEvent.requestPermission();
+      if (perm !== 'granted') { alert('Permission denied'); return; }
+    }
+    startMotion();
+    document.getElementById('allow').style.display = 'none';
+  } catch (err) {
+    alert('Could not start sensors: ' + err.message);
+  }
+};
+function startMotion() {
+  if (!window.DeviceMotionEvent) { alert('Motion sensors not supported'); return; }
   window.addEventListener('devicemotion', e => {
     const a = e.accelerationIncludingGravity;
     if (!a) return;
@@ -83,6 +97,7 @@ if (window.DeviceMotionEvent) {
     tipEl.textContent = Math.round(tip) + '°';
     draw();
   });
+}
 } else {
   document.querySelector('.note').textContent = 'Motion sensors not available on this device or browser.';
 }

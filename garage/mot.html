@@ -101,7 +101,17 @@ function paint(){
       jobs.push({date:ukDate(t.completedDate), text:textOf(x)});
     });
   });
-  $("work").innerHTML=jobs.length?jobs.map(function(j){return "<div class='row'><div><b>"+j.date+"</b><p class='muted'>"+j.text+"</p></div><span class='tag fail'>Had to be fixed</span></div>"}).join("")+"<p class='muted'>A current MOT means these fails were put right.</p>":"<p class='muted'>No major fails in the last five years.</p>";
+  if(jobs.length){
+  var byDate={};
+  jobs.forEach(function(j){ (byDate[j.date]=byDate[j.date]||[]).push(j.text); });
+  var html="";
+  Object.keys(byDate).forEach(function(d){
+    html+="<div class='row'><div><b>"+d+"</b>";
+    byDate[d].forEach(function(txt){ html+="<p class='muted'>"+txt+"</p>"; });
+    html+="</div><span class='tag fail'>Had to be fixed</span></div>";
+  });
+  $("work").innerHTML=html+"<p class='muted'>A current MOT means these fails were put right.</p>";
+} else $("work").innerHTML="<p class='muted'>No major fails in the last five years.</p>";
   var latest=tests[0]||{};
   var milesNow=parseInt(String(latest.odometerValue||"").replace(/[^0-9]/g,""),10)||0;
   var firstYear=+(tests[tests.length-1].completedDate||"").slice(0,4)||new Date().getFullYear();
@@ -123,7 +133,7 @@ function paint(){
     var note=life;
     if(hit&&hit.major){ state="Seen in a fail"; note="Last recorded "+hit.date+". A fail usually means it was put right. "+life; }
     else if(hit){ state="Advised"; note="MOT said: "+hit.text+". "+life; }
-    return "<div class='row'><div><b>"+title+"</b><p class='muted'>"+state+". "+note+" Guide "+cost+".</p></div></div>";
+    return "<div class='row'><div><b>"+title+"</b> <b>("+cost+")</b><p class='muted'>"+state+". "+note+"</p></div></div>";
   }
   var tyre=lastHit(/tyre/);
   var brake=lastHit(/brake/);
@@ -146,7 +156,13 @@ function paint(){
     line("Service","Due every year, or 10,000 to 12,000 miles.", "£150 to £300", null, true),
     line("Timing belt","Many belts are five years or 60,000 to 100,000 miles. A chain has no set date. Ask for the invoice.", milesNow>80000||age>=5?"£400 to £900 if it is a belt":"Check the schedule", null, age>=5||milesNow>80000)
   ];
-  $("future").innerHTML=summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+"About "+age+" years on record. Typical life, not a quote, and only for this car.</p>";
+  var best=0, worst=0;
+  future.forEach(function(html){
+    var m=html.match(/\(\£(\d+) to \£(\d+)/);
+    if(m){ best+=+m[1]; worst+=+m[2]; }
+  });
+  var totals="<div class='row'><div><b>Best case total</b><p class='muted'>£"+best+"</p></div></div><div class='row'><div><b>Worst case total</b><p class='muted'>£"+worst+"</p></div></div>";
+  $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+"About "+age+" years on record. Typical life, not a quote, and only for this car.</p>";
 }
 $("tabHist").onclick=function(){show("hist")};
 $("tabWork").onclick=function(){show("work")};

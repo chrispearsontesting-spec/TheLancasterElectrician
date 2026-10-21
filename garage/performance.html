@@ -242,40 +242,43 @@ document.getElementById('bigStart').onclick = beginRun;
 // Voice: say "start run"
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const listenEl = document.getElementById('listening');
-function showListening(){ if(listenEl) listenEl.style.display = 'block'; }
+function showListening(txt){ if(listenEl){ listenEl.style.display = 'block'; listenEl.textContent = txt || 'Listening for “start run”'; } }
 if(SR){
   let rec = null;
   function startVoice(){
-    if(rec) return;
+    if(rec){ try{ rec.stop(); }catch(e){} rec = null; }
     rec = new SR();
     rec.continuous = true;
     rec.interimResults = true;
     rec.lang = 'en-GB';
     rec.onresult = (e) => {
       let said = '';
-      for(let i = e.resultIndex; i < e.results.length; i++){
-        said += e.results[i][0].transcript;
+      for(let i = e.resultIndex; i < e.results.length; ++i){
+        said += ' ' + e.results[i][0].transcript;
       }
-      said = said.toLowerCase();
-      if((said.includes('start run') || said.includes('start')) && !running && !document.getElementById('bigStart').classList.contains('hide')){
-        beginRun();
+      said = said.toLowerCase().replace(/[^a-z ]/g,' ');
+      showListening('Heard: ' + said.trim().slice(-40));
+      if((said.includes('start') && said.includes('run')) || said.includes('start run') || /\bstart\b/.test(said)){
+        if(!running && !document.getElementById('bigStart').classList.contains('hide')){
+          beginRun();
+        }
       }
     };
-    rec.onerror = () => {};
-    rec.onend = () => { try{ rec.start(); }catch(e){} };
-    try{ rec.start(); showListening(); }catch(e){}
+    rec.onerror = (ev) => { showListening('Mic error – tap screen to retry'); };
+    rec.onend = () => { setTimeout(()=>{ try{ if(rec) rec.start(); }catch(e){} }, 300); };
+    try{ rec.start(); showListening(); }catch(e){ showListening('Could not start mic'); }
   }
-  // Start after any user gesture
   ['click','touchstart'].forEach(ev => {
     document.addEventListener(ev, startVoice, {once:true, passive:true});
   });
   document.getElementById('ok').addEventListener('click', startVoice);
-  // Also request mic explicitly once
   if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
     document.getElementById('ok').addEventListener('click', () => {
       navigator.mediaDevices.getUserMedia({audio:true}).catch(()=>{});
     }, {once:true});
   }
+}else{
+  if(listenEl) listenEl.textContent = 'Voice not supported on this browser';
 }
 </script>
 </body>

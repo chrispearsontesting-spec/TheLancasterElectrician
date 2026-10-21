@@ -18,6 +18,9 @@ html,body{margin:0;background:#000;color:#fff;font-family:-apple-system,BlinkMac
 .top{position:fixed;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) 12px 8px;display:flex;gap:8px;flex-wrap:wrap;z-index:6;background:linear-gradient(#000,#0000)}
 select,button,.btn{background:#1c1c1e;color:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
 .disclaimer{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);padding:16px;border-radius:14px;text-align:center;max-width:280px;z-index:10;font-size:13px}
+#bigStart{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7;background:#e10600;color:#fff;border:0;border-radius:20px;padding:18px 28px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#bigStart.hide{display:none}
+#cancel{display:none}
 .chart-wrap{position:fixed;inset:0;background:#0b0c0e;z-index:8;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 .chart-wrap.show{display:flex}
 canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-radius:12px}
@@ -32,11 +35,13 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
     <option value="quarter">Quarter mile</option>
     <option value="half">Half mile</option>
     <option value="100-200">100–200 km/h</option>
+    <option value="track">Track mode</option>
   </select>
-  <button id="arm" type="button">Start run</button>
+  <button id="cancel" type="button">Cancel run</button>
   <label style="font-size:13px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="keep"/> Keep video</label>
   <a class="btn" href="drive-hub.html">Back</a>
 </div>
+<button id="bigStart" type="button">🏁 Start run</button>
 <div class="overlay">
   <div class="hud"><b id="time">0.0</b><span>Time</span></div>
   <div id="gDot"><i id="dot"></i></div>
@@ -119,6 +124,7 @@ function checkFinish(t){
   else if(mode==='quarter' && speed>0 && t>8){ done=true; label='Quarter'; } // rough
   else if(mode==='half' && t>15){ done=true; label='Half'; }
   else if(mode==='100-200' && speed>=124){ done=true; label='100–200'; }
+  else if(mode==='track'){ /* manual stop */ }
   if(done) finish(t, label);
 }
 
@@ -150,6 +156,14 @@ function drawChart(){
   });
   ctx.stroke();
 }
+document.getElementById('cancel').onclick = () => {
+  running = false;
+  if(recorder && recorder.state==='recording') recorder.stop();
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+  document.getElementById('bigStart').classList.remove('hide');
+  document.getElementById('cancel').style.display = 'none';
+  timeEl.textContent = '0.0';
+};
 document.getElementById('dlChart').onclick = () => {
   const a = document.createElement('a');
   a.href = document.getElementById('chart').toDataURL('image/jpeg',0.9);
@@ -157,11 +171,11 @@ document.getElementById('dlChart').onclick = () => {
   a.click();
 };
 
-armBtn.onclick = async () => {
-  if(running){ running=false; armBtn.textContent='Start run'; return; }
+document.getElementById('bigStart').onclick = async () => {
+  document.getElementById('bigStart').classList.add('hide');
+  document.getElementById('cancel').style.display = 'inline-block';
   running = true; startTs = 0; samples = []; motionStart = false; speed = 0;
   timeEl.textContent = '0.0';
-  armBtn.textContent = 'Cancel';
   chunks = [];
   if(stream){
     recorder = new MediaRecorder(stream, {mimeType:'video/webm'});

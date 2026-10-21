@@ -20,7 +20,7 @@ select,button,.btn{background:#1c1c1e;color:#fff;border:0;border-radius:12px;pad
 .disclaimer{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);padding:16px;border-radius:14px;text-align:center;max-width:280px;z-index:10;font-size:13px}
 #bigStart{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7;background:#1a7f3a;color:#fff;border:0;border-radius:20px;padding:18px 28px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 #bigStart.hide{display:none}
-.light{width:28px;height:28px;border-radius:50%;background:#333;border:2px solid #555;box-shadow:inset 0 0 6px #000}
+.light{width:42px;height:42px;border-radius:50%;background:#333;border:2px solid #555;box-shadow:inset 0 0 8px #000}
 .light.on{background:#e10600;box-shadow:0 0 12px #e10600}
 #cancel{display:none}
 .chart-wrap{position:fixed;inset:0;background:#0b0c0e;z-index:8;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
@@ -43,7 +43,7 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
   <label style="font-size:13px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="keep"/> Keep video</label>
   <a class="btn" href="drive-hub.html">Back</a>
 </div>
-<div id="lights" style="display:none;position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:8;display:none;gap:14px">
+<div id="lights" style="display:none;position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:8;gap:28px">
   <span class="light"></span><span class="light"></span><span class="light"></span>
 </div>
 <div id="go" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9;font-size:48px;font-weight:800;color:#fff;text-shadow:0 2px 8px #000">🏁 GO</div>
@@ -198,10 +198,10 @@ async function beginRun(){
   const go = document.getElementById('go');
   lightsBox.style.display = 'flex';
   for(let i=0;i<3;i++){
-    await new Promise(r=>setTimeout(r,700));
+    await new Promise(r=>setTimeout(r,1100));
     lights[i].classList.add('on');
   }
-  await new Promise(r=>setTimeout(r,600));
+  await new Promise(r=>setTimeout(r,900));
   lightsBox.style.display = 'none';
   lights.forEach(l=>l.classList.remove('on'));
   go.style.display = 'block';

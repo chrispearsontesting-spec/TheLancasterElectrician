@@ -244,9 +244,17 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const listenEl = document.getElementById('listening');
 function showListening(txt){ if(listenEl){ listenEl.style.display = 'block'; listenEl.textContent = txt || 'Listening for “start run”'; } }
 if(SR){
-  let rec = null;
-  function startVoice(){
-    if(rec){ try{ rec.stop(); }catch(e){} rec = null; }
+  let rec = null, started = false;
+  async function startVoice(){
+    if(started) return;
+    started = true;
+    try{
+      await navigator.mediaDevices.getUserMedia({audio:true});
+    }catch(e){
+      showListening('Allow microphone then tap screen');
+      started = false;
+      return;
+    }
     rec = new SR();
     rec.continuous = true;
     rec.interimResults = true;
@@ -254,31 +262,34 @@ if(SR){
     rec.onresult = (e) => {
       let said = '';
       for(let i = e.resultIndex; i < e.results.length; ++i){
-        said += ' ' + e.results[i][0].transcript;
+        said += ' ' + (e.results[i][0].transcript || '');
       }
-      said = said.toLowerCase().replace(/[^a-z ]/g,' ');
-      showListening('Heard: ' + said.trim().slice(-40));
-      if((said.includes('start') && said.includes('run')) || said.includes('start run') || /\bstart\b/.test(said)){
-        if(!running && !document.getElementById('bigStart').classList.contains('hide')){
-          beginRun();
-        }
+      said = said.toLowerCase();
+      showListening('Heard: ' + said.trim().slice(-36));
+      if(said.includes('start') && !running && !document.getElementById('bigStart').classList.contains('hide')){
+        beginRun();
       }
     };
-    rec.onerror = (ev) => { showListening('Mic error – tap screen to retry'); };
-    rec.onend = () => { setTimeout(()=>{ try{ if(rec) rec.start(); }catch(e){} }, 300); };
-    try{ rec.start(); showListening(); }catch(e){ showListening('Could not start mic'); }
+    rec.onerror = (ev) => {
+      showListening('Mic error – tap screen to retry');
+      started = false;
+    };
+    rec.onend = () => {
+      if(started) setTimeout(()=>{ try{ rec.start(); }catch(e){ started=false; } }, 400);
+    };
+    try{
+      rec.start();
+      showListening('Listening for “start run”');
+    }catch(e){
+      showListening('Could not start mic – tap to retry');
+      started = false;
+    }
   }
-  ['click','touchstart'].forEach(ev => {
-    document.addEventListener(ev, startVoice, {once:true, passive:true});
-  });
+  document.addEventListener('touchstart', startVoice, {once:true, passive:true});
+  document.addEventListener('click', startVoice, {once:true});
   document.getElementById('ok').addEventListener('click', startVoice);
-  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-    document.getElementById('ok').addEventListener('click', () => {
-      navigator.mediaDevices.getUserMedia({audio:true}).catch(()=>{});
-    }, {once:true});
-  }
 }else{
-  if(listenEl) listenEl.textContent = 'Voice not supported on this browser';
+  showListening('Voice not supported in this browser');
 }
 </script>
 </body>

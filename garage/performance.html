@@ -48,6 +48,7 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
 </div>
 <div id="go" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9;font-size:48px;font-weight:800;color:#fff;text-shadow:0 2px 8px #000">🏁 GO</div>
 <div id="react" style="position:fixed;top:22%;left:50%;transform:translateX(-50%);z-index:8;font-size:18px;font-weight:700;color:#fff;text-shadow:0 1px 4px #000;display:none"></div>
+<div id="listening" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:13px;color:#73BDE0;display:none">Listening for “start run”</div>
 <button id="bigStart" type="button">🏁 Start run</button>
 <div class="overlay">
   <div class="hud"><b id="time">0.0</b><span>Time</span></div>
@@ -240,21 +241,41 @@ document.getElementById('bigStart').onclick = beginRun;
 
 // Voice: say "start run"
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const listenEl = document.getElementById('listening');
+function showListening(){ if(listenEl) listenEl.style.display = 'block'; }
 if(SR){
-  const rec = new SR();
-  rec.continuous = true;
-  rec.interimResults = false;
-  rec.lang = 'en-GB';
-  rec.onresult = (e) => {
-    const said = (e.results[e.results.length-1][0].transcript || '').toLowerCase();
-    if((said.includes('start run') || said.includes('start')) && !running && !document.getElementById('bigStart').classList.contains('hide')){
-      beginRun();
-    }
-  };
-  rec.onend = () => { try{ rec.start(); }catch(e){} };
-  const startVoice = () => { try{ rec.start(); }catch(e){} };
+  let rec = null;
+  function startVoice(){
+    if(rec) return;
+    rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = 'en-GB';
+    rec.onresult = (e) => {
+      let said = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        said += e.results[i][0].transcript;
+      }
+      said = said.toLowerCase();
+      if((said.includes('start run') || said.includes('start')) && !running && !document.getElementById('bigStart').classList.contains('hide')){
+        beginRun();
+      }
+    };
+    rec.onerror = () => {};
+    rec.onend = () => { try{ rec.start(); }catch(e){} };
+    try{ rec.start(); showListening(); }catch(e){}
+  }
+  // Start after any user gesture
+  ['click','touchstart'].forEach(ev => {
+    document.addEventListener(ev, startVoice, {once:true, passive:true});
+  });
   document.getElementById('ok').addEventListener('click', startVoice);
-  document.getElementById('bigStart').addEventListener('click', startVoice, {once:true});
+  // Also request mic explicitly once
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    document.getElementById('ok').addEventListener('click', () => {
+      navigator.mediaDevices.getUserMedia({audio:true}).catch(()=>{});
+    }, {once:true});
+  }
 }
 </script>
 </body>

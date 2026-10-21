@@ -33,7 +33,7 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
     <option value="half">Half mile</option>
     <option value="100-200">100–200 km/h</option>
   </select>
-  <button id="arm" type="button">Arm run</button>
+  <button id="arm" type="button">Start run</button>
   <label style="font-size:13px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="keep"/> Keep video</label>
   <a class="btn" href="drive-hub.html">Back</a>
 </div>
@@ -158,7 +158,7 @@ document.getElementById('dlChart').onclick = () => {
 };
 
 armBtn.onclick = async () => {
-  if(running){ running=false; armBtn.textContent='Arm run'; return; }
+  if(running){ running=false; armBtn.textContent='Start run'; return; }
   running = true; startTs = 0; samples = []; motionStart = false; speed = 0;
   timeEl.textContent = '0.0';
   armBtn.textContent = 'Cancel';

@@ -218,7 +218,7 @@ document.getElementById('bigStart').onclick = async () => {
   }
 };
 
-// Voice start
+// Voice start — say "start run"
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if(SpeechRecognition){
   const rec = new SpeechRecognition();
@@ -226,13 +226,16 @@ if(SpeechRecognition){
   rec.interimResults = false;
   rec.lang = 'en-GB';
   rec.onresult = (e) => {
-    const said = e.results[e.results.length-1][0].transcript.toLowerCase();
-    if(said.includes('start run') && !running && !document.getElementById('bigStart').classList.contains('hide')){
+    const said = (e.results[e.results.length-1][0].transcript || '').toLowerCase().trim();
+    if((said.includes('start run') || said === 'start') && !running && !document.getElementById('bigStart').classList.contains('hide')){
       document.getElementById('bigStart').click();
     }
   };
   rec.onend = () => { try{ rec.start(); }catch(e){} };
-  document.getElementById('ok').addEventListener('click', () => { try{ rec.start(); }catch(e){} }, {once:true});
+  const startListen = () => { try{ rec.start(); }catch(e){} };
+  document.getElementById('ok').addEventListener('click', startListen, {once:true});
+  // also try once on load in case disclaimer already dismissed
+  setTimeout(startListen, 800);
 }
 
 </script>

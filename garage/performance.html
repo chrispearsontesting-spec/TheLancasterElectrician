@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>Performance</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{display:flex;flex-direction:column;align-items:center;padding:12px;padding-top:calc(12px + env(safe-area-inset-top))}
+h1{font-size:22px;margin:6px 0 2px;font-weight:650}
+.disclaimer{background:#2a1a1a;color:#fca5a5;font-size:12px;padding:8px 12px;border-radius:10px;margin:8px 0 12px;text-align:center;max-width:340px}
+.gauge-wrap{width:260px;height:260px}
+canvas#c{width:260px;height:260px;background:#141416;border-radius:50%;border:1px solid #2a2a2e}
+.big{font-size:42px;font-weight:700;margin:8px 0 2px;font-variant-numeric:tabular-nums}
+.sub{color:#8b8b8b;font-size:13px;margin-bottom:10px}
+.vals{display:flex;gap:20px;font-size:13px;text-align:center;margin:6px 0}
+.vals b{font-size:18px;display:block}
+.btn{margin:4px;padding:12px 16px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600}
+.btn.go{background:#e10600}
+.btn.go.on{background:#3dd68c;color:#111}
+.chart-wrap{width:100%;max-width:340px;margin-top:12px;display:none}
+.chart-wrap.show{display:block}
+canvas#chart{width:100%;height:140px;background:#141416;border-radius:10px}
+.note{font-size:11px;color:#6a6a6a;text-align:center;margin-top:10px;max-width:320px}
+</style>
+</head>
+<body>
+<h1>Performance</h1>
+<p class="disclaimer">For closed roads or tracks only. Do not use on public roads.</p>
+<div class="gauge-wrap"><canvas id="c"></canvas></div>
+<div class="big" id="time">0.0</div>
+<div class="sub" id="status">Ready — hold still then accelerate</div>
+<div class="vals">
+  <div>Speed<br><b id="spd">0</b></div>
+  <div>G long<br><b id="gl">0.00</b></div>
+  <div>Best<br><b id="best">—</b></div>
+</div>
+<button class="btn go" id="arm" type="button">Arm 0–60</button>
+<button class="btn" id="dl" type="button">Download graph</button>
+<a class="btn" href="drive-hub.html">Back</a>
+<div class="chart-wrap" id="chartWrap"><canvas id="chart"></canvas></div>
+<p class="note">Phone estimate only. Uses G-force for launch and GPS speed for 60 mph. Mount the phone firmly.</p>
+<script>
+const dpr = Math.min(window.devicePixelRatio||2, 3);
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+function setup(can, w, h){ can.width=w*dpr; can.height=h*dpr; can.style.width=w+'px'; can.style.height=h+'px'; can.getContext('2d').scale(dpr,dpr); }
+setup(c,260,260);
+const chart = document.getElementById('chart');
+setup(chart,340,140);
+const cctx = chart.getContext('2d');
+
+let lat=0, lon=0, speed=0, running=false, startTs=0, samples=[], best=localStorage.getItem('gt.060')||null;
+const timeEl=document.getElementById('time'), statusEl=document.getElementById('status'), spdEl=document.getElementById('spd'), glEl=document.getElementById('gl'), bestEl=document.getElementById('best'), armBtn=document.getElementById('arm');
+if(best) bestEl.textContent=best+'s';
+
+function drawGauge(){
+  const w=260,h=260,cx=w/2,cy=h/2,r=100;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='#2a2a2e'; ctx.lineWidth=1;
+  [0.5,1,1.5].forEach(g=>{ ctx.beginPath(); ctx.arc(cx,cy,r*(g/1.5),0,Math.PI*2); ctx.stroke(); });
+  ctx.beginPath(); ctx.moveTo(cx-r,cy); ctx.lineTo(cx+r,cy); ctx.moveTo(cx,cy-r); ctx.lineTo(cx,cy+r); ctx.stroke();
+  const scale=r/1.5;
+  const gx=cx+lat*scale, gy=cy-lon*scale;
+  ctx.fillStyle='#73BDE0'; ctx.beginPath(); ctx.arc(gx,gy,7,0,Math.PI*2); ctx.fill();
+}
+
+function onMotion(e){
+  const a=e.accelerationIncludingGravity||e.acceleration;
+  if(!a) return;
+  const rawLon=(a.y||0)/9.81;
+  lon = lon*0.7 + rawLon*0.3;
+  lat = lat*0.7 + ((a.x||0)/9.81)*0.3;
+  glEl.textContent=lon.toFixed(2);
+  drawGauge();
+  if(running && !startTs && lon>0.25){ startTs=performance.now(); statusEl.textContent='Timing…'; }
+  if(running && startTs){
+    const t=(performance.now()-startTs)/1000;
+    timeEl.textContent=t.toFixed(1);
+    samples.push({t, lon, speed});
+    if(speed>=60){
+      finish(t);
+    }
+  }
+}
+
+function finish(t){
+  running=false;
+  armBtn.textContent='Arm 0–60';
+  armBtn.classList.remove('on');
+  statusEl.textContent='Done';
+  const s=t.toFixed(2);
+  timeEl.textContent=s;
+  if(!best || +s < +best){ best=s; localStorage.setItem('gt.060', best); bestEl.textContent=best+'s'; }
+  document.getElementById('chartWrap').classList.add('show');
+  drawChart();
+}
+
+function drawChart(){
+  const w=340,h=140;
+  cctx.clearRect(0,0,w,h);
+  if(samples.length<2) return;
+  cctx.strokeStyle='#73BDE0'; cctx.lineWidth=2; cctx.beginPath();
+  samples.forEach((s,i)=>{
+    const x=10+(i/(samples.length-1))*(w-20);
+    const y=h-10-(s.speed/70)*(h-20);
+    if(i===0) cctx.moveTo(x,y); else cctx.lineTo(x,y);
+  });
+  cctx.stroke();
+}
+
+armBtn.onclick=()=>{
+  if(running){ running=false; armBtn.textContent='Arm 0–60'; armBtn.classList.remove('on'); return; }
+  running=true; startTs=0; samples=[]; speed=0;
+  timeEl.textContent='0.0';
+  statusEl.textContent='Armed — accelerate when ready';
+  armBtn.textContent='Cancel';
+  armBtn.classList.add('on');
+  if(navigator.geolocation){
+    navigator.geolocation.watchPosition(pos=>{
+      if(pos.coords.speed!=null) speed = pos.coords.speed * 2.23694; // m/s to mph
+      spdEl.textContent=Math.round(speed);
+    },()=>{},{enableHighAccuracy:true});
+  }
+};
+
+document.getElementById('dl').onclick=()=>{
+  if(!samples.length) return;
+  const a=document.createElement('a');
+  a.href=chart.toDataURL('image/jpeg',0.9);
+  a.download='dipstick-060.jpg';
+  a.click();
+};
+
+if(window.DeviceMotionEvent){
+  window.addEventListener('devicemotion', onMotion);
+}
+drawGauge();
+</script>
+</body>
+</html>

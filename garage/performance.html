@@ -243,53 +243,40 @@ document.getElementById('bigStart').onclick = beginRun;
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const listenEl = document.getElementById('listening');
 function showListening(txt){ if(listenEl){ listenEl.style.display = 'block'; listenEl.textContent = txt || 'Listening for “start run”'; } }
-if(SR){
-  let rec = null, started = false;
-  async function startVoice(){
-    if(started) return;
-    started = true;
-    try{
-      await navigator.mediaDevices.getUserMedia({audio:true});
-    }catch(e){
-      showListening('Allow microphone then tap screen');
-      started = false;
-      return;
-    }
-    rec = new SR();
-    rec.continuous = true;
+if(!SR){
+  showListening('Voice not supported – use the button');
+}else{
+  let listening = false;
+  function tryStart(){
+    if(listening) return;
+    const rec = new SR();
+    rec.continuous = false;
     rec.interimResults = true;
     rec.lang = 'en-GB';
     rec.onresult = (e) => {
-      let said = '';
-      for(let i = e.resultIndex; i < e.results.length; ++i){
-        said += ' ' + (e.results[i][0].transcript || '');
-      }
-      said = said.toLowerCase();
-      showListening('Heard: ' + said.trim().slice(-36));
+      const said = Array.from(e.results).map(r => r[0].transcript).join(' ').toLowerCase();
+      showListening('Heard: ' + said.slice(-40));
       if(said.includes('start') && !running && !document.getElementById('bigStart').classList.contains('hide')){
         beginRun();
       }
     };
     rec.onerror = (ev) => {
-      showListening('Mic error – tap screen to retry');
-      started = false;
+      showListening('Mic error: ' + (ev.error || 'unknown') + ' – tap to retry');
+      listening = false;
     };
-    rec.onend = () => {
-      if(started) setTimeout(()=>{ try{ rec.start(); }catch(e){ started=false; } }, 400);
-    };
+    rec.onend = () => { listening = false; setTimeout(tryStart, 600); };
     try{
       rec.start();
-      showListening('Listening for “start run”');
-    }catch(e){
-      showListening('Could not start mic – tap to retry');
-      started = false;
+      listening = true;
+      showListening('Listening… say “start run”');
+    }catch(err){
+      showListening('Could not start mic – tap screen');
+      listening = false;
     }
   }
-  document.addEventListener('touchstart', startVoice, {once:true, passive:true});
-  document.addEventListener('click', startVoice, {once:true});
-  document.getElementById('ok').addEventListener('click', startVoice);
-}else{
-  showListening('Voice not supported in this browser');
+  document.addEventListener('touchstart', tryStart, {once:true, passive:true});
+  document.addEventListener('click', tryStart, {once:true});
+  document.getElementById('ok').addEventListener('click', tryStart);
 }
 </script>
 </body>

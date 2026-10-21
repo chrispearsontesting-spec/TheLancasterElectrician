@@ -150,6 +150,24 @@ function finish(t, label){
   if(recorder && recorder.state==='recording') recorder.stop();
   if(watchId) navigator.geolocation.clearWatch(watchId);
   resultEl.textContent = label + '  ' + t.toFixed(2) + 's' + (reactMs ? '  ·  reaction ' + reactMs + ' ms' : '');
+  
+  // Save to shared diary
+  try{
+    const list = JSON.parse(localStorage.getItem("gt.driveLog")||"[]");
+    const label = runSel.options[runSel.selectedIndex].text;
+    list.unshift({
+      id: "run-"+Date.now(),
+      type: "run",
+      when: Date.now(),
+      from: label,
+      to: t.toFixed(2)+"s",
+      time: t.toFixed(2)+"s",
+      miles: 0,
+      cost: 0,
+      mpg: null
+    });
+    localStorage.setItem("gt.driveLog", JSON.stringify(list.slice(0,200)));
+  }catch(e){}
   chartWrap.classList.add('show');
   drawChart();
   if(!keepChk.checked){

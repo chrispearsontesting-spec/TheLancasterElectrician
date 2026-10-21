@@ -2,8 +2,9 @@
   if(window.__dipstickIcons) return;
   window.__dipstickIcons=true;
   var S={
+    tick:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4.5" width="15" height="15" rx="2.5"/><path d="M8 12.2l2.4 2.4 5.6-5.6"/></svg>',
     cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3.5v3M16 3.5v3M4 10h16"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></svg>',
-    turbo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 16.5c0-3.2 2.4-5.8 5.4-5.8 1.6 0 3 .7 4 1.8"/><path d="M6 13.2c1.2-2.8 4-4.6 7.2-4.6 3.6 0 6.5 2.6 6.5 6.2"/><circle cx="10.2" cy="16.8" r="1.6"/><path d="M14.8 10.8l2.4-2.2M16.5 9.2l1.2 1.8"/></svg>',
+    turbo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.5c0-3.5 2.8-6.2 6.2-6.2 1.8 0 3.4.8 4.5 2"/><path d="M5.5 12.5c1.5-3.2 4.8-5.2 8.4-5.2 4 0 7.2 3 7.2 6.8"/><circle cx="9.2" cy="16.2" r="1.8"/><path d="M15.2 9.5l2.6-1.8M17.2 8.2l.8 2.2"/></svg>',
     wheel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="2.2"/><path d="M12 9.8V4.8M7.4 14.8L4.8 16.6M16.6 14.8l2.6 1.8"/></svg>',
     wrench:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4.5c2.2 0 4 1.8 4 4 0 .5-.1 1-.3 1.5L20 18l-2 2-8.1-8.3A4 4 0 1 1 8 4.5z"/><path d="M8 6.2v2.2H5.8"/><path d="M14.5 5.5l4 4M16.2 3.8l4 4"/></svg>',
     map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4.5l7 2.2 4.5-1.7v14.5l-4.5 1.7-7-2.2-4.5 1.7V6.2z"/><path d="M8.5 4.5v14.3M15.5 6.7v14.3"/></svg>',
@@ -30,7 +31,8 @@
     var t=((el.textContent||"")+" "+(el.getAttribute("href")||"")+" "+(el.id||"")).toLowerCase();
     if(/youtube/.test(t)) return "yt";
     if(/back|close|btnclose/.test(t)) return "back";
-    if(/remind|calendar|diary/.test(t)) return "cal";
+    if(/remind/.test(t)) return "tick";
+    if(/calendar|diary/.test(t)) return "cal";
     if(/dashcam|record|camera/.test(t)) return "cam";
     if(/track journey|gps/.test(t)) return "pin";
     if(/\bdrive\b/.test(t) && !/diary/.test(t)) return "wheel";

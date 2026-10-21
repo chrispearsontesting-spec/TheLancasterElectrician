@@ -247,8 +247,15 @@ if(!SR){
   showListening('Voice not supported – use the button');
 }else{
   let listening = false;
-  function tryStart(){
+  async function tryStart(){
     if(listening) return;
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      stream.getTracks().forEach(t => t.stop());
+    }catch(e){
+      showListening('Tap the lock icon → Allow microphone');
+      return;
+    }
     const rec = new SR();
     rec.continuous = false;
     rec.interimResults = true;
@@ -261,10 +268,14 @@ if(!SR){
       }
     };
     rec.onerror = (ev) => {
-      showListening('Mic error: ' + (ev.error || 'unknown') + ' – tap to retry');
+      if(ev.error === 'not-allowed'){
+        showListening('Microphone blocked – tap lock icon and allow');
+      }else{
+        showListening('Mic error – tap screen to retry');
+      }
       listening = false;
     };
-    rec.onend = () => { listening = false; setTimeout(tryStart, 600); };
+    rec.onend = () => { listening = false; setTimeout(tryStart, 800); };
     try{
       rec.start();
       listening = true;

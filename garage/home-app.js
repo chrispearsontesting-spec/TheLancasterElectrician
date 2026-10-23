@@ -181,20 +181,10 @@ function savePic(f){
   };
   r.readAsDataURL(f);
 }
-function lookupPlate(){
-  if(!window.fillFromPlate)return;
-  var p=document.getElementById("fPlate").value;
-  var hint=document.getElementById("plateHint");
-  if(hint) hint.textContent="Looking up MOT\u2026";
-  window.fillFromPlate(p,function(info){
-    if(!info){ if(hint) hint.textContent="No MOT match yet \u2014 type the name if you know it."; return; }
-    window.applyPlateFields(info,{name:"fName",fuel:"fFuel",mot:"fMot",status:"plateHint"});
-  });
-}
+var lastLooked = null;
 function openSheet(mode){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
-  document.getElementById("fName").value=c.nick||c.name||"";
   document.getElementById("fPlate").value=c.plate||"";
   document.getElementById("fMot").value=c.mot||"";
   document.getElementById("fTax").value=c.tax||"";
@@ -214,7 +204,24 @@ function openSheet(mode){
   document.getElementById("fInsWeb").value=c.insWeb||"";
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
-  if(c.plate) lookupPlate();
+  var found=document.getElementById("foundDetails");
+  if(found){ found.style.display="none"; found.innerHTML=""; }
+  lastLooked=null;
+  if(c.plate){
+    if(window.fillFromPlate){
+      window.fillFromPlate(c.plate,function(info){
+        if(info){
+          lastLooked=info;
+          var bits=["<b>"+info.name+"</b>"];
+          if(info.year) bits.push("Year: "+info.year);
+          if(info.fuel) bits.push("Fuel: "+info.fuel);
+          if(info.engine) bits.push("Engine: "+info.engine+" cc");
+          if(info.mot) bits.push("MOT expires: "+info.mot);
+          if(found){ found.innerHTML=bits.join("<br>"); found.style.display="block"; }
+        }
+      });
+    }
+  }
 }
 function step(dir){
   var s=state();
@@ -241,17 +248,22 @@ on("btnCClose",function(){document.getElementById("contact").className="sheet"})
 on("btnSave",function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
-  c.nick=document.getElementById("fName").value||"Car";
-  c.name=c.nick;c.plate=document.getElementById("fPlate").value.toUpperCase();
-  c.mot=document.getElementById("fMot").value;c.tax=document.getElementById("fTax").value;
-  c.ins=document.getElementById("fIns").value;c.oil=document.getElementById("fOil").value;
+  var looked = lastLooked || {};
+  c.nick=looked.name || c.nick || "Car";
+  c.name=c.nick;
+  c.plate=document.getElementById("fPlate").value.toUpperCase();
+  c.mot=document.getElementById("fMot").value;
+  c.tax=document.getElementById("fTax").value;
+  c.ins=document.getElementById("fIns").value;
+  c.oil=document.getElementById("fOil").value;
   c.beltDate=document.getElementById("fBeltDate").value;
   c.beltYears=document.getElementById("fBeltYears").value||"5";
   c.beltMiles=document.getElementById("fBeltMiles").value||"60000";
   c.tyreDate=document.getElementById("fTyreDate").value;
   c.tyreLife=document.getElementById("fTyreLife").value||"20000";
   c.miles=document.getElementById("fMiles").value||"12000";
-  c.mpg=document.getElementById("fMpg").value;c.fuel=document.getElementById("fFuel").value;
+  c.mpg=document.getElementById("fMpg").value;
+  c.fuel=document.getElementById("fFuel").value;
   c.motName=document.getElementById("fGarage").value;
   c.motPhone=document.getElementById("fPhone").value;
   c.motEmail=document.getElementById("fEmail").value;

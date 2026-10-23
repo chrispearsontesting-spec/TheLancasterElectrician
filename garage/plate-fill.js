@@ -26,7 +26,16 @@ window.fillFromPlate = function (plate, done) {
     else if (/hybrid|phev/.test(fuel)) fuel = "hybrid";
     else if (/petrol|gasoline/.test(fuel)) fuel = "petrol";
     else fuel = "";
-    if (done) done({ name: info.name, fuel: fuel, year: info.year, mot: exp, plate: raw });
+    if (done) done({
+      name: info.name,
+      fuel: fuel,
+      year: info.year,
+      mot: exp,
+      plate: raw,
+      engine: info.engine,
+      make: info.make,
+      model: info.model
+    });
   });
 };
 window.applyPlateFields = function (info, ids) {
@@ -42,7 +51,7 @@ window.applyPlateFields = function (info, ids) {
     if (opt) fuelEl.value = info.fuel;
   }
   if (motEl && info.mot && !motEl.value) motEl.value = info.mot;
-  if (statusEl) statusEl.textContent = info.name;
+  if (statusEl && info.name) statusEl.textContent = info.name;
 };
 window.bindPlateField = function (ids) {
   var el = document.getElementById(ids.plate);

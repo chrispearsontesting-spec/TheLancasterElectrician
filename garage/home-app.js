@@ -232,6 +232,8 @@ function openSheet(mode){
   document.getElementById("sheet").className="sheet on";
   var found=document.getElementById("foundDetails");
   if(found){ found.style.display="none"; found.innerHTML=""; }
+  var del=document.getElementById("btnDelete");
+  if(del) del.style.display=mode==="add"?"none":"block";
   lastLooked=null;
   if(c.plate) doLookup();
 }
@@ -260,6 +262,21 @@ if(dues) dues.addEventListener("click",function(e){
 });
 on("btnClose",function(){document.getElementById("sheet").className="sheet"});
 on("btnCClose",function(){document.getElementById("contact").className="sheet"});
+on("btnDelete",function(){
+  var s=state();
+  if(s.cars.length<=1){
+    alert("You need at least one car in the garage.");
+    return;
+  }
+  var c=car();
+  var name=c.nick||c.name||c.plate||"this car";
+  if(!confirm("Are you sure you want to delete "+name+" from your garage?")) return;
+  s.cars.splice(s.i,1);
+  if(s.i>=s.cars.length) s.i=s.cars.length-1;
+  save(s);
+  paint();
+  document.getElementById("sheet").className="sheet";
+});
 on("btnSave",function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];

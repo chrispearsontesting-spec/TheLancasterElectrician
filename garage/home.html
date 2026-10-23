@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icon.svg"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<link rel="stylesheet" href="./ui.css?v=64"/>
+<link rel="stylesheet" href="./ui.css?v=65"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -27,7 +27,7 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .name{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:8px;z-index:1;pointer-events:none;white-space:nowrap}
 .makeLogo{height:20px;width:auto}
 .modelBadgeImg{height:22px;width:auto}
-.dots{text-align:center;color:#8b8b8b;font-size:12px;margin:6px 0 0}
+.dots{text-align:center;color:#8b8b8b;font-size:12px;margin:6px 0 0;height:16px;line-height:16px}
 .card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;overflow:hidden;margin-bottom:12px}
 .card.hide{display:none}
 .item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #2a2a2e}
@@ -92,7 +92,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <button type="button" id="next">&#8594;</button>
 <button type="button" id="btnEdit">&#9998;</button>
 </div>
-</div><p class="dots" id="dots">Add a car</p></div>
+</div><p class="dots" id="dots"></p></div>
 <button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
 <div class="card hide" id="dues"></div>
 <a class="btn wide" href="drive-hub.html" data-ico="wheel">Drive</a>
@@ -138,7 +138,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="mot-config.js"></script>
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
-<script src="./home-app.js?v=57"></script>
+<script src="./home-app.js?v=58"></script>
 <script src="./home-insure.js"></script>
 <script src="./icons.js?v=28"></script>
 <script>

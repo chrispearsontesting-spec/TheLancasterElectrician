@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icon.svg"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<link rel="stylesheet" href="./ui.css?v=57"/>
+<link rel="stylesheet" href="./ui.css?v=58"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -19,12 +19,12 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .plate .uk{background:#003399;color:#fc0;padding:6px 5px;font-size:9px;line-height:1;text-align:center;display:flex;align-items:center;justify-content:center;min-width:22px;letter-spacing:0.5px}
 .plate .reg{background:#f4d000;color:#111;padding:6px 10px;letter-spacing:0.12em;font-size:14px;display:flex;align-items:center}
 .bar{background:#141416;border-radius:0 0 18px 18px;padding:8px 0 10px;margin-bottom:10px;width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,0.08);border-top:0}
-.nameRow{display:grid;grid-template-columns:92px 1fr 92px;align-items:center;width:100%;padding:0 6px;box-sizing:border-box;height:44px}
-.nameRow .side{display:flex;gap:8px;align-items:center}
+.nameRow{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 6px;box-sizing:border-box;height:44px}
+.nameRow .side{display:flex;gap:8px;z-index:2;width:92px;flex-shrink:0;align-items:center}
 .nameRow .side.left{justify-content:flex-start}
 .nameRow .side.right{justify-content:flex-end}
 .nameRow button{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.08);background:#1c1c1e;color:#f2f2f2;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;flex-shrink:0}
-.name{display:flex;align-items:center;justify-content:center;gap:8px;pointer-events:none;white-space:nowrap;overflow:hidden}
+.name{position:absolute;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:8px;z-index:1;pointer-events:none;white-space:nowrap}
 .makeLogo{height:20px;width:auto}
 .modelBadgeImg{height:22px;width:auto}
 .dots{text-align:center;color:#8b8b8b;font-size:12px;margin:6px 0 0}
@@ -137,6 +137,31 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
   setOpen(sessionStorage.getItem("gt.datesOpen")==="1");
   btn.onclick=function(){setOpen(dues.classList.contains("hide"))};
   if(window.bindPlateField) window.bindPlateField({plate:"fPlate",name:"fName",fuel:"fFuel",mot:"fMot",status:"plateHint"});
+
+  function centerBadges(){
+    var leftArrow=document.getElementById("prev");
+    var rightArrow=document.getElementById("next");
+    var name=document.getElementById("caption");
+    if(!leftArrow||!rightArrow||!name) return;
+    var lr=leftArrow.getBoundingClientRect();
+    var rr=rightArrow.getBoundingClientRect();
+    var nr=name.getBoundingClientRect();
+    var mid=(lr.right+rr.left)/2;
+    var nameMid=nr.left+nr.width/2;
+    var offset=mid-nameMid;
+    var current=parseFloat(name.style.left||"50")||50;
+    // Use percentage relative to nameRow
+    var row=name.parentElement.getBoundingClientRect();
+    var targetLeft=(mid-row.left)-(nr.width/2);
+    name.style.left=targetLeft+"px";
+    name.style.transform="translateY(-50%)";
+  }
+  setTimeout(centerBadges,50);
+  setTimeout(centerBadges,300);
+  window.addEventListener("resize",centerBadges);
+  var obs=new MutationObserver(function(){setTimeout(centerBadges,40)});
+  var cap=document.getElementById("caption");
+  if(cap) obs.observe(cap,{childList:true,subtree:true,characterData:true});
 })();
 </script>
 </body>

@@ -182,6 +182,32 @@ function savePic(f){
   r.readAsDataURL(f);
 }
 var lastLooked = null;
+function showFound(info){
+  var found=document.getElementById("foundDetails");
+  var hint=document.getElementById("plateHint");
+  if(!info||!info.name){
+    if(found){found.style.display="none";found.innerHTML="";}
+    if(hint) hint.textContent="No details found for that plate.";
+    lastLooked=null;
+    return;
+  }
+  lastLooked=info;
+  var bits=["<b>"+info.name+"</b>"];
+  if(info.year) bits.push("Year: "+info.year);
+  if(info.fuel) bits.push("Fuel: "+info.fuel);
+  if(info.engine) bits.push("Engine: "+info.engine+" cc");
+  if(info.mot) bits.push("MOT expires: "+info.mot);
+  if(found){found.innerHTML=bits.join("<br>");found.style.display="block";}
+  if(hint) hint.textContent="Details found from MOT.";
+  window.applyPlateFields(info,{fuel:"fFuel",mot:"fMot"});
+}
+function doLookup(){
+  var plate=document.getElementById("fPlate").value;
+  var hint=document.getElementById("plateHint");
+  if(hint) hint.textContent="Looking up\u2026";
+  if(!window.fillFromPlate){ if(hint) hint.textContent="Lookup not ready."; return; }
+  window.fillFromPlate(plate,showFound);
+}
 function openSheet(mode){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
@@ -207,21 +233,7 @@ function openSheet(mode){
   var found=document.getElementById("foundDetails");
   if(found){ found.style.display="none"; found.innerHTML=""; }
   lastLooked=null;
-  if(c.plate){
-    if(window.fillFromPlate){
-      window.fillFromPlate(c.plate,function(info){
-        if(info){
-          lastLooked=info;
-          var bits=["<b>"+info.name+"</b>"];
-          if(info.year) bits.push("Year: "+info.year);
-          if(info.fuel) bits.push("Fuel: "+info.fuel);
-          if(info.engine) bits.push("Engine: "+info.engine+" cc");
-          if(info.mot) bits.push("MOT expires: "+info.mot);
-          if(found){ found.innerHTML=bits.join("<br>"); found.style.display="block"; }
-        }
-      });
-    }
-  }
+  if(c.plate) doLookup();
 }
 function step(dir){
   var s=state();
@@ -238,6 +250,9 @@ on("prev",function(){step(-1)});
 on("next",function(){step(1)});
 on("btnAdd",function(){openSheet("add")});
 on("btnEdit",function(){openSheet("edit")});
+on("btnLookup",doLookup);
+var plateEl=document.getElementById("fPlate");
+if(plateEl) plateEl.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doLookup();}});
 var dues=document.getElementById("dues");
 if(dues) dues.addEventListener("click",function(e){
   var b=e.target.closest("[data-job]");

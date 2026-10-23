@@ -7,7 +7,9 @@ h1,h2,.name,b.title{font-weight:650 !important;letter-spacing:-.02em;color:#f2f2
 .muted,.left,.dots,.kicker,.sub{color:#8b8b8b !important}
 a.btn,button.btn,button.go,.btn.wide,.btn.ghost,a.ghost,button.ghost,
 .nameRow button,.sug{
-  background:#1c1c1e !important;
+  background-color:#1c1c1e !important;
+  background-image: linear-gradient(rgba(28,28,30,0.4), rgba(28,28,30,0.4)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><pattern id="cf" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 7 L7 0 L14 7 L7 14 Z" fill="none" stroke="%237a7a7e" stroke-width="1.4"/></pattern></defs><rect width="120" height="120" fill="url(%23cf)"/></svg>') !important;
+  background-size: auto, 70px 70px !important;
   color:#f2f2f2 !important;
   text-decoration:none !important;
   border:0 !important;
@@ -91,7 +93,9 @@ input,select{
   display:flex !important;
   align-items:center !important;
   justify-content:space-between !important;
-  background:#1c1c1e !important;
+  background-color:#1c1c1e !important;
+  background-image: linear-gradient(rgba(28,28,30,0.4), rgba(28,28,30,0.4)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><pattern id="cf" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 7 L7 0 L14 7 L7 14 Z" fill="none" stroke="%237a7a7e" stroke-width="1.4"/></pattern></defs><rect width="120" height="120" fill="url(%23cf)"/></svg>') !important;
+  background-size: auto, 70px 70px !important;
   color:#f2f2f2 !important;
   border:0 !important;
   border-radius:18px !important;

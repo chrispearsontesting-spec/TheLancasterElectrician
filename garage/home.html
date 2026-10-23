@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icon.svg"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<link rel="stylesheet" href="./ui.css?v=68"/>
+<link rel="stylesheet" href="./ui.css?v=69"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -49,6 +49,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 .plateEntry .ukPlate input{flex:1;min-width:0;border:0 !important;background:transparent !important;color:#111 !important;font-family:Arial,Helvetica,sans-serif !important;font-weight:900 !important;font-size:18px !important;letter-spacing:0.12em !important;text-transform:uppercase;padding:0 10px !important;text-align:center;outline:none;width:auto !important;border-radius:0 !important;height:100% !important}
 .plateEntry .ukPlate input::placeholder{color:#666 !important;letter-spacing:0.08em;font-weight:700;opacity:0.7}
 .plateEntry button.btn{height:48px;padding:0 14px;font-size:14px;border-radius:12px;flex-shrink:0;width:auto !important;min-width:90px}
+.plateEntry .camBtn{height:48px;width:48px;min-width:48px;padding:0;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#1c1c1e;border:1px solid #2a2a2e;color:#f2f2f2;font-size:20px;cursor:pointer}
 .found{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:12px;margin:10px 0;font-size:14px;line-height:1.5}
 .found b{color:#fff}
 .found .muted{color:#8b8b8b;font-size:13px}
@@ -81,6 +82,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 </head>
 <body>
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
+<input id="plateCam" type="file" accept="image/*" capture="environment" hidden/>
 <div class="hero" id="hero"></div>
 <div class="bar"><div class="nameRow">
 <div class="side left">
@@ -108,10 +110,11 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <span class="ukStrip">UK</span>
 <input id="fPlate" type="text" placeholder="AB12 CDE" maxlength="8" autocomplete="off"/>
 </div>
+<button class="camBtn" type="button" id="btnCam" title="Scan plate">&#128247;</button>
 <button class="btn" type="button" id="btnLookup">Lookup</button>
 </div>
 <div id="foundDetails" class="found" style="display:none"></div>
-<p class="left" id="plateHint">Enter plate and tap Lookup.</p>
+<p class="left" id="plateHint">Enter plate and tap Lookup, or use the camera.</p>
 <label>MOT</label><input id="fMot" type="date"/>
 <label>Tax</label><input id="fTax" type="date"/>
 <label>Insurance</label><input id="fIns" type="date"/>
@@ -138,7 +141,8 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="mot-config.js"></script>
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
-<script src="./home-app.js?v=61"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="./home-app.js?v=62"></script>
 <script src="./home-insure.js"></script>
 <script src="./icons.js?v=28"></script>
 <script>

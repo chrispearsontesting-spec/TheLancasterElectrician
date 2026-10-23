@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icon.svg"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<link rel="stylesheet" href="./ui.css?v=60"/>
+<link rel="stylesheet" href="./ui.css?v=61"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -43,6 +43,12 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .panel{background:#141416;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
 label{display:block;color:#8b8b8b;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
+.plateRow{display:flex;gap:8px;align-items:center}
+.plateRow input{flex:1}
+.plateRow button{flex-shrink:0;padding:10px 14px;font-size:14px}
+.found{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:12px;margin:10px 0;font-size:14px;line-height:1.5}
+.found b{color:#fff}
+.found .muted{color:#8b8b8b;font-size:13px}
 .mark{margin-left:8px;font-weight:800}
 .mark.ok{color:#3dd68c}
 .mark.bad{color:#ff2a2a;animation:flashRed .55s ease-in-out infinite}
@@ -93,9 +99,13 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <a class="btn wide" href="history.html" data-ico="cal">History</a>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
-<label>Number plate</label><input id="fPlate" style="text-transform:uppercase" placeholder="AB12 CDE"/>
-<p class="left" id="plateHint">Make and model fill from MOT.</p>
-<label>Name</label><input id="fName" placeholder="Fills automatically"/>
+<label>Number plate</label>
+<div class="plateRow">
+<input id="fPlate" style="text-transform:uppercase" placeholder="AB12 CDE"/>
+<button class="btn" type="button" id="btnLookup">Lookup</button>
+</div>
+<div id="foundDetails" class="found" style="display:none"></div>
+<p class="left" id="plateHint">Enter plate and tap Lookup.</p>
 <label>MOT</label><input id="fMot" type="date"/>
 <label>Tax</label><input id="fTax" type="date"/>
 <label>Insurance</label><input id="fIns" type="date"/>
@@ -121,7 +131,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="mot-config.js"></script>
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
-<script src="./home-app.js?v=53"></script>
+<script src="./home-app.js?v=54"></script>
 <script src="./home-insure.js"></script>
 <script src="./icons.js?v=28"></script>
 <script>
@@ -136,7 +146,38 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
   }
   setOpen(sessionStorage.getItem("gt.datesOpen")==="1");
   btn.onclick=function(){setOpen(dues.classList.contains("hide"))};
-  if(window.bindPlateField) window.bindPlateField({plate:"fPlate",name:"fName",fuel:"fFuel",mot:"fMot",status:"plateHint"});
+
+  var found=document.getElementById("foundDetails");
+  var hint=document.getElementById("plateHint");
+  function showFound(info){
+    if(!info||!info.name){
+      found.style.display="none";
+      found.innerHTML="";
+      if(hint) hint.textContent="No details found for that plate.";
+      return;
+    }
+    var bits=[];
+    bits.push("<b>"+info.name+"</b>");
+    if(info.year) bits.push("Year: "+info.year);
+    if(info.fuel) bits.push("Fuel: "+info.fuel);
+    if(info.engine) bits.push("Engine: "+info.engine+" cc");
+    if(info.mot) bits.push("MOT expires: "+info.mot);
+    found.innerHTML=bits.join("<br>");
+    found.style.display="block";
+    if(hint) hint.textContent="Details found from MOT.";
+  }
+  function doLookup(){
+    var plate=document.getElementById("fPlate").value;
+    if(hint) hint.textContent="Looking up\u2026";
+    window.fillFromPlate(plate,function(info){
+      window.applyPlateFields(info,{fuel:"fFuel",mot:"fMot",status:"plateHint"});
+      showFound(info);
+    });
+  }
+  document.getElementById("btnLookup").onclick=doLookup;
+  document.getElementById("fPlate").addEventListener("keydown",function(e){
+    if(e.key==="Enter"){e.preventDefault();doLookup();}
+  });
 })();
 </script>
 </body>

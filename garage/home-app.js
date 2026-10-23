@@ -5,11 +5,26 @@ function seed(){
     motName:"",motPhone:"",motEmail:"",insWeb:""};
 }
 function state(){
-  try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
+  try{
+    var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
+    if(s&&s.cars&&s.cars.length){
+      if(typeof s.i!=="number"||s.i<0||s.i>=s.cars.length) s.i=0;
+      return s;
+    }
+  }catch(e){}
   return {i:0,cars:[seed()]};
 }
-function save(s){localStorage.setItem("gt.garage",JSON.stringify(s))}
-function car(){var s=state();return s.cars[s.i]||s.cars[0]}
+function save(s){
+  if(s&&s.cars&&s.cars.length>20) s.cars=s.cars.slice(0,20);
+  if(s&&s.i>=s.cars.length) s.i=s.cars.length-1;
+  localStorage.setItem("gt.garage",JSON.stringify(s));
+}
+function car(){
+  var s=state();
+  if(!s.cars.length) return seed();
+  if(s.i<0||s.i>=s.cars.length) s.i=0;
+  return s.cars[s.i];
+}
 function nice(iso){if(!iso)return "Set date";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
 function daysLeft(iso){
   if(!iso)return null;
@@ -149,12 +164,14 @@ function carLogoHtml(name){
 
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
+  if(!s.cars.length){ s.cars=[seed()]; s.i=0; save(s); }
   var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
   var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
   hero.style.backgroundImage=c.photo?"none":"";
   hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
   document.getElementById("caption").innerHTML=carLogoHtml(c.nick||c.name||"Car");
-  document.getElementById("dots").textContent="Car "+(s.i+1)+" of "+s.cars.length;
+  var dots=document.getElementById("dots");
+  if(dots) dots.textContent=s.cars.length>1 ? ("Car "+(s.i+1)+" of "+s.cars.length) : "";
   var motUrl=c.plate?("mot.html?plate="+encodeURIComponent(String(c.plate).replace(/\s/g,""))+"#history"):"mot.html#history";
   var bd=beltDue(c), tl=tyreLeft(c);
   document.getElementById("dues").innerHTML=
@@ -241,7 +258,8 @@ function step(dir){
   var s=state();
   if(!s.cars.length) return;
   s.i=(s.i+dir+s.cars.length)%s.cars.length;
-  save(s);paint();
+  save(s);
+  paint();
 }
 function on(id,fn){var el=document.getElementById(id); if(el) el.onclick=fn;}
 on("hero",function(){document.getElementById("photoPick").click()});
@@ -250,7 +268,11 @@ var pick=document.getElementById("photoPick");
 if(pick) pick.onchange=function(){savePic(this.files&&this.files[0])};
 on("prev",function(){step(-1)});
 on("next",function(){step(1)});
-on("btnAdd",function(){openSheet("add")});
+on("btnAdd",function(){
+  var s=state();
+  if(s.cars.length>=20){ alert("Maximum 20 cars."); return; }
+  openSheet("add");
+});
 on("btnEdit",function(){openSheet("edit")});
 on("btnLookup",doLookup);
 var plateEl=document.getElementById("fPlate");
@@ -272,13 +294,14 @@ on("btnDelete",function(){
   var name=c.nick||c.name||c.plate||"this car";
   if(!confirm("Are you sure you want to delete "+name+" from your garage?")) return;
   s.cars.splice(s.i,1);
-  if(s.i>=s.cars.length) s.i=s.cars.length-1;
+  if(s.i>=s.cars.length) s.i=Math.max(0,s.cars.length-1);
   save(s);
   paint();
   document.getElementById("sheet").className="sheet";
 });
 on("btnSave",function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
+  if(mode==="add" && s.cars.length>=20){ alert("Maximum 20 cars."); return; }
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
   var looked = lastLooked || {};
   c.nick=looked.name || c.nick || "Car";

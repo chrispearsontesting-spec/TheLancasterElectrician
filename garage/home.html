@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icon.svg"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<link rel="stylesheet" href="./ui.css?v=63"/>
+<link rel="stylesheet" href="./ui.css?v=64"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -43,12 +43,12 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .panel{background:#141416;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
 label{display:block;color:#8b8b8b;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
-.plateEntry{display:flex;align-items:center;gap:8px;margin:8px 0 12px}
-.plateEntry .ukPlate{display:flex;align-items:stretch;border:2px solid #222;border-radius:6px;overflow:hidden;background:#f4d000;flex:1;height:48px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
-.plateEntry .ukStrip{background:#003399;color:#fc0;width:36px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;letter-spacing:0.5px;flex-shrink:0}
-.plateEntry input{flex:1;border:0;background:transparent;color:#111;font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:18px;letter-spacing:0.12em;text-transform:uppercase;padding:0 12px;text-align:center;outline:none}
-.plateEntry input::placeholder{color:#666;letter-spacing:0.08em;font-weight:700}
-.plateEntry button{height:48px;padding:0 16px;font-size:14px;border-radius:12px;flex-shrink:0}
+.plateEntry{display:flex;align-items:center;gap:8px;margin:8px 0 12px;width:100%}
+.plateEntry .ukPlate{display:flex;align-items:stretch;border:2px solid #222;border-radius:6px;overflow:hidden;background:#f4d000;flex:1;height:48px;min-width:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.plateEntry .ukStrip{background:#003399;color:#fc0;width:38px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;letter-spacing:0.5px;flex-shrink:0}
+.plateEntry .ukPlate input{flex:1;min-width:0;border:0 !important;background:transparent !important;color:#111 !important;font-family:Arial,Helvetica,sans-serif !important;font-weight:900 !important;font-size:18px !important;letter-spacing:0.12em !important;text-transform:uppercase;padding:0 10px !important;text-align:center;outline:none;width:auto !important;border-radius:0 !important;height:100% !important}
+.plateEntry .ukPlate input::placeholder{color:#666 !important;letter-spacing:0.08em;font-weight:700;opacity:0.7}
+.plateEntry button.btn{height:48px;padding:0 14px;font-size:14px;border-radius:12px;flex-shrink:0;width:auto !important;min-width:90px}
 .found{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:12px;margin:10px 0;font-size:14px;line-height:1.5}
 .found b{color:#fff}
 .found .muted{color:#8b8b8b;font-size:13px}
@@ -106,7 +106,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <div class="plateEntry">
 <div class="ukPlate">
 <span class="ukStrip">UK</span>
-<input id="fPlate" placeholder="AB12 CDE" maxlength="8"/>
+<input id="fPlate" type="text" placeholder="AB12 CDE" maxlength="8" autocomplete="off"/>
 </div>
 <button class="btn" type="button" id="btnLookup">Lookup</button>
 </div>
@@ -138,7 +138,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="mot-config.js"></script>
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
-<script src="./home-app.js?v=56"></script>
+<script src="./home-app.js?v=57"></script>
 <script src="./home-insure.js"></script>
 <script src="./icons.js?v=28"></script>
 <script>

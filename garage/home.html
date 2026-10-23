@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icon.svg"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<link rel="stylesheet" href="./ui.css?v=62"/>
+<link rel="stylesheet" href="./ui.css?v=63"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -43,9 +43,12 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .panel{background:#141416;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
 label{display:block;color:#8b8b8b;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
-.plateRow{display:flex;gap:8px;align-items:center}
-.plateRow input{flex:1}
-.plateRow button{flex-shrink:0;padding:10px 14px;font-size:14px}
+.plateEntry{display:flex;align-items:center;gap:8px;margin:8px 0 12px}
+.plateEntry .ukPlate{display:flex;align-items:stretch;border:2px solid #222;border-radius:6px;overflow:hidden;background:#f4d000;flex:1;height:48px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.plateEntry .ukStrip{background:#003399;color:#fc0;width:36px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;letter-spacing:0.5px;flex-shrink:0}
+.plateEntry input{flex:1;border:0;background:transparent;color:#111;font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:18px;letter-spacing:0.12em;text-transform:uppercase;padding:0 12px;text-align:center;outline:none}
+.plateEntry input::placeholder{color:#666;letter-spacing:0.08em;font-weight:700}
+.plateEntry button{height:48px;padding:0 16px;font-size:14px;border-radius:12px;flex-shrink:0}
 .found{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:12px;margin:10px 0;font-size:14px;line-height:1.5}
 .found b{color:#fff}
 .found .muted{color:#8b8b8b;font-size:13px}
@@ -100,8 +103,11 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
 <label>Number plate</label>
-<div class="plateRow">
-<input id="fPlate" style="text-transform:uppercase" placeholder="AB12 CDE"/>
+<div class="plateEntry">
+<div class="ukPlate">
+<span class="ukStrip">UK</span>
+<input id="fPlate" placeholder="AB12 CDE" maxlength="8"/>
+</div>
 <button class="btn" type="button" id="btnLookup">Lookup</button>
 </div>
 <div id="foundDetails" class="found" style="display:none"></div>
@@ -123,6 +129,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <label>Garage email</label><input id="fEmail" type="email"/>
 <label>Insurer website</label><input id="fInsWeb"/>
 <button class="btn wide" type="button" id="btnSave" data-ico="save">Save</button>
+<button class="btn wide" type="button" id="btnDelete" data-ico="back" style="background:#3a1a1a;color:#ff6b6b;margin-top:8px">Delete car</button>
 <button class="btn wide" type="button" id="btnClose" data-ico="back">Back</button>
 </div></div>
 <div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn wide" type="button" id="btnCClose" data-ico="back">Back</button></div></div>
@@ -131,7 +138,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="mot-config.js"></script>
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
-<script src="./home-app.js?v=55"></script>
+<script src="./home-app.js?v=56"></script>
 <script src="./home-insure.js"></script>
 <script src="./icons.js?v=28"></script>
 <script>

@@ -7,7 +7,7 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./icon.svg"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<link rel="stylesheet" href="./ui.css?v=59"/>
+<link rel="stylesheet" href="./ui.css?v=60"/>
 <title>Dipstick</title>
 <style>
 *{box-sizing:border-box}
@@ -19,9 +19,12 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .plate .uk{background:#003399;color:#fc0;padding:6px 5px;font-size:9px;line-height:1;text-align:center;display:flex;align-items:center;justify-content:center;min-width:22px;letter-spacing:0.5px}
 .plate .reg{background:#f4d000;color:#111;padding:6px 10px;letter-spacing:0.12em;font-size:14px;display:flex;align-items:center}
 .bar{background:#141416;border-radius:0 0 18px 18px;padding:8px 0 10px;margin-bottom:10px;width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,0.08);border-top:0}
-.nameRow{display:flex;align-items:center;width:100%;padding:0 8px;box-sizing:border-box;height:44px;gap:8px}
+.nameRow{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 8px;box-sizing:border-box;height:44px}
+.nameRow .side{display:flex;gap:8px;z-index:2;width:88px;flex-shrink:0;align-items:center}
+.nameRow .side.left{justify-content:flex-start}
+.nameRow .side.right{justify-content:flex-end}
 .nameRow button{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.08);background:#1c1c1e;color:#f2f2f2;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:0;flex-shrink:0}
-.name{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;pointer-events:none;white-space:nowrap;min-width:0;overflow:hidden}
+.name{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:8px;z-index:1;pointer-events:none;white-space:nowrap}
 .makeLogo{height:20px;width:auto}
 .modelBadgeImg{height:22px;width:auto}
 .dots{text-align:center;color:#8b8b8b;font-size:12px;margin:6px 0 0}
@@ -71,11 +74,15 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <div class="hero" id="hero"></div>
 <div class="bar"><div class="nameRow">
+<div class="side left">
 <button type="button" id="btnAdd">+</button>
 <button type="button" id="prev">&#8592;</button>
+</div>
 <div class="name" id="caption">Your car</div>
+<div class="side right">
 <button type="button" id="next">&#8594;</button>
 <button type="button" id="btnEdit">&#9998;</button>
+</div>
 </div><p class="dots" id="dots">Add a car</p></div>
 <button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
 <div class="card hide" id="dues"></div>

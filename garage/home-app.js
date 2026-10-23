@@ -8,6 +8,11 @@ function state(){
   try{
     var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
     if(s&&s.cars&&s.cars.length){
+      if(s.cars.length>3){
+        s.cars=s.cars.slice(0,3);
+        if(s.i>=3) s.i=0;
+        localStorage.setItem("gt.garage",JSON.stringify(s));
+      }
       if(typeof s.i!=="number"||s.i<0||s.i>=s.cars.length) s.i=0;
       return s;
     }

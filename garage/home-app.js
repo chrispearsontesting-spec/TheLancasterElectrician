@@ -226,29 +226,60 @@ function doLookup(){
   window.fillFromPlate(plate,showFound);
 }
 function extractPlate(text){
-  var clean=String(text||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-  var m=clean.match(/[A-Z]{2}[0-9]{2}[A-Z]{3}/) || clean.match(/[A-Z][0-9]{1,3}[A-Z]{3}/) || clean.match(/[A-Z]{1,3}[0-9]{1,4}/);
-  return m ? m[0] : "";
+  var raw = String(text||"").toUpperCase();
+  // Common OCR fixes for plates
+  var fixes = {"O":"0","I":"1","L":"1","S":"5","B":"8","Z":"2","G":"6","Q":"0"};
+  var clean = raw.replace(/[^A-Z0-9]/g,"");
+  // Try original first
+  var patterns = [
+    /[A-Z]{2}[0-9]{2}[A-Z]{3}/,
+    /[A-Z][0-9]{1,3}[A-Z]{3}/,
+    /[A-Z]{1,3}[0-9]{1,4}/,
+    /[A-Z0-9]{7}/
+  ];
+  for(var p of patterns){
+    var m = clean.match(p);
+    if(m && m[0].length >= 6) return m[0];
+  }
+  // Apply fixes and try again
+  var fixed = "";
+  for(var i=0;i<clean.length;i++){
+    fixed += fixes[clean[i]] || clean[i];
+  }
+  for(var p of patterns){
+    var m = fixed.match(p);
+    if(m && m[0].length >= 6) return m[0];
+  }
+  // Fallback: longest alphanumeric sequence 6-8 chars
+  var seqs = clean.match(/[A-Z0-9]{6,8}/g);
+  return (seqs && seqs[0]) || "";
 }
 function scanPlate(file){
   var hint=document.getElementById("plateHint");
-  if(hint) hint.textContent="Scanning plate\u2026";
+  if(hint) hint.textContent="Scanning plate\u2026 (this can take a few seconds)";
   if(typeof Tesseract==="undefined"){
-    if(hint) hint.textContent="OCR not loaded.";
+    if(hint) hint.textContent="OCR not loaded. Refresh the page.";
     return;
   }
-  Tesseract.recognize(file,"eng",{logger:function(){}}).then(function(r){
-    var found=extractPlate(r&&r.data&&r.data.text);
-    var plateEl=document.getElementById("fPlate");
+  var opts = {
+    logger: function(m){ if(m.status==="recognizing text" && hint) hint.textContent="Reading\u2026 "+Math.round((m.progress||0)*100)+"%"; },
+    tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
+    tessedit_pageseg_mode: "7"
+  };
+  Tesseract.recognize(file, "eng", opts).then(function(r){
+    var raw = (r && r.data && r.data.text) || "";
+    var found = extractPlate(raw);
+    var plateEl = document.getElementById("fPlate");
     if(found && plateEl){
-      plateEl.value=found;
-      if(hint) hint.textContent="Plate found: "+found;
+      plateEl.value = found;
+      if(hint) hint.textContent = "Plate found: " + found + " (raw: " + raw.replace(/\s+/g," ").slice(0,40) + ")";
       doLookup();
     }else{
-      if(hint) hint.textContent="Could not read plate. Try again or type it.";
+      if(hint) hint.textContent = "Could not read a clear plate. Raw text: " + (raw.replace(/\s+/g," ").slice(0,60) || "(none)") + ". Try again or type it.";
     }
-  }).catch(function(){
-    if(hint) hint.textContent="Scan failed. Type the plate instead.";
+  }).catch(function(err){
+    console.error(err);
+    if(hint) hint.textContent = "Scan failed. Type the plate instead.";
   });
 }
 function openSheet(mode){

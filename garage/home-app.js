@@ -139,7 +139,17 @@ function paint(){
     if(c.fuel) bits.push(String(c.fuel).charAt(0).toUpperCase()+String(c.fuel).slice(1));
     sub = "<div class='sub'>"+bits.join(" ")+"</div>";
   }
-  document.getElementById("caption").innerHTML=carLogoHtml(c.nick||c.name||"Car")+sub;
+  var nameText = carLogoHtml(c.nick||c.name||"Car");
+  document.getElementById("caption").innerHTML = "<span class='carName'>"+nameText+"</span>"+sub;
+  var nameEl = document.querySelector("#caption .carName");
+  if(nameEl){
+    var len = nameText.length;
+    var size = 18;
+    if(len > 22) size = 14;
+    else if(len > 18) size = 15;
+    else if(len > 14) size = 16;
+    nameEl.style.fontSize = size+"px";
+  }
   var dots=document.getElementById("dots");
   if(dots) dots.textContent=s.cars.length>1 ? ("Car "+(s.i+1)+" of "+s.cars.length) : "";
   var motUrl=c.plate?("mot.html?plate="+encodeURIComponent(String(c.plate).replace(/\s/g,""))+"#history"):"mot.html#history";

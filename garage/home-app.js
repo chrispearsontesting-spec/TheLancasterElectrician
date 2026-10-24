@@ -225,6 +225,32 @@ function doLookup(){
   if(!window.fillFromPlate){ if(hint) hint.textContent="Lookup not ready."; return; }
   window.fillFromPlate(plate,showFound);
 }
+function extractPlate(text){
+  var clean=String(text||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  var m=clean.match(/[A-Z]{2}[0-9]{2}[A-Z]{3}/) || clean.match(/[A-Z][0-9]{1,3}[A-Z]{3}/) || clean.match(/[A-Z]{1,3}[0-9]{1,4}/);
+  return m ? m[0] : "";
+}
+function scanPlate(file){
+  var hint=document.getElementById("plateHint");
+  if(hint) hint.textContent="Scanning plate\u2026";
+  if(typeof Tesseract==="undefined"){
+    if(hint) hint.textContent="OCR not loaded.";
+    return;
+  }
+  Tesseract.recognize(file,"eng",{logger:function(){}}).then(function(r){
+    var found=extractPlate(r&&r.data&&r.data.text);
+    var plateEl=document.getElementById("fPlate");
+    if(found && plateEl){
+      plateEl.value=found;
+      if(hint) hint.textContent="Plate found: "+found;
+      doLookup();
+    }else{
+      if(hint) hint.textContent="Could not read plate. Try again or type it.";
+    }
+  }).catch(function(){
+    if(hint) hint.textContent="Scan failed. Type the plate instead.";
+  });
+}
 function openSheet(mode){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
@@ -275,6 +301,16 @@ on("btnAdd",function(){
 });
 on("btnEdit",function(){openSheet("edit")});
 on("btnLookup",doLookup);
+on("btnCam",function(){
+  var cam=document.getElementById("plateCam");
+  if(cam) cam.click();
+});
+var plateCam=document.getElementById("plateCam");
+if(plateCam) plateCam.onchange=function(){
+  var f=this.files&&this.files[0];
+  if(f) scanPlate(f);
+  this.value="";
+};
 var plateEl=document.getElementById("fPlate");
 if(plateEl) plateEl.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doLookup();}});
 var dues=document.getElementById("dues");

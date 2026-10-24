@@ -107,7 +107,8 @@ function mark(iso){
   return "<span class='mark ok'>\u2713</span>";
 }
 function row(title,iso,extra,buttons){
-  return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  var key = title.toLowerCase().replace(/\s+/g,"");
+  return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when' data-date='"+key+"' style='cursor:pointer'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
 function carLogoHtml(name){
@@ -295,7 +296,29 @@ if(plateEl) plateEl.addEventListener("keydown",function(e){if(e.key==="Enter"){e
 var dues=document.getElementById("dues");
 if(dues) dues.addEventListener("click",function(e){
   var b=e.target.closest("[data-job]");
-  if(b) openBook(b.getAttribute("data-job"));
+  if(b){ openBook(b.getAttribute("data-job")); return; }
+  var dateEl = e.target.closest("[data-date]");
+  if(dateEl){
+    var key = dateEl.getAttribute("data-date");
+    if(!confirm("Edit expiry date for "+key.replace(/([a-z])([A-Z])/g,"$1 $2")+"?")) return;
+    var s=state(), c=s.cars[s.i];
+    var current = "";
+    if(key==="mot") current=c.mot||"";
+    else if(key==="tax") current=c.tax||"";
+    else if(key==="insurance") current=c.ins||"";
+    else if(key==="fullservice") current=c.oil||"";
+    else if(key==="timingbelt") current=c.beltDate||"";
+    var newDate = prompt("Enter new date (YYYY-MM-DD):", current);
+    if(!newDate) return;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(newDate)){ alert("Please use YYYY-MM-DD format."); return; }
+    if(key==="mot") c.mot=newDate;
+    else if(key==="tax") c.tax=newDate;
+    else if(key==="insurance") c.ins=newDate;
+    else if(key==="fullservice") c.oil=newDate;
+    else if(key==="timingbelt") c.beltDate=newDate;
+    save(s);
+    paint();
+  }
 });
 on("btnClose",function(){document.getElementById("sheet").className="sheet"});
 on("btnCClose",function(){document.getElementById("contact").className="sheet"});

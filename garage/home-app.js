@@ -1,5 +1,5 @@
 function seed(){
-  return {id:"xc60",nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",mpg:"38",
+  return {id:"xc60",nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",engine:"2401",mpg:"38",
     mot:"2027-08-16",tax:"2026-10-01",ins:"2026-10-12",oil:"2026-12-31",photo:"",miles:"12000",
     beltDate:"",beltYears:"5",beltMiles:"150000",tyreDate:"",tyreLife:"20000",
     motName:"",motPhone:"",motEmail:"",insWeb:""};
@@ -124,10 +124,16 @@ function paint(){
   hero.style.backgroundImage=c.photo?"none":"";
   hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
   var sub = "";
-  if(c.engine || c.fuel){
+  var eng = c.engine;
+  if(!eng && c.name){
+    var n = String(c.name).toLowerCase();
+    if(/xc60|d5/.test(n)) eng = "2401";
+    else if(/s4|rs4|a4/.test(n) && /audi/.test(n)) eng = "1984";
+  }
+  if(eng || c.fuel){
     var bits = [];
-    if(c.engine){
-      var litres = (parseInt(c.engine,10)/1000).toFixed(1).replace(/\.0$/,"");
+    if(eng){
+      var litres = (parseInt(eng,10)/1000).toFixed(1).replace(/\.0$/,"");
       bits.push(litres+"L");
     }
     if(c.fuel) bits.push(String(c.fuel).charAt(0).toUpperCase()+String(c.fuel).slice(1));

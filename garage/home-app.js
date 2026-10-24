@@ -108,7 +108,8 @@ function mark(iso){
 }
 function row(title,iso,extra,buttons){
   var key = title.toLowerCase().replace(/\s+/g,"");
-  return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when' data-date='"+key+"' style='cursor:pointer'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  var niceName = {"mot":"MOT","tax":"Tax","insurance":"Insurance","fullservice":"Full service","timingbelt":"Timing belt"}[key] || title;
+  return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when' data-date='"+key+"' data-name='"+niceName+"' style='cursor:pointer'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
 function carLogoHtml(name){
@@ -300,7 +301,8 @@ if(dues) dues.addEventListener("click",function(e){
   var dateEl = e.target.closest("[data-date]");
   if(dateEl){
     var key = dateEl.getAttribute("data-date");
-    if(!confirm("Edit expiry date for "+key.replace(/([a-z])([A-Z])/g,"$1 $2")+"?")) return;
+    var niceName = dateEl.getAttribute("data-name") || key;
+    if(!confirm("Edit expiry date for "+niceName+"?")) return;
     var s=state(), c=s.cars[s.i];
     var current = "";
     if(key==="mot") current=c.mot||"";
@@ -308,11 +310,10 @@ if(dues) dues.addEventListener("click",function(e){
     else if(key==="insurance") current=c.ins||"";
     else if(key==="fullservice") current=c.oil||"";
     else if(key==="timingbelt") current=c.beltDate||"";
-    var label = key.replace(/([a-z])([A-Z])/g,"$1 $2");
     var sheet=document.createElement("div");
     sheet.className="sheet on";
     sheet.style.zIndex="30";
-    sheet.innerHTML='<div class="panel"><h2>Edit '+label+'</h2><label>New expiry date</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/><div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
+    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>New expiry date</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/><div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
     document.body.appendChild(sheet);
     sheet.querySelector("#dateCancel").onclick=function(){ sheet.remove(); };
     sheet.querySelector("#dateOk").onclick=function(){

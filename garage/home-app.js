@@ -123,7 +123,14 @@ function paint(){
   var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
   hero.style.backgroundImage=c.photo?"none":"";
   hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
-  document.getElementById("caption").innerHTML=carLogoHtml(c.nick||c.name||"Car");
+  var sub = "";
+  if(c.engine || c.fuel){
+    var bits = [];
+    if(c.engine) bits.push(c.engine+" cc");
+    if(c.fuel) bits.push(String(c.fuel).charAt(0).toUpperCase()+String(c.fuel).slice(1));
+    sub = "<div class='sub'>"+bits.join(" \u00b7 ")+"</div>";
+  }
+  document.getElementById("caption").innerHTML=carLogoHtml(c.nick||c.name||"Car")+sub;
   var dots=document.getElementById("dots");
   if(dots) dots.textContent=s.cars.length>1 ? ("Car "+(s.i+1)+" of "+s.cars.length) : "";
   var motUrl=c.plate?("mot.html?plate="+encodeURIComponent(String(c.plate).replace(/\s/g,""))+"#history"):"mot.html#history";
@@ -163,6 +170,13 @@ function showFound(info){
     return;
   }
   lastLooked=info;
+  // Store engine + fuel on the current car for display
+  var s=state();
+  if(s.cars[s.i]){
+    if(info.engine) s.cars[s.i].engine = info.engine;
+    if(info.fuel) s.cars[s.i].fuel = (info.fuel||"").toLowerCase();
+    save(s);
+  }
   var bits=["<b>"+info.name+"</b>"];
   if(info.year) bits.push("Year: "+info.year);
   if(info.fuel) bits.push("Fuel: "+info.fuel);

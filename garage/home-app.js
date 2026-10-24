@@ -110,10 +110,7 @@ function row(title,iso,extra,buttons){
   return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
-
-
 var DARK_LOGOS = ["BMW","MERCEDES-BENZ","MERCEDES","VOLKSWAGEN","VW"];
-
 
 var MODEL_BADGES = {
   "S3":"badges/audi-s3.svg","S4":"badges/audi-s4.svg","RS3":"badges/audi-rs3.svg","RS4":"badges/audi-rs4.svg","RS6":"badges/audi-rs6.svg",
@@ -130,32 +127,32 @@ var BADGE_STYLES = {
   "PEUGEOT":"peugeot","RENAULT":"renault","MAZDA":"mazda","LEXUS":"lexus"
 };
 
-var MAKE_LOGOS = {
-  "VOLVO":"volvo-logo.svg","AUDI":"audi-silver.svg","BMW":"bmw-logo.svg","FORD":"ford-logo.svg",
-  "VAUXHALL":"vauxhall-logo.svg","VOLKSWAGEN":"volkswagen-logo.svg","VW":"volkswagen-logo.svg",
-  "TOYOTA":"toyota-logo.svg","MERCEDES-BENZ":"mercedes-benz-logo.svg","MERCEDES":"mercedes-benz-logo.svg",
-  "NISSAN":"nissan-logo.svg","HONDA":"honda-logo.svg","HYUNDAI":"hyundai-logo.svg","KIA":"kia-logo.svg",
-  "PEUGEOT":"peugeot-logo.svg","RENAULT":"renault-logo.svg","SKODA":"skoda-logo.svg","SEAT":"seat-logo.svg",
-  "CITROEN":"citroen-logo.svg","MINI":"mini-logo.svg","LAND ROVER":"land-rover-logo.svg","JAGUAR":"jaguar-logo.svg",
-  "MAZDA":"mazda-logo.svg","MITSUBISHI":"mitsubishi-logo.svg","SUZUKI":"suzuki-logo.svg","FIAT":"fiat-logo.svg",
-  "ALFA ROMEO":"alfa-romeo-logo.svg","PORSCHE":"porsche-logo.svg","TESLA":"tesla-logo.svg","LEXUS":"lexus-logo.svg",
-  "INFINITI":"infiniti-logo.svg","SUBARU":"subaru-logo.svg","DACIA":"dacia-logo.svg","MG":"mg-logo.svg",
-  "CUPRA":"cupra-logo.svg","POLESTAR":"polestar-logo.svg","GENESIS":"genesis-logo.svg","BENTLEY":"bentley-logo.svg",
-  "ASTON MARTIN":"aston-martin-logo.svg","ROLLS-ROYCE":"rolls-royce-logo.svg","FERRARI":"ferrari-logo.svg",
-  "LAMBORGHINI":"lamborghini-logo.svg","MASERATI":"maserati-logo.svg","JEEP":"jeep-logo.svg","CHRYSLER":"chrysler-logo.svg"
+var MAKE_SLUGS = {
+  "VOLVO":"volvo","AUDI":"audi","BMW":"bmw","FORD":"ford",
+  "VAUXHALL":"vauxhall","VOLKSWAGEN":"volkswagen","VW":"volkswagen",
+  "TOYOTA":"toyota","MERCEDES-BENZ":"mercedes-benz","MERCEDES":"mercedes-benz",
+  "NISSAN":"nissan","HONDA":"honda","HYUNDAI":"hyundai","KIA":"kia",
+  "PEUGEOT":"peugeot","RENAULT":"renault","SKODA":"skoda","SEAT":"seat",
+  "CITROEN":"citroen","MINI":"mini","LAND ROVER":"land-rover","JAGUAR":"jaguar",
+  "MAZDA":"mazda","MITSUBISHI":"mitsubishi","SUZUKI":"suzuki","FIAT":"fiat",
+  "ALFA ROMEO":"alfa-romeo","PORSCHE":"porsche","TESLA":"tesla","LEXUS":"lexus",
+  "INFINITI":"infiniti","SUBARU":"subaru","DACIA":"dacia","MG":"mg",
+  "CUPRA":"cupra","POLESTAR":"polestar","GENESIS":"genesis","BENTLEY":"bentley",
+  "ASTON MARTIN":"aston-martin","ROLLS-ROYCE":"rolls-royce","FERRARI":"ferrari",
+  "LAMBORGHINI":"lamborghini","MASERATI":"maserati","JEEP":"jeep","CHRYSLER":"chrysler"
 };
 function carLogoHtml(name){
   if(!name) return "";
   var up = String(name).toUpperCase();
   var make = "", model = up;
-  var keys = Object.keys(MAKE_LOGOS).sort(function(a,b){return b.length-a.length});
+  var keys = Object.keys(MAKE_SLUGS).sort(function(a,b){return b.length-a.length});
   for(var i=0;i<keys.length;i++){
     if(up.indexOf(keys[i])===0){ make=keys[i]; model=up.slice(keys[i].length).trim(); break; }
   }
   var dark = make && DARK_LOGOS.indexOf(make)>=0 ? " dark" : "";
-  var file = MAKE_LOGOS[make];
-  var src = (file.indexOf("http")===0 || file.indexOf("/")===0) ? file : (file==="audi-silver.svg" ? file : "https://cdn.jsdelivr.net/gh/vehiclespecs/brand-logos@main/"+file);
-  var logo = make && file ? '<img class="makeLogo'+dark+'" src="'+src+'" alt="'+make+'">' : "";
+  var slug = MAKE_SLUGS[make];
+  var src = slug ? ("https://cdn.jsdelivr.net/gh/diegojasso/car-logos-SVG@main/logos/"+slug+".svg") : "";
+  var logo = make && src ? '<img class="makeLogo'+dark+'" src="'+src+'" alt="'+make+'" onerror="this.style.display=\'none\'">' : "";
   var style = make && BADGE_STYLES[make] ? BADGE_STYLES[make] : "";
   var badgeFile = model && MODEL_BADGES[model];
   var badge = badgeFile ? '<img class="modelBadgeImg" src="'+badgeFile+'" alt="'+model+'">' : (model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "");
@@ -227,10 +224,8 @@ function doLookup(){
 }
 function extractPlate(text){
   var raw = String(text||"").toUpperCase();
-  // Common OCR fixes for plates
   var fixes = {"O":"0","I":"1","L":"1","S":"5","B":"8","Z":"2","G":"6","Q":"0"};
   var clean = raw.replace(/[^A-Z0-9]/g,"");
-  // Try original first
   var patterns = [
     /[A-Z]{2}[0-9]{2}[A-Z]{3}/,
     /[A-Z][0-9]{1,3}[A-Z]{3}/,
@@ -241,7 +236,6 @@ function extractPlate(text){
     var m = clean.match(p);
     if(m && m[0].length >= 6) return m[0];
   }
-  // Apply fixes and try again
   var fixed = "";
   for(var i=0;i<clean.length;i++){
     fixed += fixes[clean[i]] || clean[i];
@@ -250,7 +244,6 @@ function extractPlate(text){
     var m = fixed.match(p);
     if(m && m[0].length >= 6) return m[0];
   }
-  // Fallback: longest alphanumeric sequence 6-8 chars
   var seqs = clean.match(/[A-Z0-9]{6,8}/g);
   return (seqs && seqs[0]) || "";
 }

@@ -133,7 +133,7 @@ function paint(){
   if(eng || c.fuel){
     var bits = [];
     if(eng){
-      var litres = (parseInt(eng,10)/1000).toFixed(1).replace(/\.0$/,"");
+      var litres = (parseInt(eng,10)/1000).toFixed(1);
       bits.push(litres+"L");
     }
     if(c.fuel) bits.push(String(c.fuel).charAt(0).toUpperCase()+String(c.fuel).slice(1));
@@ -377,6 +377,7 @@ on("btnSave",function(){
   var looked = lastLooked || {};
   c.nick=looked.name || c.nick || "Car";
   c.name=c.nick;
+  if(looked.engine) c.engine = looked.engine;
   c.plate=document.getElementById("fPlate").value.toUpperCase();
   c.mot=document.getElementById("fMot").value;
   c.tax=document.getElementById("fTax").value;

@@ -308,16 +308,26 @@ if(dues) dues.addEventListener("click",function(e){
     else if(key==="insurance") current=c.ins||"";
     else if(key==="fullservice") current=c.oil||"";
     else if(key==="timingbelt") current=c.beltDate||"";
-    var newDate = prompt("Enter new date (YYYY-MM-DD):", current);
-    if(!newDate) return;
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(newDate)){ alert("Please use YYYY-MM-DD format."); return; }
-    if(key==="mot") c.mot=newDate;
-    else if(key==="tax") c.tax=newDate;
-    else if(key==="insurance") c.ins=newDate;
-    else if(key==="fullservice") c.oil=newDate;
-    else if(key==="timingbelt") c.beltDate=newDate;
-    save(s);
-    paint();
+    var label = key.replace(/([a-z])([A-Z])/g,"$1 $2");
+    var sheet=document.createElement("div");
+    sheet.className="sheet on";
+    sheet.style.zIndex="30";
+    sheet.innerHTML='<div class="panel"><h2>Edit '+label+'</h2><label>New expiry date</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/><div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
+    document.body.appendChild(sheet);
+    sheet.querySelector("#dateCancel").onclick=function(){ sheet.remove(); };
+    sheet.querySelector("#dateOk").onclick=function(){
+      var newDate=sheet.querySelector("#dateCal").value;
+      if(!newDate){ alert("Please pick a date."); return; }
+      if(key==="mot") c.mot=newDate;
+      else if(key==="tax") c.tax=newDate;
+      else if(key==="insurance") c.ins=newDate;
+      else if(key==="fullservice") c.oil=newDate;
+      else if(key==="timingbelt") c.beltDate=newDate;
+      save(s);
+      paint();
+      sheet.remove();
+    };
+    return;
   }
 });
 on("btnClose",function(){document.getElementById("sheet").className="sheet"});

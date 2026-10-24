@@ -126,9 +126,12 @@ function paint(){
   var sub = "";
   if(c.engine || c.fuel){
     var bits = [];
-    if(c.engine) bits.push(c.engine+" cc");
+    if(c.engine){
+      var litres = (parseInt(c.engine,10)/1000).toFixed(1).replace(/\.0$/,"");
+      bits.push(litres+"L");
+    }
     if(c.fuel) bits.push(String(c.fuel).charAt(0).toUpperCase()+String(c.fuel).slice(1));
-    sub = "<div class='sub'>"+bits.join(" \u00b7 ")+"</div>";
+    sub = "<div class='sub'>"+bits.join(" ")+"</div>";
   }
   document.getElementById("caption").innerHTML=carLogoHtml(c.nick||c.name||"Car")+sub;
   var dots=document.getElementById("dots");
@@ -170,7 +173,6 @@ function showFound(info){
     return;
   }
   lastLooked=info;
-  // Store engine + fuel on the current car for display
   var s=state();
   if(s.cars[s.i]){
     if(info.engine) s.cars[s.i].engine = info.engine;

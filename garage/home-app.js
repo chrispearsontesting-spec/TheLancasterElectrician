@@ -110,53 +110,8 @@ function row(title,iso,extra,buttons){
   return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
-var DARK_LOGOS = ["BMW","MERCEDES-BENZ","MERCEDES","VOLKSWAGEN","VW"];
-
-var MODEL_BADGES = {
-  "S3":"badges/audi-s3.svg","S4":"badges/audi-s4.svg","RS3":"badges/audi-rs3.svg","RS4":"badges/audi-rs4.svg","RS6":"badges/audi-rs6.svg",
-  "M2":"badges/bmw-m2.svg","M3":"badges/bmw-m3.svg","M4":"badges/bmw-m4.svg","M5":"badges/bmw-m5.svg","M6":"badges/bmw-m6.svg",
-  "AMG":"badges/mercedes-amg.svg","GTI":"badges/vw-gti.svg","R":"badges/vw-r.svg",
-  "ST":"badges/ford-st.svg","RS":"badges/ford-rs.svg"
-};
-
-var BADGE_STYLES = {
-  "VOLVO":"volvo","AUDI":"audi","BMW":"bmw","MERCEDES-BENZ":"mercedes","MERCEDES":"mercedes",
-  "VOLKSWAGEN":"vw","VW":"vw","FORD":"ford","VAUXHALL":"vauxhall","TOYOTA":"toyota",
-  "NISSAN":"nissan","HONDA":"honda","HYUNDAI":"hyundai","KIA":"kia","LAND ROVER":"landrover",
-  "JAGUAR":"jaguar","MINI":"mini","PORSCHE":"porsche","TESLA":"tesla","SKODA":"skoda",
-  "PEUGEOT":"peugeot","RENAULT":"renault","MAZDA":"mazda","LEXUS":"lexus"
-};
-
-var MAKE_SLUGS = {
-  "VOLVO":"volvo","AUDI":"audi","BMW":"bmw","FORD":"ford",
-  "VAUXHALL":"vauxhall","VOLKSWAGEN":"volkswagen","VW":"volkswagen",
-  "TOYOTA":"toyota","MERCEDES-BENZ":"mercedes-benz","MERCEDES":"mercedes-benz",
-  "NISSAN":"nissan","HONDA":"honda","HYUNDAI":"hyundai","KIA":"kia",
-  "PEUGEOT":"peugeot","RENAULT":"renault","SKODA":"skoda","SEAT":"seat",
-  "CITROEN":"citroen","MINI":"mini","LAND ROVER":"land-rover","JAGUAR":"jaguar",
-  "MAZDA":"mazda","MITSUBISHI":"mitsubishi","SUZUKI":"suzuki","FIAT":"fiat",
-  "ALFA ROMEO":"alfa-romeo","PORSCHE":"porsche","TESLA":"tesla","LEXUS":"lexus",
-  "INFINITI":"infiniti","SUBARU":"subaru","DACIA":"dacia","MG":"mg",
-  "CUPRA":"cupra","POLESTAR":"polestar","GENESIS":"genesis","BENTLEY":"bentley",
-  "ASTON MARTIN":"aston-martin","ROLLS-ROYCE":"rolls-royce","FERRARI":"ferrari",
-  "LAMBORGHINI":"lamborghini","MASERATI":"maserati","JEEP":"jeep","CHRYSLER":"chrysler"
-};
 function carLogoHtml(name){
-  if(!name) return "";
-  var up = String(name).toUpperCase();
-  var make = "", model = up;
-  var keys = Object.keys(MAKE_SLUGS).sort(function(a,b){return b.length-a.length});
-  for(var i=0;i<keys.length;i++){
-    if(up.indexOf(keys[i])===0){ make=keys[i]; model=up.slice(keys[i].length).trim(); break; }
-  }
-  var dark = make && DARK_LOGOS.indexOf(make)>=0 ? " dark" : "";
-  var slug = MAKE_SLUGS[make];
-  var src = slug ? ("https://cdn.jsdelivr.net/gh/diegojasso/car-logos-SVG@main/logos/"+slug+".svg") : "";
-  var logo = make && src ? '<img class="makeLogo'+dark+'" src="'+src+'" alt="'+make+'" onerror="this.style.display=\'none\'">' : "";
-  var style = make && BADGE_STYLES[make] ? BADGE_STYLES[make] : "";
-  var badgeFile = model && MODEL_BADGES[model];
-  var badge = badgeFile ? '<img class="modelBadgeImg" src="'+badgeFile+'" alt="'+model+'">' : (model ? '<span class="modelBadge'+(style?" "+style:"")+'">'+model+'</span>' : "");
-  return logo + badge || name;
+  return name || "";
 }
 
 function paint(){

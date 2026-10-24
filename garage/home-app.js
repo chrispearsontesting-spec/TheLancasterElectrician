@@ -144,11 +144,13 @@ function paint(){
   var nameEl = document.querySelector("#caption .carName");
   if(nameEl){
     var len = nameText.length;
-    var size = 18;
-    if(len > 22) size = 14;
-    else if(len > 18) size = 15;
-    else if(len > 14) size = 16;
+    var size = 17;
+    if(len > 20) size = 12;
+    else if(len > 16) size = 13;
+    else if(len > 13) size = 14;
+    else if(len > 10) size = 15;
     nameEl.style.fontSize = size+"px";
+    nameEl.style.letterSpacing = len > 16 ? "-0.3px" : "0";
   }
   var dots=document.getElementById("dots");
   if(dots) dots.textContent=s.cars.length>1 ? ("Car "+(s.i+1)+" of "+s.cars.length) : "";

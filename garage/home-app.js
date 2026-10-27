@@ -117,6 +117,34 @@ function carLogoHtml(name){
   return name || "";
 }
 
+// Fit the car name between the arrow buttons: place the box in the real gap,
+// step the font down until it fits (min 11px), then let CSS ellipsis take over.
+function fitName(){
+  var cap=document.getElementById("caption"), el=cap&&cap.querySelector(".carName");
+  var row=cap&&cap.parentNode, pv=document.getElementById("prev"), nx=document.getElementById("next");
+  if(!el||!row) return;
+  if(pv&&nx){
+    var rr=row.getBoundingClientRect(), pr=pv.getBoundingClientRect(), nr=nx.getBoundingClientRect();
+    if(rr.width&&pr.width&&nr.width){
+      var inset=Math.ceil(Math.max(pr.right-rr.left, rr.right-nr.left))+6;
+      cap.style.left=inset+"px"; cap.style.right=inset+"px";
+    }
+  }
+  var size=18;
+  el.style.letterSpacing="0";
+  el.style.fontSize=size+"px";
+  while(size>11 && el.scrollWidth>el.clientWidth){
+    size-=0.5;
+    el.style.fontSize=size+"px";
+    if(size<15) el.style.letterSpacing="-0.2px";
+  }
+}
+var fitT;
+function refit(){ clearTimeout(fitT); fitT=setTimeout(fitName,60); }
+window.addEventListener("resize",refit);
+window.addEventListener("orientationchange",refit);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitName).catch(function(){});
+
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
   if(!s.cars.length){ s.cars=[seed()]; s.i=0; save(s); }
@@ -142,17 +170,7 @@ function paint(){
   }
   var nameText = carLogoHtml(c.nick||c.name||"Car");
   document.getElementById("caption").innerHTML = "<span class='carName'>"+nameText+"</span>"+sub;
-  var nameEl = document.querySelector("#caption .carName");
-  if(nameEl){
-    var len = nameText.length;
-    var size = 17;
-    if(len > 20) size = 12;
-    else if(len > 16) size = 13;
-    else if(len > 13) size = 14;
-    else if(len > 10) size = 15;
-    nameEl.style.fontSize = size+"px";
-    nameEl.style.letterSpacing = len > 16 ? "-0.3px" : "0";
-  }
+  fitName();
   var dots=document.getElementById("dots");
   if(dots) dots.textContent=s.cars.length>1 ? ("Car "+(s.i+1)+" of "+s.cars.length) : "";
   var motUrl=c.plate?("mot.html?plate="+encodeURIComponent(String(c.plate).replace(/\s/g,""))+"#history"):"mot.html#history";

@@ -234,4 +234,54 @@ await t("upload: PDF after 2 KB junk stored as application/pdf, served nosniff, 
   assert.equal(f.headers.get("Content-Type"), "application/pdf"); assert.equal(f.headers.get("X-Content-Type-Options"), "nosniff");
   const html = await upload(form([[enc("<html>%PDF-1.4"), "evil.pdf", "application/pdf"]])); assert.equal(html.status, 415);
 });
+
+// ---- /transcribe (Workers AI mocked) ----
+const webm = (n = 4000) => { const u = new Uint8Array(n); u.set([0x1a, 0x45, 0xdf, 0xa3]); return u; };
+const mockAI = (impl) => { const calls = []; return { calls, run: async (m, i) => { calls.push([m, i]); return impl(m, i); } }; };
+const tx = (body, uid = UID, o = {}) => call("POST", "/transcribe/" + uid, { body, headers: { "Content-Type": "audio/webm" }, ...o });
+await t("transcribe: turbo model, base64 + en, returns cleaned {text}, CORS", async () => {
+  fresh(); await register(); env.AI = mockAI(() => ({ text: "  Front pads   replaced.\u0007 " }));
+  const r = await tx(webm()); assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), { text: "Front pads replaced." });
+  assert.equal(r.headers.get("Access-Control-Allow-Origin"), SITE);
+  const [m, i] = env.AI.calls[0]; assert.equal(m, "@cf/openai/whisper-large-v3-turbo"); assert.equal(i.language, "en");
+  assert.equal(typeof i.audio, "string"); assert.deepEqual(new Uint8Array(Buffer.from(i.audio, "base64")), webm());
+});
+await t("transcribe: falls back to @cf/openai/whisper with byte array", async () => {
+  fresh(); await register(); env.AI = mockAI((m) => { if (m.includes("turbo")) throw new Error("bad"); return { text: "ok" }; });
+  const r = await tx(webm()); assert.equal(r.status, 200); assert.equal((await r.json()).text, "ok");
+  assert.equal(env.AI.calls[1][0], "@cf/openai/whisper"); assert.ok(Array.isArray(env.AI.calls[1][1].audio));
+});
+await t("transcribe: both models fail -> 502", async () => {
+  fresh(); await register(); env.AI = mockAI(() => { throw new Error("x"); });
+  assert.equal((await tx(webm())).status, 502);
+});
+await t("transcribe: needs a registered upload ID, valid ID, AI binding", async () => {
+  fresh(); env.AI = mockAI(() => ({ text: "x" }));
+  assert.equal((await tx(webm())).status, 404);
+  assert.equal((await tx(webm(), "bad")).status, 404);
+  await register(); delete env.AI; assert.equal((await tx(webm())).status, 503);
+  assert.equal(env.UPLOADS.m.size, 1);
+});
+await t("transcribe: rejects too big, too small, non-audio, foreign origin", async () => {
+  fresh(); await register(); env.AI = mockAI(() => ({ text: "x" }));
+  assert.equal((await tx(webm(2 * 1024 * 1024 + 10))).status, 413);
+  assert.equal((await tx(webm(50))).status, 400);
+  assert.equal((await tx(jpg().length < 200 ? cat(jpg(), junk(400)) : jpg())).status, 415);
+  assert.equal((await tx(webm(), UID, { origin: "https://evil.example" })).status, 403);
+  assert.equal(env.AI.calls.length, 0);
+  for (const head of [[0x4f, 0x67, 0x67, 0x53], [0, 0, 0, 0x20, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]]) {
+    const u = new Uint8Array(500); u.set(head); assert.equal((await tx(u)).status, 200);
+  }
+});
+await t("transcribe: rate limited per IP (TRANSCRIBE_LIMITER, else memory 10/min)", async () => {
+  fresh(); await register(); env.AI = mockAI(() => ({ text: "x" }));
+  let n = 0; env.TRANSCRIBE_LIMITER = { limit: async () => ({ success: ++n <= 2 }) };
+  assert.equal((await tx(webm(), UID, { ipAddr: "9.9.9.9" })).status, 200);
+  assert.equal((await tx(webm(), UID, { ipAddr: "9.9.9.9" })).status, 200);
+  const r = await tx(webm(), UID, { ipAddr: "9.9.9.9" }); assert.equal(r.status, 429); assert.equal(r.headers.get("Retry-After"), "60");
+  delete env.TRANSCRIBE_LIMITER; _resetForTests();
+  const codes = []; for (let k = 0; k < 11; k++) codes.push((await tx(webm(), UID, { ipAddr: "8.8.8.8" })).status);
+  assert.deepEqual(codes.slice(0, 10), Array(10).fill(200)); assert.equal(codes[10], 429);
+});
 console.log(`\n${pass} passed`);

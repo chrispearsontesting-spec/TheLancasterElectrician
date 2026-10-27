@@ -44,6 +44,59 @@ async function allow(req, env, kind) {
   return memLimit(kind + ":" + ip, kind === "write" ? 10 : 120);
 }
 
+// ---- Voice notes: POST /transcribe/{uploadId}, raw audio body (webm/opus, ogg, mp4/m4a, wav). ----
+export const AUDIO = { maxBytes: 2 * 1024 * 1024, maxSeconds: 60 };
+export const WHISPER_MODELS = ["@cf/openai/whisper-large-v3-turbo", "@cf/openai/whisper"];
+export function sniffAudio(u8) {
+  const s = (i, str) => [...str].every((c, k) => u8[i + k] === c.charCodeAt(0));
+  if (u8.length >= 4 && u8[0] === 0x1a && u8[1] === 0x45 && u8[2] === 0xdf && u8[3] === 0xa3) return "audio/webm";
+  if (u8.length >= 4 && s(0, "OggS")) return "audio/ogg";
+  if (u8.length >= 12 && s(4, "ftyp")) return "audio/mp4";
+  if (u8.length >= 12 && s(0, "RIFF") && s(8, "WAVE")) return "audio/wav";
+  if (u8.length >= 3 && (s(0, "ID3") || (u8[0] === 0xff && (u8[1] & 0xe0) === 0xe0))) return "audio/mpeg";
+  return null;
+}
+export function b64(u8) {
+  let out = "";
+  for (let i = 0; i < u8.length; i += 0x8000) out += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(out);
+}
+export function cleanTranscript(t) {
+  return String(t == null ? "" : t).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim().slice(0, LIMITS.maxNote);
+}
+async function allowTranscribe(req, env) {
+  const ip = req.headers.get("CF-Connecting-IP") || req.headers.get("X-Forwarded-For") || "unknown";
+  const b = env.TRANSCRIBE_LIMITER || env.UPLOAD_LIMITER;
+  if (b && typeof b.limit === "function") {
+    try { const { success } = await b.limit({ key: "tx:" + ip }); return success; } catch (e) { /* fall back */ }
+  }
+  return memLimit("tx:" + ip, 10);
+}
+async function transcribe(req, env, h, id) {
+  if (!(await allowTranscribe(req, env))) return json({ error: "Too many voice notes, try again in a minute" }, 429, { ...h, "Retry-After": "60" });
+  if (!ID_RE.test(id)) return json({ error: "Not found" }, 404, h);
+  if (!env.AI || typeof env.AI.run !== "function") return json({ error: "Voice notes are not available" }, 503, h);
+  const reg = await getReg(env, id);
+  if (!reg) return json({ error: "This upload link is not active. Ask the owner for a new link." }, 404, h);
+  const len = parseInt(req.headers.get("Content-Length") || "0", 10);
+  if (len > AUDIO.maxBytes) return json({ error: "Voice note too long (60 seconds max)" }, 413, h);
+  const u8 = new Uint8Array(await req.arrayBuffer());
+  if (u8.length > AUDIO.maxBytes) return json({ error: "Voice note too long (60 seconds max)" }, 413, h);
+  if (u8.length < 200) return json({ error: "Nothing recorded" }, 400, h);
+  if (!sniffAudio(u8)) return json({ error: "Unsupported audio format" }, 415, h);
+  const audio = b64(u8);
+  let lastErr;
+  for (const model of WHISPER_MODELS) {
+    try {
+      const input = model.includes("turbo") ? { audio, language: "en", task: "transcribe", vad_filter: true, initial_prompt: "UK garage job notes: tyres, MOT, brake pads, discs, mm." } : { audio: [...u8] };
+      const out = await env.AI.run(model, input);
+      return json({ text: cleanTranscript(out && out.text) }, 200, h);
+    } catch (e) { lastErr = e; }
+  }
+  console.log("transcribe failed", String(lastErr && lastErr.message || lastErr));
+  return json({ error: "Couldn't transcribe that, try again" }, 502, h);
+}
+
 export function _resetForTests() { memHits.clear(); }
 
 export async function sha256hex(s) {
@@ -157,6 +210,9 @@ export async function handle(req, env) {
   const parts = url.pathname.split("/").filter(Boolean);
   const route = parts[0] || "";
   const id = parts[1] || "";
+  if (route === "transcribe" && req.method === "POST" && parts.length === 2) {
+    try { return await transcribe(req, env, h, id); } catch (e) { return json({ error: "Server error" }, 500, h); }
+  }
   const write = (req.method === "POST");
   if (!(await allow(req, env, write ? "write" : "read"))) return json({ error: "Too many requests, try again in a minute" }, 429, { ...h, "Retry-After": "60" });
 

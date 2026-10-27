@@ -42,10 +42,23 @@ label.lab{display:block;color:#8b8b8b;font-size:13px;margin:10px 0 4px;font-weig
 textarea,input{width:100%;background:#161618 !important;color:#f2f2f2 !important;border:1px solid #2a2a2e !important;border-radius:12px;padding:12px;font-size:16px;font-family:inherit}
 textarea{min-height:110px;resize:vertical;padding-right:60px}
 .noteWrap{position:relative}
-.mic{position:absolute;right:8px;top:8px;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:#1c1c1e;color:#f2f2f2;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.mic.on{background:#b91c1c;border-color:#ef4444;animation:pulse 1s ease-in-out infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+.mic{position:absolute;right:8px;top:8px;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:#0a0a0a;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s,box-shadow .2s}
+.mic:active{transform:scale(.94)}
+.mic svg{width:22px;height:22px;display:block}
+.mic .vb,.mic .spin{display:none}
+.mic[data-state=rec]{background:#0a0a0a;color:#fff;border-color:rgba(255,255,255,.55);box-shadow:0 0 0 5px rgba(255,255,255,.07)}
+.mic[data-state=rec] .ico,.mic[data-state=busy] .ico{display:none !important}
+.mic[data-state=rec] .vb{display:flex;align-items:center;gap:3px;height:22px}
+.mic .vb i{display:block;flex:none;margin:0;padding:0;width:3px;height:22px;border-radius:2px;background:currentColor;transform:scaleY(.25);transition:transform .07s linear}
+.mic[data-state=busy]{opacity:1 !important;cursor:default}
+.mic[data-state=busy] .spin{display:block;width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.micTime{position:absolute;right:62px;top:20px;font-size:13px;font-variant-numeric:tabular-nums;color:#f2f2f2;background:rgba(10,10,10,.85);border:1px solid #2a2a2e;border-radius:10px;padding:2px 8px;display:none;align-items:center;gap:6px}
+.micTime:before{content:"";width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.noteWrap.recording .micTime{display:flex}
 .hint{font-size:12px;color:#8b8b8b;margin-top:6px}
+.hint.bad{color:#ff6b6b}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #send{min-height:68px !important;font-size:19px !important;background-color:#14532d !important;background-image:none !important;border-color:#22c55e !important}
 #send:disabled{opacity:.5}
@@ -94,9 +107,10 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
     <p class="step">3. What was done? (optional)</p>
     <div class="noteWrap">
       <textarea id="note" maxlength="4000" placeholder="e.g. Front pads and discs replaced. Rear tyres at 3mm, needed soon."></textarea>
-      <button class="mic hide" type="button" id="mic" aria-label="Speak the note">🎤</button>
+      <span class="micTime" id="micTime" aria-live="off">0:00</span>
+      <button class="mic hide" type="button" id="mic" aria-label="Record a voice note"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5"/></svg><span class="vb" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="spin" aria-hidden="true"></span></button>
     </div>
-    <div class="hint" id="micHint">Tip: tap the 🎤 on your keyboard to talk instead of typing.</div>
+    <div class="hint" id="micHint" aria-live="polite">Tip: tap the 🎤 on your keyboard to talk instead of typing.</div>
     <div class="row2">
       <div><label class="lab" for="garage">Garage / your name</label><input id="garage" maxlength="100" autocomplete="organization" placeholder="Optional"/></div>
       <div><label class="lab" for="mileage">Mileage</label><input id="mileage" inputmode="numeric" maxlength="9" placeholder="Optional"/></div>
@@ -119,7 +133,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 
 <script src="./uploads-config.js?v=1"></script>
 <script src="./icons.js?v=32"></script>
-<script src="./speech-note.js?v=1"></script>
+<script src="./voice-note.js?v=1"></script>
 <script>
 (function(){
   var API=window.UPLOADS_API;
@@ -257,38 +271,11 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   $("btnPdf").onclick=function(){$("pdf").click()};
   $("pdf").onchange=function(e){ addFiles(e.target.files).then(function(){e.target.value=""}); };
 
-  // ---- speech-to-text (Chrome/Android, Safari 14.5+). Otherwise the keyboard's own mic works. ----
-  var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null, listening=false, SP=window.Driv3Speech;
-  if(SR&&SP){
-    var base="", committed=[], session={finals:[],interim:""}, emptyRuns=0;
-    function show(){ $("note").value=SP.compose(base,committed,session).slice(0,4000); }
-    function stopUi(){ listening=false; $("mic").classList.remove("on"); $("mic").setAttribute("aria-pressed","false"); }
-    function startSession(){
-      session={finals:[],interim:""};
-      rec=new SR(); rec.lang="en-GB"; rec.continuous=false; rec.interimResults=true; rec.maxAlternatives=1;
-      rec.onresult=function(ev){ session=SP.readResults(ev.results); show(); };
-      rec.onerror=function(ev){
-        if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ $("micHint").textContent="Microphone blocked. Use the 🎤 on your keyboard instead."; stopUi(); }
-        else if(ev.error==="network"){ $("micHint").textContent="Speech needs a connection. Use the 🎤 on your keyboard instead."; stopUi(); }
-      };
-      rec.onend=function(){
-        // Lock in this session's words (keep the interim if no final ever came), then keep listening.
-        var got=session.finals.length?session.finals:(session.interim?[session.interim]:[]);
-        committed=SP.mergeSegments(committed.concat(got)); session={finals:[],interim:""}; show();
-        emptyRuns=got.length?0:emptyRuns+1;
-        if(listening && emptyRuns<4){ try{ startSession(); return; }catch(e){} }
-        stopUi();
-      };
-      rec.start();
-    }
-    $("mic").classList.remove("hide");
-    $("micHint").textContent="Tap 🎤 and talk. Tap again to stop.";
-    $("mic").onclick=function(){
-      if(listening){ listening=false; try{rec&&rec.stop()}catch(e){} stopUi(); return; }
-      base=$("note").value; committed=[]; emptyRuns=0;
-      try{ listening=true; startSession(); $("mic").classList.add("on"); $("mic").setAttribute("aria-pressed","true"); }
-      catch(e){ stopUi(); $("micHint").textContent="Use the 🎤 on your keyboard instead."; }
-    };
+  // ---- voice note: record (MediaRecorder) -> our Worker -> Workers AI Whisper. Keyboard 🎤 is the fallback. ----
+  if(window.Driv3Voice&&uid){
+    window.Driv3Voice.attach({btn:$("mic"),note:$("note"),hint:$("micHint"),max:4000,
+      idleHint:"Tap the mic, speak, tap again to finish.",
+      url:function(){ return API+"/transcribe/"+encodeURIComponent(uid); }});
   }
 
   function say(t,bad){ $("msg").textContent=t; $("msg").className="msg"+(bad?" bad":""); }

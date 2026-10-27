@@ -57,16 +57,41 @@ function sameHex(a, b) {
 }
 
 // Identify file type from its first bytes, never from the name or the browser's claim.
-export function sniff(u8) {
+function findAscii(u8, str, from, to) {
+  const end = Math.min(u8.length, to) - str.length;
+  const c0 = str.charCodeAt(0);
+  outer: for (let i = Math.max(0, from); i <= end; i++) {
+    if (u8[i] !== c0) continue;
+    for (let k = 1; k < str.length; k++) if (u8[i + k] !== str.charCodeAt(k)) continue outer;
+    return i;
+  }
+  return -1;
+}
+// HTML / SVG / XML / script at the start (after optional BOM/whitespace) is never accepted.
+function looksLikeMarkup(u8) {
+  let i = 0;
+  if (u8[0] === 0xef && u8[1] === 0xbb && u8[2] === 0xbf) i = 3;
+  while (i < u8.length && (u8[i] === 0x20 || u8[i] === 0x09 || u8[i] === 0x0a || u8[i] === 0x0d)) i++;
+  if (u8[i] === 0x3c) return true; // '<'
+  const head = new TextDecoder("latin1").decode(u8.subarray(i, i + 1024)).toLowerCase();
+  return /<\s*(script|html|!doctype|svg|iframe|body|head|\?xml)/.test(head) || /^(#!|function\b|var\b|let\b|const\b|import\b)/.test(head);
+}
+export function hexHead(u8, n = 8) { return [...u8.subarray(0, n)].map(b => b.toString(16).padStart(2, "0")).join(" "); }
+
+export function sniff(u8, name) {
   const s = (i, str) => [...str].every((c, k) => u8[i + k] === c.charCodeAt(0));
   if (u8.length >= 3 && u8[0] === 0xff && u8[1] === 0xd8 && u8[2] === 0xff) return { ext: "jpg", type: "image/jpeg" };
   if (u8.length >= 8 && u8[0] === 0x89 && s(1, "PNG")) return { ext: "png", type: "image/png" };
   if (u8.length >= 12 && s(0, "RIFF") && s(8, "WEBP")) return { ext: "webp", type: "image/webp" };
   if (u8.length >= 12 && s(4, "ftyp") && ["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"].some(b => s(8, b))) return { ext: "heic", type: "image/heic" };
   if (u8.length >= 5 && s(0, "%PDF-")) return { ext: "pdf", type: "application/pdf" };
-  // Some PDFs (scanner apps, email exports) have junk/BOM before the header; the PDF spec allows it within 1 KB.
-  const lim = Math.min(u8.length - 5, 1024);
-  for (let i = 1; i <= lim; i++) if (u8[i] === 0x25 && s(i, "%PDF-")) return { ext: "pdf", type: "application/pdf" };
+  // Some PDFs (scanner apps, email exports, linearised/encrypted files) have junk before the header.
+  // Accept "%PDF-" anywhere in the first 64 KB, but never if the file looks like HTML or script.
+  if (looksLikeMarkup(u8)) return null;
+  const PDF = { ext: "pdf", type: "application/pdf" };
+  if (findAscii(u8, "%PDF-", 0, 64 * 1024) >= 0) return PDF;
+  // Named .pdf: accept "%PDF" (no dash) in the first 64 KB, or a "%%EOF" trailer in the last 2 KB.
+  if (/\.pdf$/i.test(String(name || "")) && (findAscii(u8, "%PDF", 0, 64 * 1024) >= 0 || findAscii(u8, "%%EOF", Math.max(0, u8.length - 2048), u8.length) >= 0)) return PDF;
   return null;
 }
 
@@ -178,8 +203,9 @@ export async function handle(req, env) {
         total += f.size;
         if (total > LIMITS.maxJobBytes) return json({ error: "Too big: 50 MB per upload max" }, 413, h);
         const buf = new Uint8Array(await f.arrayBuffer());
-        const kind = sniff(buf);
-        if (!kind) return json({ error: cleanName(f.name) + " is not a photo or PDF" }, 415, h);
+        if (buf.byteLength === 0) return json({ error: cleanName(f.name) + " is empty. If it's in Google Drive, download it to the phone first", debug: { size: 0, head: "" } }, 400, h);
+        const kind = sniff(buf, f.name);
+        if (!kind) return json({ error: cleanName(f.name) + " is not a photo or PDF", debug: { size: buf.byteLength, head: hexHead(buf) } }, 415, h);
         ready.push({ buf, kind, name: cleanName(f.name), title: cleanTitle(typeof titles[fi] === "string" ? titles[fi] : "") });
       }
       const mileageRaw = cleanText(fd.get("mileage"), 12).replace(/[,\s]/g, "");

@@ -192,4 +192,46 @@ await t("cleanTitle strips control chars and limits length", async () => {
 await t("info/limit messages say Driv3", async () => {
   fresh(); const r = await call("GET", "/info/" + UID); assert.match((await r.json()).error, /Driv3/);
 });
+const enc = x => new TextEncoder().encode(x);
+const cat = (...a) => { const n = a.reduce((s, x) => s + x.length, 0), o = new Uint8Array(n); let i = 0; for (const x of a) { o.set(x, i); i += x.length; } return o; };
+const junk = n => { const u = new Uint8Array(n); for (let i = 0; i < n; i++) u[i] = (i * 7 + 1) % 200 + 30; u.forEach((v, i) => { if (v === 0x25 || v === 0x3c) u[i] = 0x41; }); return u; };
+await t("sniff: PDF header after 2 KB and 60 KB of junk accepted, after 70 KB rejected unless .pdf with %%EOF", async () => {
+  assert.equal(sniff(cat(junk(2048), pdf())).ext, "pdf");
+  assert.equal(sniff(cat(junk(60000), pdf())).ext, "pdf");
+  assert.equal(sniff(cat(junk(70000), pdf())), null);
+  assert.equal(sniff(cat(junk(70000), pdf(), enc("\n%%EOF\n")), "x.pdf").ext, "pdf");
+  assert.equal(sniff(cat(junk(70000), pdf(), enc("\n%%EOF\n")), "x.bin"), null);
+  assert.equal(sniff(cat(junk(100), enc("%PDF1.7 odd")), "a.PDF").ext, "pdf");
+  assert.equal(sniff(cat(junk(100), enc("%PDF1.7 odd")), "a.txt"), null);
+});
+await t("sniff: HTML/script never accepted even with %PDF- inside or .pdf name", async () => {
+  assert.equal(sniff(enc("<html><body>%PDF-1.4</body></html>"), "x.pdf"), null);
+  assert.equal(sniff(enc("\ufeff  <!DOCTYPE html>%PDF-1.4"), "x.pdf"), null);
+  assert.equal(sniff(enc("<script>alert(1)</script>%PDF-1.4 %%EOF"), "x.pdf"), null);
+  assert.equal(sniff(enc("<svg onload=x>%PDF-"), "x.pdf"), null);
+  assert.equal(sniff(enc("function x(){} //%PDF-1.4"), "x.pdf"), null);
+});
+await t("upload: 0-byte file -> clear Google Drive message", async () => {
+  fresh(); await register();
+  const r = await upload(form([[new Uint8Array(0), "kitchen unit invoice.pdf", "application/pdf"]]));
+  assert.equal(r.status, 400); const j = await r.json();
+  assert.equal(j.error, "kitchen unit invoice.pdf is empty. If it's in Google Drive, download it to the phone first");
+});
+await t("upload: 415 has debug size + hex head, message unchanged", async () => {
+  fresh(); await register();
+  const r = await upload(form([[enc("GIF89a-zz"), "x.pdf", "application/pdf"]]));
+  assert.equal(r.status, 415); const j = await r.json();
+  assert.equal(j.error, "x.pdf is not a photo or PDF");
+  assert.deepEqual(j.debug, { size: 9, head: "47 49 46 38 39 61 2d 7a" });
+});
+await t("upload: PDF after 2 KB junk stored as application/pdf, served nosniff, MIME ignored", async () => {
+  fresh(); await register();
+  const r = await upload(form([[cat(junk(2048), pdf()), "kitchen unit invoice.pdf", "image/jpeg"]]));
+  assert.equal(r.status, 201);
+  const j = (await (await owner("GET", "/list/" + UID)).json()).jobs[0];
+  assert.equal(j.files[0].type, "application/pdf"); assert.equal(j.files[0].key, "f0.pdf");
+  const f = await owner("GET", "/file/" + UID + "/" + j.id + "/f0.pdf");
+  assert.equal(f.headers.get("Content-Type"), "application/pdf"); assert.equal(f.headers.get("X-Content-Type-Options"), "nosniff");
+  const html = await upload(form([[enc("<html>%PDF-1.4"), "evil.pdf", "application/pdf"]])); assert.equal(html.status, 415);
+});
 console.log(`\n${pass} passed`);

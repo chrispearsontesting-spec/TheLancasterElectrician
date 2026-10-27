@@ -234,6 +234,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
       var f=files[i];
       if(items.length>=MAX_FILES){ say("Only 10 files per upload. Send the rest in a second upload.",true); break; }
       var kind=await kindOf(f), isPdf=kind==="pdf";
+      if(!f.size){ say((f.name||"That file")+" is empty. If it's in Google Drive, download it to the phone first",true); continue; }
       if(!kind){ say((f.name||"That file")+" isn't a photo or PDF, so it was skipped.",true); continue; }
       var nm=f.name||(isPdf?"invoice.pdf":"photo.jpg"); if(isPdf&&!/\.pdf$/i.test(nm)) nm+=".pdf";
       var it={name:nm,title:"",type:isPdf?"application/pdf":"image/jpeg",busy:!isPdf,file:isPdf?f:null};
@@ -297,6 +298,8 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
     if(items.some(function(i){return i.busy})){ say("Still preparing photos, one moment…"); return; }
     if(!items.length&&!note){ say("Add a photo, a PDF or a note first.",true); return; }
     if(total()>MAX_JOB){ say("That's over 50 MB. Remove a file or two.",true); return; }
+    var empty=items.filter(function(i){return !i.file||!i.file.size})[0];
+    if(empty){ say(empty.name+" is empty. If it's in Google Drive, download it to the phone first",true); return; }
     var fd=new FormData();
     items.forEach(function(it){ fd.append("file",it.file,it.name); fd.append("title",cleanTitle(it.title)); });
     fd.append("note",note); fd.append("garage",$("garage").value.trim()); fd.append("mileage",$("mileage").value.trim());

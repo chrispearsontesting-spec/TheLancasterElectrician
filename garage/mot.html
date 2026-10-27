@@ -10,16 +10,28 @@
 body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:14px 14px 28px}
 h1{margin:0;font-size:22px}
 .sub{color:#8b8b8b;font-size:13px;margin:2px 0 12px}
-.tabs{display:flex;gap:6px;margin:0 0 12px}
-.tabs button{flex:1;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:14px;padding:8px 4px;font-size:13px;cursor:pointer}
-.tabs button.on{background:#1c1c1e;color:#f3efe6}
-.card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:8px 12px}
+.tabs{display:flex;gap:4px;margin:0;align-items:flex-end;position:relative;z-index:2}
+.tabs button{flex:1;background:#0f0f11;border:1px solid #2a2a2e;border-bottom:0;color:#8b8b8b;border-radius:14px 14px 0 0;padding:8px 4px;font-size:13px;cursor:pointer;box-shadow:inset 0 -6px 8px -6px rgba(0,0,0,.6)}
+.tabs button.on{background:#141416;color:#f2f2f2;font-weight:700;padding:11px 4px 10px;margin-bottom:-1px;box-shadow:inset 0 2px 0 #7dd3fc}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:0 0 18px 18px;padding:8px 12px}
 .card.hide{display:none}
 .row{padding:10px 0;border-bottom:1px solid #2a2a2e}
 .row b{display:block}
 .muted{color:#8b8b8b;font-size:13px;margin:4px 0 0}
 .pass{color:#3dd68c;font-weight:700}
 .fail{color:#ff6b6b;font-weight:700}
+/* MOT test rows: text left, pass/fail circle right (restored from before 86aec74) */
+.row.test{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.row.test>div{min-width:0}
+.tag{display:inline-flex;align-items:center;justify-content:center;text-align:center;width:74px;height:74px;flex:0 0 74px;font-size:11px;font-weight:800;line-height:1.15;border-radius:999px;padding:8px;box-sizing:border-box}
+.tag.pass{background:#1e3a34;color:#a7f3d0}
+.tag.fail{background:#5b1d1d;color:#fecaca}
+/* Future costs: done jobs are struck through, the toggle stays clear and tappable */
+.row.isDone .jobText{text-decoration:line-through;opacity:.45}
+.doneTog{display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;border:1px solid #2a2a2e;border-radius:12px;font-size:13px;color:#f2f2f2;cursor:pointer}
+.doneTog input{width:20px;height:20px;margin:0;accent-color:#3dd68c;cursor:pointer}
+.row.isDone .doneTog{border-color:#1e3a34;background:#11241f;color:#a7f3d0}
+.outTotal{font-size:18px;font-weight:700;margin:4px 0 0}
 </style>
 </head>
 <body>
@@ -77,7 +89,7 @@ function render(info){
   var rows=tests.map(function(t){
     var ok=String(t.testResult||"").toUpperCase()==="PASSED";
     var items=(t.defects||[]).map(itemLine).join("");
-    return "<div class='row'><b>"+date(t.completedDate||t.testDate)+"</b><p class='"+(ok?"pass":"fail")+"'>"+(ok?"Passed":"Failed")+"</p><p class='muted'>"+miles(t.odometerValue)+" "+(t.odometerUnit||"")+"</p>"+items+"</div>";
+    return "<div class='row test'><div><b>"+date(t.completedDate||t.testDate)+"</b><p class='muted'>"+miles(t.odometerValue)+" "+(t.odometerUnit||"")+"</p>"+items+"</div><span class='tag "+(ok?"pass":"fail")+"'>"+(ok?"Pass":"Fail")+"</span></div>";
   }).join("");
   hist.innerHTML=rows||"<p class='muted'>No tests.</p>";
   var fails=[];
@@ -94,7 +106,8 @@ function render(info){
   }
   var latest=tests[0]||{};
   var milesNow=+(String(latest.odometerValue||"0").replace(/\D/g,""))||0;
-  var year=+(info.manufactureYear||info.yearOfManufacture||0);
+  var raw=(info&&info.raw)||{};
+  var year=+(info.year||String(raw.manufactureDate||raw.registrationDate||raw.firstUsedDate||"").slice(0,4)||0);
   var age=year? (new Date().getFullYear()-year) : 0;
   function lastHit(re){
     var i,j;
@@ -115,7 +128,10 @@ function render(info){
     var note=life;
     if(hit&&hit.major){ state="Seen in a fail"; note="Last recorded "+hit.date+". A fail usually means it was put right. "+life; }
     else if(hit){ state="Advised"; note="MOT said: "+hit.text+". "+life; }
-    return "<div class='row' data-job='"+title+"'><div><b>"+title+"</b> <b>("+cost+")</b><p class='muted'>"+state+". "+note+"</p></div><label style='display:flex;align-items:center;gap:6px;font-size:13px'><input type='checkbox' class='done'> Done</label></div>";
+    // Ranges like "a corner"/"an axle" are counted once (one axle, one corner): the page has no quantities.
+    var m=String(cost).match(/\u00a3(\d+) to \u00a3(\d+)/);
+    var nums=m?(" data-lo='"+m[1]+"' data-hi='"+m[2]+"'"):"";
+    return "<div class='row' data-job='"+title+"'"+nums+"><div class='jobText'><b>"+title+"</b> <b>("+cost+")</b><p class='muted'>"+state+". "+note+"</p></div><label class='doneTog'><input type='checkbox' class='done'> <span class='doneLab'>Mark done</span></label></div>";
   }
   var tyre=lastHit(/tyre/);
   var brake=lastHit(/brake/);
@@ -138,42 +154,34 @@ function render(info){
     line("Service","Due every year, or 10,000 to 12,000 miles.", "\u00a3150 to \u00a3300", null, true),
     line("Timing belt","Many belts are five years or 60,000 to 100,000 miles. A chain has no set date. Ask for the invoice.", milesNow>80000||age>=5?"\u00a3400 to \u00a3900 if it is a belt":"Check the schedule", null, age>=5||milesNow>80000)
   ];
-  var best=0, worst=0;
-  future.forEach(function(html){
-    var m=html.match(/\(\u00a3(\d+) to \u00a3(\d+)/);
-    if(m){ best+=+m[1]; worst+=+m[2]; }
-  });
-  var totals="<div class='row' style='display:grid;grid-template-columns:1fr 1fr;gap:12px'><div><b>Best case</b><p class='muted'>\u00a3"+best+"</p></div><div><b>Worst case</b><p class='muted'>\u00a3"+worst+"</p></div></div>";
-  $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+"About "+age+" years on record. Typical life, not a quote, and only for this car.</p>";
-  var done = JSON.parse(localStorage.getItem("gt.motDone")||"{}");
+  var totals="<div class='row' id='outRow'><b>Estimated outstanding work</b><p class='outTotal' id='outTotal'></p><p class='muted' id='outNote'></p></div>";
+  $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+(age?"About "+age+" years on record. ":"")+"Typical life, not a quote, and only for this car.</p>";
+  // Done ticks are saved per car (by plate). Older saves used one shared key; read it as a fallback.
+  var doneKey="gt.motDone."+String(plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  var done={};
+  try{ done=JSON.parse(localStorage.getItem(doneKey)||localStorage.getItem("gt.motDone")||"{}")||{}; }catch(e){ done={}; }
+  function gbp(n){return "\u00a3"+String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",")}
   function updateTotals(){
-    var best=0, worst=0;
+    var best=0, worst=0, n=0, off=0;
     document.querySelectorAll("#future .row[data-job]").forEach(function(row){
-      var cb = row.querySelector(".done");
-      if(cb && cb.checked) return;
-      var m = row.innerHTML.match(/\u00a3(\d+) to \u00a3(\d+)/);
-      if(m){ best+=+m[1]; worst+=+m[2]; }
+      if(!row.hasAttribute("data-lo")) return;
+      var cb=row.querySelector(".done");
+      if(cb&&cb.checked){ off++; return; }
+      best+=+row.getAttribute("data-lo"); worst+=+row.getAttribute("data-hi"); n++;
     });
-    var bestEl = document.querySelector("#future .row b");
-    if(bestEl && bestEl.textContent==="Best case"){
-      var nums = document.querySelectorAll("#future .row .muted");
-      if(nums[0]) nums[0].textContent = "\u00a3"+best;
-      if(nums[1]) nums[1].textContent = "\u00a3"+worst;
-    }
+    $("outTotal").textContent=n?(gbp(best)+" to "+gbp(worst)):"\u00a30, all done";
+    $("outNote").textContent="Best case "+gbp(best)+", worst case "+gbp(worst)+" for "+n+" job"+(n===1?"":"s")+(off?(", "+off+" ticked done and left out"):"")+". Brakes are priced for one axle and suspension for one corner.";
   }
   document.querySelectorAll("#future .done").forEach(function(cb){
-    var row = cb.closest(".row");
-    var job = row.getAttribute("data-job");
+    var row=cb.closest(".row"), job=row.getAttribute("data-job"), lab=row.querySelector(".doneLab");
     function style(checked){
-      row.style.opacity = checked ? "0.45" : "1";
-      row.style.textDecoration = checked ? "line-through" : "none";
-      var label = row.querySelector("label");
-      if(label) label.textContent = checked ? "Undone" : "Done";
+      row.classList.toggle("isDone",checked);
+      if(lab) lab.textContent=checked?"Done \u2713 \u00b7 tap to undo":"Mark done";
     }
-    if(done[job]){ cb.checked=true; style(true); }
-    cb.onchange = function(){
-      done[job] = cb.checked;
-      localStorage.setItem("gt.motDone", JSON.stringify(done));
+    cb.checked=!!done[job]; style(cb.checked);
+    cb.onchange=function(){
+      if(cb.checked) done[job]=true; else delete done[job];
+      try{ localStorage.setItem(doneKey, JSON.stringify(done)); }catch(e){}
       style(cb.checked);
       updateTotals();
     };

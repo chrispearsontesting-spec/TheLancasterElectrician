@@ -59,6 +59,15 @@ input[type=file]{margin:8px 0}
   </div>
 </div>
 
+<div class="card">
+  <button class="acc" type="button" id="mechAcc">Mechanic uploads <span>+</span></button>
+  <div class="panel" id="mechPanel">
+    <p class="note">Give your mechanic a QR code or link. Their photos, invoices and notes are saved on this phone.</p>
+    <p class="note" id="mechStatus"></p>
+    <a class="btn" href="mechanic.html" id="mechLink">Open mechanic uploads</a>
+  </div>
+</div>
+
 <a class="btn" href="home.html" style="margin-top:16px">Back</a>
 
 <script>
@@ -197,6 +206,23 @@ render();
   };
   reader.readAsDataURL(file);
 };
+</script>
+<script src="./uploads-config.js?v=1"></script>
+<script src="./uploads-client.js?v=1"></script>
+<script>
+// Auto-download any waiting mechanic uploads for all cars, then wipe them from the cloud.
+(function(){
+  var U=window.DipUploads, st=document.getElementById("mechStatus");
+  if(!U) return;
+  function show(n){
+    if(!n){ st.textContent=""; return; }
+    st.textContent=n+" new upload"+(n>1?"s":"")+" from your mechanic.";
+    st.style.color="#3dd68c";
+    var p=document.getElementById("mechPanel"); if(!p.classList.contains("open")) document.getElementById("mechAcc").click();
+  }
+  U.unseenCount().then(show).catch(function(){});
+  U.checkAll().then(function(r){ return U.unseenCount().then(show); }).catch(function(){});
+})();
 </script>
 </body>
 </html>

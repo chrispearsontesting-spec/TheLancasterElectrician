@@ -1,0 +1,22 @@
+name = "dipstick-uploads"
+main = "uploads-worker.js"
+compatibility_date = "2026-09-15"
+
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "dipstick-uploads"
+
+# Per-IP limits (approximate, per Cloudflare location). Fallback: in-memory counter.
+[[ratelimits]]
+name = "UPLOAD_LIMITER"
+namespace_id = "1002"
+  [ratelimits.simple]
+  limit = 10
+  period = 60
+
+[[ratelimits]]
+name = "READ_LIMITER"
+namespace_id = "1003"
+  [ratelimits.simple]
+  limit = 120
+  period = 60

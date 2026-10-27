@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>Mechanic uploads</title>
+<link rel="stylesheet" href="./ui.css?v=46"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{margin:0 auto;max-width:440px;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
+h1{font-size:26px;margin:8px 0 6px;font-weight:650}
+.lead{font-size:14px;color:#8b8b8b;margin:0 0 14px;line-height:1.45}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;margin-bottom:12px;padding:14px}
+.card h2{font-size:17px;margin:0 0 6px}
+.note{font-size:13px;color:#8b8b8b;margin:6px 0;line-height:1.45}
+.plate{display:inline-flex;border-radius:4px;overflow:hidden;border:2px solid #222;font-family:Arial,Helvetica,sans-serif;font-weight:900;vertical-align:middle}
+.plate .uk{background:#003399;color:#fc0;padding:5px;font-size:9px;display:flex;align-items:center}
+.plate .reg{background:#f4d000;color:#111;padding:5px 10px;letter-spacing:.12em;font-size:15px}
+.carRow{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.carRow b{font-size:16px}
+.qrBox{background:#fff;border-radius:14px;padding:14px;text-align:center;color:#111}
+.qrBox canvas{width:100%;max-width:260px;height:auto;image-rendering:pixelated;display:block;margin:0 auto}
+.qrBox .cap{font-size:13px;font-weight:600;margin-top:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row2 .btn{margin-top:10px}
+.status{font-size:13px;color:#8b8b8b;margin-top:8px;min-height:18px}
+.status.good{color:#3dd68c}.status.bad{color:#ff6b6b}
+.job{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:14px;padding:12px;margin-top:10px}
+.job .top{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.job .top b{font-size:15px}
+.job .meta{font-size:12px;color:#8b8b8b;margin-top:2px}
+.job .txt{font-size:14px;white-space:pre-wrap;margin:8px 0 0;line-height:1.4}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.thumbs a{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#111}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.job .btn{min-height:44px !important;padding:10px 14px !important;font-size:14px !important}
+.rm{background:none;border:0;color:#8b8b8b;font-size:13px;padding:6px 0;margin-top:6px;cursor:pointer;text-decoration:underline}
+.new{background:#3dd68c;color:#0b0c0e;border-radius:8px;font-size:11px;font-weight:700;padding:2px 6px;margin-left:6px}
+.linkTxt{font-size:11px;color:#8b8b8b;word-break:break-all;margin-top:8px}
+@media print{
+  body *{visibility:hidden !important}
+  #sticker,#sticker *{visibility:visible !important}
+  #sticker{position:absolute;left:0;top:0;width:70mm}
+  html,body{background:#fff !important}
+}
+</style>
+</head>
+<body>
+<h1>Mechanic uploads</h1>
+<p class="lead">Your mechanic scans this code (or opens the link) and sends photos, invoices and notes. They land here and are saved on this phone, then wiped from the cloud.</p>
+
+<div class="card">
+  <div class="carRow" id="carRow"></div>
+  <div class="qrBox" id="sticker">
+    <canvas id="qr" width="10" height="10" aria-label="QR code for the mechanic upload link"></canvas>
+    <div class="cap" id="qrCap">Scan to send work photos &amp; invoices</div>
+  </div>
+  <div class="status" id="regStatus"></div>
+  <button class="btn" type="button" id="share" data-ico="mail">Share link</button>
+  <div class="row2">
+    <button class="btn" type="button" id="copy">Copy link</button>
+    <button class="btn" type="button" id="dl">Save QR (PNG)</button>
+  </div>
+  <button class="btn" type="button" id="print">Print sticker</button>
+  <div class="linkTxt" id="linkTxt"></div>
+</div>
+
+<div class="card">
+  <h2>Received work</h2>
+  <button class="btn" type="button" id="check" data-ico="check">Check for uploads</button>
+  <div class="status" id="checkStatus"></div>
+  <div id="jobs"></div>
+</div>
+
+<a class="btn" href="history.html" data-ico="back">Back</a>
+
+<script src="./qrcode.js"></script>
+<script src="./uploads-config.js?v=1"></script>
+<script src="./uploads-client.js?v=1"></script>
+<script src="./icons.js?v=31"></script>
+<script>
+(function(){
+  var U=window.DipUploads;
+  var s=U.garage();
+  var $=function(id){return document.getElementById(id)};
+  if(!s){ document.querySelector(".card").innerHTML='<p class="note">Add a car on the home page first.</p>'; return; }
+  var idx=s.i;
+  var qi=parseInt(new URLSearchParams(location.search).get("car"),10);
+  if(!isNaN(qi)&&s.cars[qi]) idx=qi;
+  var car=U.ensureIds(idx);
+  var url=U.link(car);
+  var plate=U.cleanPlate(car.plate);
+  function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  $("carRow").innerHTML=(plate?'<span class="plate"><span class="uk">UK</span><span class="reg">'+esc(plate)+'</span></span>':'')+'<b>'+esc(U.niceName(car))+'</b>';
+  $("qrCap").textContent="Mechanic: scan to send photos & invoices"+(plate?" for "+plate:"");
+  $("linkTxt").textContent=url;
+
+  // QR: drawn crisp on a canvas, white quiet zone, label baked into the PNG.
+  function drawQr(canvas,scale,withLabel){
+    var q=qrcode(0,"M"); q.addData(url); q.make();
+    var n=q.getModuleCount(), quiet=4, px=(n+quiet*2)*scale, lab=withLabel?Math.round(scale*9):0;
+    canvas.width=px; canvas.height=px+lab;
+    var g=canvas.getContext("2d");
+    g.fillStyle="#fff"; g.fillRect(0,0,canvas.width,canvas.height);
+    g.fillStyle="#000";
+    for(var r=0;r<n;r++) for(var c=0;c<n;c++) if(q.isDark(r,c)) g.fillRect((c+quiet)*scale,(r+quiet)*scale,scale,scale);
+    if(withLabel){
+      g.textAlign="center"; g.fillStyle="#111";
+      g.font="700 "+Math.round(scale*3.2)+"px Arial, sans-serif";
+      g.fillText("Dipstick"+(plate?" · "+plate:""),px/2,px+Math.round(scale*2.2));
+      g.font="500 "+Math.round(scale*2.4)+"px Arial, sans-serif";
+      g.fillText("Mechanic: scan to send photos & invoices",px/2,px+Math.round(scale*6));
+    }
+  }
+  drawQr($("qr"),8,false);
+
+  $("dl").onclick=function(){
+    var cv=document.createElement("canvas"); drawQr(cv,16,true);
+    cv.toBlob(function(b){
+      var a=document.createElement("a"); a.href=URL.createObjectURL(b);
+      a.download="dipstick-mechanic-qr-"+(plate||"car")+".png"; document.body.appendChild(a); a.click();
+      setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
+    },"image/png");
+  };
+  $("print").onclick=function(){ window.print(); };
+  function copied(ok){ $("regStatus").textContent=ok?"Link copied. Paste it into WhatsApp, a text or an email.":"Could not copy. Press and hold the link below to copy it."; $("regStatus").className="status "+(ok?"good":"bad"); }
+  function copy(){
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(function(){copied(true)},function(){fallbackCopy()});
+    else fallbackCopy();
+  }
+  function fallbackCopy(){
+    var t=document.createElement("textarea"); t.value=url; document.body.appendChild(t); t.select();
+    var ok=false; try{ok=document.execCommand("copy")}catch(e){} t.remove(); copied(ok);
+  }
+  $("copy").onclick=copy;
+  $("share").onclick=function(){
+    var text="Please send photos, invoices and notes for my "+U.niceName(car)+(plate?" ("+plate+")":"")+" here:";
+    if(navigator.share){ navigator.share({title:"Dipstick upload link",text:text,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); }
+    else copy();
+  };
+
+  // Activate the link on the server (stores only the hash of this phone's secret key).
+  U.register(car).then(function(){ $("regStatus").textContent="Link is active."; $("regStatus").className="status good"; },
+    function(e){ $("regStatus").textContent="Link not active yet: "+e.message+". It will retry next time."; $("regStatus").className="status bad"; });
+
+  var urls=[];
+  async function render(){
+    urls.forEach(function(u){URL.revokeObjectURL(u)}); urls=[];
+    var jobs=await U.jobsFor(car.upId);
+    var box=$("jobs"); box.innerHTML="";
+    if(!jobs.length){ box.innerHTML='<p class="note">Nothing received yet.</p>'; return; }
+    for(var i=0;i<jobs.length;i++){
+      var j=jobs[i], el=document.createElement("div"); el.className="job"; el.dataset.job=j.id;
+      var d=new Date(j.created);
+      var who=[j.garage,j.mechanic].filter(Boolean).join(" · ");
+      el.innerHTML='<div class="top"><b>'+esc(d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}))+(j.seen?"":'<span class="new">NEW</span>')+'</b><span class="meta">'+esc(d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}))+'</span></div>'+
+        (who||j.mileage!=null?'<div class="meta">'+esc(who)+(who&&j.mileage!=null?" · ":"")+(j.mileage!=null?esc(Number(j.mileage).toLocaleString("en-GB"))+" miles":"")+'</div>':'')+
+        (j.note?'<p class="txt">'+esc(j.note)+'</p>':'');
+      var th=document.createElement("div"); th.className="thumbs";
+      for(var k=0;k<j.files.length;k++){
+        var f=j.files[k], rec=await U.getFile(j.id,f.key); if(!rec) continue;
+        var u=URL.createObjectURL(rec.blob); urls.push(u);
+        if(/^image\//.test(f.type)){
+          var a=document.createElement("a"); a.href=u; a.target="_blank"; a.rel="noopener";
+          var im=document.createElement("img"); im.src=u; im.alt=f.name; a.appendChild(im); th.appendChild(a);
+        }else{
+          var b=document.createElement("a"); b.className="btn"; b.href=u; b.target="_blank"; b.rel="noopener"; b.setAttribute("data-ico","book");
+          b.textContent="Open PDF: "+f.name; el.appendChild(b);
+        }
+      }
+      if(th.children.length) el.insertBefore(th, el.querySelector(".btn"));
+      var rm=document.createElement("button"); rm.className="rm"; rm.type="button"; rm.textContent="Remove from this phone";
+      rm.onclick=(function(job){return async function(){ if(confirm("Remove this upload from your phone?")){ await U.removeLocal(job); render(); } }})(j);
+      el.appendChild(rm);
+      box.appendChild(el);
+    }
+    if(window.dipstickIcons) window.dipstickIcons(box);
+    U.markSeen(car.upId);
+  }
+  async function check(auto){
+    var st=$("checkStatus"); st.className="status"; st.textContent="Checking…";
+    $("check").disabled=true;
+    try{
+      var r=await U.checkCar(car);
+      st.textContent=r.downloaded?("Downloaded "+r.downloaded+" new upload"+(r.downloaded>1?"s":"")+" to this phone."):(auto?"":"No new uploads.");
+      st.className="status"+(r.downloaded?" good":"");
+    }catch(e){ st.textContent="Could not check: "+e.message; st.className="status bad"; }
+    $("check").disabled=false;
+    await render();
+  }
+  $("check").onclick=function(){check(false)};
+  render().then(function(){check(true)});
+})();
+</script>
+</body>
+</html>

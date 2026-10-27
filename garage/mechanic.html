@@ -109,7 +109,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     if(withLabel){
       g.textAlign="center"; g.fillStyle="#111";
       g.font="700 "+Math.round(scale*3.2)+"px Arial, sans-serif";
-      g.fillText("Dipstick"+(plate?" · "+plate:""),px/2,px+Math.round(scale*2.2));
+      g.fillText("Driv3"+(plate?" · "+plate:""),px/2,px+Math.round(scale*2.2));
       g.font="500 "+Math.round(scale*2.4)+"px Arial, sans-serif";
       g.fillText("Mechanic: scan to send photos & invoices",px/2,px+Math.round(scale*6));
     }
@@ -120,7 +120,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     var cv=document.createElement("canvas"); drawQr(cv,16,true);
     cv.toBlob(function(b){
       var a=document.createElement("a"); a.href=URL.createObjectURL(b);
-      a.download="dipstick-mechanic-qr-"+(plate||"car")+".png"; document.body.appendChild(a); a.click();
+      a.download="driv3-mechanic-qr-"+(plate||"car")+".png"; document.body.appendChild(a); a.click();
       setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
     },"image/png");
   };
@@ -137,7 +137,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   $("copy").onclick=copy;
   $("share").onclick=function(){
     var text="Please send photos, invoices and notes for my "+U.niceName(car)+(plate?" ("+plate+")":"")+" here:";
-    if(navigator.share){ navigator.share({title:"Dipstick upload link",text:text,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); }
+    if(navigator.share){ navigator.share({title:"Driv3 upload link",text:text,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); }
     else copy();
   };
 

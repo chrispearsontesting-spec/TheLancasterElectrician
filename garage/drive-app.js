@@ -200,7 +200,7 @@ async function saveTrip(blob){
   list.unshift(trip);
   localStorage.setItem("gt.driveLog",JSON.stringify(list.slice(0,200)));
   if(blob&&blob.size){
-    var name="dipstick-"+new Date(started).toISOString().slice(0,16).replace(/[:T]/g,"-")+".webm";
+    var name="driv3-"+new Date(started).toISOString().slice(0,16).replace(/[:T]/g,"-")+".webm";
     var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click();
     putClip(id,blob).catch(function(){});
   }

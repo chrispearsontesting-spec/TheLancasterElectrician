@@ -1,4 +1,4 @@
-Dipstick — Play / PWABuilder pack
+Driv3 — Play / PWABuilder pack
 
 Start URL
 https://thelancasterelectrician.com/garage/home.html
@@ -10,7 +10,7 @@ Short description (80)
 MOT, tax, insurance, service estimates and route costs in one place.
 
 Full description
-Dipstick keeps a car in one place. Reminders for MOT, tax, insurance, service, timing belt and tyres. Route costs from today's UK fuel price. Service estimates for a local garage, a main dealer and DIY. Buying guide from the registration, with MOT history. Optional dashcam and drive diary on the phone.
+Driv3 keeps a car in one place. Reminders for MOT, tax, insurance, service, timing belt and tyres. Route costs from today's UK fuel price. Service estimates for a local garage, a main dealer and DIY. Buying guide from the registration, with MOT history. Optional dashcam and drive diary on the phone.
 
 No account. Dates and documents stay on the device.
 

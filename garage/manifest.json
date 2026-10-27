@@ -1,6 +1,6 @@
 {
-  "name": "Dipstick",
-  "short_name": "Dipstick",
+  "name": "Driv3",
+  "short_name": "Driv3",
   "description": "MOT, tax, insurance, service estimates, route costs and a buying guide for your cars.",
   "start_url": "./home.html",
   "scope": "./",

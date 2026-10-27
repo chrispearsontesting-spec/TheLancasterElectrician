@@ -81,6 +81,12 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 .modelBadgeImg{height:26px;width:auto;vertical-align:middle}
 .name .carName{font-size:18px;font-weight:700;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .name .sub{font-size:11px;color:#7dd3fc;font-weight:500;letter-spacing:.3px;line-height:1.1;opacity:.9}
+/* Beat ui.css !important greys: engine line light blue, reminder states coloured */
+#caption .sub{color:#7dd3fc !important}
+#dues .cAmber .when,#dues .cAmber .left{color:#f59e0b !important}
+#dues .cAmber .mark.ok{color:#f59e0b}
+#dues .cFlash .left{color:#ef4444 !important;animation:flashRed .85s ease-in-out infinite}
+#dues .cOver .left{color:#ff2a2a !important;animation:flashRed .55s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -118,11 +124,12 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 </div>
 <div id="foundDetails" class="found" style="display:none"></div>
 <p class="left" id="plateHint">Enter plate and tap Lookup, or use the camera.</p>
+<label>Name</label><input id="fName" type="text" placeholder="e.g. Volvo XC60 D5" maxlength="60" autocomplete="off"/>
 <label>MOT</label><input id="fMot" type="date"/>
 <label>Tax</label><input id="fTax" type="date"/>
 <label>Insurance</label><input id="fIns" type="date"/>
 <label>Full service</label><input id="fOil" type="date"/>
-<label>Timing belt date</label><input id="fBeltDate" type="date"/>
+<label>Timing belt fitted (date)</label><input id="fBeltDate" type="date"/>
 <label>Belt years</label><input id="fBeltYears" type="number"/>
 <label>Belt miles</label><input id="fBeltMiles" type="number"/>
 <label>Tyres fitted</label><input id="fTyreDate" type="date"/>
@@ -145,8 +152,8 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="./home-app.js?v=79"></script>
-<script src="./home-insure.js"></script>
+<script src="./home-app.js?v=80"></script>
+<script src="./home-insure.js?v=2"></script>
 <script src="./icons.js?v=31"></script>
 <script>
 (function(){

@@ -30,7 +30,8 @@
       var items=document.querySelectorAll("#dues .item");
       for(var i=0;i<items.length;i++){
         var h=items[i].querySelector("h3");
-        if(!h||h.textContent!=="Insurance") continue;
+        var k=items[i].getAttribute("data-key");
+        if(k ? k!=="insurance" : (!h||h.textContent.indexOf("Insurance")!==0)) continue;
         if(items[i].querySelector("[data-compare]")) return;
         var acts=items[i].querySelector(".acts")||items[i];
         var b=document.createElement("button");

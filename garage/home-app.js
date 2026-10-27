@@ -44,6 +44,7 @@ function tone(iso){
   if(d==null)return "";
   if(d<0)return " cOver";
   if(d<=31)return " cFlash";
+  if(d<=90)return " cAmber c6";
   if(d<=60)return " c6";
   if(d<=120)return " c5";
   if(d<=180)return " c4";
@@ -109,7 +110,7 @@ function mark(iso){
 function row(title,iso,extra,buttons){
   var key = title.toLowerCase().replace(/\s+/g,"");
   var niceName = {"mot":"MOT","tax":"Tax","insurance":"Insurance","fullservice":"Full service","timingbelt":"Timing belt"}[key] || title;
-  return "<div class='item"+tone(iso)+"'><div><h3>"+title+mark(iso)+"</h3><p class='when' data-date='"+key+"' data-name='"+niceName+"' style='cursor:pointer'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  return "<div class='item"+tone(iso)+"' data-key='"+key+"'><div><h3>"+title+mark(iso)+"</h3><p class='when' data-date='"+key+"' data-name='"+niceName+"' style='cursor:pointer'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
 function carLogoHtml(name){
@@ -161,8 +162,8 @@ function paint(){
     row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"},{lab:"Check tax",href:"tax.html?plate="+encodeURIComponent(String(c.plate||"").replace(/\s/g,""))}])+
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html"},{lab:"Renew",href:c.insWeb||"https://www.gov.uk/vehicle-insurance"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
-    row("Timing belt",bd,bd?"":"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=15?" cFlash":"")+"'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";
+    row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
+    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";
 }
 function savePic(f){
   if(!f)return;
@@ -191,12 +192,8 @@ function showFound(info){
     return;
   }
   lastLooked=info;
-  var s=state();
-  if(s.cars[s.i]){
-    if(info.engine) s.cars[s.i].engine = info.engine;
-    if(info.fuel) s.cars[s.i].fuel = (info.fuel||"").toLowerCase();
-    save(s);
-  }
+  var nameEl=document.getElementById("fName");
+  if(nameEl && !nameEl.value.trim()) nameEl.value=info.name;
   var bits=["<b>"+info.name+"</b>"];
   if(info.year) bits.push("Year: "+info.year);
   if(info.fuel) bits.push("Fuel: "+info.fuel);
@@ -270,6 +267,7 @@ function openSheet(mode){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
   document.getElementById("fPlate").value=c.plate||"";
+  document.getElementById("fName").value=mode==="add"?"":(c.nick||c.name||"");
   document.getElementById("fMot").value=c.mot||"";
   document.getElementById("fTax").value=c.tax||"";
   document.getElementById("fIns").value=c.ins||"";
@@ -293,7 +291,8 @@ function openSheet(mode){
   var del=document.getElementById("btnDelete");
   if(del) del.style.display=mode==="add"?"none":"block";
   lastLooked=null;
-  if(c.plate) doLookup();
+  var hint=document.getElementById("plateHint");
+  if(hint) hint.textContent="Enter plate and tap Lookup, or use the camera.";
 }
 function step(dir){
   var s=state();
@@ -336,7 +335,7 @@ if(dues) dues.addEventListener("click",function(e){
   if(dateEl){
     var key = dateEl.getAttribute("data-date");
     var niceName = dateEl.getAttribute("data-name") || key;
-    if(!confirm("Edit expiry date for "+niceName+"?")) return;
+    if(!confirm((key==="timingbelt"?"Edit the date the timing belt was fitted":"Edit expiry date for "+niceName)+"?")) return;
     var s=state(), c=s.cars[s.i];
     var current = "";
     if(key==="mot") current=c.mot||"";
@@ -347,7 +346,10 @@ if(dues) dues.addEventListener("click",function(e){
     var sheet=document.createElement("div");
     sheet.className="sheet on";
     sheet.style.zIndex="30";
-    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>New expiry date</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/><div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
+    var isBelt = key==="timingbelt";
+    var lab = isBelt ? "Date the belt was fitted" : "New expiry date";
+    var note = isBelt ? '<p class="left" style="margin-top:8px">Next change is worked out as fitted date + '+(c.beltYears||5)+' years (change the years in Edit).</p>' : '';
+    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>'+lab+'</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/>'+note+'<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
     document.body.appendChild(sheet);
     sheet.querySelector("#dateCancel").onclick=function(){ sheet.remove(); };
     sheet.querySelector("#dateOk").onclick=function(){
@@ -387,10 +389,15 @@ on("btnSave",function(){
   if(mode==="add" && s.cars.length>=20){ alert("Maximum 20 cars."); return; }
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
   var looked = lastLooked || {};
-  c.nick=looked.name || c.nick || "Car";
+  var plateNow=document.getElementById("fPlate").value.toUpperCase();
+  var plateKey=plateNow.replace(/[^A-Z0-9]/g,"");
+  if(looked.plate && looked.plate!==plateKey) looked={};
+  var typed=document.getElementById("fName").value.trim();
+  c.nick=typed || looked.name || c.nick || plate(plateNow).replace("YOUR REG","") || "Car";
   c.name=c.nick;
   if(looked.engine) c.engine = looked.engine;
-  c.plate=document.getElementById("fPlate").value.toUpperCase();
+  if(looked.plate){ c.motChecked = Date.now(); }
+  c.plate=plateNow;
   c.mot=document.getElementById("fMot").value;
   c.tax=document.getElementById("fTax").value;
   c.ins=document.getElementById("fIns").value;
@@ -427,25 +434,36 @@ function swipeEnd(e){
 if(!localStorage.getItem("gt.garage")) save({i:0,cars:[seed()]});
 paint();
 var dateSynced={};
+var MOT_RECHECK_MS=7*86400000;
 function syncDates(){
   var c=car();
   var plate=String(c.plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
   if(!plate||dateSynced[plate]||!window.fetchMotVehicle) return;
+  if(c.motChecked && (Date.now()-c.motChecked) < MOT_RECHECK_MS) return;
   dateSynced[plate]=1;
+  function findCar(s){
+    for(var k=0;k<s.cars.length;k++){ if(String(s.cars[k].plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"")===plate) return s.cars[k]; }
+    return null;
+  }
   window.fetchMotVehicle(plate).then(function(info){
+    var s=state(), target=findCar(s);
+    if(!target) return;
+    if(!info||!info.ok){
+      // Not found or proxy down: back off for a day instead of retrying every load.
+      target.motChecked=Date.now()-MOT_RECHECK_MS+86400000;
+      save(s);
+      return;
+    }
+    target.motChecked=Date.now();
     var exp="";
     var tests=(info&&info.tests)||[];
     var i;
     for(i=0;i<tests.length;i++){
       if(tests[i].expiryDate){exp=String(tests[i].expiryDate).slice(0,10);break;}
     }
-    if(!exp) return;
-    var s=state();
-    if(s.cars[s.i]&&s.cars[s.i].mot!==exp){
-      s.cars[s.i].mot=exp;
-      save(s);
-      paint();
-    }
+    if(exp) target.mot=exp;
+    save(s);
+    if(exp) paint();
   }).catch(function(){});
 }
 syncDates();

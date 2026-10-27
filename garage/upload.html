@@ -22,7 +22,16 @@ h1{font-size:25px;margin:4px 0 12px;font-weight:650}
 .plate .reg{background:#f4d000;color:#111;padding:6px 12px;letter-spacing:.12em;font-size:19px}
 .step{font-size:13px;color:#8b8b8b;margin:0 0 2px;font-weight:600}
 .big{min-height:64px !important;font-size:18px !important}
-.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.thumbs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.thumbs:empty,.pdfs:empty{display:none}
+.tile{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile input.ttl,.prow input.ttl{padding:9px 10px;font-size:15px;border-radius:10px}
+.pdfs{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.prow{position:relative;background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:10px 46px 10px 10px;display:flex;flex-direction:column;gap:8px}
+.prow .pn{display:flex;align-items:center;gap:8px;font-size:13px;color:#b0b0b0;word-break:break-all}
+.prow .pdf{font-weight:800;font-size:12px;color:#ff6b6b;border:1px solid #ff6b6b;border-radius:6px;padding:2px 5px;flex:none}
+.prow .x{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#fff;font-size:18px;line-height:32px;padding:0;cursor:pointer}
+.sub{font-size:12px;color:#8b8b8b;margin:2px 0 8px}
 .th{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#1c1c1e;border:1px solid #2a2a2e;display:flex;align-items:center;justify-content:center;font-size:12px;text-align:center;padding:4px;word-break:break-all}
 .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .th .x{position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;font-size:18px;line-height:30px;padding:0;cursor:pointer;z-index:2}
@@ -61,17 +70,25 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   <div class="card"><div class="carRow" id="carRow"><b>Car</b></div><div class="msg bad" id="linkErr"></div></div>
 
   <div class="card">
-    <p class="step">1. Photos and invoices</p>
+    <p class="step">1. Photos</p>
+    <p class="sub">Give each photo a title so the owner knows what it shows.</p>
     <button class="btn big" type="button" id="btnCam" data-ico="cam">Take photo</button>
-    <button class="btn" type="button" id="btnPick" data-ico="box">Add photos or PDF</button>
+    <button class="btn" type="button" id="btnPick" data-ico="box">Add photos</button>
     <input type="file" id="cam" accept="image/*" capture="environment" hidden/>
-    <input type="file" id="pick" accept="image/*,application/pdf,.pdf" multiple hidden/>
+    <input type="file" id="pick" accept="image/*,.heic,.heif" multiple hidden/>
     <div class="thumbs" id="thumbs"></div>
+  </div>
+
+  <div class="card">
+    <p class="step">2. Invoices / PDFs</p>
+    <button class="btn" type="button" id="btnPdf" data-ico="book">Add PDF invoice</button>
+    <input type="file" id="pdf" accept="application/pdf,.pdf" multiple hidden/>
+    <div class="pdfs" id="pdfs"></div>
     <div class="count" id="count">No files yet (up to 10).</div>
   </div>
 
   <div class="card">
-    <p class="step">2. What was done? (optional)</p>
+    <p class="step">3. What was done? (optional)</p>
     <div class="noteWrap">
       <textarea id="note" maxlength="4000" placeholder="e.g. Front pads and discs replaced. Rear tyres at 3mm, needed soon."></textarea>
       <button class="mic hide" type="button" id="mic" aria-label="Speak the note">🎤</button>
@@ -99,6 +116,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 
 <script src="./uploads-config.js?v=1"></script>
 <script src="./icons.js?v=31"></script>
+<script src="./speech-note.js?v=1"></script>
 <script>
 (function(){
   var API=window.UPLOADS_API;
@@ -118,19 +136,64 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   // ---- files ----
   function fmt(n){ return n>=1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB"; }
   function total(){ return items.reduce(function(a,b){return a+(b.file?b.file.size:0)},0); }
-  function renderThumbs(){
-    var t=$("thumbs"); t.innerHTML="";
-    items.forEach(function(it,i){
-      var d=document.createElement("div"); d.className="th"+(it.busy?" busy":"");
-      if(it.type==="application/pdf") d.innerHTML='<div><span class="pdf">PDF</span>'+esc(it.name.slice(0,40))+'</div>';
-      else if(it.url){ var im=document.createElement("img"); im.src=it.url; im.alt=""; d.appendChild(im); }
-      else d.textContent=it.name;
-      var x=document.createElement("button"); x.className="x"; x.type="button"; x.textContent="×"; x.setAttribute("aria-label","Remove");
-      x.onclick=function(){ if(it.url) URL.revokeObjectURL(it.url); items.splice(items.indexOf(it),1); renderThumbs(); };
-      d.appendChild(x); t.appendChild(d);
+  var TITLE_PH={img:"Title, e.g. Old brake pads",pdf:"Title, e.g. Kitchen unit invoice"};
+  function cleanTitle(v){ return String(v||"").replace(/[\u0000-\u001f\u007f\u2028\u2029]+/g," ").replace(/\s+/g," ").trim().slice(0,80).trim(); }
+  function titleInput(it){
+    var inp=document.createElement("input"); inp.className="ttl"; inp.type="text"; inp.maxLength=80; inp.value=it.title||"";
+    inp.placeholder=it.type==="application/pdf"?TITLE_PH.pdf:TITLE_PH.img; inp.setAttribute("aria-label","Title for "+it.name);
+    inp.setAttribute("enterkeyhint","done"); inp.autocapitalize="sentences";
+    inp.oninput=function(){ it.title=inp.value; };
+    inp.onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); inp.blur(); } };
+    return inp;
+  }
+  function removeItem(it){ if(it.url) URL.revokeObjectURL(it.url); var k=items.indexOf(it); if(k>=0) items.splice(k,1); if(it.el) it.el.remove(); updateCount(); }
+  // Each file owns its DOM node, so typing a title is never interrupted by another photo finishing.
+  function drawItem(it){
+    var isPdf=it.type==="application/pdf";
+    if(!it.el){
+      it.el=document.createElement("div");
+      var x=document.createElement("button"); x.className="x"; x.type="button"; x.textContent="×"; x.setAttribute("aria-label","Remove "+it.name);
+      x.onclick=function(){ removeItem(it); };
+      if(isPdf){
+        it.el.className="prow";
+        it.el.innerHTML='<div class="pn"><span class="pdf">PDF</span><span>'+esc(it.name.slice(0,60))+'</span></div>';
+        it.el.appendChild(titleInput(it)); it.el.appendChild(x); $("pdfs").appendChild(it.el);
+      }else{
+        it.el.className="tile"; it.box=document.createElement("div"); it.box.className="th";
+        it.box.appendChild(x); it.el.appendChild(it.box); it.el.appendChild(titleInput(it)); $("thumbs").appendChild(it.el);
+      }
+    }
+    if(!isPdf){
+      it.box.classList.toggle("busy",!!it.busy);
+      if(it.url && !it.box.querySelector("img")){ var im=document.createElement("img"); im.src=it.url; im.alt=""; it.box.insertBefore(im,it.box.firstChild); }
+      else if(!it.url && !it.busy && !it.box.querySelector(".nm")){ var nm=document.createElement("span"); nm.className="nm"; nm.textContent=it.name; it.box.insertBefore(nm,it.box.firstChild); }
+    }
+    updateCount();
+  }
+  function updateCount(){
+    var n=items.length, pd=items.filter(function(i){return i.type==="application/pdf"}).length, ph=n-pd;
+    var parts=[]; if(ph) parts.push(ph+" photo"+(ph>1?"s":"")); if(pd) parts.push(pd+" PDF"+(pd>1?"s":""));
+    $("count").textContent=n?(parts.join(" + ")+" · "+fmt(total())+(n>=MAX_FILES?" · that's the maximum":"")):"No files yet (up to 10 photos and PDFs).";
+  }
+  function renderThumbs(){ $("thumbs").innerHTML=""; $("pdfs").innerHTML=""; items.forEach(function(it){ it.el=null; drawItem(it); }); updateCount(); }
+  // Work out what a file really is: MIME type, then extension, then its first bytes (Android often sends "" or octet-stream).
+  function headBytes(f){
+    return new Promise(function(res){
+      try{ var fr=new FileReader(); fr.onload=function(){res(new Uint8Array(fr.result))}; fr.onerror=function(){res(new Uint8Array(0))}; fr.readAsArrayBuffer(f.slice(0,1100)); }catch(e){ res(new Uint8Array(0)); }
     });
-    var n=items.length;
-    $("count").textContent=n?(n+" file"+(n>1?"s":"")+" · "+fmt(total())+(n>=MAX_FILES?" · that's the maximum":"")):"No files yet (up to 10).";
+  }
+  function hasAt(u8,i,str){ for(var k=0;k<str.length;k++) if(u8[i+k]!==str.charCodeAt(k)) return false; return true; }
+  async function kindOf(f){
+    var t=(f.type||"").toLowerCase(), n=f.name||"";
+    if(t==="application/pdf"||t==="application/x-pdf"||/\.pdf$/i.test(n)) return "pdf";
+    if(/^image\//.test(t)||/\.(jpe?g|png|webp|heic|heif|gif|bmp|avif)$/i.test(n)) return "img";
+    var u=await headBytes(f);
+    for(var i=0;i<=Math.min(u.length-5,1024);i++) if(u[i]===0x25&&hasAt(u,i,"%PDF-")) return "pdf";
+    if(u[0]===0xff&&u[1]===0xd8&&u[2]===0xff) return "img";
+    if(u[0]===0x89&&hasAt(u,1,"PNG")) return "img";
+    if(hasAt(u,0,"RIFF")&&hasAt(u,8,"WEBP")) return "img";
+    if(hasAt(u,4,"ftyp")) return "img";
+    return null;
   }
   function loadImg(file){
     if(window.createImageBitmap){
@@ -161,19 +224,19 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
     for(var i=0;i<files.length;i++){
       var f=files[i];
       if(items.length>=MAX_FILES){ say("Only 10 files per upload. Send the rest in a second upload.",true); break; }
-      var isPdf=f.type==="application/pdf"||/\.pdf$/i.test(f.name);
-      var isImg=/^image\//.test(f.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
-      if(!isPdf&&!isImg){ say(f.name+" isn't a photo or PDF, so it was skipped.",true); continue; }
-      var it={name:f.name||"photo.jpg",type:isPdf?"application/pdf":"image/jpeg",busy:!isPdf,file:isPdf?f:null};
-      items.push(it); renderThumbs();
+      var kind=await kindOf(f), isPdf=kind==="pdf";
+      if(!kind){ say((f.name||"That file")+" isn't a photo or PDF, so it was skipped.",true); continue; }
+      var nm=f.name||(isPdf?"invoice.pdf":"photo.jpg"); if(isPdf&&!/\.pdf$/i.test(nm)) nm+=".pdf";
+      var it={name:nm,title:"",type:isPdf?"application/pdf":"image/jpeg",busy:!isPdf,file:isPdf?f:null};
+      items.push(it); drawItem(it);
       if(!isPdf){
         var out=await compress(f);
         it.file=out; it.type=out.type||f.type; it.busy=false;
         if(/^image\/(jpeg|png|webp)$/.test(it.type)) it.url=URL.createObjectURL(out);
         if(!/\.jpe?g$/i.test(it.name)&&out.type==="image/jpeg") it.name=it.name.replace(/\.[a-z0-9]+$/i,"")+".jpg";
       }
-      if(it.file.size>MAX_FILE){ items.splice(items.indexOf(it),1); say(f.name+" is over 10 MB, so it was skipped.",true); }
-      renderThumbs();
+      if(it.file.size>MAX_FILE){ removeItem(it); say(nm+" is over 10 MB, so it was skipped.",true); }
+      else drawItem(it);
     }
     if(total()>MAX_JOB) say("That's over 50 MB. Remove a file or two.",true);
   }
@@ -181,36 +244,52 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   $("btnPick").onclick=function(){$("pick").click()};
   $("cam").onchange=function(e){ addFiles(e.target.files).then(function(){e.target.value=""}); };
   $("pick").onchange=function(e){ addFiles(e.target.files).then(function(){e.target.value=""}); };
+  $("btnPdf").onclick=function(){$("pdf").click()};
+  $("pdf").onchange=function(e){ addFiles(e.target.files).then(function(){e.target.value=""}); };
 
   // ---- speech-to-text (Chrome/Android, Safari 14.5+). Otherwise the keyboard's own mic works. ----
-  var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null, listening=false;
-  if(SR){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null, listening=false, SP=window.Driv3Speech;
+  if(SR&&SP){
+    var base="", committed=[], session={finals:[],interim:""}, emptyRuns=0;
+    function show(){ $("note").value=SP.compose(base,committed,session).slice(0,4000); }
+    function stopUi(){ listening=false; $("mic").classList.remove("on"); $("mic").setAttribute("aria-pressed","false"); }
+    function startSession(){
+      session={finals:[],interim:""};
+      rec=new SR(); rec.lang="en-GB"; rec.continuous=false; rec.interimResults=true; rec.maxAlternatives=1;
+      rec.onresult=function(ev){ session=SP.readResults(ev.results); show(); };
+      rec.onerror=function(ev){
+        if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ $("micHint").textContent="Microphone blocked. Use the 🎤 on your keyboard instead."; stopUi(); }
+        else if(ev.error==="network"){ $("micHint").textContent="Speech needs a connection. Use the 🎤 on your keyboard instead."; stopUi(); }
+      };
+      rec.onend=function(){
+        // Lock in this session's words (keep the interim if no final ever came), then keep listening.
+        var got=session.finals.length?session.finals:(session.interim?[session.interim]:[]);
+        committed=SP.mergeSegments(committed.concat(got)); session={finals:[],interim:""}; show();
+        emptyRuns=got.length?0:emptyRuns+1;
+        if(listening && emptyRuns<4){ try{ startSession(); return; }catch(e){} }
+        stopUi();
+      };
+      rec.start();
+    }
     $("mic").classList.remove("hide");
     $("micHint").textContent="Tap 🎤 and talk. Tap again to stop.";
     $("mic").onclick=function(){
-      if(listening){ rec&&rec.stop(); return; }
-      rec=new SR(); rec.lang="en-GB"; rec.continuous=true; rec.interimResults=true;
-      var base=$("note").value; if(base&&!/\s$/.test(base)) base+=" ";
-      rec.onresult=function(ev){
-        var fin="", tmp="";
-        for(var i=0;i<ev.results.length;i++){ if(ev.results[i].isFinal) fin+=ev.results[i][0].transcript; else tmp+=ev.results[i][0].transcript; }
-        $("note").value=(base+fin+tmp).slice(0,4000);
-      };
-      rec.onerror=function(ev){ if(ev.error==="not-allowed"||ev.error==="service-not-allowed") $("micHint").textContent="Microphone blocked. Use the 🎤 on your keyboard instead."; };
-      rec.onend=function(){ listening=false; $("mic").classList.remove("on"); };
-      try{ rec.start(); listening=true; $("mic").classList.add("on"); }catch(e){ $("micHint").textContent="Use the 🎤 on your keyboard instead."; }
+      if(listening){ listening=false; try{rec&&rec.stop()}catch(e){} stopUi(); return; }
+      base=$("note").value; committed=[]; emptyRuns=0;
+      try{ listening=true; startSession(); $("mic").classList.add("on"); $("mic").setAttribute("aria-pressed","true"); }
+      catch(e){ stopUi(); $("micHint").textContent="Use the 🎤 on your keyboard instead."; }
     };
   }
 
   function say(t,bad){ $("msg").textContent=t; $("msg").className="msg"+(bad?" bad":""); }
   $("send").onclick=function(){
-    if(listening&&rec) rec.stop();
+    if(listening&&rec){ listening=false; try{rec.stop()}catch(e){} }
     var note=$("note").value.trim();
     if(items.some(function(i){return i.busy})){ say("Still preparing photos, one moment…"); return; }
     if(!items.length&&!note){ say("Add a photo, a PDF or a note first.",true); return; }
     if(total()>MAX_JOB){ say("That's over 50 MB. Remove a file or two.",true); return; }
     var fd=new FormData();
-    items.forEach(function(it){ fd.append("file",it.file,it.name); });
+    items.forEach(function(it){ fd.append("file",it.file,it.name); fd.append("title",cleanTitle(it.title)); });
     fd.append("note",note); fd.append("garage",$("garage").value.trim()); fd.append("mileage",$("mileage").value.trim());
     try{ localStorage.setItem("dip.mechGarage",$("garage").value.trim()); }catch(e){}
     var x=new XMLHttpRequest();

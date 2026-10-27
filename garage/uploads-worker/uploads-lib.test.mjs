@@ -1,7 +1,7 @@
 // Local unit tests with an in-memory mock of the R2 bucket. Run: node uploads-lib.test.mjs
 import assert from "node:assert/strict";
 import worker from "./uploads-worker.js";
-import { _resetForTests, sha256hex, sniff, LIMITS } from "./uploads-lib.js";
+import { _resetForTests, sha256hex, sniff, cleanTitle, LIMITS } from "./uploads-lib.js";
 
 class MockR2 {
   constructor() { this.m = new Map(); this.failPutAfter = Infinity; this.puts = 0; }
@@ -168,5 +168,28 @@ await t("sniff recognises jpeg/png/webp/heic/pdf only", async () => {
   assert.equal(sniff(jpg()).ext, "jpg"); assert.equal(sniff(png()).ext, "png"); assert.equal(sniff(pdf()).ext, "pdf");
   assert.equal(sniff(b("RIFF\0\0\0\0WEBPVP8 ")).ext, "webp"); assert.equal(sniff(b("\0\0\0\x18ftypheic")).ext, "heic");
   assert.equal(sniff(b("GIF89a")), null); assert.equal(sniff(b("PK\x03\x04")), null);
+});
+await t("PDF with empty or octet-stream MIME is accepted by bytes; titles stored per file", async () => {
+  fresh(); await register();
+  const fd = new FormData();
+  fd.append("file", new Blob([jpg()], { type: "image/jpeg" }), "a.jpg"); fd.append("title", "  Old brake\npads  ");
+  fd.append("file", new Blob([pdf()], { type: "" }), "kitchen unit invoice.pdf"); fd.append("title", "x".repeat(200));
+  fd.append("file", new Blob([new Uint8Array([0xef,0xbb,0xbf,...new TextEncoder().encode("%PDF-1.7\n")])], { type: "application/octet-stream" }), "bom.pdf"); fd.append("title", "");
+  const r = await upload(fd); assert.equal(r.status, 201);
+  const j = (await (await owner("GET", "/list/" + UID)).json()).jobs[0];
+  assert.deepEqual(j.files.map(f => f.type), ["image/jpeg", "application/pdf", "application/pdf"]);
+  assert.equal(j.files[0].title, "Old brake pads"); assert.equal(j.files[1].title.length, 80); assert.equal(j.files[2].title, undefined);
+  assert.equal(j.files[1].name, "kitchen unit invoice.pdf");
+});
+await t("upload without titles still works (old pages)", async () => {
+  fresh(); await register();
+  const r = await upload(form([[jpg(), "a.jpg", "image/jpeg"]])); assert.equal(r.status, 201);
+  const j = (await (await owner("GET", "/list/" + UID)).json()).jobs[0]; assert.equal(j.files[0].title, undefined);
+});
+await t("cleanTitle strips control chars and limits length", async () => {
+  assert.equal(cleanTitle("a\u0000b\tc"), "a b c"); assert.equal(cleanTitle(null), ""); assert.equal(cleanTitle("y".repeat(90)).length, 80);
+});
+await t("info/limit messages say Driv3", async () => {
+  fresh(); const r = await call("GET", "/info/" + UID); assert.match((await r.json()).error, /Driv3/);
 });
 console.log(`\n${pass} passed`);

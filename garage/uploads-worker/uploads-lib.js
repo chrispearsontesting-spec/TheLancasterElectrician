@@ -8,7 +8,7 @@
 
 const ALLOWED_ORIGINS = ["https://thelancasterelectrician.com", "https://www.thelancasterelectrician.com"];
 const DEV_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
-export const LIMITS = { maxFiles: 10, maxFileBytes: 10 * 1024 * 1024, maxJobBytes: 50 * 1024 * 1024, maxPendingJobs: 20, maxNote: 4000, maxShort: 100 };
+export const LIMITS = { maxFiles: 10, maxFileBytes: 10 * 1024 * 1024, maxJobBytes: 50 * 1024 * 1024, maxPendingJobs: 20, maxNote: 4000, maxShort: 100, maxTitle: 80 };
 const ID_RE = /^[A-Za-z0-9_-]{22,43}$/;     // 128-256 bit base64url
 const HASH_RE = /^[a-f0-9]{64}$/;
 const JOB_RE = /^[a-z0-9]{8,12}-[a-f0-9]{8}$/;
@@ -62,8 +62,11 @@ export function sniff(u8) {
   if (u8.length >= 3 && u8[0] === 0xff && u8[1] === 0xd8 && u8[2] === 0xff) return { ext: "jpg", type: "image/jpeg" };
   if (u8.length >= 8 && u8[0] === 0x89 && s(1, "PNG")) return { ext: "png", type: "image/png" };
   if (u8.length >= 12 && s(0, "RIFF") && s(8, "WEBP")) return { ext: "webp", type: "image/webp" };
-  if (u8.length >= 12 && s(4, "ftyp") && ["heic", "heix", "hevc", "heim", "heis", "mif1", "msf1"].some(b => s(8, b))) return { ext: "heic", type: "image/heic" };
+  if (u8.length >= 12 && s(4, "ftyp") && ["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"].some(b => s(8, b))) return { ext: "heic", type: "image/heic" };
   if (u8.length >= 5 && s(0, "%PDF-")) return { ext: "pdf", type: "application/pdf" };
+  // Some PDFs (scanner apps, email exports) have junk/BOM before the header; the PDF spec allows it within 1 KB.
+  const lim = Math.min(u8.length - 5, 1024);
+  for (let i = 1; i <= lim; i++) if (u8[i] === 0x25 && s(i, "%PDF-")) return { ext: "pdf", type: "application/pdf" };
   return null;
 }
 
@@ -72,6 +75,10 @@ function cleanText(v, max) {
 }
 function cleanName(v) {
   return cleanText(v, 80).replace(/[\\/:*?"<>|]/g, "_") || "file";
+}
+// Per-file title typed by the mechanic: one line, no control chars, max 80 chars.
+export function cleanTitle(v) {
+  return String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f\u2028\u2029]+/g, " ").replace(/\s+/g, " ").trim().slice(0, LIMITS.maxTitle).trim();
 }
 function newJobId(now) {
   const r = new Uint8Array(4); crypto.getRandomValues(r);
@@ -145,7 +152,7 @@ export async function handle(req, env) {
     // Mechanic page: is this link live?
     if (route === "info" && req.method === "GET" && parts.length === 2) {
       const reg = await getReg(env, id);
-      if (!reg) return json({ error: "This upload link is not active yet. Ask the owner to open Mechanic uploads in Dipstick." }, 404, h);
+      if (!reg) return json({ error: "This upload link is not active yet. Ask the owner to open Mechanic uploads in Driv3." }, 404, h);
       return json({ ok: true, limits: LIMITS }, 200, h);
     }
 
@@ -157,22 +164,23 @@ export async function handle(req, env) {
       if (len > LIMITS.maxJobBytes + 1024 * 1024) return json({ error: "Too big: 50 MB per upload max" }, 413, h);
       if (!/^multipart\/form-data/i.test(req.headers.get("Content-Type") || "")) return json({ error: "Expected multipart/form-data" }, 400, h);
       const pending = await listJobMetas(env, id);
-      if (pending.length >= LIMITS.maxPendingJobs) return json({ error: "The owner has too many uploads waiting. Ask them to open Dipstick first." }, 429, h);
+      if (pending.length >= LIMITS.maxPendingJobs) return json({ error: "The owner has too many uploads waiting. Ask them to open Driv3 first." }, 429, h);
       let fd; try { fd = await req.formData(); } catch (e) { return json({ error: "Could not read upload" }, 400, h); }
       const files = fd.getAll("file").filter(f => f && typeof f === "object" && typeof f.arrayBuffer === "function");
       const note = cleanText(fd.get("note"), LIMITS.maxNote);
       if (!files.length && !note) return json({ error: "Add a photo, PDF or note" }, 400, h);
       if (files.length > LIMITS.maxFiles) return json({ error: "Max " + LIMITS.maxFiles + " files per upload" }, 400, h);
+      const titles = fd.getAll("title"); // optional, same order as files
       let total = 0;
       const ready = [];
-      for (const f of files) {
+      for (const [fi, f] of files.entries()) {
         if (f.size > LIMITS.maxFileBytes) return json({ error: cleanName(f.name) + " is over 10 MB" }, 413, h);
         total += f.size;
         if (total > LIMITS.maxJobBytes) return json({ error: "Too big: 50 MB per upload max" }, 413, h);
         const buf = new Uint8Array(await f.arrayBuffer());
         const kind = sniff(buf);
         if (!kind) return json({ error: cleanName(f.name) + " is not a photo or PDF" }, 415, h);
-        ready.push({ buf, kind, name: cleanName(f.name) });
+        ready.push({ buf, kind, name: cleanName(f.name), title: cleanTitle(typeof titles[fi] === "string" ? titles[fi] : "") });
       }
       const mileageRaw = cleanText(fd.get("mileage"), 12).replace(/[,\s]/g, "");
       const mileage = /^\d{1,7}$/.test(mileageRaw) ? parseInt(mileageRaw, 10) : null;
@@ -190,9 +198,11 @@ export async function handle(req, env) {
         for (let i = 0; i < ready.length; i++) {
           const r = ready[i];
           const key = "f" + i + "." + r.kind.ext;
-          await env.UPLOADS.put(base + key, r.buf, { httpMetadata: { contentType: r.kind.type } });
+          await env.UPLOADS.put(base + key, r.buf, { httpMetadata: { contentType: r.kind.type }, customMetadata: r.title ? { title: encodeURIComponent(r.title) } : undefined });
           written.push(base + key);
-          meta.files.push({ key, name: r.name, type: r.kind.type, size: r.buf.byteLength });
+          const fm = { key, name: r.name, type: r.kind.type, size: r.buf.byteLength };
+          if (r.title) fm.title = r.title;
+          meta.files.push(fm);
         }
         await env.UPLOADS.put(base + "meta.json", JSON.stringify(meta), { httpMetadata: { contentType: "application/json" } });
       } catch (e) {

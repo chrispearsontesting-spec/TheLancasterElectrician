@@ -19,6 +19,9 @@
   }
   function saveGarage(s){ localStorage.setItem("gt.garage",JSON.stringify(s)); }
   function cleanPlate(p){ return String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+  // Mechanic's per-file title (jobs from before titles existed fall back to the file name).
+  function cleanTitle(v){ return String(v||"").replace(/[\u0000-\u001f\u007f\u2028\u2029]+/g," ").replace(/\s+/g," ").trim().slice(0,80).trim(); }
+  function fileTitle(f){ return (f&&cleanTitle(f.title))||(f&&f.name)||"File"; }
   function niceName(c){ return c.nick||c.name||cleanPlate(c.plate)||"Car"; }
   // Make sure the car at index i has an upload ID + owner key. Returns the car.
   function ensureIds(i){
@@ -71,7 +74,7 @@
     var d=await db();
     return new Promise(function(res,rej){
       var tx=d.transaction(["jobs","files"],"readwrite");
-      blobs.forEach(function(b){ tx.objectStore("files").put({blob:b.blob,type:b.type,name:b.name}, job.id+"/"+b.key); });
+      blobs.forEach(function(b){ tx.objectStore("files").put({blob:b.blob,type:b.type,name:b.name,title:b.title||""}, job.id+"/"+b.key); });
       tx.objectStore("jobs").put(job);
       tx.oncomplete=function(){res()}; tx.onerror=function(){rej(tx.error)}; tx.onabort=function(){rej(tx.error||new Error("Storage full?"))};
     });
@@ -101,10 +104,11 @@
           var f=j.files[k];
           var r=await api("/file/"+c.upId+"/"+j.id+"/"+f.key,{headers:hdr});
           var b=await r.blob();
-          blobs.push({key:f.key,type:f.type,name:f.name,blob:new Blob([b],{type:f.type})});
+          blobs.push({key:f.key,type:f.type,name:f.name,title:cleanTitle(f.title),blob:new Blob([b],{type:f.type})});
         }
         await saveJob({id:j.id,up:c.upId,plate:cleanPlate(c.plate),car:niceName(c),created:j.created,received:Date.now(),
-          note:j.note||"",garage:j.garage||"",mechanic:j.mechanic||"",mileage:j.mileage,files:j.files,seen:false},blobs);
+          note:j.note||"",garage:j.garage||"",mechanic:j.mechanic||"",mileage:j.mileage,
+          files:j.files.map(function(f){ return {key:f.key,name:f.name,type:f.type,size:f.size,title:cleanTitle(f.title)}; }),seen:false},blobs);
         n++;
       }
       // Safe to delete: everything is in IndexedDB now.
@@ -132,5 +136,5 @@
     return new Promise(function(res){tx.oncomplete=res;tx.onerror=res});
   }
   window.DipUploads={api:API,garage:garage,ensureIds:ensureIds,link:link,register:register,checkCar:checkCar,checkAll:checkAll,
-    jobsFor:jobsFor,getFile:getFile,removeLocal:removeLocal,unseenCount:unseenCount,markSeen:markSeen,niceName:niceName,cleanPlate:cleanPlate};
+    jobsFor:jobsFor,getFile:getFile,removeLocal:removeLocal,unseenCount:unseenCount,markSeen:markSeen,niceName:niceName,cleanPlate:cleanPlate,fileTitle:fileTitle,cleanTitle:cleanTitle};
 })();

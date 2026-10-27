@@ -35,16 +35,12 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .thumbs a{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#111}
 .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.thumbs figure{margin:0;min-width:0}
+.thumbs figcaption{font-size:12px;color:#b0b0b0;margin-top:4px;line-height:1.3;overflow-wrap:anywhere}
 .job .btn{min-height:44px !important;padding:10px 14px !important;font-size:14px !important}
 .rm{background:none;border:0;color:#8b8b8b;font-size:13px;padding:6px 0;margin-top:6px;cursor:pointer;text-decoration:underline}
 .new{background:#3dd68c;color:#0b0c0e;border-radius:8px;font-size:11px;font-weight:700;padding:2px 6px;margin-left:6px}
 .linkTxt{font-size:11px;color:#8b8b8b;word-break:break-all;margin-top:8px}
-@media print{
-  body *{visibility:hidden !important}
-  #sticker,#sticker *{visibility:visible !important}
-  #sticker{position:absolute;left:0;top:0;width:70mm}
-  html,body{background:#fff !important}
-}
 </style>
 </head>
 <body>
@@ -53,7 +49,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 
 <div class="card">
   <div class="carRow" id="carRow"></div>
-  <div class="qrBox" id="sticker">
+  <div class="qrBox">
     <canvas id="qr" width="10" height="10" aria-label="QR code for the mechanic upload link"></canvas>
     <div class="cap" id="qrCap">Scan to send work photos &amp; invoices</div>
   </div>
@@ -63,7 +59,6 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     <button class="btn" type="button" id="copy">Copy link</button>
     <button class="btn" type="button" id="dl">Save QR (PNG)</button>
   </div>
-  <button class="btn" type="button" id="print">Print sticker</button>
   <div class="linkTxt" id="linkTxt"></div>
 </div>
 
@@ -78,7 +73,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
-<script src="./uploads-client.js?v=1"></script>
+<script src="./uploads-client.js?v=2"></script>
 <script src="./icons.js?v=31"></script>
 <script>
 (function(){
@@ -124,7 +119,6 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
       setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
     },"image/png");
   };
-  $("print").onclick=function(){ window.print(); };
   function copied(ok){ $("regStatus").textContent=ok?"Link copied. Paste it into WhatsApp, a text or an email.":"Could not copy. Press and hold the link below to copy it."; $("regStatus").className="status "+(ok?"good":"bad"); }
   function copy(){
     if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(function(){copied(true)},function(){fallbackCopy()});
@@ -163,11 +157,14 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
         var f=j.files[k], rec=await U.getFile(j.id,f.key); if(!rec) continue;
         var u=URL.createObjectURL(rec.blob); urls.push(u);
         if(/^image\//.test(f.type)){
+          var cap=U.fileTitle(f);
+          var fig=document.createElement("figure");
           var a=document.createElement("a"); a.href=u; a.target="_blank"; a.rel="noopener";
-          var im=document.createElement("img"); im.src=u; im.alt=f.name; a.appendChild(im); th.appendChild(a);
+          var im=document.createElement("img"); im.src=u; im.alt=cap; a.appendChild(im); fig.appendChild(a);
+          var fc=document.createElement("figcaption"); fc.textContent=cap; fig.appendChild(fc); th.appendChild(fig);
         }else{
           var b=document.createElement("a"); b.className="btn"; b.href=u; b.target="_blank"; b.rel="noopener"; b.setAttribute("data-ico","book");
-          b.textContent="Open PDF: "+f.name; el.appendChild(b);
+          b.textContent="Open PDF: "+U.fileTitle(f); el.appendChild(b);
         }
       }
       if(th.children.length) el.insertBefore(th, el.querySelector(".btn"));

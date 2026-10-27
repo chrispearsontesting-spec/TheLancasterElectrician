@@ -29,7 +29,7 @@ h1{font-size:25px;margin:4px 0 12px;font-weight:650}
 .pdfs{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .prow{position:relative;background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:10px 46px 10px 10px;display:flex;flex-direction:column;gap:8px}
 .prow .pn{display:flex;align-items:center;gap:8px;font-size:13px;color:#b0b0b0;word-break:break-all}
-.prow .pdf{font-weight:800;font-size:12px;color:#ff6b6b;border:1px solid #ff6b6b;border-radius:6px;padding:2px 5px;flex:none}
+.prow .pdf{flex:none;display:flex;flex-direction:column;align-items:center;color:#f2f2f2;font-size:9px;font-weight:800;letter-spacing:.04em;line-height:1}.prow .pdf svg{width:26px;height:26px;margin-bottom:2px}
 .prow .x{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#fff;font-size:18px;line-height:32px;padding:0;cursor:pointer}
 .sub{font-size:12px;color:#8b8b8b;margin:2px 0 8px}
 .th{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#1c1c1e;border:1px solid #2a2a2e;display:flex;align-items:center;justify-content:center;font-size:12px;text-align:center;padding:4px;word-break:break-all}
@@ -53,13 +53,16 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 .bar i{display:block;height:100%;width:0;background:#22c55e;transition:width .2s}
 .msg{font-size:14px;margin-top:10px;min-height:20px;line-height:1.4}
 .msg.bad{color:#ff6b6b}
+.msg.info{color:#b0b0b0;font-size:15px}
+.msg.warn{color:#f5b942}
+.ownerBtn{margin-top:12px}
 .msg:empty{display:none}
 .done{text-align:center;padding:30px 10px}
 .done .tick{width:96px;height:96px;border-radius:50%;background:#14532d;border:2px solid #22c55e;margin:10px auto 16px;display:flex;align-items:center;justify-content:center;font-size:52px;color:#22c55e}
 .done h1{margin:0 0 8px}
 .done p{color:#b0b0b0;font-size:15px;line-height:1.5}
 .err{color:#ff6b6b}
-.hide{display:none !important}
+.hide,button.btn.hide,#form .hide{display:none !important}
 .foot{font-size:12px;color:#6b6b6b;text-align:center;margin-top:14px;line-height:1.5}
 </style>
 </head>
@@ -67,7 +70,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 <div id="form">
   <p class="kicker">Driv3 · for the mechanic</p>
   <h1>Send work to the owner</h1>
-  <div class="card"><div class="carRow" id="carRow"><b>Car</b></div><div class="msg bad" id="linkErr"></div></div>
+  <div class="card"><div class="carRow" id="carRow"><b>Car</b></div><div class="msg bad" id="linkErr"></div><button class="btn ownerBtn hide" type="button" id="ownerBtn">I'm the owner, get my mechanic link</button></div>
 
   <div class="card">
     <p class="step">1. Photos</p>
@@ -81,7 +84,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 
   <div class="card">
     <p class="step">2. Invoices / PDFs</p>
-    <button class="btn" type="button" id="btnPdf" data-ico="book">Add PDF invoice</button>
+    <button class="btn" type="button" id="btnPdf" data-ico="doc">Add PDF invoice</button>
     <input type="file" id="pdf" accept="application/pdf,.pdf" multiple hidden/>
     <div class="pdfs" id="pdfs"></div>
     <div class="count" id="count">No files yet (up to 10).</div>
@@ -115,7 +118,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 </div>
 
 <script src="./uploads-config.js?v=1"></script>
-<script src="./icons.js?v=31"></script>
+<script src="./icons.js?v=32"></script>
 <script src="./speech-note.js?v=1"></script>
 <script>
 (function(){
@@ -129,8 +132,14 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   $("carRow").innerHTML=(plate?'<span class="plate"><span class="uk">UK</span><span class="reg">'+esc(plate)+'</span></span>':'')+'<b>'+esc(name||(plate?"":"Car"))+'</b>';
   try{ $("garage").value=localStorage.getItem("dip.mechGarage")||""; }catch(e){}
 
-  function linkError(t){ $("linkErr").textContent=t; $("send").disabled=true; }
-  if(!/^[A-Za-z0-9_-]{22,43}$/.test(uid)) linkError("This link is incomplete. Ask the owner to send it again.");
+  function linkError(t,cls){ var e=$("linkErr"); e.textContent=t; e.className="msg "+(cls||"bad"); $("send").disabled=true; }
+  function lockForm(){ var cs=document.querySelectorAll("#form > .card"); for(var i=1;i<cs.length;i++) cs[i].classList.add("hide"); $("send").classList.add("hide"); }
+  if(!uid){
+    $("carRow").classList.add("hide"); lockForm();
+    linkError("Open this page from the owner's QR code or link to send work to their car.","info");
+    try{ var g=JSON.parse(localStorage.getItem("gt.garage")||"null"); if(g&&g.cars&&g.cars.length){ var ob=$("ownerBtn"); ob.classList.remove("hide"); ob.onclick=function(){location.href="./mechanic.html"}; } }catch(e){}
+  }
+  else if(!/^[A-Za-z0-9_-]{22,43}$/.test(uid)){ lockForm(); linkError("This link looks cut off. Ask the owner to send it again.","warn"); }
   else fetch(API+"/info/"+uid).then(function(r){ if(r.status===404) return r.json().then(function(j){linkError(j.error||"This link is not active.")}); },function(){ /* offline: try at upload time */ });
 
   // ---- files ----
@@ -156,7 +165,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
       x.onclick=function(){ removeItem(it); };
       if(isPdf){
         it.el.className="prow";
-        it.el.innerHTML='<div class="pn"><span class="pdf">PDF</span><span>'+esc(it.name.slice(0,60))+'</span></div>';
+        it.el.innerHTML='<div class="pn"><span class="pdf">'+((window.dipstickIconSvg&&window.dipstickIconSvg.doc)||'')+'PDF</span><span>'+esc(it.name.slice(0,60))+'</span></div>';
         it.el.appendChild(titleInput(it)); it.el.appendChild(x); $("pdfs").appendChild(it.el);
       }else{
         it.el.className="tile"; it.box=document.createElement("div"); it.box.className="th";

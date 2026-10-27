@@ -12,6 +12,7 @@
     cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 10.2l5-2.2v8.2l-5-2.2z"/></svg>',
     pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6.2-6 6.2-11A6.2 6.2 0 0 0 5.8 10c0 5 6.2 11 6.2 11z"/><circle cx="12" cy="10" r="2.1"/></svg>',
     book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h6.5a3 3 0 0 1 3 3V19.5a2.2 2.2 0 0 0-2.2-2.2H5z"/><path d="M19 4.5h-6.5a3 3 0 0 0-3 3V19.5a2.2 2.2 0 0 1 2.2-2.2H19z"/></svg>',
+    doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M14 3.5v5h5"/><path d="M8.5 12.5h7M8.5 15.5h7M8.5 9.5h3"/></svg>',
     box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>',
     yt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6.5" width="18" height="11" rx="3"/><path d="M10.5 9.5l5 2.5-5 2.5z"/></svg>',
     mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 7l8 6 8-6"/></svg>',
@@ -62,7 +63,7 @@
   function run(root){
     (root||document).querySelectorAll("a.btn,button.btn,a.wide,button.wide,.accBtn,.sug").forEach(decorate);
   }
-  window.dipstickIcons=run;
+  window.dipstickIcons=run; window.dipstickIconSvg=S;
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){run();});
   else run();
   document.addEventListener("click",function(){ setTimeout(run,30); });

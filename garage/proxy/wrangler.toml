@@ -1,3 +1,14 @@
 name = "dipstick-mot"
 main = "mot-worker.js"
 compatibility_date = "2026-09-15"
+
+# Per-IP rate limit (needs Wrangler 4.36.0 or later). 20 lookups per minute per IP,
+# counted separately in each Cloudflare location and approximate.
+# If this binding is missing, the Worker falls back to a weaker in-memory limit.
+[[ratelimits]]
+name = "MOT_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 20
+  period = 60

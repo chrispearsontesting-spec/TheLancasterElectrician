@@ -23,34 +23,6 @@
     t.style.display="block";
     setTimeout(function(){t.style.display="none"},3500);
   }
-  var _paint=window.paint;
-  if(typeof _paint==="function"){
-    window.paint=function(){
-      _paint();
-      var items=document.querySelectorAll("#dues .item");
-      for(var i=0;i<items.length;i++){
-        var h=items[i].querySelector("h3");
-        var k=items[i].getAttribute("data-key");
-        if(k ? k!=="insurance" : (!h||h.textContent.indexOf("Insurance")!==0)) continue;
-        if(items[i].querySelector("[data-compare]")) return;
-        var acts=items[i].querySelector(".acts")||items[i];
-        var b=document.createElement("button");
-        b.className="btn";
-        b.type="button";
-        b.setAttribute("data-compare","1");
-        b.textContent="Compare";
-        acts.appendChild(b);
-      }
-    };
-    window.paint();
-  }
-  document.getElementById("dues").addEventListener("click",function(e){
-    var b=e.target.closest("[data-compare]");
-    if(!b)return;
-    var c=car();
-    var v=vrnOf(c);
-    try{if(v&&navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(v)}catch(x){}
-    if(v) toast(spaced(v)+" copied — paste it on GoCompare if the box is empty");
-    window.open(compareUrl(c),"_blank","noopener");
-  });
+  /* Compare moved to renew.html (Renew > Compare quotes) */
+  window.d3CompareUrl=compareUrl;
 })();

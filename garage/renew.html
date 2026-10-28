@@ -22,6 +22,7 @@ input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px soli
 <h1>Renew insurance</h1>
 <div class="card"><p class="note">Renewal date</p><p class="when" id="exp">—</p><p class="left" id="left"></p></div>
 <button class="btn" type="button" id="mine">My current insurer</button>
+<a href="#" id="chg" style="display:none;color:#8b8b8b;font-size:14px;text-align:center;margin:8px 0 0;text-decoration:underline">Change insurer</a>
 <div class="card" id="setup" style="margin-top:10px">
   <p class="note">Save your insurer once and this button will open it next time.</p>
   <input id="iName" placeholder="Insurer name, e.g. Admiral"/>
@@ -43,7 +44,7 @@ function paint(){
   document.getElementById("exp").textContent=nice(c.ins);
   document.getElementById("left").textContent=left(c.ins);
   document.getElementById("mine").textContent=c.insName?"My current insurer · "+c.insName:"My current insurer";
-  document.getElementById("iName").value=c.insName||"";document.getElementById("iWeb").value=c.insWeb||"";
+  document.getElementById("chg").style.display=c.insWeb?"block":"none";document.getElementById("iName").value=c.insName||"";document.getElementById("iWeb").value=c.insWeb||"";
 }
 document.getElementById("mine").onclick=function(){
   var c=car();
@@ -57,6 +58,7 @@ document.getElementById("iSave").onclick=function(){
   localStorage.setItem("gt.garage",JSON.stringify(s));
   document.getElementById("setup").classList.remove("on");document.getElementById("msg").textContent="Insurer saved.";paint();
 };
+document.getElementById("chg").onclick=function(e){e.preventDefault();paint();document.getElementById("setup").classList.add("on");document.getElementById("iName").focus()};
 document.getElementById("mine").addEventListener("contextmenu",function(e){e.preventDefault();document.getElementById("setup").classList.toggle("on")});
 document.getElementById("cmp").onclick=function(){
   var v=vrn(),base="https://www.gocompare.com/journeys/car/vehicle";

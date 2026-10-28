@@ -178,7 +178,7 @@ function paint(){
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
     row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"},{lab:"Check tax",href:"tax.html?plate="+encodeURIComponent(String(c.plate||"").replace(/\s/g,""))}])+
-    row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html?v=12"},{lab:"Renew",href:"renew.html?v=12"}])+
+    row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html?v=12"},{lab:"Renew",href:"renew.html?v=13"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
     "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";

@@ -59,6 +59,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 .pass{background:#1e3a34;color:#a7f3d0}
 .fail{background:#5b1d1d;color:#fecaca}
 .crow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.svRow{display:flex;align-items:center;gap:8px}.svRow a{flex:1}.svDel{background:none;border:1px solid #3a3a3e;color:#b0b0b0;border-radius:999px;padding:6px 10px;font-size:12px;min-height:32px}
 </style>
 </head>
 <body>
@@ -112,10 +113,10 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
     </div>
   </div>
 </div>
-<div class="card saved">
-  <div class="acc open"><button type="button" class="accBtn"><span class="lab">Saved cars</span><span class="chev">+</span></button><div class="accBody"><div id="savedList"></div><a class="btn grey" href="view.html">Viewing page</a></div></div>
+<div class="card saved" id="saved">
+  <div class="acc open"><button type="button" class="accBtn"><span class="lab">Saved cars</span><span class="chev">+</span></button><div class="accBody"><div id="savedList"></div></div></div>
 </div>
-<a class="btn grey" href="home.html" data-ico="back">Back</a>
+<a class="btn grey" href="home.html#car" data-ico="back">Back</a>
 <script src="cars-uk-1.js"></script>
 <script src="faults.js"></script>
 <script src="faults-extra.js"></script>
@@ -191,11 +192,14 @@ function eraPack(year,fuel){
 var current={name:"",plate:"",year:null,title:""};
 function keyFor(){return (current.plate||current.name||"car").toUpperCase().replace(/\s+/g,"")}
 function paintSaved(){
+  // One "Saved cars" list (was Saved viewings + Buying guide saved cars; both always used gt.viewings.v1).
   var list=loadView();
-  if(!list.length){$("savedList").innerHTML="<p class='muted'>None yet.</p>";return}
-  $("savedList").innerHTML=list.map(function(c){
-    return "<p><a href='buy.html?plate="+encodeURIComponent(c.plate||"")+"'>"+(c.name||"Car")+(c.plate?(" \u00b7 "+c.plate):"")+"</a></p>";
+  if(!list.length){$("savedList").innerHTML="<p class='muted'>None yet. Look a plate up, then tap Save this car.</p>";return}
+  function e(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  $("savedList").innerHTML=list.map(function(c,i){
+    return "<p class='svRow'><a href='buy.html?plate="+encodeURIComponent(c.plate||"")+"'>"+e(c.name||"Car")+(c.plate?(" \u00b7 "+e(c.plate)):"")+"</a>"+(c.year?" <span class='muted'>reg ~"+e(c.year)+"</span>":"")+"<button type='button' class='svDel' data-i='"+i+"' aria-label='Remove'>Remove</button></p>";
   }).join("");
+  $("savedList").querySelectorAll(".svDel").forEach(function(b){ b.onclick=function(){ var l=loadView(); l.splice(+b.getAttribute("data-i"),1); saveView(l); paintSaved(); }; });
 }
 function faultBlock(f,pack){
   var adv=(window.adviceFor?window.adviceFor(f.t,pack):{})||{};

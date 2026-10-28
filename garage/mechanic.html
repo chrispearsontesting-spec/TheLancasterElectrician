@@ -69,6 +69,12 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .seg button:disabled{opacity:.6}
 .showOn{background:#2e2410;border:1px solid #5c4a1f;color:#f5b84a;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:10px;line-height:1.4}
 .linkTxt{font-size:11px;color:#8b8b8b;word-break:break-all;margin-top:8px}
+.menu{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:14px;padding:6px 10px 10px;margin-top:8px}
+.menu .seg{margin:6px 0 2px}
+.more{margin-top:10px;border-top:1px solid #2a2a2e;padding-top:4px}
+.more summary{cursor:pointer;font-weight:700;padding:12px 0;color:#d7d3cb;list-style:none;min-height:44px}
+.more summary::after{content:" +";color:#8b8b8b}.more[open] summary::after{content:" \2013"}
+.more summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
@@ -82,24 +88,28 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <div class="qrBox">
     <canvas id="qr" width="10" height="10" role="img" aria-label="Your Driv3 QR sticker"></canvas>
     <div class="cap" id="qrCap">Your Driv3 sticker</div>
-    <div class="seg sm" role="group" aria-label="Sticker colour"><button type="button" id="stBlack" aria-pressed="true">Black</button><button type="button" id="stWhite" aria-pressed="false">White</button></div>
   </div>
   <div class="showOn hide" id="showBanner">Show mode is on. Anyone who scans this QR sees your car's showcase. Uploads are off until you switch back to Mechanic mode.</div>
   <div class="paused hide" id="pausedBanner">Uploads are paused. Your mechanic will see a message asking you to turn them back on.</div>
   <div class="status" id="regStatus"></div>
-  <button class="btn" type="button" id="share" data-ico="mail">Share link</button>
-  <div class="row2">
-    <button class="btn" type="button" id="copy">Copy link</button>
-    <button class="btn" type="button" id="shareSt">Share sticker</button>
+  <div class="row2 menus">
+    <button class="btn" type="button" id="shareMenuBtn" aria-expanded="false" aria-controls="shareMenu" data-ico="mail">Share</button>
+    <button class="btn" type="button" id="dlMenuBtn" aria-expanded="false" aria-controls="dlMenu">Download</button>
   </div>
-  <div class="row2">
-    <button class="btn" type="button" id="dl">Download PNG</button>
+  <div class="menu hide" id="shareMenu">
+    <button class="btn" type="button" id="shareSt">Share sticker image</button>
+    <button class="btn" type="button" id="share">Share link</button>
+  </div>
+  <div class="menu hide" id="dlMenu">
+    <div class="seg sm" role="group" aria-label="Sticker colour"><button type="button" id="stBlack" aria-pressed="true">Black</button><button type="button" id="stWhite" aria-pressed="false">White</button></div>
+    <button class="btn" type="button" id="dl">Screen PNG</button>
     <button class="btn" type="button" id="dlPrint">Print size (100 mm)</button>
+    <button class="btn" type="button" id="copy">Copy link</button>
   </div>
   <div class="linkTxt" id="linkTxt"></div>
 </div>
 
-<div class="card" id="showCard">
+<div class="card hide" id="showCard">
   <h2>Showcase</h2>
   <p class="note" id="showTxt">Make a show card with photos, stats and mods. Show mode points this same QR at it.</p>
   <a class="btn" href="showcase-edit.html" id="editShow" data-ico="star">Edit showcase</a>
@@ -110,6 +120,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <p class="note hide" id="mechOnly">Pause and job code only apply in Mechanic mode.</p>
   <div class="ctl" id="pauseRow"><div><div class="t">Pause uploads</div><div class="d" id="pauseTxt">Uploads are on. Your mechanic can send work.</div></div>
     <label class="sw" aria-label="Pause uploads"><input type="checkbox" id="pause"/><span></span></label></div>
+  <details class="more" id="moreOpts"><summary>More options</summary>
   <div class="ctl" style="display:block" id="codeRow">
     <div class="t">Job code <span class="note">(optional)</span></div>
     <div class="d" id="codeTxt">No code. Anyone with the QR or link can send work.</div>
@@ -125,17 +136,19 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     <div class="d">Lost a sticker or don't want someone to use it any more? Make a new QR. The old one stops working straight away.</div>
     <button class="btn danger" type="button" id="rotate">New link</button>
   </div>
+  </details>
   <div class="status" id="ctlStatus"></div>
 </div>
 
 <div class="card">
   <h2>Received work</h2>
+  <p class="note">These also appear in your <a href="history.html" style="color:#7dd3fc">History timeline</a>, which collects new ones each time you open it.</p>
   <button class="btn" type="button" id="check" data-ico="check">Check for uploads</button>
   <div class="status" id="checkStatus"></div>
   <div id="jobs"></div>
 </div>
 
-<a class="btn" href="history.html" data-ico="back">Back</a>
+<a class="btn" href="home.html#qr" data-ico="back">Back</a>
 
 <div class="modal hide" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="box">
   <h3 id="mTitle"></h3><div id="mBody"></div>
@@ -144,7 +157,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
-<script src="./uploads-client.js?v=4"></script>
+<script src="./uploads-client.js?v=5"></script>
 <script src="./icons.js?v=31"></script>
 <script src="./sticker/sticker.js?v=14"></script>
 <script>
@@ -310,6 +323,8 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     b.disabled=false; b.textContent="New link"; paintCtl();
   };
   paintCtl();
+  function menu(btn,box,other,otherBtn){ $(btn).onclick=function(){ var on=$(box).classList.toggle("hide"); this.setAttribute("aria-expanded",on?"false":"true"); $(other).classList.add("hide"); $(otherBtn).setAttribute("aria-expanded","false"); }; }
+  menu("shareMenuBtn","shareMenu","dlMenu","dlMenuBtn"); menu("dlMenuBtn","dlMenu","shareMenu","shareMenuBtn");
 
   var urls=[];
   async function render(){

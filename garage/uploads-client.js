@@ -125,6 +125,7 @@
     }
     return {downloaded:total,errors:errors};
   }
+  async function allJobs(){ var d=await db(); var l=await req2p(d.transaction("jobs").objectStore("jobs").getAll()); return l.sort(function(a,b){return b.created-a.created}); }
   async function unseenCount(){
     var d=await db(); var all=await req2p(d.transaction("jobs").objectStore("jobs").getAll());
     return all.filter(function(j){return !j.seen}).length;
@@ -190,5 +191,5 @@
   }
   function showLink(c){ var u=new URL("show.html",location.href); u.search="";u.hash=""; u.searchParams.set("s",c.showId); return u.toString(); }
   window.DipUploads={setMode:setMode,getMode:getMode,showLink:showLink,setControls:setControls,rotate:rotate,api:API,garage:garage,ensureIds:ensureIds,link:link,register:register,checkCar:checkCar,checkAll:checkAll,
-    jobsFor:jobsFor,getFile:getFile,removeLocal:removeLocal,unseenCount:unseenCount,markSeen:markSeen,niceName:niceName,cleanPlate:cleanPlate,fileTitle:fileTitle,cleanTitle:cleanTitle};
+    jobsFor:jobsFor,getFile:getFile,removeLocal:removeLocal,unseenCount:unseenCount,allJobs:allJobs,markSeen:markSeen,niceName:niceName,cleanPlate:cleanPlate,fileTitle:fileTitle,cleanTitle:cleanTitle};
 })();

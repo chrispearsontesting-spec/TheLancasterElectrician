@@ -53,6 +53,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 .linkTxt{font-size:11px;color:#8b8b8b;word-break:break-all;margin-top:8px}
 .bar{position:sticky;bottom:0;background:linear-gradient(transparent,#0b0c0e 30%);padding:18px 0 6px}
 .err{color:#ff6b6b;font-size:12.5px;margin-top:4px}
+.row2h{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.row2h .btn{margin:0;width:100%}
 </style>
 </head>
 <body>
@@ -107,6 +108,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   <div class="photos" id="photos"></div>
   <input type="file" id="pick" accept="image/*" multiple class="hide"/>
   <button class="add" type="button" id="addPhotos">+ Add photos</button>
+  <div class="row2h"><button class="btn small" type="button" id="useHome">Use my home photo</button><button class="btn small" type="button" id="toHome">Make ★ my home photo</button></div>
   <label class="f" for="extUrl">Or link a photo hosted somewhere else (https)</label>
   <div style="display:flex;gap:8px"><input class="in" id="extUrl" placeholder="https://…/photo.jpg"/><button class="btn small" type="button" id="addExt" style="width:auto;margin:0">Add</button></div>
   <div class="status" id="phStatus"></div>
@@ -160,7 +162,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
-<script src="./uploads-client.js?v=4"></script>
+<script src="./uploads-client.js?v=5"></script>
 <script src="./show-parse.js?v=2"></script>
 <script src="./show-client.js?v=2"></script>
 <script src="./icons.js?v=31"></script>
@@ -235,6 +237,28 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
     }
     S.saveDraft(idx,d); await paintPhotos();
     if(added) say("phStatus","Added "+added+" photo"+(added>1?"s":"")+".","good");
+  };
+  // Home car photo <-> showcase main photo (both stay on the phone).
+  function homePhoto(){ var s=U.garage(); return s&&s.cars[idx]&&s.cars[idx].photo||""; }
+  $("useHome").onclick=async function(){
+    var ph=homePhoto(); if(!ph){ say("phStatus","No home photo yet. Add one by tapping the photo on the home screen.","bad"); return; }
+    if(d.gallery.length>=12){ say("phStatus","12 photos max. Remove one first.","bad"); return; }
+    try{
+      if(/^data:/.test(ph)){ var blob=await (await fetch(ph)).blob(); var id=await S.addMedia(await S.compress(blob)); d.gallery.unshift({m:id,cap:""}); }
+      else d.gallery.unshift({url:ph,cap:""});
+      d.hero=0; S.saveDraft(idx,d); await paintPhotos(); say("phStatus","Home photo added as the main photo.","good");
+    }catch(e){ say("phStatus","Couldn't use the home photo: "+e.message,"bad"); }
+  };
+  $("toHome").onclick=async function(){
+    var p=d.gallery[d.hero]; if(!p){ say("phStatus","Add a photo first.","bad"); return; }
+    try{
+      var val=p.url||"";
+      if(p.m){ var r=await S.getMedia(p.m); if(!r) throw new Error("photo missing");
+        var bmp=await createImageBitmap(r.blob), sc=Math.min(1,1200/Math.max(bmp.width,bmp.height)), cv=document.createElement("canvas");
+        cv.width=Math.round(bmp.width*sc); cv.height=Math.round(bmp.height*sc); cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height); val=cv.toDataURL("image/jpeg",0.72); }
+      var s=U.garage(); s.cars[idx].photo=val; localStorage.setItem("gt.garage",JSON.stringify(s));
+      say("phStatus","Done. The home screen now shows this photo.","good");
+    }catch(e){ say("phStatus","Couldn't set the home photo: "+(e.message||"storage full?"),"bad"); }
   };
   $("addExt").onclick=function(){
     var u=P.httpsImage($("extUrl").value);

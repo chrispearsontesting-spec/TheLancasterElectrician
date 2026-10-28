@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>History</title>
-<link rel="stylesheet" href="./ui.css?v=46"/>
+<link rel="stylesheet" href="./ui.css?v=78"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
@@ -19,6 +19,31 @@ h1{font-size:26px;margin:8px 0 16px;font-weight:650}
 .panel.open{display:block}
 .btn{display:block;width:100%;margin-top:8px;padding:12px;background:#1c1c1e;color:#fff;border:0;border-radius:12px;font-weight:600;text-align:center;text-decoration:none}
 input[type=file]{margin:8px 0}
+.vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.tl{padding:14px 14px 10px}
+.tlHead{display:flex;justify-content:space-between;align-items:center}
+.tlHead h2{margin:0;font-size:18px}
+.add{background:#f5b84a;color:#0b0c0e;border:0;border-radius:999px;padding:8px 16px;font-weight:800;font-size:15px;min-height:40px}
+.mechRow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:#8b8b8b;margin:8px 0 4px}
+.link{background:none;border:0;color:#7dd3fc;font-weight:700;font-size:13px;padding:8px 0;min-height:36px;white-space:nowrap}
+.addBox{background:#1c1c1e;border-radius:14px;padding:10px;margin:8px 0}
+.addBox .btn{background:#2a2a2e}
+.addBox .save{background:#3dd68c;color:#0b0c0e}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row2 .btn{margin-top:0}
+.hide{display:none}
+.in{width:100%;padding:10px;border-radius:10px;border:0;background:#0b0c0e;color:#fff;margin:8px 0 0;font-size:16px}
+.ev{display:grid;grid-template-columns:12px 1fr;gap:10px;padding:12px 0;border-top:1px solid #2a2a2e}
+.ev:first-child{border-top:0}
+.ev .dot{width:10px;height:10px;border-radius:50%;background:#8b8b8b;margin-top:5px}
+.ev.mech .dot{background:#7dd3fc}
+.ev .d{font-size:12.5px;color:#8b8b8b}
+.ev .t{font-size:15px;margin:2px 0}
+.ev .tag{font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;margin-left:6px;background:#11324a;color:#7dd3fc}
+.ev .new{background:#3dd68c;color:#0b0c0e}
+.ev img{max-width:100%;border-radius:8px;margin-top:6px;display:block}
+.ev .files a{color:#f5b84a;font-weight:600;font-size:14px;display:inline-block;margin:6px 10px 0 0}
+.ev .rm{background:none;border:0;color:#8b8b8b;font-size:12px;padding:6px 0;text-decoration:underline}
+.mechLink{display:block;text-decoration:none;color:#8b8b8b;margin:10px 0 0;text-align:right}
 .note{font-size:13px;color:#8b8b8b;margin:8px 0}
 #uploads{margin-top:8px}
 .upload-item{background:#1c1c1e;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
@@ -50,31 +75,28 @@ input[type=file]{margin:8px 0}
   </div>
 </div>
 
-<div class="card">
-  <button class="acc" type="button">Work & invoices <span>+</span></button>
-  <div class="panel">
-    <p class="note">Photograph or upload invoices and photos of work. Each upload is dated and added to the calendar.</p>
-    <label class="btn" for="file" data-ico="doc">Choose photo or PDF</label>
-    <input type="file" id="file" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0"/>
+<div class="card tl">
+  <div class="tlHead"><h2>Timeline</h2><button class="add" type="button" id="addBtn" aria-expanded="false">+ Add</button></div>
+  <div class="mechRow"><span id="mechStatus">Mechanic uploads are collected automatically.</span><button type="button" class="link" id="checkNow">Check now</button></div>
+  <div class="addBox hide" id="addBox">
+    <div class="row2">
+      <label class="btn" for="cam" data-ico="cam">Take photo</label>
+      <label class="btn" for="file" data-ico="doc">Photo or PDF</label>
+    </div>
+    <input type="file" id="cam" accept="image/*" capture="environment" class="vh"/>
+    <input type="file" id="file" accept="image/*,application/pdf" class="vh"/>
     <p class="note" id="fileName" style="margin:6px 0 0"></p>
-    <label class="btn" for="cam" style="margin-top:6px">Take photo</label>
-    <input type="file" id="cam" accept="image/*" capture="environment" style="display:none"/>
-    <input type="text" id="note" placeholder="Short note (e.g. Clutch replaced)" style="width:100%;padding:10px;border-radius:10px;border:0;background:#1c1c1e;color:#fff;margin:6px 0"/>
-    <button class="btn" id="save" type="button">Save to history</button>
-    <div id="uploads"></div>
+    <input type="text" id="note" placeholder="Note (e.g. Clutch replaced)" maxlength="200" class="in"/>
+    <button class="btn save" id="save" type="button">Save to history</button>
+    <p class="note" style="margin:4px 0 0">A note on its own is fine too.</p>
   </div>
+  <div id="timeline"></div>
+  <a class="note mechLink" href="mechanic.html" id="mechLink">Mechanic QR sticker &amp; link settings ›</a>
 </div>
+<div id="uploads" hidden></div>
 
-<div class="card">
-  <button class="acc" type="button" id="mechAcc">Mechanic uploads <span>+</span></button>
-  <div class="panel" id="mechPanel">
-    <p class="note">Give your mechanic a QR code or link. Their photos, invoices and notes are saved on this phone.</p>
-    <p class="note" id="mechStatus"></p>
-    <a class="btn" href="mechanic.html" id="mechLink">Open mechanic uploads</a>
-  </div>
-</div>
-
-<a class="btn" href="home.html" style="margin-top:16px">Back</a>
+<a class="btn" href="home.html#docs" style="margin-top:16px">Back</a>
+<script src="./icons.js?v=31"></script>
 
 <script>
 document.querySelectorAll('.acc').forEach(btn => {
@@ -85,17 +107,59 @@ document.querySelectorAll('.acc').forEach(btn => {
   };
 });
 
-const uploadsEl = document.getElementById('uploads');
-let items = JSON.parse(localStorage.getItem('dipstick-history') || '[]');
-
-function render() {
-  uploadsEl.innerHTML = items.map(it => `
-    <div class="upload-item">
-      <strong>${it.date}</strong> — ${it.note || 'Work'}
-      ${it.type.startsWith('image') ? `<img src="${it.data}" alt=""/>` : `<p>PDF saved</p>`}
-    </div>
-  `).join('') || '<p class="note">No uploads yet.</p>';
+let items = [];
+try{ items = JSON.parse(localStorage.getItem('dipstick-history') || '[]') || []; }catch(e){ items = []; }
+function curCar(){ try{ var s=JSON.parse(localStorage.getItem("gt.garage")||"null"); if(s&&s.cars&&s.cars.length) return s.cars[s.i]||s.cars[0]; }catch(e){} return null; }
+function cleanPl(p){ return String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+function escH(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}); }
+// Old entries only have a dd/mm/yyyy date string; new ones also carry ts + plate. Nothing is rewritten.
+function tsOf(it){ if(it.ts) return +it.ts; var m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(it.date||""); return m?new Date(+m[3],+m[2]-1,+m[1],12).getTime():0; }
+function niceD(t){ return t?new Date(t).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}):""; }
+var tlUrls=[], tlGen=0;
+async function render(){
+  var gen=++tlGen;
+  var box=document.getElementById('timeline'), car=curCar(), pl=cleanPl(car&&car.plate);
+  tlUrls.forEach(function(u){URL.revokeObjectURL(u)}); tlUrls=[];
+  var ev=[];
+  items.forEach(function(it,i){ if(!it) return; if(it.plate&&pl&&cleanPl(it.plate)!==pl) return; ev.push({k:"own",t:tsOf(it),it:it,i:i}); });
+  var U=window.DipUploads, jobs=[];
+  if(U&&U.allJobs){ try{ jobs=(await U.allJobs()).filter(function(j){ return (car&&car.upId&&j.up===car.upId)||(pl&&j.plate===pl); }); }catch(e){} }
+  jobs.forEach(function(j){ ev.push({k:"mech",t:j.created||j.received||0,j:j}); });
+  if(gen!==tlGen) return;
+  ev.sort(function(a,b){return b.t-a.t});
+  if(!ev.length){ box.innerHTML='<p class="note">Nothing yet. Tap + Add for a photo, invoice or note. Work your mechanic sends appears here too.</p>'; return; }
+  box.innerHTML="";
+  for(var n=0;n<ev.length;n++){
+    var e=ev[n], el=document.createElement("div");
+    if(e.k==="own"){
+      var it=e.it, img=/^image\//.test(it.type||""), hasF=!!it.data;
+      el.className="ev own";
+      el.innerHTML='<span class="dot"></span><div><div class="d">'+escH(it.ts?niceD(it.ts):(it.date||""))+'</div><div class="t">'+escH(it.note||"Work")+'</div>'+
+        (hasF?(img?'<img alt="" src="'+escH(it.data)+'"/>':'<div class="files"><a href="'+escH(it.data)+'" target="_blank" rel="noopener" download="invoice.pdf">Open PDF</a></div>'):'')+'</div>';
+    }else{
+      var j=e.j, who=[j.garage,j.mechanic].filter(Boolean).join(" · ");
+      el.className="ev mech"; el.dataset.job=j.id;
+      el.innerHTML='<span class="dot"></span><div><div class="d">'+escH(niceD(j.created))+'<span class="tag">Mechanic</span>'+(j.seen?'':'<span class="tag new">NEW</span>')+'</div>'+
+        '<div class="t">'+escH(j.note||"Work from your mechanic")+'</div>'+
+        ((who||j.mileage!=null)?'<div class="d">'+escH(who)+(who&&j.mileage!=null?" · ":"")+(j.mileage!=null?escH(Number(j.mileage).toLocaleString("en-GB"))+" miles":"")+'</div>':'')+
+        '<div class="files"></div></div>';
+      var fl=el.querySelector(".files");
+      for(var k=0;k<(j.files||[]).length;k++){
+        var f=j.files[k], rec=null; try{ rec=await U.getFile(j.id,f.key); }catch(x){} if(!rec) continue;
+        var u=URL.createObjectURL(rec.blob); tlUrls.push(u);
+        if(/^image\//.test(f.type)){ var im=document.createElement("img"); im.src=u; im.alt=U.fileTitle(f); fl.parentNode.insertBefore(im,fl); }
+        else { var a=document.createElement("a"); a.href=u; a.target="_blank"; a.rel="noopener"; a.textContent="Open PDF: "+U.fileTitle(f); fl.appendChild(a); }
+      }
+      var rm=document.createElement("button"); rm.type="button"; rm.className="rm"; rm.textContent="Remove from this phone";
+      rm.onclick=(function(job){return async function(){ if(confirm("Remove this upload from your phone?")){ await U.removeLocal(job); render(); } }})(j);
+      el.lastChild.appendChild(rm);
+    }
+    if(gen!==tlGen) return;
+    box.appendChild(el);
+  }
+  if(U&&car&&car.upId&&jobs.some(function(j){return !j.seen})) U.markSeen(car.upId).catch(function(){});
 }
+document.getElementById('addBtn').onclick=function(){ var b=document.getElementById('addBox'), on=b.classList.toggle('hide'); this.setAttribute('aria-expanded',on?'false':'true'); this.textContent=on?'+ Add':'Close'; if(!on) document.getElementById('note').focus(); };
 function insKey(){
   try{
     var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
@@ -179,38 +243,28 @@ try{
     if(pl) document.getElementById("motLink").href="mot.html?plate="+encodeURIComponent(pl);
   }
 }catch(e){}
-render();
 
 document.getElementById('save').onclick = () => {
   const file = (document.getElementById('cam').files[0] || document.getElementById('file').files[0]);
   const note = document.getElementById('note').value.trim();
-  if (!file) { alert('Choose a photo or PDF first'); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    const item = {
-      date: new Date().toLocaleDateString('en-GB'),
-      note: note || 'Work carried out',
-      type: file.type,
-      data: reader.result
-    };
+  if (!file && !note) { alert('Add a photo, a PDF or a note first'); return; }
+  const car = curCar();
+  function done(item){
     items.unshift(item);
-    localStorage.setItem('dipstick-history', JSON.stringify(items));
-    try{
-  var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
-  if(s&&s.cars&&s.cars.length){
-    var pl=(s.cars[s.i]||s.cars[0]).plate||"";
-    if(pl) document.getElementById("motLink").href="mot.html?plate="+encodeURIComponent(pl);
-  }
-}catch(e){}
-render();
-    // simple calendar event via local storage the calendar page can read later
+    try { localStorage.setItem('dipstick-history', JSON.stringify(items)); }
+    catch(e){ items.shift(); alert('Phone storage is full. Try a smaller photo.'); return; }
     const events = JSON.parse(localStorage.getItem('dipstick-cal-events') || '[]');
     events.push({ date: item.date, title: item.note, type: 'work' });
     localStorage.setItem('dipstick-cal-events', JSON.stringify(events));
     document.getElementById('file').value = ''; document.getElementById('cam').value = ''; document.getElementById('fileName').textContent='';
     document.getElementById('note').value = '';
-    alert('Saved to history and calendar');
-  };
+    document.getElementById('addBtn').click();
+    render();
+  }
+  const base = { date: new Date().toLocaleDateString('en-GB'), ts: Date.now(), plate: cleanPl(car && car.plate), note: note || 'Work carried out' };
+  if (!file) { done(Object.assign(base, { type: 'note', data: '' })); return; }
+  const reader = new FileReader();
+  reader.onload = () => done(Object.assign(base, { type: file.type, data: reader.result }));
   reader.readAsDataURL(file);
 };
 </script>
@@ -219,20 +273,21 @@ render();
   if(n) document.getElementById("shareNote").textContent=n+" active share link"+(n>1?"s":"")+". Tap to manage or make a new one."; }catch(e){} })();
 </script>
 <script src="./uploads-config.js?v=1"></script>
-<script src="./uploads-client.js?v=4"></script>
+<script src="./uploads-client.js?v=5"></script>
 <script>
-// Auto-download any waiting mechanic uploads for all cars, then wipe them from the cloud.
+// Auto-collect waiting mechanic uploads for every car on open (then they're wiped from the cloud); "Check now" repeats it.
 (function(){
-  var U=window.DipUploads, st=document.getElementById("mechStatus");
-  if(!U) return;
-  function show(n){
-    if(!n){ st.textContent=""; return; }
-    st.textContent=n+" new upload"+(n>1?"s":"")+" from your mechanic.";
-    st.style.color="#3dd68c";
-    var p=document.getElementById("mechPanel"); if(!p.classList.contains("open")) document.getElementById("mechAcc").click();
+  var U=window.DipUploads, st=document.getElementById("mechStatus"), btn=document.getElementById("checkNow");
+  function go(manual){
+    if(!U){ render(); return; }
+    btn.disabled=true; if(manual) st.textContent="Checking…";
+    U.checkAll().then(function(r){
+      st.textContent=r.downloaded?(r.downloaded+" new upload"+(r.downloaded>1?"s":"")+" from your mechanic."):(r.errors&&r.errors.length?("Couldn't check: "+r.errors[0]):(manual?"No new uploads.":"Mechanic uploads are collected automatically."));
+      st.style.color=r.downloaded?"#3dd68c":"";
+    }).catch(function(e){ st.textContent="Couldn't check just now."; }).then(function(){ btn.disabled=false; render(); });
   }
-  U.unseenCount().then(show).catch(function(){});
-  U.checkAll().then(function(r){ return U.unseenCount().then(show); }).catch(function(){});
+  btn.onclick=function(){go(true)};
+  render(); go(false);
 })();
 </script>
 </body>

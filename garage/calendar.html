@@ -33,6 +33,11 @@ h1{font-size:22px;margin:0 0 6px;font-weight:650}
 .edit.hide{display:none}
 label{display:block;color:#8b8b8b;font-size:12px;margin:8px 0 4px}
 input{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
+.rh{font-size:18px;margin:22px 0 2px}
+.route{display:block;width:100%;text-align:left;background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:12px;margin-top:10px;color:#f2f2f2;font:inherit}
+.route .top{display:flex;justify-content:space-between;gap:10px}.route .cost{font-weight:800;color:#3dd68c}
+.route .more.hide{display:none}.route .rdel{background:none;border:0;color:#8b8b8b;text-decoration:underline;font-size:12px;padding:8px 0 0}
+.day .dot.r{background:#7dd3fc}
 </style>
 </head>
 <body>
@@ -46,8 +51,15 @@ input{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;borde
 <div class="grid" id="dows"></div>
 <div class="grid" id="grid"></div>
 <div id="list"></div>
+<section id="routes">
+<h2 class="rh">Saved routes <span class="muted" id="rCount"></span></h2>
+<p class="muted">Routes you saved in Route costs. Tap one for the breakdown.</p>
+<div id="rList"></div>
+<a class="btn wide" href="route.html">Check a route cost</a>
+</section>
 <a class="btn wide" href="drive.html">Let’s drive</a>
-<a class="btn" href="drive-hub.html" data-iconed="1">Back</a>
+<a class="btn" href="home.html#drive" data-iconed="1">Back</a>
+<script src="./trip-engine.js"></script>
 <script>
 var view=new Date();
 view.setDate(1);
@@ -69,7 +81,7 @@ function costOf(t,mpg){
   return (+t.miles||0)/Math.max(+mpg||1,1)*4.54609*(ppl/100);
 }
 function render(sel){
-  var map=byDay();
+  var map=byDay(), rmap={}; tripStore().forEach(function(t){ var dk=key(new Date(t.when||0)); (rmap[dk]=rmap[dk]||[]).push(t); });
   var y=view.getFullYear(),m=view.getMonth();
   document.getElementById("label").textContent=view.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
   document.getElementById("dows").innerHTML=["Mo","Tu","We","Th","Fr","Sa","Su"].map(function(d){return "<div class='dow'>"+d+"</div>"}).join("");
@@ -77,19 +89,44 @@ function render(sel){
   for(var i=0;i<start;i++) html+="<div class='day empty'></div>";
   for(var d=1;d<=days;d++){
     var k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+(map[k]?"<span class='dot'></span>":"")+"</button>";
+    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+(map[k]?"<span class='dot'></span>":"")+(rmap[k]?"<span class='dot r'></span>":"")+"</button>";
   }
   document.getElementById("grid").innerHTML=html;
   var items=sel&&map[sel]?map[sel]:[];
   var box=document.getElementById("list");
-  if(!items.length){box.innerHTML="<p class='muted'>No trips on this day yet.</p>";return}
+  var rItems=sel&&rmap[sel]?rmap[sel]:[];
+  if(!items.length&&!rItems.length){box.innerHTML="<p class='muted'>No trips on this day yet.</p>";return}
   box.innerHTML=items.map(function(t){
     var tm=new Date(t.when).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
     var end=t.end?new Date(t.end).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
     var ico = t.type==="run" ? "🏁 " : "📍 ";
     return "<div class='card' data-id='"+t.id+"'><b class='title'>"+ico+(t.from||"Start")+" → "+(t.to||"Finish")+"</b><p class='muted'>"+tm+(end?" – "+end:"")+(t.type==="run"&&t.time?" · "+t.time:"")+"</p><div class='kv'><span>Miles</span><b>"+(+t.miles||0).toFixed(2)+"</b></div><div class='kv'><span>Cost</span><b>£"+(+t.cost||0).toFixed(2)+"</b></div><div class='kv'><span>MPG</span><b>"+(t.mpg||"-")+"</b></div><div class='row'><button class='btn' type='button' data-edit='"+t.id+"'>✎ Edit</button></div><div class='edit hide' id='ed-"+t.id+"'><label>Miles per gallon for this trip</label><input type='number' step='0.1' value='"+(t.mpg||"")+"' data-mpg='"+t.id+"'/><div class='row'><button class='btn' type='button' data-save='"+t.id+"'>Save mpg</button><button class='btn' type='button' data-del='"+t.id+"'>Delete journey</button></div></div></div>";
+  }).join("")+rItems.map(function(t){ return "<div class='card'><b class='title'>🗺 "+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><p class='muted'>Saved route · "+(+t.miles||0).toFixed(1)+" mi · one way "+moneyTxt(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp)+"</p></div>"; }).join("");
+}
+function escR(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}); }
+function kindLabel(t){ return t.isYear?"Yearly commute":(t.isReturn?"Return":"One way"); }
+function renderRoutes(){
+  var list=tripStore(), box=document.getElementById("rList");
+  document.getElementById("rCount").textContent=list.length?("("+list.length+")"):"";
+  if(!list.length){ box.innerHTML="<p class='muted'>No saved routes yet. Check a route, then tap Save.</p>"; return; }
+  box.innerHTML=list.map(function(t,i){
+    var miles=(+t.miles||0).toFixed(1), mins=t.mins||Math.round((+t.oneSecs||0)/60);
+    var head=t.isYear&&t.yearGBP!=null?t.yearGBP:(t.isReturn&&t.retGBP!=null?t.retGBP:(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp));
+    var ex="<div class='kv'><span>One way</span><b>"+moneyTxt(t.oneGBP)+"</b></div><div class='kv'><span>Return</span><b>"+moneyTxt(t.retGBP)+"</b></div>"+
+      (t.isYear?"<div class='kv'><span>Year ("+(t.days||5)+" \u00d7 "+(t.weeks||46)+")</span><b>"+moneyTxt(t.yearGBP)+"</b></div>":"")+
+      "<div class='kv'><span>Time one way</span><b>"+(mins||"-")+" min</b></div><div class='kv'><span>MPG used</span><b>"+(t.rated?Number(t.rated).toFixed(1):"-")+"</b></div>"+
+      "<div class='kv'><span>Fuel price</span><b>"+(t.ppl?Number(t.ppl).toFixed(1)+"p":"-")+"</b></div>"+
+      (t.roads&&t.roads.length?"<p class='muted'>"+escR(t.roads.join(" \u00b7 "))+"</p>":"")+
+      "<p class='muted'>Saved "+new Date(t.when||Date.now()).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+"</p><button type='button' class='rdel' data-rdel='"+i+"'>Delete this route</button>";
+    return "<div class='route' data-i='"+i+"' role='button' tabindex='0'><div class='top'><div><b class='title'>"+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><div class='muted'>"+miles+" mi \u00b7 "+kindLabel(t)+"</div></div><div class='cost'>"+moneyTxt(head)+"</div></div><div class='more hide'>"+ex+"</div></div>";
   }).join("");
 }
+document.getElementById("rList").addEventListener("click",function(e){
+  var d=e.target.closest("[data-rdel]");
+  if(d){ if(confirm("Delete this saved route?")){ var l=tripStore(); l.splice(+d.getAttribute("data-rdel"),1); saveTrips(l); renderRoutes(); render(selected); } return; }
+  var b=e.target.closest(".route"); if(!b) return; var m=b.querySelector(".more"); if(m) m.classList.toggle("hide");
+});
+renderRoutes();
 var selected=key(new Date());
 render(selected);
 document.getElementById("grid").addEventListener("click",function(e){

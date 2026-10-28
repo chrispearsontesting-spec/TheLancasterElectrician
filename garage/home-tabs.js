@@ -15,6 +15,16 @@
   document.getElementById("gear").onclick=function(){st.classList.add("on")};
   document.getElementById("setClose").onclick=function(){st.classList.remove("on")};
   st.onclick=function(e){ if(e.target===st) st.classList.remove("on") };
+  // Car showcase chip: Published / Draft, from data on the phone (no network).
+  window.driv3ShowChip=function(){
+    var chip=document.getElementById("showChip"); if(!chip) return;
+    try{
+      var g=JSON.parse(localStorage.getItem("gt.garage")||"null"), c=g&&g.cars&&g.cars[g.i||0]||{}, dr=JSON.parse(localStorage.getItem("gt.showDrafts")||"{}")||{};
+      if(c.showId&&c.showPublished){ chip.textContent="Published"; chip.className="chip pub"; chip.hidden=false; }
+      else if(c.showLocal&&dr[c.showLocal]){ chip.textContent="Draft"; chip.className="chip"; chip.hidden=false; }
+      else chip.hidden=true;
+    }catch(e){ chip.hidden=true; }
+  };
   function links(){
     try{
       var g=JSON.parse(localStorage.getItem("gt.garage")||"null"), c=g&&g.cars&&g.cars[g.i||0]||{};

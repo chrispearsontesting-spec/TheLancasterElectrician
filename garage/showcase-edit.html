@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Car showcase</title>
-<link rel="stylesheet" href="./ui.css?v=46"/>
+<link rel="stylesheet" href="./ui.css?v=78"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -16,7 +16,14 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;margin-bottom:12px;padding:14px}
 .card h2{font-size:17px;margin:0 0 4px}
 .note{font-size:13px;color:#8b8b8b;margin:6px 0;line-height:1.45}
-.hide{display:none !important}
+.hide,a.btn.hide,button.btn.hide{display:none !important}
+.pubCard{border:1px solid #3a3320 !important;background:#17150f !important}
+.pubCard.live{border-color:#1f4a33 !important;background:#0f1713 !important}
+.btn.big{min-height:56px;font-size:17px;font-weight:700}
+.pill.on{background:#1f4a33 !important;color:#7ee0a1 !important}
+.qrMode{margin-top:12px;padding:12px;border-radius:14px;background:#141416;border:1px solid #26262b;font-size:14px;line-height:1.45}
+.qrMode.on{border-color:#1f4a33}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.row3 .btn{margin:0;width:100%}
 label.f{display:block;font-size:12.5px;color:#a0a0a0;margin:10px 0 4px}
 .in,textarea.in{width:100% !important;background:#1c1c1e !important;color:#f2f2f2 !important;border:1px solid #2a2a2e !important;border-radius:12px !important;padding:11px 12px !important;font-size:15px !important;font-family:inherit !important;margin:0 !important}
 textarea.in{min-height:120px;resize:vertical;line-height:1.45}
@@ -60,18 +67,24 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 <h1>Car showcase</h1>
 <p class="lead">Make a show card for your car: photos, stats, mods and videos. When your sticker is in Show mode, anyone who scans it sees this card. Nothing else from Driv3 is shown.</p>
 
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="carName">Your car</h2><span class="pill" id="pubPill">Not published</span></div>
+<div class="card pubCard" id="pubCard">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="carName">Your car</h2><span class="pill" id="pubPill">Draft</span></div>
   <p class="note" id="pubTxt">Your showcase is only on this phone until you publish it.</p>
-  <div class="row2"><button class="btn go" type="button" id="pub1">Publish</button><button class="btn danger" type="button" id="unpub">Unpublish</button></div>
+  <button class="btn go big wide" type="button" id="pub1" data-iconed="1">Publish showcase</button>
+  <button class="btn danger wide hide" type="button" id="unpub" data-iconed="1">Unpublish</button>
+  <div class="status" id="pubStatus"></div>
   <div id="liveBox" class="hide">
-    <div class="row2"><a class="btn small" id="open" href="#" target="_blank" rel="noopener">Open card</a><button class="btn small" type="button" id="copy">Copy link</button></div>
+    <label class="f">Public link</label>
+    <div class="linkTxt" id="linkTxt"></div>
+    <div class="row3"><a class="btn small" id="open" href="#" target="_blank" rel="noopener" data-iconed="1">Open</a><button class="btn small" type="button" id="copy" data-iconed="1">Copy</button><button class="btn small" type="button" id="shareLink" data-iconed="1">Share</button></div>
+    <div class="qrMode" id="qrMode">
+      <div id="qrModeTxt">Your car sticker still opens Mechanic uploads. Switch it to Show mode so anyone who scans it sees this card.</div>
+      <button class="btn small wide" type="button" id="toShow" data-iconed="1">Switch my sticker to Show mode</button>
+      <a class="btn small wide" href="#" id="mechLink" data-iconed="1">Sticker settings</a>
+    </div>
     <div class="qrBox"><canvas id="qr" width="10" height="10" aria-label="QR code for the showcase"></canvas><div style="font-size:13px;font-weight:600;margin-top:6px">Showcase-only QR</div></div>
     <button class="btn small" type="button" id="dlQr">Save showcase QR (PNG)</button>
-    <div class="linkTxt" id="linkTxt"></div>
-    <p class="note">Your sticker can show this card too: open <a href="#" id="mechLink" style="color:#f5b84a">Mechanic uploads</a> and pick Show mode.</p>
   </div>
-  <div class="status" id="pubStatus"></div>
 </div>
 
 <div class="card">
@@ -157,7 +170,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   <div class="status" id="clStatus"></div>
 </div>
 
-<div class="bar"><button class="btn go" type="button" id="pub2">Publish</button><div class="status" id="saveStatus">Saved on this phone.</div></div>
+<div class="bar"><button class="btn go" type="button" id="pub2" data-iconed="1">Publish showcase</button><div class="status" id="saveStatus">Saved on this phone.</div></div>
 <a class="btn" href="home.html" data-ico="back">Back</a>
 
 <script src="./qrcode.js"></script>
@@ -356,9 +369,12 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   async function paintPub(){
     car=U.garage().cars[idx];
     var st=await S.status(idx), on=st.published;
-    $("pubPill").textContent=on?"Live":"Not published"; $("pubPill").className="pill"+(on?" on":"");
-    $("pubTxt").textContent=on?"Your showcase is live. Changes here stay on this phone until you press Publish again.":"Your showcase is only on this phone until you publish it.";
-    $("pub1").textContent=$("pub2").textContent=on?"Update live card":"Publish";
+    $("pubPill").textContent=on?"Published":"Draft"; $("pubPill").className="pill"+(on?" on":""); $("pubCard").classList.toggle("live",on);
+    $("pubTxt").textContent=on?"Your showcase is live. Changes you make below stay on this phone until you press Update showcase.":"Your showcase is only on this phone until you publish it. Publishing puts the card, photos and clips online at a private link.";
+    $("pub1").textContent=$("pub2").textContent=on?"Update showcase":"Publish showcase";
+    var sm=car.upMode==="show"; $("qrMode").classList.toggle("on",sm); $("toShow").classList.toggle("hide",sm||!car.upId);
+    $("qrModeTxt").textContent=sm?"Show mode is on: your car sticker opens this card.":(car.upId?"Your car sticker still opens Mechanic uploads. Switch it to Show mode so anyone who scans it sees this card.":"Share the link or the QR below. To use your car sticker for this, set it up in Sticker settings first.");
+    $("mechLink").href="mechanic.html?car="+idx;
     $("unpub").classList.toggle("hide",!on);
     $("liveBox").classList.toggle("hide",!on);
     if(on){ $("open").href=link(); $("linkTxt").textContent=link(); drawQr($("qr"),6,false); }
@@ -379,10 +395,20 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   $("pub1").onclick=$("pub2").onclick=publish;
   $("unpub").onclick=async function(){
     if(!confirm("Unpublish your showcase? The card, photos and clips are deleted from the cloud straight away. Your draft stays on this phone.")) return;
-    try{ await S.unpublish(idx); say("pubStatus","Unpublished and deleted from the cloud. Anyone opening the link sees a 'not published' message.","good"); }
+    try{ var c0=U.garage().cars[idx], back="";
+      if(c0&&c0.upMode==="show"){ try{ await U.setMode(idx,"mechanic"); back=" Your sticker is back in Mechanic mode."; }catch(e){ back=" Switch your sticker back to Mechanic mode in Sticker settings."; } }
+      await S.unpublish(idx);
+      say("pubStatus","Unpublished and deleted from the cloud. Anyone opening the link sees a 'not published' message."+back,"good"); }
     catch(e){ say("pubStatus","Couldn't unpublish: "+e.message,"bad"); }
     paintPub();
   };
+  $("shareLink").onclick=function(){ var u=link(), t="Have a look at my "+(U.niceName?U.niceName(car):"car")+":";
+    if(navigator.share) navigator.share({title:"Driv3 showcase",text:t,url:u}).catch(function(){});
+    else $("copy").onclick(); };
+  $("toShow").onclick=async function(){ $("toShow").disabled=true;
+    try{ await U.setMode(idx,"show"); say("pubStatus","Show mode on. Your sticker now opens this card.","good"); }
+    catch(e){ say("pubStatus","Couldn't switch the sticker: "+e.message+". Try Sticker settings.","bad"); }
+    $("toShow").disabled=false; paintPub(); };
   $("copy").onclick=function(){ (navigator.clipboard?navigator.clipboard.writeText(link()):Promise.reject()).then(function(){ say("pubStatus","Link copied.","good"); },function(){ say("pubStatus","Press and hold the link below to copy it."); }); };
   $("dlQr").onclick=function(){ var cv=document.createElement("canvas"); drawQr(cv,14,true); cv.toBlob(function(b){ var a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="driv3-showcase-qr.png"; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000); },"image/png"); };
 

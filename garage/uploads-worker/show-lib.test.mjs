@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import worker from "./uploads-worker.js";
 import { _resetForTests, sha256hex } from "./uploads-lib.js";
-import { sanitizeCard, youtubeId, playlist, httpsImage, instaHandle, SHOW } from "./show-lib.js";
+import { social, sanitizeCard, youtubeId, playlist, httpsImage, instaHandle, SHOW } from "./show-lib.js";
 class MockR2 {
   constructor() { this.m = new Map(); this.failPutAfter = Infinity; this.puts = 0; }
   async put(k, v, o = {}) {
@@ -78,8 +78,21 @@ await t("sanitizeCard: whitelist only, no HTML, plate hidden on request, unknown
   assert.equal(c.stats.bhp, 280); assert.equal(c.stats.torque, null); assert.equal(c.stats.zero60, 5.71);
   assert.equal(c.mods.length, 1); assert.equal(c.story, "Line1\n\nLine2 img");
   assert.deepEqual(c.gallery, [{ n: "pabcdefghijkl.jpg", cap: "" }, { url: "https://x.com/a.jpg", cap: "c" }]);
-  assert.equal(c.hero, 0); assert.deepEqual(c.videos, ["dQw4w9WgXcQ"]); assert.equal(c.instagram, "me");
+  assert.equal(c.hero, 0); assert.deepEqual(c.videos, [{ id: "dQw4w9WgXcQ", title: "" }]); assert.equal(c.instagram, "me");
   assert.equal(sanitizeCard({ basics: { plate: "ab12 cde" } }, {}).basics.plate, "AB12CDE");
+});
+await t("socials: Instagram/Facebook allowlist, titles, dedupe, no CDN hotlinks", async () => {
+  assert.deepEqual(social("https://www.instagram.com/reel/C8abcDEF123/?igsh=x"), { kind: "ig", type: "reel", code: "C8abcDEF123" });
+  assert.equal(social("https://www.facebook.com/plugins/post.php?href=x"), null);
+  assert.equal(social("https://scontent.cdninstagram.com/v/x.jpg"), null);
+  assert.equal(social("https://instagram.com.evil.com/p/C8abcDEF123/"), null);
+  assert.equal(social("http://www.instagram.com/p/C8abcDEF123/"), null);
+  assert.equal(social("https://www.facebook.com/permalink.php"), null);
+  assert.equal(social("https://www.facebook.com/x/posts/1?__cft__=<script>").href, "https://www.facebook.com/x/posts/1");
+  const c = sanitizeCard({ videos: [{ url: "https://youtube.com/shorts/dQw4w9WgXcQ", title: "<i>Launch</i>" }, "https://www.youtube.com/live/dQw4w9WgXcQ"],
+    socials: [{ url: "https://www.instagram.com/p/C8abcDEF123/", title: "Meet" }, "https://instagram.com/p/C8abcDEF123", "https://fb.watch/abcDEF12/", "javascript:x"] }, {});
+  assert.deepEqual(c.videos, [{ id: "dQw4w9WgXcQ", title: "i Launch /i" }]);
+  assert.equal(c.socials.length, 2); assert.equal(c.socials[0].title, "Meet"); assert.equal(c.socials[1].type, "video");
 });
 await t("create needs app origin; writes need the show key", async () => {
   fresh();

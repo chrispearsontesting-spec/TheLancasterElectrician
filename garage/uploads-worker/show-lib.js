@@ -10,7 +10,7 @@ import { originAllowed, memLimit, sha256hex } from "./uploads-lib.js";
 export const SHOW = {
   maxPhotoBytes: 1.5 * 1024 * 1024, maxPhotoTotal: 15 * 1024 * 1024, maxPhotosStored: 24,
   maxClipBytes: 20 * 1024 * 1024, maxClipTotal: 20 * 1024 * 1024, maxClips: 2,
-  maxCardBytes: 64 * 1024, maxGallery: 12, maxVideos: 6, maxMods: 40
+  maxCardBytes: 64 * 1024, maxGallery: 12, maxVideos: 12, maxSocials: 12, maxMods: 40
 };
 export const SHOW_ID_RE = /^[A-Za-z0-9_-]{22}$/;
 const KEY_RE = /^[A-Za-z0-9_-]{43}$/;
@@ -68,6 +68,28 @@ export function playlist(u) {
   }
   return null;
 }
+
+  // Instagram / Facebook post links -> embed descriptor (nothing hosted by us; strict host + path allowlist).
+export function social(u) {
+    let x=url(u); if(!x||x.protocol!=="https:"||x.username||x.password||String(u).length>500) return null;
+    let host=x.hostname.toLowerCase(), path=x.pathname.replace(/\/+$/,"");
+    if(host==="instagram.com"||host==="www.instagram.com"){
+      let m=path.match(/^(?:\/[A-Za-z0-9._]{1,30})?\/(p|reel|reels|tv)\/([A-Za-z0-9_-]{5,40})$/);
+      return m?{kind:"ig",type:m[1]==="reels"?"reel":m[1],code:m[2]}:null;
+    }
+    if(host==="fb.watch"){ return /^\/[A-Za-z0-9_-]{4,40}$/.test(path)?{kind:"fb",type:"video",href:"https://fb.watch"+path+"/"}:null; }
+    if(/^(www\.|m\.|web\.)?facebook\.com$/.test(host)){
+      if(!/^\/[A-Za-z0-9._\/-]{1,200}$/.test(path)||/^\/(plugins|dialog|login|sharer|l\.php)/.test(path)) return null;
+      let keep=["story_fbid","id","v","fbid"], q=[];
+      keep.forEach(function(k){ let v=x.searchParams.get(k); if(v&&/^[A-Za-z0-9._-]{1,40}$/.test(v)) q.push(k+"="+v); });
+      if(/^\/(permalink|photo|story)\.php$/.test(path)&&!q.length) return null;
+      if(path==="/watch"&&!x.searchParams.get("v")) return null;
+      let video=/\/(videos|reel|watch)(\/|$)/.test(path+"/");
+      return {kind:"fb",type:video?"video":"post",href:"https://www.facebook.com"+path+(q.length?"?"+q.join("&"):"")};
+    }
+    return null;
+  }
+
 export function httpsImage(u) {
   const x = url(u); if (!x || x.protocol !== "https:" || x.username || x.password || String(u).length > 500) return null;
   if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(x.hostname)) return null;
@@ -90,7 +112,7 @@ export function sanitizeCard(c, files) {
     basics: { make: cleanLine(b.make, 30), model: cleanLine(b.model, 40), variant: cleanLine(b.variant, 40), year: num(b.year, 1885, 2100), colour: cleanLine(b.colour, 30) },
     stats: { bhp: num(s.bhp, 1, 3000), torque: num(s.torque, 1, 3000), zero60: num(s.zero60, 1, 60, 2), top: num(s.top, 1, 400), weight: num(s.weight, 100, 10000),
       best: { time: cleanLine(best.time, 20), label: cleanLine(best.label, 40), venue: cleanLine(best.venue, 60) } },
-    mods: [], story: cleanText(c.story, 3000), gallery: [], hero: 0, videos: [], playlist: null, instagram: instaHandle(c.instagram), clips: []
+    mods: [], story: cleanText(c.story, 3000), gallery: [], hero: 0, videos: [], socials: [], playlist: null, instagram: instaHandle(c.instagram), clips: []
   };
   const plate = String(b.plate || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
   if (plate && !b.hidePlate) out.basics.plate = plate;
@@ -106,8 +128,15 @@ export function sanitizeCard(c, files) {
   const hero = parseInt(c.hero, 10); out.hero = hero >= 0 && hero < out.gallery.length ? hero : 0;
   for (const v of (Array.isArray(c.videos) ? c.videos : [])) {
     const id = youtubeId(v && typeof v === "object" ? v.id || v.url : v);
-    if (id && !out.videos.includes(id)) out.videos.push(id);
+    if (id && !out.videos.some(x => x.id === id)) out.videos.push({ id, title: cleanLine(v && typeof v === "object" ? v.title : "", 80) });
     if (out.videos.length >= SHOW.maxVideos) break;
+  }
+  for (const v of (Array.isArray(c.socials) ? c.socials : [])) {
+    const s = social(v && typeof v === "object" ? v.url : v);
+    if (!s) continue;
+    const key = JSON.stringify(s);
+    if (!out.socials.some(x => JSON.stringify({ ...x, title: undefined }) === key)) out.socials.push({ ...s, title: cleanLine(v && typeof v === "object" ? v.title : "", 80) });
+    if (out.socials.length >= SHOW.maxSocials) break;
   }
   out.playlist = playlist(c.playlist);
   for (const k of (Array.isArray(c.clips) ? c.clips : []).slice(0, SHOW.maxClips)) if (k && has(k.n) && k.n[0] === "c") out.clips.push({ n: k.n, cap: cleanLine(k.cap, 80) });

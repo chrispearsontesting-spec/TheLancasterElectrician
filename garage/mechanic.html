@@ -21,9 +21,10 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .plate .reg{background:#f4d000;color:#111;padding:5px 10px;letter-spacing:.12em;font-size:15px}
 .carRow{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 .carRow b{font-size:16px}
-.qrBox{background:#fff;border-radius:14px;padding:14px;text-align:center;color:#111}
-.qrBox canvas{width:100%;max-width:260px;height:auto;image-rendering:pixelated;display:block;margin:0 auto}
-.qrBox .cap{font-size:13px;font-weight:600;margin-top:6px}
+.qrBox{text-align:center}
+.qrBox canvas{width:100%;max-width:340px;height:auto;display:block;margin:0 auto;border-radius:10px;box-shadow:0 0 0 1px #2a2a2e}
+.qrBox .cap{font-size:13px;color:#b0b0b0;margin-top:8px}
+.seg.sm{margin:10px 0 0}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .row2 .btn{margin-top:10px}
 .status{font-size:13px;color:#8b8b8b;margin-top:8px;min-height:18px}
@@ -79,8 +80,9 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <p class="note" id="modeTxt" style="margin-top:0">The QR lets your mechanic send work photos and invoices.</p>
   <div class="carRow" id="carRow"></div>
   <div class="qrBox">
-    <canvas id="qr" width="10" height="10" aria-label="QR code for the mechanic upload link"></canvas>
-    <div class="cap" id="qrCap">Scan to send work photos &amp; invoices</div>
+    <canvas id="qr" width="10" height="10" role="img" aria-label="Your Driv3 QR sticker"></canvas>
+    <div class="cap" id="qrCap">Your Driv3 sticker</div>
+    <div class="seg sm" role="group" aria-label="Sticker colour"><button type="button" id="stBlack" aria-pressed="true">Black</button><button type="button" id="stWhite" aria-pressed="false">White</button></div>
   </div>
   <div class="showOn hide" id="showBanner">Show mode is on. Anyone who scans this QR sees your car's showcase. Uploads are off until you switch back to Mechanic mode.</div>
   <div class="paused hide" id="pausedBanner">Uploads are paused. Your mechanic will see a message asking you to turn them back on.</div>
@@ -88,7 +90,11 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <button class="btn" type="button" id="share" data-ico="mail">Share link</button>
   <div class="row2">
     <button class="btn" type="button" id="copy">Copy link</button>
-    <button class="btn" type="button" id="dl">Save QR (PNG)</button>
+    <button class="btn" type="button" id="shareSt">Share sticker</button>
+  </div>
+  <div class="row2">
+    <button class="btn" type="button" id="dl">Download PNG</button>
+    <button class="btn" type="button" id="dlPrint">Print size (100 mm)</button>
   </div>
   <div class="linkTxt" id="linkTxt"></div>
 </div>
@@ -140,6 +146,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=4"></script>
 <script src="./icons.js?v=31"></script>
+<script src="./sticker/sticker.js?v=14"></script>
 <script>
 (function(){
   var U=window.DipUploads;
@@ -155,35 +162,36 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   var plate=U.cleanPlate(car.plate);
   function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
   $("carRow").innerHTML=(plate?'<span class="plate"><span class="uk">UK</span><span class="reg">'+esc(plate)+'</span></span>':'')+'<b>'+esc(U.niceName(car))+'</b>';
-  $("qrCap").textContent="Mechanic: scan to send photos & invoices"+(plate?" for "+plate:"");
+  $("qrCap").textContent="Your Driv3 sticker. Mechanics scan it to send photos & invoices.";
   $("linkTxt").textContent=url;
 
-  // QR: drawn crisp on a canvas, white quiet zone, label baked into the PNG.
-  function drawQr(canvas,scale,withLabel){
-    var q=qrcode(0,"M"); q.addData(url); q.make();
-    var n=q.getModuleCount(), quiet=4, px=(n+quiet*2)*scale, lab=withLabel?Math.round(scale*9):0;
-    canvas.width=px; canvas.height=px+lab;
-    var g=canvas.getContext("2d");
-    g.fillStyle="#fff"; g.fillRect(0,0,canvas.width,canvas.height);
-    g.fillStyle="#000";
-    for(var r=0;r<n;r++) for(var c=0;c<n;c++) if(q.isDark(r,c)) g.fillRect((c+quiet)*scale,(r+quiet)*scale,scale,scale);
-    if(withLabel){
-      g.textAlign="center"; g.fillStyle="#111";
-      g.font="700 "+Math.round(scale*3.2)+"px Arial, sans-serif";
-      g.fillText("Driv3"+(plate?" · "+plate:""),px/2,px+Math.round(scale*2.2));
-      g.font="500 "+Math.round(scale*2.4)+"px Arial, sans-serif";
-      g.fillText(showMode()?"Scan to see my car":"Mechanic: scan to send photos & invoices",px/2,px+Math.round(scale*6));
-    }
+  // Sticker: James May's v14 frame with this car's real link drawn on in the browser (the link changes with "New link").
+  var theme="black";
+  function stickerId(){ return Driv3Sticker.label(plate,car.upId); }
+  function drawQr(){
+    var cv=$("qr");
+    return Driv3Sticker.draw(cv,{url:url,id:stickerId(),theme:theme,size:1080}).then(function(){ cv.dataset.url=url; })
+      .catch(function(e){ $("regStatus").textContent=e.message; $("regStatus").className="status bad"; });
   }
-  drawQr($("qr"),8,false);
-
-  $("dl").onclick=function(){
-    var cv=document.createElement("canvas"); drawQr(cv,16,true);
-    cv.toBlob(function(b){
-      var a=document.createElement("a"); a.href=URL.createObjectURL(b);
-      a.download="driv3-mechanic-qr-"+(plate||"car")+".png"; document.body.appendChild(a); a.click();
-      setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
-    },"image/png");
+  function setTheme(t){ theme=t; $("stBlack").setAttribute("aria-pressed",String(t==="black")); $("stWhite").setAttribute("aria-pressed",String(t==="white")); drawQr(); }
+  $("stBlack").onclick=function(){setTheme("black")}; $("stWhite").onclick=function(){setTheme("white")};
+  drawQr();
+  function stickerFile(size,dpi){
+    var cv=document.createElement("canvas");
+    return Driv3Sticker.draw(cv,{url:url,id:stickerId(),theme:theme,size:size}).then(function(){ return Driv3Sticker.blob(cv,dpi); })
+      .then(function(b){ return new File([b],"driv3-sticker-"+(plate||"car").replace(/\s+/g,"")+"-"+theme+(dpi?"-100mm-300dpi":"")+".png",{type:"image/png"}); });
+  }
+  function save(f){
+    var a=document.createElement("a"); a.href=URL.createObjectURL(f); a.download=f.name; document.body.appendChild(a); a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
+  }
+  $("dl").onclick=function(){ stickerFile(Driv3Sticker.SIZES.hi).then(save); };
+  $("dlPrint").onclick=function(){ stickerFile(Driv3Sticker.SIZES.print,300).then(save); };
+  $("shareSt").onclick=function(){
+    stickerFile(Driv3Sticker.SIZES.hi).then(function(f){
+      if(navigator.canShare&&navigator.canShare({files:[f]})) return navigator.share({files:[f],title:"Driv3 sticker"}).catch(function(e){ if(e&&e.name!=="AbortError") save(f); });
+      save(f); $("regStatus").textContent="Sharing files isn't available here, so the sticker was downloaded instead."; $("regStatus").className="status";
+    });
   };
   function copied(ok){ $("regStatus").textContent=ok?"Link copied. Paste it into WhatsApp, a text or an email.":"Could not copy. Press and hold the link below to copy it."; $("regStatus").className="status "+(ok?"good":"bad"); }
   function copy(){
@@ -228,7 +236,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     $("showBanner").classList.toggle("hide",!sm);
     $("modeMech").setAttribute("aria-pressed",String(!sm)); $("modeShow").setAttribute("aria-pressed",String(sm));
     $("modeTxt").textContent=sm?"The QR shows your car's showcase. Nothing else from Driv3 is shared.":"The QR lets your mechanic send work photos and invoices.";
-    $("qrCap").textContent=sm?"Scan to see my car":"Mechanic: scan to send photos & invoices"+(plate?" for "+plate:"");
+    $("qrCap").textContent=sm?"Your Driv3 sticker. Anyone who scans it sees your showcase.":"Your Driv3 sticker. Mechanics scan it to send photos & invoices.";
     $("pauseRow").classList.toggle("hide",sm); $("codeRow").classList.toggle("hide",sm); $("mechOnly").classList.toggle("hide",!sm);
     $("showTxt").textContent=car.showId&&car.showPublished?"Your showcase is published. Edit it any time.":"Make a show card with photos, stats and mods. Show mode points this same QR at it.";
     var code=car.upCode||"", unknown=!code&&car.srvCode;
@@ -257,7 +265,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     $("modeMech").disabled=$("modeShow").disabled=true;
     try{ await U.setMode(idx,m); reload(); $("regStatus").textContent=m==="show"?"Show mode on. The same QR now opens your showcase.":"Mechanic mode on. Your mechanic can send work again."; $("regStatus").className="status good"; }
     catch(e){ $("regStatus").textContent="Couldn't switch: "+e.message; $("regStatus").className="status bad"; }
-    $("modeMech").disabled=$("modeShow").disabled=false; drawQr($("qr"),8,false); paintCtl();
+    $("modeMech").disabled=$("modeShow").disabled=false; drawQr(); paintCtl();
   }
   $("modeMech").onclick=function(){ pickMode("mechanic"); };
   $("modeShow").onclick=function(){ pickMode("show"); };
@@ -293,7 +301,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     var b=this; b.disabled=true; b.textContent="Making a new link…"; ctlSay("Collecting anything waiting, then switching links…");
     try{
       var r=await U.rotate(idx); car=r.car; url=U.link(car);
-      $("linkTxt").textContent=url; drawQr($("qr"),8,false);
+      $("linkTxt").textContent=url; drawQr();
       $("regStatus").textContent="New link is active. The old QR no longer works. Save or share the new one below."; $("regStatus").className="status good";
       ctlSay("Done."+(r.downloaded?" Collected "+r.downloaded+" upload"+(r.downloaded>1?"s":"")+" first.":""),"good");
       document.querySelector(".qrBox").scrollIntoView({behavior:"smooth",block:"center"});

@@ -11,6 +11,7 @@
 //   share/{id}/...                   -> "Share for sale" reports, see share-lib.js (30-day lifecycle)
 
 import { handleShare } from "./share-lib.js";
+import { handleShow, showKeyOk, SHOW_ID_RE } from "./show-lib.js";
 
 const ALLOWED_ORIGINS = ["https://thelancasterelectrician.com", "https://www.thelancasterelectrician.com"];
 const DEV_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
@@ -82,6 +83,7 @@ export const CODE = { maxTries: 5, lockMs: 15 * 60000 };
 const CODE_RE = /^\d{4}$/;
 export function codeHash(id, code) { return sha256hex(id + ":" + code); }
 const RETIRED_MSG = "This QR code has been replaced by the owner. Ask them for the new one.";
+const SHOW_MSG = "This QR code is showing the car's showcase right now, so uploads are off. Ask the owner to switch it back to Mechanic mode.";
 const PAUSED_MSG = "The owner has paused uploads for this car. Ask them to turn uploads back on.";
 async function getLock(env, id) {
   const o = await env.UPLOADS.get("lock/" + id + ".json");
@@ -92,6 +94,7 @@ async function getLock(env, id) {
 async function gate(env, h, id, reg, code, now = Date.now()) {
   if (!reg) return json({ error: "This upload link is not active. Ask the owner for a new link." }, 404, h);
   if (reg.retired) return json({ error: RETIRED_MSG, state: "retired" }, 410, h);
+  if (reg.mode === "show") return json({ error: SHOW_MSG, state: "show", mode: "show", showId: reg.show || null }, 423, h);
   if (reg.paused) return json({ error: PAUSED_MSG, state: "paused" }, 423, h);
   if (!reg.ch) return null;
   const lock = await getLock(env, id);
@@ -245,6 +248,7 @@ async function listJobMetas(env, id) {
 export async function handle(req, env) {
   const sp = new URL(req.url).pathname.split("/").filter(Boolean);
   if (sp[0] === "share") return handleShare(req, env, sp);
+  if (sp[0] === "show") return handleShow(req, env, sp);
   const origin = req.headers.get("Origin") || "";
   if (!originAllowed(origin, env)) return json({ error: "Origin not allowed" }, 403, {});
   const h = cors(origin);
@@ -277,19 +281,20 @@ export async function handle(req, env) {
     if (!ID_RE.test(id)) return json({ error: "Not found" }, 404, h);
 
     // Mechanic page: is this link live?
-    if (route === "info" && req.method === "GET" && parts.length === 2) {
+    if ((route === "info" || route === "resolve") && req.method === "GET" && parts.length === 2) {
       const reg = await getReg(env, id);
       if (!reg) return json({ error: "This upload link is not active yet. Ask the owner to open Mechanic uploads in Driv3." }, 404, h);
       if (reg.retired) return json({ error: RETIRED_MSG, state: "retired" }, 410, h);
+      if (reg.mode === "show") return json({ ok: true, mode: "show", showId: reg.show || null }, 200, h);
       const lock = reg.ch ? await getLock(env, id) : null;
-      return json({ ok: true, limits: LIMITS, paused: !!reg.paused, needCode: !!reg.ch, locked: !!(lock && lock.until > Date.now()) }, 200, h);
+      return json({ ok: true, mode: "mechanic", limits: LIMITS, paused: !!reg.paused, needCode: !!reg.ch, locked: !!(lock && lock.until > Date.now()) }, 200, h);
     }
 
     // Mechanic page: check the job code before filling the form in (counts towards the 5-try lock).
     if (route === "code" && req.method === "POST" && parts.length === 2) {
       let body = {}; try { body = await req.json(); } catch (e) { /* empty */ }
       const reg = await getReg(env, id);
-      if (reg && !reg.retired && !reg.paused && !reg.ch) return json({ ok: true, needCode: false }, 200, h);
+      if (reg && !reg.retired && !reg.paused && reg.mode !== "show" && !reg.ch) return json({ ok: true, needCode: false }, 200, h);
       const g = await gate(env, h, id, reg, body && body.code);
       return g || json({ ok: true }, 200, h);
     }
@@ -354,7 +359,7 @@ export async function handle(req, env) {
     }
 
     // Owner-only routes from here.
-    if (!["list", "file", "job", "settings", "retire"].includes(route)) return json({ error: "Not found" }, 404, h);
+    if (!["list", "file", "job", "settings", "retire", "mode"].includes(route)) return json({ error: "Not found" }, 404, h);
     if (!(await ownerOk(req, env, id))) return json({ error: "Not allowed" }, 401, h);
 
     // Owner controls: pause/resume, set/clear the job code. Body {paused?: bool, code?: "1234" | ""}.
@@ -374,6 +379,28 @@ export async function handle(req, env) {
       reg.t = Date.now();
       await env.UPLOADS.put("reg/" + id + ".json", JSON.stringify(reg), { httpMetadata: { contentType: "application/json" } });
       return json({ ok: true, paused: !!reg.paused, hasCode: !!reg.ch }, 200, h);
+    }
+    // Owner switches the sticker between Mechanic mode and Show mode. Body {mode, showId?, showKey?}.
+    // The showcase key is checked against show/{sid}/meta.json so a car can only point at its own showcase.
+    if (route === "mode" && req.method === "GET" && parts.length === 2) {
+      const reg = await getReg(env, id);
+      return json({ ok: true, mode: reg.mode === "show" ? "show" : "mechanic", showId: reg.show || null }, 200, h);
+    }
+    if (route === "mode" && req.method === "POST" && parts.length === 2) {
+      let body; try { body = await req.json(); } catch (e) { return json({ error: "Bad JSON" }, 400, h); }
+      const reg = await getReg(env, id);
+      if (reg.retired) return json({ error: "This upload ID was replaced", state: "retired" }, 410, h);
+      const mode = body && body.mode;
+      if (mode !== "show" && mode !== "mechanic") return json({ error: "mode must be show or mechanic" }, 400, h);
+      if (body.showId != null) {
+        if (!SHOW_ID_RE.test(String(body.showId)) || !(await showKeyOk(env, body.showId, body.showKey))) return json({ error: "Showcase not found" }, 400, h);
+        reg.show = body.showId;
+      }
+      if (mode === "show" && !reg.show) return json({ error: "Publish a showcase first" }, 409, h);
+      if (mode === "show") reg.mode = "show"; else delete reg.mode;
+      reg.t = Date.now();
+      await env.UPLOADS.put("reg/" + id + ".json", JSON.stringify(reg), { httpMetadata: { contentType: "application/json" } });
+      return json({ ok: true, mode: reg.mode || "mechanic", showId: reg.show || null }, 200, h);
     }
     // Owner retires this ID after making a new link: mechanics are refused straight away,
     // the owner key keeps working for list/file/job so nothing still waiting is lost.

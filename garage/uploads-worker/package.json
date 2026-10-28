@@ -2,6 +2,6 @@
  "type": "module",
  "private": true,
  "scripts": {
-  "test": "node uploads-lib.test.mjs && node share-lib.test.mjs && node controls.test.mjs"
+  "test": "node uploads-lib.test.mjs && node share-lib.test.mjs && node controls.test.mjs && node show-lib.test.mjs"
  }
 }

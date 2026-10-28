@@ -109,6 +109,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 .remB>div{min-width:0}
 .remSet{display:block;text-align:right;color:#8b8b8b;font-size:13px;margin:2px 4px 0}
 #gForm input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:15px}
+#dues .notifSet{display:flex;align-items:center;justify-content:center;margin-top:10px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -161,7 +162,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <h2>Settings</h2>
 <a class="btn wide" href="security.html" data-ico="shield">Security &amp; backup <i class="due" id="secDue" hidden></i></a>
 <a class="btn wide" href="security.html#lockCard" data-ico="shield">App lock</a>
-<a class="btn wide" href="reminders.html?v=13" data-ico="cal">Reminders &amp; my garage</a>
+<a class="btn wide" href="reminders.html?v=15" data-ico="cal">Reminders &amp; my garage</a>
 <a class="btn wide" href="privacy.html" data-ico="doc">Privacy</a>
 <button class="btn wide" type="button" id="setClose" data-ico="back">Back</button>
 </div></div>
@@ -208,8 +209,8 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="./reminders-core.js?v=1"></script>
-<script src="./home-app.js?v=86"></script>
+<script src="./reminders-core.js?v=2"></script>
+<script src="./home-app.js?v=87"></script>
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=31"></script>
 <script src="./home-tabs.js?v=2"></script>

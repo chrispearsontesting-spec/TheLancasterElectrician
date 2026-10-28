@@ -11,8 +11,10 @@
     {type:"belt",label:"Timing belt",icon:"⚙",color:"#c792ea",book:true,job:"belt"}
   ];
   var DEFAULTS={version:1,hour:9,types:{
-    mot:{on:true,lead:21,daily:true},tax:{on:true,lead:7,daily:true},insurance:{on:true,lead:7,daily:true},
-    service:{on:true,lead:14,daily:true},belt:{on:true,lead:30,daily:false}}};
+    mot:{on:true,lead:21,every:1},tax:{on:true,lead:7,every:1},insurance:{on:true,lead:7,every:1},
+    service:{on:true,lead:14,every:1},belt:{on:true,lead:30,every:0}}};
+  /* every: repeat interval in days counted from lead start (1 daily, 2 every other day, 3, 7 weekly, 0 once at start). Due day always fires. */
+  var EVERY=[1,2,3,7,0];
   function clone(o){return JSON.parse(JSON.stringify(o))}
   function settings(raw){
     var s=clone(DEFAULTS),r=raw;
@@ -22,8 +24,11 @@
       for(var k in s.types)if(r.types&&r.types[k]){var t=r.types[k];
         if(typeof t.on==="boolean")s.types[k].on=t.on;
         if(t.lead>=0&&t.lead<=365)s.types[k].lead=Math.round(+t.lead);
-        if(typeof t.daily==="boolean")s.types[k].daily=t.daily;}
+        if(typeof t.daily==="boolean")s.types[k].every=t.daily?1:0; /* legacy */
+        if(t.every!=null&&EVERY.indexOf(+t.every)>=0)s.types[k].every=+t.every;
+      }
     }
+    for(var q in s.types)s.types[q].daily=s.types[q].every===1;
     return s;
   }
   function load(ls){ls=ls||(typeof localStorage!=="undefined"?localStorage:null);return settings(ls&&ls.getItem(KEY))}
@@ -45,6 +50,11 @@
       out.push({type:t.type,label:t.label,icon:t.icon,color:t.color,due:String(due).slice(0,10),carIndex:ci,plate:plate(c.plate),vrn:vrn(c.plate),name:c.nick||c.name||"Car",book:!!t.book});
     })});
     return out.sort(function(a,b){return a.due<b.due?-1:1});
+  }
+  function fireDays(start,due,every){
+    var out=[],d=new Date(start);
+    if(every>0){for(;d<due;d.setDate(d.getDate()+every))out.push(new Date(d))}else if(start<due)out.push(new Date(start));
+    out.push(new Date(due));return out;
   }
   function daysUntil(due,now){var d=day(due),n=new Date(now||Date.now());n=new Date(n.getFullYear(),n.getMonth(),n.getDate());return Math.round((d-n)/86400000)}
   function phrase(type,days){
@@ -73,8 +83,7 @@
       var t=s.types[it.type];if(!t||!t.on)return;
       var due=day(it.due),start=new Date(due);start.setDate(start.getDate()-t.lead);
       var dates=[];
-      if(t.daily){for(var d=new Date(start);d<=due;d.setDate(d.getDate()+1))dates.push(new Date(d))}
-      else{dates.push(start);if(+due!==+start)dates.push(new Date(due))}
+      dates=fireDays(start,due,t.every);
       dates.forEach(function(d){
         var f=new Date(d.getFullYear(),d.getMonth(),d.getDate(),s.hour,0,0);
         if(f<=n||(f-today)/86400000>H)return;
@@ -101,6 +110,6 @@
   }
   /* Parse "#remind=mot&car=AB12CDE" -> {type,car} or null */
   function parseLink(h){var m=/remind=([a-z]+)/.exec(h||""),c=/car=([A-Za-z0-9]+)/.exec(h||"");return m?{type:m[1],car:c?c[1].toUpperCase():""}:null}
-  var api={KEY:KEY,TYPES:TYPES,DEFAULTS:DEFAULTS,settings:settings,load:load,save:save,dueItems:dueItems,active:active,upcoming:upcoming,email:email,parseLink:parseLink,daysUntil:daysUntil,beltDue:beltDue,plate:plate,vrn:vrn,niceDate:niceDate};
+  var api={KEY:KEY,TYPES:TYPES,DEFAULTS:DEFAULTS,settings:settings,EVERY:EVERY,fireDays:fireDays,load:load,save:save,dueItems:dueItems,active:active,upcoming:upcoming,email:email,parseLink:parseLink,daysUntil:daysUntil,beltDue:beltDue,plate:plate,vrn:vrn,niceDate:niceDate};
   if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.D3Rem=api;
 })(typeof self!=="undefined"?self:this);

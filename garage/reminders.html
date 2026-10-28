@@ -23,12 +23,17 @@ label.f{display:block;color:#8b8b8b;font-size:13px;margin-top:8px}
 .card input.t{width:100%;margin-top:4px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:11px;font-size:15px}
 .btn{display:flex;align-items:center;justify-content:center;width:100%;background:#1c1c1e;color:#f2f2f2;text-decoration:none;border:0;border-radius:18px;padding:14px;font-weight:650;font-size:16px;margin-top:10px;min-height:52px;cursor:pointer}
 #msg{color:#7ee0a1;font-size:13px;text-align:center;min-height:18px;margin:6px 0 0}
+.nt{padding:10px 0;border-top:1px solid #222}.nt:first-child{border-top:0}.nt .r{border:0;padding:0 0 8px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.nt label{display:block;color:#8b8b8b;font-size:12px}
+.nt select,.nt input[type=number]{display:block;width:100%;margin-top:4px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:11px 10px;font-size:15px;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#8b8b8b 50%),linear-gradient(135deg,#8b8b8b 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.nt input[type=number]{background-image:none}.nt .cust{margin-top:8px}
 </style>
 </head>
 <body>
 <h1>Reminders &amp; my garage</h1>
 <p class="note">Choose how many days before each date reminders start. On the Android app you get a phone notification at 9am; here they show as a banner on the home page.</p>
-<h2>Reminder schedule</h2>
+<h2 id="notif">Notification settings</h2>
+<p class="note">For each reminder: when to start, and how often to repeat. You always get one on the due day.</p>
 <div class="card" id="types"></div>
 <h2>My garage</h2>
 <p class="note">Used by "Email my garage" when booking an MOT, service or timing belt.</p>
@@ -37,14 +42,21 @@ label.f{display:block;color:#8b8b8b;font-size:13px;margin-top:8px}
 <p id="msg"></p>
 <a class="btn" href="calendar.html">Open calendar</a>
 <a class="btn" href="home.html">Back</a>
-<script src="./reminders-core.js?v=1"></script>
+<script src="./reminders-core.js?v=2"></script>
 <script>
 function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function garage(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null");if(g&&g.cars)return g}catch(e){}return {i:0,cars:[]}}
 function draw(){
   var s=D3Rem.load();
-  document.getElementById("types").innerHTML=D3Rem.TYPES.map(function(t){var x=s.types[t.type];
-    return "<div class='r'><span class='n'><i style='background:"+t.color+"'></i>"+t.label+"<br/><small>"+(x.daily?"then daily":"start and due day")+"</small></span><input type='number' min='0' max='365' data-lead='"+t.type+"' value='"+x.lead+"'/><small>days</small><input class='sw' type='checkbox' data-on='"+t.type+"'"+(x.on?" checked":"")+" aria-label='"+t.label+" reminders'/></div>"}).join("");
+  var LEADS=[[1,"1 day"],[3,"3 days"],[7,"1 week"],[14,"2 weeks"],[21,"3 weeks"],[30,"1 month"]];
+  var REP=[[1,"Daily"],[2,"Every other day"],[3,"Every 3 days"],[7,"Weekly"],[0,"Once only"]];
+  document.getElementById("types").innerHTML=D3Rem.TYPES.map(function(t){var x=s.types[t.type],known=LEADS.some(function(l){return l[0]===x.lead});
+    return "<div class='nt'><div class='r'><span class='n'><i style='background:"+t.color+"'></i>"+t.label+"</span><input class='sw' type='checkbox' data-on='"+t.type+"'"+(x.on?" checked":"")+" aria-label='"+t.label+" reminders'/></div>"+
+      "<div class='g2'><label>Start<select data-lsel='"+t.type+"'>"+LEADS.map(function(l){return "<option value='"+l[0]+"'"+(l[0]===x.lead?" selected":"")+">"+l[1]+" before</option>"}).join("")+"<option value='c'"+(known?"":" selected")+">Custom…</option></select></label>"+
+      "<label>Repeat<select data-every='"+t.type+"'>"+REP.map(function(r){return "<option value='"+r[0]+"'"+(r[0]===x.every?" selected":"")+">"+r[1]+"</option>"}).join("")+"</select></label></div>"+
+      "<label class='cust' style='"+(known?"display:none":"")+"'>Days before <input type='number' min='0' max='365' inputmode='numeric' data-lead='"+t.type+"' value='"+x.lead+"'/></label></div>"}).join("");
+  document.querySelectorAll("[data-lsel]").forEach(function(sel){sel.onchange=function(){var box=sel.closest(".nt"),c=box.querySelector(".cust"),inp=box.querySelector("[data-lead]");
+    if(sel.value==="c"){c.style.display="";inp.focus()}else{c.style.display="none";inp.value=sel.value}}});
   var g=garage();
   document.getElementById("garages").innerHTML=g.cars.length?g.cars.map(function(c,i){
     return "<div class='card'><b>"+esc(c.nick||c.name||"Car")+" · "+esc(D3Rem.plate(c.plate))+"</b>"+
@@ -56,6 +68,7 @@ document.getElementById("save").onclick=function(){
   var s=D3Rem.load();
   document.querySelectorAll("[data-lead]").forEach(function(el){var v=parseInt(el.value,10);if(v>=0&&v<=365)s.types[el.dataset.lead].lead=v});
   document.querySelectorAll("[data-on]").forEach(function(el){s.types[el.dataset.on].on=el.checked});
+  document.querySelectorAll("[data-every]").forEach(function(el){s.types[el.dataset.every].every=+el.value;delete s.types[el.dataset.every].daily});
   D3Rem.save(s);
   var g=garage(),bad="";
   document.querySelectorAll("[data-g]").forEach(function(el){var c=g.cars[+el.dataset.g];if(!c)return;var v=el.value.trim();

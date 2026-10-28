@@ -5,6 +5,9 @@
 //   job/{uploadId}/{jobId}/meta.json -> job details, written LAST so half-finished uploads are never listed
 // Lifecycle on the bucket deletes job/ objects after 14 days (backstop; the owner's app deletes on download).
 // Owner endpoints need header X-Owner-Key; only its SHA-256 is ever stored.
+//   share/{id}/...                   -> "Share for sale" reports, see share-lib.js (30-day lifecycle)
+
+import { handleShare } from "./share-lib.js";
 
 const ALLOWED_ORIGINS = ["https://thelancasterelectrician.com", "https://www.thelancasterelectrician.com"];
 const DEV_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
@@ -200,6 +203,8 @@ async function listJobMetas(env, id) {
 }
 
 export async function handle(req, env) {
+  const sp = new URL(req.url).pathname.split("/").filter(Boolean);
+  if (sp[0] === "share") return handleShare(req, env, sp);
   const origin = req.headers.get("Origin") || "";
   if (!originAllowed(origin, env)) return json({ error: "Origin not allowed" }, 403, {});
   const h = cors(origin);

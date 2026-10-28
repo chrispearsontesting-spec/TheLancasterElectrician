@@ -28,6 +28,9 @@ input[type=file]{margin:8px 0}
 <body>
 <h1>History</h1>
 
+<a class="btn" id="shareSale" href="share.html" style="background:#3dd68c;color:#0b0c0e;margin:0 0 6px;font-size:16px">Share for sale</a>
+<p class="note" id="shareNote" style="margin:0 0 14px">Send buyers a read-only history report. You choose what's in it.</p>
+
 <div class="card">
   <button class="acc" type="button">Insurance <span>+</span></button>
   <div class="panel">
@@ -206,6 +209,10 @@ render();
   };
   reader.readAsDataURL(file);
 };
+</script>
+<script>
+(function(){ try{ var a=JSON.parse(localStorage.getItem("gt.shares")||"[]"), n=a.filter(function(s){return s.expires>Date.now()}).length;
+  if(n) document.getElementById("shareNote").textContent=n+" active share link"+(n>1?"s":"")+". Tap to manage or make a new one."; }catch(e){} })();
 </script>
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=2"></script>

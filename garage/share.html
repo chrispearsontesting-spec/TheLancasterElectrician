@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Share for sale · Driv3</title>
+<link rel="stylesheet" href="./ui.css?v=46"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{margin:0 auto;max-width:440px;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
+h1{font-size:26px;margin:8px 0 6px;font-weight:650}
+.lead{font-size:14px;color:#8b8b8b;margin:0 0 14px;line-height:1.45}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;margin-bottom:12px;padding:14px}
+.card h2{font-size:17px;margin:0 0 4px}
+.note{font-size:13px;color:#8b8b8b;margin:6px 0;line-height:1.45}
+.plate{display:inline-flex;border-radius:4px;overflow:hidden;border:2px solid #222;font-family:Arial,Helvetica,sans-serif;font-weight:900;vertical-align:middle}
+.plate .uk{background:#003399;color:#fc0;padding:5px;font-size:9px;display:flex;align-items:center}
+.plate .reg{background:#f4d000;color:#111;padding:5px 10px;letter-spacing:.12em;font-size:15px}
+.carRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.carRow b{font-size:16px}
+.tick{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid #222226;cursor:pointer}
+.tick:first-of-type{border-top:0}
+.tick input{appearance:none;-webkit-appearance:none;flex:none;width:24px;height:24px;border-radius:7px;border:2px solid #4a4a50;background:#0b0c0e;margin:1px 0 0;display:grid;place-items:center}
+.tick input:checked{background:#3dd68c;border-color:#3dd68c}
+.tick input:checked:after{content:"";width:6px;height:11px;border:solid #0b0c0e;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.tick .t{font-size:15px;font-weight:600}
+.tick .d{font-size:12.5px;color:#8b8b8b;margin-top:2px;line-height:1.4}
+.sub{margin-left:36px}
+.sub .tick{padding:8px 0}
+.fileRow{display:flex;gap:10px;align-items:center}
+.fileRow img{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#222;flex:none}
+.fileRow .pdf{width:44px;height:44px;border-radius:8px;background:#2a1d1d;color:#ff8a80;font-size:11px;font-weight:800;display:grid;place-items:center;flex:none}
+.warn{font-size:12px;color:#f5b84a}
+.off{font-size:12.5px;color:#8b8b8b;line-height:1.5;margin:0;padding-left:18px}
+textarea{width:100%;min-height:84px;padding:12px;border-radius:12px;border:1px solid #2a2a2e;background:#0b0c0e;color:#f2f2f2;font:inherit;font-size:15px;resize:vertical}
+.btn.go{background:#3dd68c !important;color:#0b0c0e !important}
+.status{font-size:13px;color:#8b8b8b;margin-top:8px;min-height:18px}
+.status.good{color:#3dd68c}.status.bad{color:#ff6b6b}
+.pv{background:#0b0c0e;border:1px solid #2a2a2e;border-radius:14px;padding:12px;font-size:13.5px;line-height:1.5}
+.pv b{color:#fff}
+.pv ul{margin:6px 0 0;padding-left:18px;color:#c9c9c9}
+.linkBox{background:#0b0c0e;border:1px solid #3dd68c55;border-radius:14px;padding:12px;margin-top:10px}
+.linkBox .u{font-size:12px;color:#8b8b8b;word-break:break-all;margin-top:4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.row3 .btn{min-height:42px !important;padding:8px 6px !important;font-size:13px !important;margin-top:8px}
+.shareItem{border-top:1px solid #222226;padding:12px 0}
+.shareItem:first-child{border-top:0}
+.shareItem .meta{font-size:12px;color:#8b8b8b;margin-top:3px}
+.btn.danger{background:#2a1416 !important;color:#ff6b6b !important;border:1px solid #5a2328 !important}
+.hide{display:none}
+</style>
+</head>
+<body>
+<h1>Share for sale</h1>
+<p class="lead">Make a read-only history report for buyers. You choose exactly what goes in. The link works for 30 days and you can revoke it any time.</p>
+
+<div class="card"><div class="carRow" id="carRow"></div></div>
+
+<div id="builder">
+<div class="card">
+  <h2>What to include</h2>
+  <label class="tick"><input type="checkbox" id="incCar" checked/><div><div class="t">Car details</div><div class="d" id="carDesc">Make, model, year, reg, fuel, engine</div></div></label>
+  <label class="tick"><input type="checkbox" id="incMot" checked/><div><div class="t">MOT history</div><div class="d">Buyers see it live from the DVSA, with your copy as backup</div></div></label>
+  <label class="tick"><input type="checkbox" id="incService" checked/><div><div class="t">Service &amp; maintenance</div><div class="d" id="serviceDesc">Service, timing belt, tyres and your saved work</div></div></label>
+  <div class="sub" id="histFiles"></div>
+  <label class="tick"><input type="checkbox" id="incMiles" checked/><div><div class="t">Mileage log</div><div class="d">Readings from MOTs and garage visits</div></div></label>
+</div>
+
+<div class="card" id="jobsCard">
+  <h2>Mechanic work</h2>
+  <p class="note">Photos and notes are on. PDF invoices are off because they often show your name and address. Tick one only if you've checked it.</p>
+  <div id="jobs"></div>
+</div>
+
+<div class="card">
+  <h2>Seller note <span class="note">(optional)</span></h2>
+  <textarea id="sellerNote" maxlength="1500" placeholder="e.g. Two owners, always garaged, new clutch 2024. Happy to show the car any evening."></textarea>
+</div>
+
+<div class="card">
+  <h2>Never shared</h2>
+  <ul class="off"><li>Your name, address and contact details</li><li>Insurance details and documents</li><li>Calendar, journeys and dashcam clips</li><li>Your garage's contact details</li></ul>
+</div>
+
+<button class="btn" type="button" id="previewBtn" data-ico="search">Preview report</button>
+<div class="card hide" id="previewCard" style="margin-top:12px">
+  <h2>Preview</h2>
+  <div class="pv" id="pv"></div>
+  <button class="btn go" type="button" id="create" data-ico="check">Create link</button>
+  <div class="status" id="status"></div>
+</div>
+</div>
+
+<div class="card hide" id="doneCard">
+  <h2>Your link is ready</h2>
+  <div class="linkBox"><b id="doneTitle"></b><div class="u" id="doneUrl"></div></div>
+  <div class="row3">
+    <button class="btn" type="button" id="doneCopy">Copy</button>
+    <a class="btn" id="doneWa" target="_blank" rel="noopener">WhatsApp</a>
+    <a class="btn" id="doneOpen" target="_blank" rel="noopener">Open</a>
+  </div>
+</div>
+
+<div class="card" id="linksCard">
+  <h2>Your share links</h2>
+  <p class="note">Links made on this phone. Revoking deletes the report and its files straight away.</p>
+  <div id="links"></div>
+</div>
+
+<a class="btn" href="history.html" data-ico="back">Back</a>
+
+<script src="./uploads-config.js?v=1"></script>
+<script src="./uploads-client.js?v=2"></script>
+<script src="./mot-config.js"></script>
+<script src="./mot-client.js"></script>
+<script src="./share-app.js?v=1"></script>
+<script src="./icons.js?v=32"></script>
+</body>
+</html>

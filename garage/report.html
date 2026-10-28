@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<meta name="robots" content="noindex, nofollow, noarchive"/>
+<meta name="googlebot" content="noindex, nofollow"/>
+<meta name="referrer" content="no-referrer"/>
+<title>Vehicle history report · Driv3</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0 auto;max-width:560px;padding:calc(16px + env(safe-area-inset-top)) 16px 32px}
+.brand{display:flex;align-items:center;gap:8px;font-size:13px;color:#8b8b8b;font-weight:600;letter-spacing:.02em}
+.brand img{width:22px;height:22px;border-radius:6px}
+h1{font-size:27px;line-height:1.15;margin:14px 0 8px;font-weight:700}
+.sub{font-size:13px;color:#8b8b8b;line-height:1.5}
+.plate{display:inline-flex;border-radius:5px;overflow:hidden;border:2px solid #222;font-family:Arial,Helvetica,sans-serif;font-weight:900;vertical-align:middle}
+.plate .uk{background:#003399;color:#fc0;padding:6px;font-size:10px;display:flex;align-items:center}
+.plate .reg{background:#f4d000;color:#111;padding:6px 12px;letter-spacing:.12em;font-size:20px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.fact{background:#141416;border:1px solid #2a2a2e;border-radius:14px;padding:10px 12px}
+.fact .k{font-size:11.5px;color:#8b8b8b;text-transform:uppercase;letter-spacing:.06em}
+.fact .v{font-size:16px;font-weight:650;margin-top:2px}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;margin-top:14px;padding:14px;break-inside:avoid-page}
+.card h2{font-size:18px;margin:0 0 4px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:11px;font-weight:800;border-radius:999px;padding:4px 9px;white-space:nowrap;letter-spacing:.02em}
+.badge.live{background:#0f2e20;color:#3dd68c;border:1px solid #1f5c3f}
+.badge.copy{background:#2e2410;color:#f5b84a;border:1px solid #5c4a1f}
+.row{border-top:1px solid #222226;padding:11px 0;display:flex;justify-content:space-between;gap:10px}
+.row:first-of-type{border-top:0}
+.row b{font-size:15px}
+.muted{color:#8b8b8b;font-size:13px;margin:3px 0 0;line-height:1.45}
+.tag{font-size:12px;font-weight:800;border-radius:8px;padding:3px 8px;height:fit-content;white-space:nowrap}
+.tag.pass{background:#0f2e20;color:#3dd68c}.tag.fail{background:#2e1214;color:#ff6b6b}.tag.due{background:#1c1c1e;color:#c9c9c9}
+.def{font-size:13px;line-height:1.4;margin:4px 0 0;color:#c9c9c9}
+.def i{font-style:normal;font-weight:700;font-size:11px;text-transform:uppercase;margin-right:5px}
+.def i.adv{color:#f5b84a}.def i.maj{color:#ff6b6b}.def i.min{color:#8bb8ff}
+.job{border-top:1px solid #222226;padding:12px 0}
+.job:first-of-type{border-top:0}
+.job .txt{font-size:14.5px;white-space:pre-wrap;line-height:1.45;margin:6px 0 0}
+.thumbs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.thumbs figure{margin:0;min-width:0}
+.thumbs button{display:block;width:100%;aspect-ratio:4/3;border:0;padding:0;border-radius:12px;overflow:hidden;background:#0b0c0e;cursor:zoom-in}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.thumbs figcaption{font-size:12.5px;color:#c9c9c9;margin-top:5px;line-height:1.3;overflow-wrap:anywhere}
+.doc{display:flex;align-items:center;gap:10px;margin-top:8px;padding:10px 12px;border-radius:12px;background:#1c1c1e;color:#f2f2f2;text-decoration:none;font-size:14px;font-weight:600}
+.doc .pdf{width:34px;height:34px;border-radius:8px;background:#2a1d1d;color:#ff8a80;font-size:10px;font-weight:800;display:grid;place-items:center;flex:none}
+.note{font-size:15px;line-height:1.55;white-space:pre-wrap;margin:6px 0 0}
+.btn{display:block;width:100%;margin-top:14px;padding:13px;background:#1c1c1e;color:#fff;border:1px solid #2a2a2e;border-radius:14px;font-weight:650;font-size:15px;text-align:center;text-decoration:none;cursor:pointer}
+.foot{font-size:12px;color:#6b6b6b;line-height:1.5;margin-top:18px;text-align:center}
+.state{text-align:center;padding:40px 10px}
+.state .ico{font-size:44px}
+.state h1{font-size:23px}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9;padding:16px}
+#lb.open{display:flex}
+#lb img{max-width:100%;max-height:82vh;border-radius:10px}
+#lb p{color:#ddd;font-size:14px;margin:10px 0 0;text-align:center}
+#lb button{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;background:#1c1c1e;color:#fff;border:0;border-radius:999px;width:42px;height:42px;font-size:22px}
+.skel{height:14px;border-radius:7px;background:#1c1c1e;margin:8px 0}
+@media print{
+  html,body{background:#fff;color:#111}
+  body{max-width:none;padding:0}
+  .card,.fact{background:#fff;border-color:#ccc}
+  .muted,.sub,.def,.thumbs figcaption,.brand{color:#444}
+  .row,.job{border-color:#ddd}
+  .noprint,#lb{display:none !important}
+  .thumbs{grid-template-columns:repeat(3,1fr)}
+  .doc{background:#f2f2f2;color:#111}
+  .tag.due{background:#eee;color:#111}
+  a{color:#111}
+}
+</style>
+</head>
+<body>
+<div class="brand"><img src="icon-192.png" alt=""/>Driv3 · Vehicle history report</div>
+<div id="app"><div class="card"><div class="skel" style="width:60%"></div><div class="skel"></div><div class="skel" style="width:80%"></div></div></div>
+<div id="lb" role="dialog" aria-modal="true" aria-label="Photo"><button type="button" aria-label="Close" id="lbX">×</button><img id="lbImg" alt=""/><p id="lbCap"></p></div>
+<script src="./uploads-config.js?v=1"></script>
+<script src="./mot-config.js"></script>
+<script src="./mot-client.js"></script>
+<script src="./report-app.js?v=1"></script>
+</body>
+</html>

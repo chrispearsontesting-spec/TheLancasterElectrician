@@ -151,7 +151,9 @@
     var out = [];
     if (mot && mot.tests) mot.tests.forEach(function(t){ var m = parseInt(String(t.odometerValue || "").replace(/\D/g, ""), 10); if (m && (t.odometerUnit || "mi").toLowerCase().indexOf("k") !== 0) out.push({date: String(t.completedDate || "").slice(0,10), miles: m, src: "MOT"}); });
     jobs.forEach(function(job){ if (job.mileage) out.push({date: new Date(job.created).toISOString().slice(0,10), miles: job.mileage, src: job.garage || "Garage visit"}); });
-    return out.sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+    var seen = {};
+    return out.filter(function(m){ var k = m.date + ":" + m.miles; if (seen[k]) return false; seen[k] = 1; return true; }) // retests on the same day
+      .sort(function(a,b){ return a.date < b.date ? 1 : -1; });
   }
   function trimTests(tests){
     return (tests || []).slice(0, 30).map(function(t){

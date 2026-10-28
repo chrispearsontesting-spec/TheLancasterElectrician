@@ -38,6 +38,11 @@ input{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;borde
 .route .top{display:flex;justify-content:space-between;gap:10px}.route .cost{font-weight:800;color:#3dd68c}
 .route .more.hide{display:none}.route .rdel{background:none;border:0;color:#8b8b8b;text-decoration:underline;font-size:12px;padding:8px 0 0}
 .day .dot.r{background:#7dd3fc}
+.dot.rem{background:var(--rc)}
+.evs{display:flex;gap:2px;justify-content:center;margin-top:2px}.evs i{width:6px;height:6px;border-radius:50%;display:block}
+.rem-card{border-left:4px solid var(--rc)!important}
+.rem-card .row a,.rem-card .row button{flex:1;text-align:center;text-decoration:none}
+#upNext .rem-card{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -60,6 +65,7 @@ input{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;borde
 <a class="btn wide" href="drive.html">Let’s drive</a>
 <a class="btn" href="home.html#drive" data-iconed="1">Back</a>
 <script src="./trip-engine.js"></script>
+<script src="./reminders-core.js?v=1"></script>
 <script>
 var view=new Date();
 view.setDate(1);
@@ -81,6 +87,7 @@ function costOf(t,mpg){
   return (+t.miles||0)/Math.max(+mpg||1,1)*4.54609*(ppl/100);
 }
 function render(sel){
+  var remMap=remByDay();
   var map=byDay(), rmap={}; tripStore().forEach(function(t){ var dk=key(new Date(t.when||0)); (rmap[dk]=rmap[dk]||[]).push(t); });
   var y=view.getFullYear(),m=view.getMonth();
   document.getElementById("label").textContent=view.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
@@ -89,19 +96,40 @@ function render(sel){
   for(var i=0;i<start;i++) html+="<div class='day empty'></div>";
   for(var d=1;d<=days;d++){
     var k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+(map[k]?"<span class='dot'></span>":"")+(rmap[k]?"<span class='dot r'></span>":"")+"</button>";
+    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+(map[k]?"<span class='dot'></span>":"")+(rmap[k]?"<span class='dot r'></span>":"")+(remMap[k]?"<span class='evs'>"+remMap[k].map(function(e){return "<i style='background:"+e.color+"'></i>"}).join("")+"</span>":"")+"</button>";
   }
   document.getElementById("grid").innerHTML=html;
   var items=sel&&map[sel]?map[sel]:[];
   var box=document.getElementById("list");
   var rItems=sel&&rmap[sel]?rmap[sel]:[];
-  if(!items.length&&!rItems.length){box.innerHTML="<p class='muted'>No trips on this day yet.</p>";return}
-  box.innerHTML=items.map(function(t){
+  var remItems=sel&&remMap[sel]?remMap[sel]:[];
+  if(!items.length&&!rItems.length&&!remItems.length){box.innerHTML="<p class='muted'>Nothing on this day.</p>"+upNext();return}
+  box.innerHTML=remItems.map(remCard).join("")+items.map(function(t){
     var tm=new Date(t.when).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
     var end=t.end?new Date(t.end).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
     var ico = t.type==="run" ? "🏁 " : "📍 ";
     return "<div class='card' data-id='"+t.id+"'><b class='title'>"+ico+(t.from||"Start")+" → "+(t.to||"Finish")+"</b><p class='muted'>"+tm+(end?" – "+end:"")+(t.type==="run"&&t.time?" · "+t.time:"")+"</p><div class='kv'><span>Miles</span><b>"+(+t.miles||0).toFixed(2)+"</b></div><div class='kv'><span>Cost</span><b>£"+(+t.cost||0).toFixed(2)+"</b></div><div class='kv'><span>MPG</span><b>"+(t.mpg||"-")+"</b></div><div class='row'><button class='btn' type='button' data-edit='"+t.id+"'>✎ Edit</button></div><div class='edit hide' id='ed-"+t.id+"'><label>Miles per gallon for this trip</label><input type='number' step='0.1' value='"+(t.mpg||"")+"' data-mpg='"+t.id+"'/><div class='row'><button class='btn' type='button' data-save='"+t.id+"'>Save mpg</button><button class='btn' type='button' data-del='"+t.id+"'>Delete journey</button></div></div></div>";
   }).join("")+rItems.map(function(t){ return "<div class='card'><b class='title'>🗺 "+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><p class='muted'>Saved route · "+(+t.miles||0).toFixed(1)+" mi · one way "+moneyTxt(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp)+"</p></div>"; }).join("");
+}
+function remByDay(){
+  var m={}; if(!window.D3Rem) return m;
+  var g; try{g=JSON.parse(localStorage.getItem("gt.garage")||"null")}catch(e){}
+  D3Rem.dueItems(g).forEach(function(e){(m[e.due]=m[e.due]||[]).push(e)}); return m;
+}
+function remCard(e){
+  var d=D3Rem.daysUntil(e.due), left=d<0?(-d)+" days overdue":d===0?"Due today":d+" days left";
+  var acts=[];
+  if(e.type==="mot") acts.push("<a class='btn' href='mot.html?plate="+e.vrn+"#history'>View history</a>");
+  if(e.book) acts.push("<a class='btn' href='home.html#remind="+e.type+"&car="+e.vrn+"'>Book / email garage</a>");
+  if(e.type==="tax") acts.push("<a class='btn' href='https://www.gov.uk/vehicle-tax' target='_blank' rel='noopener'>Renew</a>","<a class='btn' href='tax.html?plate="+e.vrn+"'>Check tax</a>");
+  if(e.type==="insurance") acts.push("<a class='btn' href='insurance.html?v=12'>Policy</a>","<a class='btn' href='renew.html?v=13'>Renew</a>");
+  return "<div class='card rem-card' style='--rc:"+e.color+"'><b class='title'>"+e.icon+" "+escR(e.label)+" · "+escR(e.plate)+"</b><p class='muted'>"+escR(e.name)+" · "+D3Rem.niceDate(e.due)+" · "+left+"</p><div class='row'>"+acts.join("")+"</div></div>";
+}
+function upNext(){
+  if(!window.D3Rem) return "";
+  var g; try{g=JSON.parse(localStorage.getItem("gt.garage")||"null")}catch(e){}
+  var n=D3Rem.dueItems(g).filter(function(e){return D3Rem.daysUntil(e.due)>=-30}).slice(0,4);
+  return n.length?"<div id='upNext'><p class='muted'>Coming up</p>"+n.map(remCard).join("")+"</div>":"";
 }
 function escR(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}); }
 function kindLabel(t){ return t.isYear?"Yearly commute":(t.isReturn?"Return":"One way"); }

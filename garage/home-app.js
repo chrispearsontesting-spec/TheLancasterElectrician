@@ -84,17 +84,58 @@ function jobCopy(c,kind){
 function openBook(kind){
   var c=car(), j=jobCopy(c,kind);
   document.getElementById("cTitle").textContent=j.title;
-  var who=c.motName?c.motName:"Add your garage in Edit";
-  document.getElementById("cBody").textContent=who+(c.motPhone?" \u00b7 "+c.motPhone:"");
-  var html="";
+  var who=c.motName?c.motName:"No garage saved yet";
+  document.getElementById("cBody").textContent=who+(c.motPhone?" \u00b7 "+c.motPhone:"")+(c.motEmail?" \u00b7 "+c.motEmail:"");
+  var html="", em=window.D3Rem?D3Rem.email(c,kind):{href:mail(c,j.subject,j.body)};
+  if(c.motEmail) html+="<a class='btn wide' id='emailGarage' href='"+em.href.replace(/'/g,"%27")+"'>Email my garage</a>";
   if(c.motPhone) html+="<a class='btn wide' href='tel:"+String(c.motPhone).replace(/\s/g,"")+"'>Call</a>";
-  if(c.motEmail) html+="<a class='btn wide' href='"+mail(c,j.subject,j.body)+"'>Email</a>";
-  if(!html) html="<button class='btn wide' type='button' id='needGarage'>Add garage details</button>";
-  document.getElementById("cLinks").innerHTML=html;
-  var ng=document.getElementById("needGarage");
-  if(ng) ng.onclick=function(){document.getElementById("contact").className="sheet";openSheet("edit")};
+  var form="<div id='gForm' style='"+(c.motEmail?"display:none":"")+"'><p class='left'>"+(c.motEmail?"Edit your garage":"Add your garage first so we can email them")+"</p>"+
+    "<input id='gName' placeholder='Garage name' value='"+String(c.motName||"").replace(/'/g,"&#39;")+"'/>"+
+    "<input id='gEmail' type='email' placeholder='Garage email' value='"+String(c.motEmail||"").replace(/'/g,"&#39;")+"'/>"+
+    "<input id='gPhone' type='tel' placeholder='Phone (optional)' value='"+String(c.motPhone||"").replace(/'/g,"&#39;")+"'/>"+
+    "<button class='btn wide' type='button' id='gSave'>Save garage</button></div>";
+  if(c.motEmail) html+="<button class='btn wide' type='button' id='gEdit' style='background:transparent;color:#8b8b8b;text-decoration:underline;min-height:0'>Change my garage</button>";
+  document.getElementById("cLinks").innerHTML=html+form;
+  var ge=document.getElementById("gEdit");
+  if(ge) ge.onclick=function(){document.getElementById("gForm").style.display="";ge.style.display="none"};
+  document.getElementById("gSave").onclick=function(){
+    var em=document.getElementById("gEmail").value.trim();
+    if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){alert("Please enter a valid email");return}
+    var s=state(),cc=s.cars[s.i];
+    cc.motName=document.getElementById("gName").value.trim();cc.motEmail=em;cc.motPhone=document.getElementById("gPhone").value.trim();
+    save(s);openBook(kind);
+  };
   document.getElementById("contact").className="sheet on";
 }
+function remindBanner(){
+  if(!window.D3Rem) return;
+  var box=document.getElementById("remBanner"), dues=document.getElementById("dues");
+  if(!box){box=document.createElement("div");box.id="remBanner";var dt=document.getElementById("datesToggle")||dues;dt.parentNode.insertBefore(box,dt);}
+  var act=D3Rem.active(state(),D3Rem.load());
+  if(!act.length){box.innerHTML="";box.style.display="none";return}
+  box.style.display="";
+  box.innerHTML=act.map(function(a){
+    return "<div class='remB' style='border-left:4px solid "+a.color+"'><div style='flex:1'><b>"+a.icon+" "+a.label+" \u00b7 "+a.plate+"</b><span>"+a.body.replace(/ Tap to email your garage\.$/,"")+"</span></div>"+
+      (a.book?"<button type='button' class='btn' data-rjob='"+a.type+"' data-rcar='"+a.carIndex+"'>Book</button>":"<button type='button' class='btn' data-rgo='"+a.type+"' data-rcar='"+a.carIndex+"'>View</button>")+"</div>";
+  }).join("")+"<a class='remSet' href='reminders.html?v=13'>Reminder settings</a>";
+}
+function remindGo(type,ci){
+  var s=state(); if(ci!=null&&s.cars[ci]&&s.i!==ci){s.i=ci;save(s);paint();}
+  var jobs={mot:"mot",service:"service",belt:"belt"};
+  if(jobs[type]) openBook(jobs[type]);
+  else{if(document.getElementById("dues").classList.contains("hide")){var tg=document.getElementById("datesToggle");if(tg)tg.click();}var el=document.querySelector("#dues [data-key='"+(type==="insurance"?"insurance":"tax")+"']");if(el){el.scrollIntoView({block:"center"});el.style.outline="2px solid #5aa9ff";setTimeout(function(){el.style.outline=""},2500)}}
+}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-rjob],[data-rgo]"); if(!b) return;
+  remindGo(b.getAttribute("data-rjob")||b.getAttribute("data-rgo"),+b.getAttribute("data-rcar"));
+});
+function remindHash(){
+  var L=window.D3Rem&&D3Rem.parseLink(location.hash); if(!L) return;
+  var s=state(),ci=-1; s.cars.forEach(function(c,i){if(D3Rem.vrn(c.plate)===L.car)ci=i});
+  history.replaceState(null,"",location.pathname+location.search);
+  setTimeout(function(){remindGo(L.type,ci>=0?ci:null)},300);
+}
+window.addEventListener("hashchange",remindHash);
 function btns(list){
   return "<div class='acts'>"+list.map(function(b){
     if(b.job) return "<button class='btn' type='button' data-iconed='1' data-job='"+b.job+"'>"+b.lab+"</button>";
@@ -182,6 +223,7 @@ function paint(){
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
     "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>";
+  try{remindBanner()}catch(e){}
 }
 function savePic(f){
   if(!f)return;
@@ -486,3 +528,4 @@ function syncDates(){
 }
 syncDates();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){});}
+remindHash();

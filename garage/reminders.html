@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<script src="./app-lock.js?v=1"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>Reminders &amp; my garage</title>
+<link rel="stylesheet" href="./ui.css?v=78"/>
+<style>
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
+h1{font-size:22px;margin:0 0 4px;font-weight:650}h2{font-size:16px;margin:18px 4px 8px;color:#cfcfcf}
+.note{color:#8b8b8b;font-size:13px;margin:0 4px 12px;line-height:1.45}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:12px 14px;margin-bottom:10px}
+.r{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #222}.r:first-child{border-top:0}
+.r .n{flex:1;font-weight:600}.r .n i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.r input[type=number]{width:62px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:10px;padding:8px;font-size:15px;text-align:center}
+.r small{color:#8b8b8b;font-size:12px}
+.sw{appearance:none;width:44px;height:26px;border-radius:13px;background:#333;position:relative;cursor:pointer;flex:none}
+.sw:checked{background:#2f7d4f}.sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#f2f2f2;transition:.15s}.sw:checked:after{left:21px}
+label.f{display:block;color:#8b8b8b;font-size:13px;margin-top:8px}
+.card input.t{width:100%;margin-top:4px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:11px;font-size:15px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;background:#1c1c1e;color:#f2f2f2;text-decoration:none;border:0;border-radius:18px;padding:14px;font-weight:650;font-size:16px;margin-top:10px;min-height:52px;cursor:pointer}
+#msg{color:#7ee0a1;font-size:13px;text-align:center;min-height:18px;margin:6px 0 0}
+</style>
+</head>
+<body>
+<h1>Reminders &amp; my garage</h1>
+<p class="note">Choose how many days before each date reminders start. On the Android app you get a phone notification at 9am; here they show as a banner on the home page.</p>
+<h2>Reminder schedule</h2>
+<div class="card" id="types"></div>
+<h2>My garage</h2>
+<p class="note">Used by "Email my garage" when booking an MOT, service or timing belt.</p>
+<div id="garages"></div>
+<button class="btn" type="button" id="save">Save</button>
+<p id="msg"></p>
+<a class="btn" href="calendar.html">Open calendar</a>
+<a class="btn" href="home.html">Back</a>
+<script src="./reminders-core.js?v=1"></script>
+<script>
+function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function garage(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null");if(g&&g.cars)return g}catch(e){}return {i:0,cars:[]}}
+function draw(){
+  var s=D3Rem.load();
+  document.getElementById("types").innerHTML=D3Rem.TYPES.map(function(t){var x=s.types[t.type];
+    return "<div class='r'><span class='n'><i style='background:"+t.color+"'></i>"+t.label+"<br/><small>"+(x.daily?"then daily":"start and due day")+"</small></span><input type='number' min='0' max='365' data-lead='"+t.type+"' value='"+x.lead+"'/><small>days</small><input class='sw' type='checkbox' data-on='"+t.type+"'"+(x.on?" checked":"")+" aria-label='"+t.label+" reminders'/></div>"}).join("");
+  var g=garage();
+  document.getElementById("garages").innerHTML=g.cars.length?g.cars.map(function(c,i){
+    return "<div class='card'><b>"+esc(c.nick||c.name||"Car")+" · "+esc(D3Rem.plate(c.plate))+"</b>"+
+    "<label class='f'>Garage name</label><input class='t' data-g='"+i+"' data-f='motName' value='"+esc(c.motName)+"'/>"+
+    "<label class='f'>Garage email</label><input class='t' type='email' data-g='"+i+"' data-f='motEmail' value='"+esc(c.motEmail)+"'/>"+
+    "<label class='f'>Phone (optional)</label><input class='t' type='tel' data-g='"+i+"' data-f='motPhone' value='"+esc(c.motPhone)+"'/></div>"}).join(""):"<p class='note'>Add a car on the home page first.</p>";
+}
+document.getElementById("save").onclick=function(){
+  var s=D3Rem.load();
+  document.querySelectorAll("[data-lead]").forEach(function(el){var v=parseInt(el.value,10);if(v>=0&&v<=365)s.types[el.dataset.lead].lead=v});
+  document.querySelectorAll("[data-on]").forEach(function(el){s.types[el.dataset.on].on=el.checked});
+  D3Rem.save(s);
+  var g=garage(),bad="";
+  document.querySelectorAll("[data-g]").forEach(function(el){var c=g.cars[+el.dataset.g];if(!c)return;var v=el.value.trim();
+    if(el.dataset.f==="motEmail"&&v&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){bad=v;return}c[el.dataset.f]=v});
+  if(g.cars.length)localStorage.setItem("gt.garage",JSON.stringify(g));
+  document.getElementById("msg").textContent=bad?"Saved, but '"+bad+"' is not a valid email":"Saved";
+  draw();
+};
+draw();
+</script>
+<script src="./icons.js?v=31"></script>
+</body>
+</html>

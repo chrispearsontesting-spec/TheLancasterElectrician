@@ -40,3 +40,14 @@ Mechanic side:
 - Paused → 423. Wrong code → 403 with tries left. 5 wrong tries within 15 minutes lock that ID for 15 minutes (`lock/{id}.json`, any IP) → 429. A missing code doesn't count as a try. Per-IP limiters still apply.
 
 Tests: `controls.test.mjs` (run by `npm test`).
+
+## Show mode (`show-lib.js`)
+The same sticker/QR can show a public car card instead of the mechanic upload form.
+- `POST /show` (app origin) → `{showId, showKey}`; only `sha256(showKey)` is stored in `show/{sid}/meta.json`.
+- `POST /show/{sid}/photo` / `clip` (X-Show-Key, raw body): sniffed JPEG/PNG/WebP (≤1.5 MB each, 15 MB total, phone shrinks to ~200 KB) and MP4/WebM clips (2 max, 20 MB total).
+- `PUT /show/{sid}` (X-Show-Key): whitelisted, sanitised card → `show/{sid}/card.json`; files the card no longer uses are deleted.
+- `DELETE /show/{sid}` = Unpublish: deletes everything for that showcase. `DELETE /show/{sid}/f/{name}` removes one file.
+- Public: `GET /show/{sid}` (card, 60 s cache) and `GET /show/{sid}/f/{name}` (immutable, nosniff, Range for clips). 404 until published.
+- Owner: `GET|POST /mode/{uploadId}` (X-Owner-Key) `{mode:"show"|"mechanic", showId?, showKey?}`; the showcase key is checked so a sticker can only point at its own showcase.
+  In Show mode `/info` and `/resolve` return only `{ok, mode:"show", showId}`; upload, transcribe and code checks answer 423 `{state:"show"}`.
+- No lifecycle rule on `show/`: a published card stays until Unpublish. Photo/clip uploads use the 120/min limiter (key `show-file:`), other writes the 10/min one.

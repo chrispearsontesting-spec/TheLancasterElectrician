@@ -62,6 +62,11 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .paused{background:#2e2410;border:1px solid #5c4a1f;color:#f5b84a;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:10px;line-height:1.4}
 .chk{display:flex;gap:8px;align-items:center;font-size:13px;color:#b0b0b0;margin-top:10px}
 .chk input{width:18px;height:18px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#1c1c1e;border:1px solid #2a2a2e;border-radius:14px;padding:4px;gap:4px;margin-bottom:10px}
+.seg button{background:none;border:0;color:#b0b0b0;font-size:14.5px;font-weight:600;border-radius:10px;min-height:42px;cursor:pointer;font-family:inherit}
+.seg button[aria-pressed="true"]{background:#f5b84a;color:#111}
+.seg button:disabled{opacity:.6}
+.showOn{background:#2e2410;border:1px solid #5c4a1f;color:#f5b84a;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:10px;line-height:1.4}
 .linkTxt{font-size:11px;color:#8b8b8b;word-break:break-all;margin-top:8px}
 </style>
 </head>
@@ -70,11 +75,14 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 <p class="lead">Your mechanic scans this code (or opens the link) and sends photos, invoices and notes. They land here and are saved on this phone, then wiped from the cloud.</p>
 
 <div class="card">
+  <div class="seg" role="group" aria-label="What the QR shows"><button type="button" id="modeMech" aria-pressed="true">Mechanic mode</button><button type="button" id="modeShow" aria-pressed="false">Show mode</button></div>
+  <p class="note" id="modeTxt" style="margin-top:0">The QR lets your mechanic send work photos and invoices.</p>
   <div class="carRow" id="carRow"></div>
   <div class="qrBox">
     <canvas id="qr" width="10" height="10" aria-label="QR code for the mechanic upload link"></canvas>
     <div class="cap" id="qrCap">Scan to send work photos &amp; invoices</div>
   </div>
+  <div class="showOn hide" id="showBanner">Show mode is on. Anyone who scans this QR sees your car's showcase. Uploads are off until you switch back to Mechanic mode.</div>
   <div class="paused hide" id="pausedBanner">Uploads are paused. Your mechanic will see a message asking you to turn them back on.</div>
   <div class="status" id="regStatus"></div>
   <button class="btn" type="button" id="share" data-ico="mail">Share link</button>
@@ -85,11 +93,18 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <div class="linkTxt" id="linkTxt"></div>
 </div>
 
+<div class="card" id="showCard">
+  <h2>Showcase</h2>
+  <p class="note" id="showTxt">Make a show card with photos, stats and mods. Show mode points this same QR at it.</p>
+  <a class="btn" href="showcase-edit.html" id="editShow" data-ico="star">Edit showcase</a>
+</div>
+
 <div class="card" id="ctlCard">
   <h2>Link controls</h2>
-  <div class="ctl"><div><div class="t">Pause uploads</div><div class="d" id="pauseTxt">Uploads are on. Your mechanic can send work.</div></div>
+  <p class="note hide" id="mechOnly">Pause and job code only apply in Mechanic mode.</p>
+  <div class="ctl" id="pauseRow"><div><div class="t">Pause uploads</div><div class="d" id="pauseTxt">Uploads are on. Your mechanic can send work.</div></div>
     <label class="sw" aria-label="Pause uploads"><input type="checkbox" id="pause"/><span></span></label></div>
-  <div class="ctl" style="display:block">
+  <div class="ctl" style="display:block" id="codeRow">
     <div class="t">Job code <span class="note">(optional)</span></div>
     <div class="d" id="codeTxt">No code. Anyone with the QR or link can send work.</div>
     <div id="codeShowRow" class="hide" style="margin-top:8px"><span class="codeShow" id="codeShow"></span></div>
@@ -123,7 +138,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
-<script src="./uploads-client.js?v=3"></script>
+<script src="./uploads-client.js?v=4"></script>
 <script src="./icons.js?v=31"></script>
 <script>
 (function(){
@@ -157,7 +172,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
       g.font="700 "+Math.round(scale*3.2)+"px Arial, sans-serif";
       g.fillText("Driv3"+(plate?" · "+plate:""),px/2,px+Math.round(scale*2.2));
       g.font="500 "+Math.round(scale*2.4)+"px Arial, sans-serif";
-      g.fillText("Mechanic: scan to send photos & invoices",px/2,px+Math.round(scale*6));
+      g.fillText(showMode()?"Scan to see my car":"Mechanic: scan to send photos & invoices",px/2,px+Math.round(scale*6));
     }
   }
   drawQr($("qr"),8,false);
@@ -181,6 +196,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   }
   $("copy").onclick=copy;
   $("share").onclick=function(){
+    if(showMode()){ var t2="Have a look at my "+U.niceName(car)+":"; if(navigator.share){ navigator.share({title:"Driv3 showcase",text:t2,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); } else copy(); return; }
     var text="Please send photos, invoices and notes for my "+U.niceName(car)+(plate?" ("+plate+")":"")+" here:";
     if(car.upCode&&$("codeInMsg").checked) text+=" (job code "+car.upCode+")";
     if(navigator.share){ navigator.share({title:"Driv3 upload link",text:text,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); }
@@ -188,7 +204,8 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   };
 
   // Activate the link on the server (stores only the hash of this phone's secret key).
-  U.register(car).then(function(r){ $("regStatus").textContent="Link is active."; $("regStatus").className="status good"; syncFromServer(r); },
+  U.register(car).then(function(r){ $("regStatus").textContent="Link is active."; $("regStatus").className="status good"; syncFromServer(r);
+    U.getMode(idx).then(function(){ reload(); paintCtl(); },function(){}); },
     function(e){ $("regStatus").textContent="Link not active yet: "+e.message+". It will retry next time."; $("regStatus").className="status bad"; });
 
   // ---- Phase 2: pause, job code, new link ----
@@ -206,7 +223,14 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     var p=!!car.upPaused;
     $("pause").checked=p;
     $("pauseTxt").textContent=p?"Paused. Your mechanic can't send anything until you turn this off.":"Uploads are on. Your mechanic can send work.";
-    $("pausedBanner").classList.toggle("hide",!p);
+    var sm=showMode();
+    $("pausedBanner").classList.toggle("hide",!p||sm);
+    $("showBanner").classList.toggle("hide",!sm);
+    $("modeMech").setAttribute("aria-pressed",String(!sm)); $("modeShow").setAttribute("aria-pressed",String(sm));
+    $("modeTxt").textContent=sm?"The QR shows your car's showcase. Nothing else from Driv3 is shared.":"The QR lets your mechanic send work photos and invoices.";
+    $("qrCap").textContent=sm?"Scan to see my car":"Mechanic: scan to send photos & invoices"+(plate?" for "+plate:"");
+    $("pauseRow").classList.toggle("hide",sm); $("codeRow").classList.toggle("hide",sm); $("mechOnly").classList.toggle("hide",!sm);
+    $("showTxt").textContent=car.showId&&car.showPublished?"Your showcase is published. Edit it any time.":"Make a show card with photos, stats and mods. Show mode points this same QR at it.";
     var code=car.upCode||"", unknown=!code&&car.srvCode;
     $("codeShowRow").classList.toggle("hide",!code);
     $("codeShow").textContent=code;
@@ -225,6 +249,18 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     paintCtl();
   }
   $("codeInMsg").onchange=paintCtl;
+  function showMode(){ return car.upMode==="show"; }
+  $("editShow").href="showcase-edit.html?car="+idx;
+  async function pickMode(m){
+    reload(); if((m==="show")===showMode()) return;
+    if(m==="show"&&!(car.showId&&car.showPublished)){ ctlSay(""); $("regStatus").textContent="Publish your showcase first, then switch to Show mode."; $("regStatus").className="status bad"; $("showCard").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+    $("modeMech").disabled=$("modeShow").disabled=true;
+    try{ await U.setMode(idx,m); reload(); $("regStatus").textContent=m==="show"?"Show mode on. The same QR now opens your showcase.":"Mechanic mode on. Your mechanic can send work again."; $("regStatus").className="status good"; }
+    catch(e){ $("regStatus").textContent="Couldn't switch: "+e.message; $("regStatus").className="status bad"; }
+    $("modeMech").disabled=$("modeShow").disabled=false; drawQr($("qr"),8,false); paintCtl();
+  }
+  $("modeMech").onclick=function(){ pickMode("mechanic"); };
+  $("modeShow").onclick=function(){ pickMode("show"); };
   $("pause").onchange=async function(){
     var want=this.checked, el=this; el.disabled=true; ctlSay(want?"Pausing…":"Turning uploads back on…");
     try{ await U.setControls(idx,{paused:want}); ctlSay(want?"Uploads paused.":"Uploads are on again.","good"); }

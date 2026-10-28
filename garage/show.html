@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; media-src https://dipstick-uploads.chris-pearson-testing.workers.dev; connect-src https://dipstick-uploads.chris-pearson-testing.workers.dev http://localhost:8787; frame-src https://www.youtube-nocookie.com https://open.spotify.com; base-uri 'none'; form-action 'none'"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<title>Car showcase · Driv3</title>
+<link rel="icon" href="./icon.svg"/>
+<!-- All Show mode styling lives in this one block so the card can be reskinned later. -->
+<style>
+:root{--bg:#0b0c0e;--card:#141416;--line:#2a2a2e;--ink:#f2f2f2;--mute:#8b8b8b;--gold:#f5b84a;--gold2:#c98d22;--bar:#2a2a2e;--radius:20px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font)}
+body{margin:0 auto;max-width:480px;padding:calc(14px + env(safe-area-inset-top)) 14px 30px}
+a{color:var(--gold)}
+.hide{display:none !important}
+.tt{background:linear-gradient(160deg,#1b1b1f,#111113);border:2px solid var(--gold2);border-radius:var(--radius);overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.hero{position:relative;aspect-ratio:4/3;background:#000}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hero .noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:14px}
+.hero .shade{position:absolute;left:0;right:0;bottom:0;padding:40px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+.hero h1{margin:0;font-size:26px;line-height:1.1;font-weight:800;letter-spacing:-.01em}
+.hero .sub{font-size:14px;color:#d0d0d0;margin-top:4px}
+.plate{position:absolute;top:12px;right:12px;display:inline-flex;border-radius:4px;overflow:hidden;border:2px solid #222;font-family:Arial,Helvetica,sans-serif;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.plate .uk{background:#003399;color:#fc0;padding:5px;font-size:9px;display:flex;align-items:center}
+.plate .reg{background:#f4d000;color:#111;padding:5px 10px;letter-spacing:.12em;font-size:16px}
+.badge{position:absolute;top:12px;left:12px;background:var(--gold);color:#111;font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:4px 10px}
+.stats{padding:12px 14px 14px}
+.stat{display:grid;grid-template-columns:96px 1fr 76px;align-items:center;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,.06)}
+.stat:first-child{border-top:0}
+.stat .k{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.stat .v{font-size:17px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:11px;color:var(--mute);font-weight:600;margin-left:2px}
+.track{height:8px;border-radius:99px;background:var(--bar);overflow:hidden}
+.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold2),var(--gold));width:0;transition:width .8s ease}
+.best{margin:4px 14px 14px;padding:10px 12px;border-radius:14px;background:#2e2410;border:1px solid #5c4a1f}
+.best .k{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+.best .v{font-size:22px;font-weight:800;margin-top:2px}
+.best .w{font-size:13px;color:#d6c39a}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-top:12px}
+.sec h2{font-size:13px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin:0 0 8px}
+.mods{list-style:none;margin:0;padding:0}
+.mods li{padding:8px 0;border-top:1px solid #222226}
+.mods li:first-child{border-top:0;padding-top:0}
+.mods b{display:block;font-size:15px}
+.mods span{display:block;font-size:13px;color:#b0b0b0;margin-top:2px;line-height:1.4}
+.story{font-size:15px;line-height:1.55;white-space:pre-wrap;margin:0;color:#e2e2e2}
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.gal button{padding:0;border:0;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:1;cursor:pointer}
+.gal img{width:100%;height:100%;object-fit:cover;display:block}
+.vid{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;margin-top:8px}
+.vid:first-of-type{margin-top:0}
+.vid button{position:absolute;inset:0;border:0;padding:0;background:#000;cursor:pointer;width:100%}
+.vid button img{width:100%;height:100%;object-fit:cover;opacity:.85;display:block}
+.vid .play{position:absolute;left:50%;top:50%;width:64px;height:44px;margin:-22px 0 0 -32px;border-radius:12px;background:rgba(255,0,0,.9);display:flex;align-items:center;justify-content:center}
+.vid .play:after{content:"";border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px}
+.vid iframe,.music iframe{width:100%;height:100%;border:0;display:block}
+.music{border-radius:14px;overflow:hidden;height:352px;background:#000}
+.music.yt{height:auto;aspect-ratio:16/9}
+.clip video{width:100%;border-radius:14px;background:#000;display:block;margin-top:8px}
+.cap{font-size:12.5px;color:#b0b0b0;margin-top:4px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:14px;background:#1c1c1e;border:1px solid var(--line);color:var(--ink) !important;text-decoration:none;font-weight:600;font-size:15px;margin-top:10px}
+.btn.ig{background:linear-gradient(90deg,#833ab4,#e1306c,#f77737);border:0;color:#fff !important}
+.foot{text-align:center;font-size:12.5px;color:var(--mute);margin-top:22px}
+.foot a{color:var(--gold);text-decoration:none;font-weight:700}
+.empty{text-align:center;padding:40px 18px}
+.empty h1{font-size:22px;margin:10px 0 8px}
+.empty p{color:#b0b0b0;line-height:1.5;margin:0}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px}
+.lb img{max-width:100%;max-height:78vh;border-radius:10px;object-fit:contain}
+.lb .lbcap{color:#ddd;font-size:14px;margin-top:10px;text-align:center;min-height:18px}
+.lb .nav{display:flex;gap:10px;margin-top:12px}
+.lb button{background:#1c1c1e;border:1px solid var(--line);color:#fff;border-radius:12px;min-width:56px;height:46px;font-size:18px;cursor:pointer}
+.lb .close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px}
+</style>
+</head>
+<body>
+<main id="app"><div class="empty"><p>Loading…</p></div></main>
+<script src="./uploads-config.js?v=1"></script>
+<script src="./show-parse.js?v=1"></script>
+<script src="./show-app.js?v=1"></script>
+</body>
+</html>

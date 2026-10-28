@@ -169,8 +169,26 @@
     await register(c);
     var body={}; if(c.upPaused) body.paused=true; if(c.upCode) body.code=c.upCode;
     if(Object.keys(body).length) await setControls(i,body);
+    // Show mode: the new sticker keeps the same mode and showcase.
+    if(c.showId&&c.showKey) await setMode(i,c.upMode==="show"?"show":"mechanic");
     return {car:garage().cars[i],downloaded:got};
   }
-  window.DipUploads={setControls:setControls,rotate:rotate,api:API,garage:garage,ensureIds:ensureIds,link:link,register:register,checkCar:checkCar,checkAll:checkAll,
+  // ---- Show mode ----
+  // Point the sticker at Mechanic uploads or at this car's public showcase. Needs the owner key (and the showcase key to prove it's ours).
+  async function setMode(i,mode){
+    var s=garage(); var c=s.cars[i]; if(!c||!c.upId) throw new Error("No upload link yet");
+    var body={mode:mode}; if(c.showId&&c.showKey){ body.showId=c.showId; body.showKey=c.showKey; }
+    var r;
+    try{ r=await (await api("/mode/"+c.upId,{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Key":c.upKey},body:JSON.stringify(body)})).json(); }
+    catch(e){ if(e.status===401||e.status===404){ await register(c); r=await (await api("/mode/"+c.upId,{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Key":c.upKey},body:JSON.stringify(body)})).json(); } else throw e; }
+    s=garage(); c=s.cars[i]; c.upMode=r.mode; saveGarage(s); return r;
+  }
+  async function getMode(i){
+    var c=garage().cars[i]; if(!c||!c.upId) return null;
+    var r=await (await api("/mode/"+c.upId,{headers:{"X-Owner-Key":c.upKey}})).json();
+    var s=garage(); s.cars[i].upMode=r.mode; saveGarage(s); return r;
+  }
+  function showLink(c){ var u=new URL("show.html",location.href); u.search="";u.hash=""; u.searchParams.set("s",c.showId); return u.toString(); }
+  window.DipUploads={setMode:setMode,getMode:getMode,showLink:showLink,setControls:setControls,rotate:rotate,api:API,garage:garage,ensureIds:ensureIds,link:link,register:register,checkCar:checkCar,checkAll:checkAll,
     jobsFor:jobsFor,getFile:getFile,removeLocal:removeLocal,unseenCount:unseenCount,markSeen:markSeen,niceName:niceName,cleanPlate:cleanPlate,fileTitle:fileTitle,cleanTitle:cleanTitle};
 })();

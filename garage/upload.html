@@ -167,11 +167,17 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
     return r.json().catch(function(){return {}}).then(function(j){
       if(r.status===404||r.status===410){ lockForm(); linkError(j.error||"This link is not active.",r.status===410?"warn":"bad"); return; }
       if(!r.ok) return;
+      if(j.mode==="show"){ goShow(j.showId); return; }
       if(j.paused){ showPaused(); return; }
       if(j.needCode){ askCode(j.locked?"Too many wrong codes. This link is locked for 15 minutes. Try again later.":""); }
     });
   },function(){ /* offline: try at upload time */ });
 
+  // Show mode: the owner pointed this sticker at their car's public showcase (same QR, nothing else shared).
+  function goShow(sid){
+    if(sid&&/^[A-Za-z0-9_-]{22}$/.test(sid)){ lockForm(); linkError("Opening the car's showcase…","info"); location.replace("./show.html?s="+encodeURIComponent(sid)); }
+    else { lockForm(); linkError("The owner has switched this QR to Show mode, but their showcase isn't published right now.","warn"); }
+  }
   // ---- owner controls: paused / job code ----
   var jobCode="";
   try{ jobCode=sessionStorage.getItem("dip.code."+uid)||""; }catch(e){}
@@ -185,6 +191,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   }
   // Server answers for code/paused/retired problems; returns true if handled.
   function handleGate(status,j){
+    if(j.state==="show"){ goShow(j.showId); return true; }
     if(status===423||j.state==="paused"){ showPaused(); return true; }
     if(status===410){ lockForm(); $("codeCard").classList.add("hide"); linkError(j.error||"This link is not active.","warn"); return true; }
     if(j.state==="code"||j.state==="locked"){ jobCode=""; try{sessionStorage.removeItem("dip.code."+uid)}catch(e){} askCode(j.error); return true; }

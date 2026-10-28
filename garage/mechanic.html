@@ -22,7 +22,12 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .carRow{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 .carRow b{font-size:16px}
 .qrBox{text-align:center}
-.qrBox canvas{width:100%;max-width:340px;height:auto;display:block;margin:0 auto;border-radius:10px;box-shadow:0 0 0 1px #2a2a2e}
+.qrBox canvas{position:absolute;left:-99999px;top:0;width:10px;height:10px;visibility:hidden}
+.qrBox{text-align:left}.stTop{display:flex;gap:12px;align-items:center}.stTop b{font-size:16px}.stTop .cap{margin-top:2px}
+.stIco{flex:none;width:40px;height:40px;border-radius:10px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;font-size:22px;color:#cfcfcf}
+.btn.order{display:flex !important;flex-direction:column;align-items:center !important;justify-content:center;width:100%;margin-top:12px;background:#f2f2f2 !important;color:#0b0c0e !important;font-weight:700}
+.btn.order small{font-size:12px;font-weight:500;color:#3a3a3e;margin-top:2px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.row3 .btn{margin:0 !important;min-height:46px;padding:10px 6px !important;font-size:14px !important;justify-content:center !important;text-align:center}
 .qrBox .cap{font-size:13px;color:#b0b0b0;margin-top:8px}
 .seg.sm{margin:10px 0 0}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -86,8 +91,10 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <p class="note" id="modeTxt" style="margin-top:0">The QR lets your mechanic send work photos and invoices.</p>
   <div class="carRow" id="carRow"></div>
   <div class="qrBox">
-    <canvas id="qr" width="10" height="10" role="img" aria-label="Your Driv3 QR sticker"></canvas>
-    <div class="cap" id="qrCap">Your Driv3 sticker</div>
+    <canvas id="qr" width="10" height="10" aria-hidden="true"></canvas>
+    <div class="stTop"><span class="stIco" aria-hidden="true">&#9638;</span><div><b>Your car's QR sticker</b><div class="cap" id="qrCap">Your Driv3 sticker</div></div></div>
+    <button class="btn order" type="button" id="orderSt"><span>Order a printed sticker</span><small>Tough engine-bay sticker, posted to you</small></button>
+    <div class="row3"><button class="btn" type="button" id="qDl">Download image</button><button class="btn" type="button" id="qPrint">Print</button><button class="btn" type="button" id="qShare">Share</button></div>
   </div>
   <div class="showOn hide" id="showBanner">Show mode is on. Anyone who scans this QR sees your car's showcase. Uploads are off until you switch back to Mechanic mode.</div>
   <div class="paused hide" id="pausedBanner">Uploads are paused. Your mechanic will see a message asking you to turn them back on.</div>
@@ -198,6 +205,19 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     var a=document.createElement("a"); a.href=URL.createObjectURL(f); a.download=f.name; document.body.appendChild(a); a.click();
     setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
   }
+  // Printed sticker shop: set this to the shop URL when it exists; empty = "coming soon" + register interest by email.
+  var STICKER_SHOP_URL="";
+  var STICKER_CONTACT="Chris.pearson.testing@gmail.com";
+  $("orderSt").onclick=async function(){
+    if(STICKER_SHOP_URL){ window.open(STICKER_SHOP_URL+(STICKER_SHOP_URL.indexOf("?")<0?"?":"&")+"plate="+encodeURIComponent(plate||"")+"&id="+encodeURIComponent(car.upId||""),"_blank","noopener"); return; }
+    if(!(await ask("Printed stickers coming soon",["We're getting tough, weatherproof engine-bay stickers made, posted to your door.","Register your interest and we'll email you when they're ready."],"Register interest"))) return;
+    var subj="Driv3 printed sticker – register interest"+(plate?" ("+plate+")":"");
+    var body="Hi,\n\nPlease let me know when printed Driv3 stickers are available.\n\nPlate: "+(plate||"-")+"\nUpload ID: "+(car.upId||"-")+"\nSticker ID: "+stickerId()+"\n\nThanks";
+    location.href="mailto:"+STICKER_CONTACT+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+  };
+  $("qDl").onclick=function(){ $("dl").click(); };
+  $("qPrint").onclick=function(){ $("dlPrint").click(); };
+  $("qShare").onclick=function(){ $("shareSt").click(); };
   $("dl").onclick=function(){ stickerFile(Driv3Sticker.SIZES.hi).then(save); };
   $("dlPrint").onclick=function(){ stickerFile(Driv3Sticker.SIZES.print,300).then(save); };
   $("shareSt").onclick=function(){
@@ -317,7 +337,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
       $("linkTxt").textContent=url; drawQr();
       $("regStatus").textContent="New link is active. The old QR no longer works. Save or share the new one below."; $("regStatus").className="status good";
       ctlSay("Done."+(r.downloaded?" Collected "+r.downloaded+" upload"+(r.downloaded>1?"s":"")+" first.":""),"good");
-      document.querySelector(".qrBox").scrollIntoView({behavior:"smooth",block:"center"});
+      document.querySelector(".qrBox").parentNode.scrollIntoView({behavior:"smooth",block:"center"});
       render();
     }catch(e){ ctlSay("Couldn't make a new link: "+e.message+". Your old link still works.","bad"); }
     b.disabled=false; b.textContent="New link"; paintCtl();

@@ -71,8 +71,8 @@
       var n=b.getAttribute("data-n"); if(n==null) return; if(n==="del") entry=entry.slice(0,-1); else press(n); dots(); });
     if(!api._kd) api._kd=doc.addEventListener("keydown",function(e){ if(!el||!el.parentNode) return; if(/^\d$/.test(e.key)) { press(e.key); dots(); } else if(e.key==="Backspace"){ entry=entry.slice(0,-1); dots(); } })||1;
   }
-  function msg(t){ var m=doc.getElementById("d3msg"); if(m) m.textContent=t||""; }
-  function dots(bad){ var d=doc.getElementById("d3dots"); if(!d) return; var r=rec(), n=r?r.len:4, h="";
+  function msg(t){ var m=(el&&el.querySelector("#d3msg")); if(m) m.textContent=t||""; }
+  function dots(bad){ var d=(el&&el.querySelector("#d3dots")); if(!d) return; var r=rec(), n=r?r.len:4, h="";
     for(var i=0;i<n;i++) h+='<i class="'+(i<entry.length?"on":"")+'"></i>'; d.innerHTML=h;
     if(bad){ d.classList.remove("bad"); void d.offsetWidth; d.classList.add("bad"); } }
   function waitLeft(){ var t=J(TRIES); return t&&t.until>Date.now()?t.until-Date.now():0; }
@@ -80,7 +80,7 @@
   function tick(){
     clearTimeout(timer); var w=waitLeft();
     if(w>0){ setPad(false); msg("Too many wrong tries. Try again in "+Math.ceil(w/1000)+" seconds."); timer=setTimeout(tick,1000); }
-    else { setPad(true); var t=J(TRIES); if(t&&t.n) msg((MAX_TRIES-t.n)+" tr"+(MAX_TRIES-t.n===1?"y":"ies")+" left before a wait."); else if(/seconds/.test((doc.getElementById("d3msg")||{}).textContent||"")) msg(""); }
+    else { setPad(true); var t=J(TRIES); if(t&&t.n) msg((MAX_TRIES-t.n)+" tr"+(MAX_TRIES-t.n===1?"y":"ies")+" left before a wait."); else if(/seconds/.test(((el&&el.querySelector("#d3msg"))||{}).textContent||"")) msg(""); }
   }
   function press(n){
     var r=rec(); if(busy||!r||waitLeft()>0||entry.length>=r.len) return;
@@ -111,11 +111,11 @@
     addStyle(); build(); doc.documentElement.classList.add("d3lk");
     if(!el.parentNode){ if(doc.body) doc.body.appendChild(el); else doc.addEventListener("DOMContentLoaded",function(){ if(doc.documentElement.classList.contains("d3lk")) doc.body.appendChild(el); }); }
     entry=""; dots(); tick();
-    var b=doc.getElementById("d3bio");
+    var b=(el&&el.querySelector("#d3bio"));
     if(provider&&b){ Promise.resolve(provider.available()).then(function(ok){ if(ok){ b.style.display=""; b.textContent="Use "+(provider.name||"fingerprint"); } }).catch(function(){}); }
   }
   function lockNow(){ ss.removeItem("d3.unlock"); if(isOn()) show(); }
-  function guard(){ if(isOn()&&!unlocked()) show(); }
+  function guard(){ if(!isOn()) return; if(unlocked()) ss.removeItem("d3.hiddenAt"); else show(); }
   doc.addEventListener("visibilitychange",function(){
     if(doc.visibilityState==="hidden"){ if(isOn()) ss.setItem("d3.hiddenAt",String(Date.now())); }
     else { if(isOn()&&!unlocked()) show(); else ss.removeItem("d3.hiddenAt"); }

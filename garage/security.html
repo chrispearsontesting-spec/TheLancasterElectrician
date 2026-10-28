@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<script src="./app-lock.js?v=1"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>Security &amp; backup · Driv3</title>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="stylesheet" href="./ui.css?v=78"/>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{margin:0 auto;max-width:440px;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
+h1{font-size:26px;margin:8px 0 6px;font-weight:650}
+.lead{font-size:14px;color:#8b8b8b;margin:0 0 14px;line-height:1.45}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;margin-bottom:12px;padding:14px}
+.card h2{font-size:17px;margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.note{font-size:13px;color:#8b8b8b;margin:6px 0;line-height:1.45}
+.status{font-size:13px;color:#8b8b8b;margin-top:8px;min-height:18px;line-height:1.4}
+.status.good{color:#3dd68c}.status.bad{color:#ff6b6b}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:#222226;color:#b0b0b0}
+.pill.on{background:#123524;color:#3dd68c}
+label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
+.in{width:100%;font-size:17px !important;padding:12px !important;border-radius:12px !important;color:#f2f2f2 !important}
+.in.pin{font-size:24px !important;letter-spacing:.35em;text-align:center}
+.btn{display:block;width:100%;text-align:center;margin-top:10px;padding:14px;border-radius:18px;font-size:16px;font-family:inherit;cursor:pointer}
+.btn.green{background:#1d5a37 !important;border:1px solid #2f8a57 !important;color:#fff !important}
+.btn.danger{background:#2a1416 !important;color:#ff6b6b !important;border:1px solid #5a2328 !important}
+.btn:disabled{opacity:.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.warn{background:#2e2410;border:1px solid #5c4a1f;color:#f5c66a;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-top:10px;line-height:1.45}
+.meter{height:6px;border-radius:3px;background:#222226;margin-top:6px;overflow:hidden}.meter i{display:block;height:100%;width:0;transition:width .2s}
+.sum{background:#0f1a14;border:1px solid #1f3a2a;border-radius:12px;padding:12px;margin-top:10px;font-size:14px;line-height:1.6}
+.sum b{font-size:20px}
+.hide{display:none !important}
+.file{display:block;width:100%;padding:12px;border:1px dashed #3a3a40;border-radius:12px;color:#b0b0b0;font-size:14px;text-align:center}
+.file input{display:none}
+a.back{display:block;text-align:center;color:#8ab4ff;margin-top:14px;text-decoration:none;font-size:15px}
+</style>
+</head>
+<body>
+<p class="note" style="margin:0;letter-spacing:.08em;text-transform:uppercase;font-size:11px">Driv3</p>
+<h1>Security &amp; backup</h1>
+<p class="lead">Your cars, photos and invoices live only on this phone. Lock the app, and keep a backup file somewhere safe.</p>
+
+<div class="card" id="lockCard">
+  <h2>App lock <span class="pill" id="lockPill">Off</span></h2>
+  <p class="note">Ask for a PIN when Driv3 opens, and again after 5 minutes in the background. This is a privacy screen, so someone picking up your phone can't browse your cars. It doesn't encrypt the data stored on the phone.</p>
+  <div id="lockOff">
+    <label class="l" for="pin1">New PIN (4 to 6 digits)</label><input class="in pin" id="pin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
+    <label class="l" for="pin2">Type it again</label><input class="in pin" id="pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
+    <button class="btn green" type="button" id="pinOn">Turn on app lock</button>
+  </div>
+  <div id="lockOnBox" class="hide">
+    <label class="l" for="pinCur">Current PIN</label><input class="in pin" id="pinCur" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password"/>
+    <div id="chgBox" class="hide">
+      <label class="l" for="pinN1">New PIN</label><input class="in pin" id="pinN1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
+      <label class="l" for="pinN2">Type it again</label><input class="in pin" id="pinN2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
+    </div>
+    <div class="row2"><button class="btn" type="button" id="pinChg">Change PIN</button><button class="btn danger" type="button" id="pinOff">Turn off</button></div>
+    <button class="btn" type="button" id="lockNow">Lock now</button>
+  </div>
+  <p class="note">Forgot the PIN? The only way out is clearing Driv3's data in your browser, which deletes your cars on this phone. Keep a backup so you can restore them.</p>
+  <div class="status" id="lockStatus"></div>
+</div>
+
+<div class="card" id="bkCard">
+  <h2>Make a backup</h2>
+  <p class="note" id="lastBk">You haven't made a backup on this phone yet.</p>
+  <p class="note">One locked file with everything: cars, reminders, history, photos, PDFs, mechanic links and shared reports. Save it to Google Drive or email it to yourself.</p>
+  <label class="l" for="bp1">Passphrase</label><input class="in" id="bp1" type="password" autocomplete="new-password" placeholder="e.g. four random words"/>
+  <div class="meter"><i id="meter"></i></div><p class="note" id="strength"></p>
+  <label class="l" for="bp2">Type it again</label><input class="in" id="bp2" type="password" autocomplete="new-password"/>
+  <div class="warn">Write the passphrase down. If you lose it, nobody can open the backup, not even us.</div>
+  <button class="btn green" type="button" id="mkBk">Make backup</button>
+  <div id="bkReady" class="hide">
+    <div class="sum" id="bkSum"></div>
+    <button class="btn green" type="button" id="saveBk">Save backup file</button>
+    <button class="btn" type="button" id="dlBk">Download instead</button>
+  </div>
+  <div class="status" id="bkStatus"></div>
+</div>
+
+<div class="card" id="rsCard">
+  <h2>Restore a backup</h2>
+  <p class="note">Use this on a new phone, or after clearing Driv3's data.</p>
+  <label class="file" id="fileLab">Choose a .driv3 backup file<input type="file" id="rsFile" accept=".driv3,application/octet-stream"/></label>
+  <label class="l" for="rp">Passphrase</label><input class="in" id="rp" type="password" autocomplete="off"/>
+  <button class="btn" type="button" id="openBk">Open backup</button>
+  <div id="rsReady" class="hide">
+    <div class="sum" id="rsSum"></div>
+    <div class="warn"><b>This replaces everything Driv3 has on this phone</b> with what's in the backup. Anything added since the backup was made will be lost. Your app lock PIN stays as it is.</div>
+    <button class="btn danger" type="button" id="doRs">Replace with this backup</button>
+  </div>
+  <div class="status" id="rsStatus"></div>
+</div>
+
+<a class="back" href="home.html">Back to Driv3</a>
+
+<script src="./backup.js?v=1"></script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)}, L=window.Driv3Lock, B=window.Driv3Backup;
+  function say(id,t,cls){ $(id).textContent=t||""; $(id).className="status"+(cls?" "+cls:""); }
+  function digits(e){ e.target.value=e.target.value.replace(/\D/g,"").slice(0,6); }
+  ["pin1","pin2","pinCur","pinN1","pinN2"].forEach(function(i){ $(i).addEventListener("input",digits); });
+  function fmtSize(n){ return n>=1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB"; }
+  function fmtDate(ms){ return new Date(ms).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}); }
+
+  // ---- lock ----
+  function paintLock(){ var on=L.isOn(); $("lockPill").textContent=on?"On":"Off"; $("lockPill").className="pill"+(on?" on":"");
+    $("lockOff").classList.toggle("hide",on); $("lockOnBox").classList.toggle("hide",!on); }
+  $("pinOn").onclick=async function(){
+    var a=$("pin1").value,b=$("pin2").value;
+    if(!/^\d{4,6}$/.test(a)) return say("lockStatus","The PIN needs 4 to 6 digits.","bad");
+    if(a!==b) return say("lockStatus","The two PINs don't match.","bad");
+    this.disabled=true; say("lockStatus","Saving…");
+    try{ await L.setPin(a); $("pin1").value=$("pin2").value=""; say("lockStatus","App lock is on. You'll need your PIN next time Driv3 opens.","good"); }
+    catch(e){ say("lockStatus",e.message,"bad"); }
+    this.disabled=false; paintLock();
+  };
+  $("pinChg").onclick=async function(){
+    if($("chgBox").classList.contains("hide")){ $("chgBox").classList.remove("hide"); $("pinCur").focus(); this.textContent="Save new PIN"; return; }
+    var a=$("pinN1").value,b=$("pinN2").value;
+    if(!/^\d{4,6}$/.test(a)) return say("lockStatus","The new PIN needs 4 to 6 digits.","bad");
+    if(a!==b) return say("lockStatus","The two new PINs don't match.","bad");
+    try{ await L.setPin(a,$("pinCur").value); ["pinCur","pinN1","pinN2"].forEach(function(i){$(i).value=""}); $("chgBox").classList.add("hide"); this.textContent="Change PIN"; say("lockStatus","PIN changed.","good"); }
+    catch(e){ say("lockStatus",e.message,"bad"); }
+  };
+  $("pinOff").onclick=async function(){
+    try{ await L.disable($("pinCur").value); $("pinCur").value=""; say("lockStatus","App lock is off.","good"); }
+    catch(e){ say("lockStatus",e.message+" Enter it above to turn the lock off.","bad"); }
+    paintLock();
+  };
+  $("lockNow").onclick=function(){ L.lockNow(); };
+  paintLock();
+
+  // ---- backup ----
+  function paintLast(){ var t=+localStorage.getItem("gt.lastBackup")||0;
+    if(!t){ $("lastBk").textContent="You haven't made a backup on this phone yet."; return; }
+    var days=Math.floor((Date.now()-t)/86400000);
+    $("lastBk").textContent="Last backup: "+fmtDate(t)+(days>=30?" ("+days+" days ago, time for a new one)":days?" ("+days+" day"+(days>1?"s":"")+" ago)":" (today)")+"."; }
+  paintLast();
+  var COLORS=["#ff6b6b","#f5b84a","#8ab4ff","#3dd68c"];
+  $("bp1").oninput=function(){ var s=B.strength(this.value); $("strength").textContent=s.text; $("meter").style.width=this.value?((s.score+1)*25)+"%":"0"; $("meter").style.background=COLORS[s.score]; };
+  var made=null;
+  $("mkBk").onclick=async function(){
+    var a=$("bp1").value,b=$("bp2").value;
+    if(B.strength(a).score<1) return say("bkStatus","Use a longer passphrase: at least 8 characters, ideally 4 random words.","bad");
+    if(a!==b) return say("bkStatus","The two passphrases don't match.","bad");
+    var btn=this; btn.disabled=true; btn.textContent="Making backup…"; say("bkStatus","Collecting and locking your data. This can take a few seconds.");
+    try{
+      made=await B.makeFile(a);
+      var s=made.summary;
+      $("bkSum").innerHTML="<b>Backup ready</b><br>"+s.cars+" car"+(s.cars===1?"":"s")+" · "+s.files+" photo"+(s.files===1?"":"s")+" &amp; files · "+fmtSize(made.bytes.length)+"<br><span class=\"note\">"+made.name+"</span>";
+      $("bkReady").classList.remove("hide"); $("bp1").value=$("bp2").value=""; $("strength").textContent=""; $("meter").style.width="0";
+      say("bkStatus","Now save the file somewhere off this phone, like Google Drive.");
+    }catch(e){ say("bkStatus","Couldn't make the backup: "+e.message,"bad"); }
+    btn.disabled=false; btn.textContent="Make backup";
+  };
+  function saved(how){ localStorage.setItem("gt.lastBackup",String(Date.now())); paintLast(); say("bkStatus",how,"good"); }
+  function download(){
+    var url=URL.createObjectURL(new Blob([made.bytes],{type:"application/octet-stream"})), a=document.createElement("a");
+    a.href=url; a.download=made.name; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(url);a.remove()},4000);
+    saved("Downloaded "+made.name+". Move it to Google Drive or email it to yourself so it's safe if you lose the phone.");
+  }
+  $("dlBk").onclick=function(){ if(made) download(); };
+  $("saveBk").onclick=function(){
+    if(!made) return;
+    var f; try{ f=new File([made.bytes],made.name,{type:"application/octet-stream"}); }catch(e){}
+    if(f&&navigator.canShare&&navigator.canShare({files:[f]})){
+      navigator.share({files:[f],title:"Driv3 backup"}).then(function(){ saved("Backup shared. Make sure it landed somewhere safe, like Google Drive."); },
+        function(e){ if(e&&e.name==="AbortError") say("bkStatus","Not saved yet. Tap Save again, or Download instead."); else download(); });
+    }else download();
+  };
+
+  // ---- restore ----
+  var opened=null;
+  $("rsFile").onchange=function(){ var f=this.files[0]; $("fileLab").firstChild.textContent=f?f.name+" ("+fmtSize(f.size)+")":"Choose a .driv3 backup file"; opened=null; $("rsReady").classList.add("hide"); say("rsStatus",""); };
+  $("openBk").onclick=async function(){
+    var f=$("rsFile").files[0]; if(!f) return say("rsStatus","Choose the backup file first.","bad");
+    if(!$("rp").value) return say("rsStatus","Enter the backup's passphrase.","bad");
+    var btn=this; btn.disabled=true; say("rsStatus","Unlocking…");
+    try{
+      opened=await B.openFile(new Uint8Array(await f.arrayBuffer()),$("rp").value);
+      var s=opened.summary;
+      $("rsSum").innerHTML="<b>"+s.cars+" car"+(s.cars===1?"":"s")+" · "+s.files+" photo"+(s.files===1?"":"s")+" &amp; files</b><br>Made on "+fmtDate(opened.created)+" · "+fmtSize(f.size);
+      $("rsReady").classList.remove("hide"); say("rsStatus","");
+    }catch(e){ opened=null; $("rsReady").classList.add("hide"); say("rsStatus",e.message,"bad"); }
+    btn.disabled=false;
+  };
+  $("doRs").onclick=async function(){
+    if(!opened) return; var btn=this; btn.disabled=true; say("rsStatus","Restoring…");
+    try{ await B.restore(opened.snap); opened=null; $("rp").value=""; $("rsReady").classList.add("hide");
+      $("rsStatus").innerHTML='Restored. <a href="home.html" style="color:#8ab4ff">Open Driv3</a>'; $("rsStatus").className="status good"; }
+    catch(e){ say("rsStatus","Restore stopped: "+e.message,"bad"); }
+    btn.disabled=false;
+  };
+})();
+</script>
+<script src="./icons.js?v=31"></script>
+</body>
+</html>

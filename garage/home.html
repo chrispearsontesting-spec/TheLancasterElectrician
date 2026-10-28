@@ -2,6 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
+<script src="./app-lock.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <link rel="manifest" href="./manifest.json"/>
@@ -87,6 +88,8 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 #dues .cAmber .mark.ok{color:#f59e0b}
 #dues .cFlash .left{color:#ef4444 !important;animation:flashRed .85s ease-in-out infinite}
 #dues .cOver .left{color:#ff2a2a !important;animation:flashRed .55s ease-in-out infinite}
+.secLink{display:flex;align-items:center;justify-content:center;gap:7px;margin:14px auto 4px;color:#8b8b8b !important;font-size:13.5px;text-decoration:none;padding:8px}
+.secLink i{font-style:normal;font-size:11.5px;color:#f5b84a;background:#2e2410;border:1px solid #5c4a1f;border-radius:999px;padding:1px 8px}
 </style>
 </head>
 <body>
@@ -111,6 +114,9 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <a class="btn wide" href="./" data-ico="map">Route costs</a>
 <a class="btn wide" href="buy.html" data-ico="search">Buying guide</a>
 <a class="btn wide" href="history.html" data-ico="cal">History</a>
+<a class="secLink" id="secLink" href="security.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Security &amp; backup</span><i id="secDue" hidden></i></a>
+<script>(function(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null"),t=+localStorage.getItem("gt.lastBackup")||0;
+if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";}}catch(e){}})();</script>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
 <label>Number plate</label>

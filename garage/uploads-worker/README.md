@@ -25,3 +25,18 @@ Buyer-facing history reports made in `garage/share.html`, read at `garage/report
 - Expiry 30 days: checked in code (410 + wipe) and R2 lifecycle rule `delete-shares-after-30-days` on `share/`.
 
 Tests: `npm test` (runs both suites).
+
+## Link controls (phase 2)
+
+Owner-only routes (need `X-Owner-Key`):
+
+- `POST /settings/{id}` `{paused?: bool, code?: "1234" | ""}`: pause/resume uploads, set/change/clear the 4-digit job code. Only `sha256(id + ":" + code)` is stored in `reg/{id}.json` (`ch`). Changing settings clears any lockout.
+- `POST /retire/{id}`: "New link". Tombstones the reg record (`retired: true`). Mechanic routes (`/info`, `/code`, `/upload`, `/transcribe`, `/register`) then answer 410 straight away; the owner key still works for `/list`, `/file` and `DELETE /job` so pending jobs can be collected. The app collects pending jobs before and after retiring, then registers a fresh ID/key and carries pause/code over.
+
+Mechanic side:
+
+- `GET /info/{id}` → `{paused, needCode, locked}`.
+- `POST /code/{id}` `{code}`: cheap check. `/upload` and `/transcribe` also check the `X-Job-Code` header.
+- Paused → 423. Wrong code → 403 with tries left. 5 wrong tries within 15 minutes lock that ID for 15 minutes (`lock/{id}.json`, any IP) → 429. A missing code doesn't count as a try. Per-IP limiters still apply.
+
+Tests: `controls.test.mjs` (run by `npm test`).

@@ -77,11 +77,11 @@
       setState("busy"); say("Transcribing…");
       if(!blob.size||blob.size<200){ setState("idle"); say(errorText("empty"),true); return; }
       var r;
-      try{ r=await fetch(o.url(),{method:"POST",headers:{"Content-Type":blob.type||"audio/webm"},body:blob}); }
+      try{ r=await fetch(o.url(),{method:"POST",headers:Object.assign({"Content-Type":blob.type||"audio/webm"},o.headers?o.headers():{}),body:blob}); }
       catch(e){ setState("idle"); say(errorText("network"),true); return; }
       var j={}; try{ j=await r.json(); }catch(e){}
       setState("idle");
-      if(!r.ok){ say(r.status===404&&j.error?j.error:errorText("http",r.status),true); return; }
+      if(!r.ok){ say(j.error&&[403,404,410,423,429].indexOf(r.status)>=0?j.error:errorText("http",r.status),true); return; }
       if(!j.text){ say(errorText("empty"),true); return; }
       o.note.value=appendText(o.note.value,j.text,o.max||4000);
       o.note.dispatchEvent(new Event("input",{bubbles:true}));

@@ -5,6 +5,9 @@
 //   job/{uploadId}/{jobId}/meta.json -> job details, written LAST so half-finished uploads are never listed
 // Lifecycle on the bucket deletes job/ objects after 14 days (backstop; the owner's app deletes on download).
 // Owner endpoints need header X-Owner-Key; only its SHA-256 is ever stored.
+//   reg/{uploadId}.json also holds owner controls: paused (bool), ch (sha256(uploadId+":"+code) of an optional 4-digit job code),
+//     retired (old ID after "New link": uploads refused, owner key still works to collect/delete old jobs)
+//   lock/{uploadId}.json            -> wrong job-code counter {n, first, until}; 5 wrong in a row locks the ID for 15 minutes
 //   share/{id}/...                   -> "Share for sale" reports, see share-lib.js (30-day lifecycle)
 
 import { handleShare } from "./share-lib.js";
@@ -75,12 +78,49 @@ async function allowTranscribe(req, env) {
   }
   return memLimit("tx:" + ip, 10);
 }
+export const CODE = { maxTries: 5, lockMs: 15 * 60000 };
+const CODE_RE = /^\d{4}$/;
+export function codeHash(id, code) { return sha256hex(id + ":" + code); }
+const RETIRED_MSG = "This QR code has been replaced by the owner. Ask them for the new one.";
+const PAUSED_MSG = "The owner has paused uploads for this car. Ask them to turn uploads back on.";
+async function getLock(env, id) {
+  const o = await env.UPLOADS.get("lock/" + id + ".json");
+  if (!o) return null;
+  try { return JSON.parse(await o.text()); } catch (e) { return null; }
+}
+// Gate for mechanic-side writes (upload, transcribe, code check). Returns a Response to send, or null if allowed.
+async function gate(env, h, id, reg, code, now = Date.now()) {
+  if (!reg) return json({ error: "This upload link is not active. Ask the owner for a new link." }, 404, h);
+  if (reg.retired) return json({ error: RETIRED_MSG, state: "retired" }, 410, h);
+  if (reg.paused) return json({ error: PAUSED_MSG, state: "paused" }, 423, h);
+  if (!reg.ch) return null;
+  const lock = await getLock(env, id);
+  if (lock && lock.until > now) {
+    const mins = Math.max(1, Math.ceil((lock.until - now) / 60000));
+    return json({ error: "Too many wrong codes. This link is locked for " + mins + " minute" + (mins > 1 ? "s" : "") + ". Check the code with the owner.", state: "locked", retryAfter: mins * 60 }, 429, { ...h, "Retry-After": String(mins * 60) });
+  }
+  code = String(code || "").trim();
+  if (CODE_RE.test(code) && sameHex(await codeHash(id, code), reg.ch)) {
+    if (lock) await env.UPLOADS.delete("lock/" + id + ".json");
+    return null;
+  }
+  if (!code) return json({ error: "Enter the 4-digit job code from the owner.", state: "code" }, 403, h);
+  const restart = !lock || lock.until || now - (lock.first || 0) > CODE.lockMs; // first miss, after a lock ended, or old misses
+  const n = restart ? 1 : (lock.n || 0) + 1;
+  const rec = { n, first: n === 1 ? now : lock.first, until: 0 };
+  if (n >= CODE.maxTries) { rec.n = 0; rec.until = now + CODE.lockMs; }
+  await env.UPLOADS.put("lock/" + id + ".json", JSON.stringify(rec), { httpMetadata: { contentType: "application/json" } });
+  if (rec.until) return json({ error: "Too many wrong codes. This link is locked for 15 minutes. Check the code with the owner.", state: "locked", retryAfter: 900 }, 429, { ...h, "Retry-After": "900" });
+  const left = CODE.maxTries - n;
+  return json({ error: "That code isn't right. " + left + " tr" + (left > 1 ? "ies" : "y") + " left.", state: "code", triesLeft: left }, 403, h);
+}
+
 async function transcribe(req, env, h, id) {
   if (!(await allowTranscribe(req, env))) return json({ error: "Too many voice notes, try again in a minute" }, 429, { ...h, "Retry-After": "60" });
   if (!ID_RE.test(id)) return json({ error: "Not found" }, 404, h);
   if (!env.AI || typeof env.AI.run !== "function") return json({ error: "Voice notes are not available" }, 503, h);
-  const reg = await getReg(env, id);
-  if (!reg) return json({ error: "This upload link is not active. Ask the owner for a new link." }, 404, h);
+  const g = await gate(env, h, id, await getReg(env, id), req.headers.get("X-Job-Code"));
+  if (g) return g;
   const len = parseInt(req.headers.get("Content-Length") || "0", 10);
   if (len > AUDIO.maxBytes) return json({ error: "Voice note too long (60 seconds max)" }, 413, h);
   const u8 = new Uint8Array(await req.arrayBuffer());
@@ -170,7 +210,7 @@ function cors(origin) {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-Owner-Key",
+    "Access-Control-Allow-Headers": "Content-Type, X-Owner-Key, X-Job-Code",
     "Access-Control-Max-Age": "600",
     "Vary": "Origin"
   };
@@ -229,8 +269,9 @@ export async function handle(req, env) {
       if (!ID_RE.test(uid) || !HASH_RE.test(hash)) return json({ error: "Bad uploadId or ownerKeyHash" }, 400, h);
       const reg = await getReg(env, uid);
       if (reg && !sameHex(reg.h, hash)) return json({ error: "Upload ID already registered" }, 409, h);
-      await env.UPLOADS.put("reg/" + uid + ".json", JSON.stringify({ h: hash, t: Date.now(), c: reg ? reg.c : Date.now() }), { httpMetadata: { contentType: "application/json" } });
-      return json({ ok: true, created: !reg }, reg ? 200 : 201, h);
+      if (reg && reg.retired) return json({ error: "This upload ID was replaced", state: "retired" }, 410, h);
+      await env.UPLOADS.put("reg/" + uid + ".json", JSON.stringify({ ...(reg || {}), h: hash, t: Date.now(), c: reg ? reg.c : Date.now() }), { httpMetadata: { contentType: "application/json" } });
+      return json({ ok: true, created: !reg, paused: !!(reg && reg.paused), hasCode: !!(reg && reg.ch) }, reg ? 200 : 201, h);
     }
 
     if (!ID_RE.test(id)) return json({ error: "Not found" }, 404, h);
@@ -239,7 +280,18 @@ export async function handle(req, env) {
     if (route === "info" && req.method === "GET" && parts.length === 2) {
       const reg = await getReg(env, id);
       if (!reg) return json({ error: "This upload link is not active yet. Ask the owner to open Mechanic uploads in Driv3." }, 404, h);
-      return json({ ok: true, limits: LIMITS }, 200, h);
+      if (reg.retired) return json({ error: RETIRED_MSG, state: "retired" }, 410, h);
+      const lock = reg.ch ? await getLock(env, id) : null;
+      return json({ ok: true, limits: LIMITS, paused: !!reg.paused, needCode: !!reg.ch, locked: !!(lock && lock.until > Date.now()) }, 200, h);
+    }
+
+    // Mechanic page: check the job code before filling the form in (counts towards the 5-try lock).
+    if (route === "code" && req.method === "POST" && parts.length === 2) {
+      let body = {}; try { body = await req.json(); } catch (e) { /* empty */ }
+      const reg = await getReg(env, id);
+      if (reg && !reg.retired && !reg.paused && !reg.ch) return json({ ok: true, needCode: false }, 200, h);
+      const g = await gate(env, h, id, reg, body && body.code);
+      return g || json({ ok: true }, 200, h);
     }
 
     // Mechanic uploads one job (multipart).
@@ -247,6 +299,8 @@ export async function handle(req, env) {
       const reg = await getReg(env, id);
       if (!reg) return json({ error: "This upload link is not active. Ask the owner for a new link." }, 404, h);
       const len = parseInt(req.headers.get("Content-Length") || "0", 10);
+      const g0 = await gate(env, h, id, reg, req.headers.get("X-Job-Code")); // retired / paused / job code
+      if (g0) return g0;
       if (len > LIMITS.maxJobBytes + 1024 * 1024) return json({ error: "Too big: 50 MB per upload max" }, 413, h);
       if (!/^multipart\/form-data/i.test(req.headers.get("Content-Type") || "")) return json({ error: "Expected multipart/form-data" }, 400, h);
       const pending = await listJobMetas(env, id);
@@ -300,9 +354,36 @@ export async function handle(req, env) {
     }
 
     // Owner-only routes from here.
-    if (!["list", "file", "job"].includes(route)) return json({ error: "Not found" }, 404, h);
+    if (!["list", "file", "job", "settings", "retire"].includes(route)) return json({ error: "Not found" }, 404, h);
     if (!(await ownerOk(req, env, id))) return json({ error: "Not allowed" }, 401, h);
 
+    // Owner controls: pause/resume, set/clear the job code. Body {paused?: bool, code?: "1234" | ""}.
+    if (route === "settings" && req.method === "POST" && parts.length === 2) {
+      let body; try { body = await req.json(); } catch (e) { return json({ error: "Bad JSON" }, 400, h); }
+      const reg = await getReg(env, id);
+      if (reg.retired) return json({ error: "This upload ID was replaced", state: "retired" }, 410, h);
+      if (body && "paused" in body) { if (typeof body.paused !== "boolean") return json({ error: "paused must be true or false" }, 400, h); reg.paused = body.paused; }
+      if (body && "code" in body) {
+        const code = String(body.code == null ? "" : body.code);
+        if (code === "") delete reg.ch;
+        else if (CODE_RE.test(code)) reg.ch = await codeHash(id, code);
+        else return json({ error: "The code must be 4 digits" }, 400, h);
+        await env.UPLOADS.delete("lock/" + id + ".json");
+      }
+      if (!reg.paused) delete reg.paused;
+      reg.t = Date.now();
+      await env.UPLOADS.put("reg/" + id + ".json", JSON.stringify(reg), { httpMetadata: { contentType: "application/json" } });
+      return json({ ok: true, paused: !!reg.paused, hasCode: !!reg.ch }, 200, h);
+    }
+    // Owner retires this ID after making a new link: mechanics are refused straight away,
+    // the owner key keeps working for list/file/job so nothing still waiting is lost.
+    if (route === "retire" && req.method === "POST" && parts.length === 2) {
+      const reg = await getReg(env, id);
+      const pending = (await listJobMetas(env, id)).length;
+      await env.UPLOADS.put("reg/" + id + ".json", JSON.stringify({ h: reg.h, c: reg.c, t: Date.now(), retired: true }), { httpMetadata: { contentType: "application/json" } });
+      await env.UPLOADS.delete("lock/" + id + ".json");
+      return json({ ok: true, retired: true, pending }, 200, h);
+    }
     if (route === "list" && req.method === "GET" && parts.length === 2) {
       const keys = await listJobMetas(env, id);
       const jobs = [];

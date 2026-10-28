@@ -92,7 +92,7 @@
   async function checkCar(c){
     if(!c||!c.upId||!c.upKey) return {downloaded:0};
     var hdr={"X-Owner-Key":c.upKey};
-    try{ await register(c); }catch(e){ if(e.status===409) throw new Error("This car's upload link belongs to someone else. Make a new link."); }
+    try{ var rg=await register(c); if(rg){ c.srvPaused=!!rg.paused; c.srvCode=!!rg.hasCode; } }catch(e){ if(e.status===409) throw new Error("This car's upload link belongs to someone else. Make a new link."); }
     var list=await (await api("/list/"+c.upId,{headers:hdr})).json();
     var n=0;
     for(var i=0;i<list.jobs.length;i++){
@@ -135,6 +135,42 @@
     list.forEach(function(j){ if(!j.seen){ j.seen=true; tx.objectStore("jobs").put(j); } });
     return new Promise(function(res){tx.oncomplete=res;tx.onerror=res});
   }
-  window.DipUploads={api:API,garage:garage,ensureIds:ensureIds,link:link,register:register,checkCar:checkCar,checkAll:checkAll,
+  // ---- Phase 2 owner controls ----
+  // Pause uploads / set or clear the 4-digit job code (server keeps only a salted hash; the code itself stays on this phone).
+  async function setControls(i,body){
+    var s=garage(); var c=s.cars[i]; if(!c||!c.upId) throw new Error("No upload link yet");
+    var r=await (await api("/settings/"+c.upId,{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Key":c.upKey},body:JSON.stringify(body)})).json();
+    s=garage(); c=s.cars[i];
+    c.upPaused=!!r.paused; c.srvCode=!!r.hasCode;
+    if("code" in body){ if(body.code) c.upCode=String(body.code); else delete c.upCode; }
+    saveGarage(s); return r;
+  }
+  async function retagLocal(oldId,newId){
+    var d=await db(); var list=await req2p(d.transaction("jobs").objectStore("jobs").index("up").getAll(oldId));
+    if(!list.length) return 0;
+    return new Promise(function(res,rej){ var tx=d.transaction("jobs","readwrite");
+      list.forEach(function(j){ j.up=newId; tx.objectStore("jobs").put(j); });
+      tx.oncomplete=function(){res(list.length)}; tx.onerror=function(){rej(tx.error)}; });
+  }
+  // "New link": collect anything waiting, retire the old ID on the server (refused straight away), then make a fresh ID + key.
+  // Pause and job code carry over to the new link.
+  async function rotate(i){
+    var s=garage(); var old=s.cars[i]; if(!old||!old.upId) throw new Error("No upload link yet");
+    var got=(await checkCar(old)).downloaded;
+    var hdr={"X-Owner-Key":old.upKey};
+    var ret=await (await api("/retire/"+old.upId,{method:"POST",headers:hdr})).json();
+    if(ret.pending) got+=(await checkCar(old)).downloaded; // something arrived mid-way: collect it with the old key
+    var oldId=old.upId;
+    s=garage(); var c=s.cars[i];
+    c.upId=b64url(16); c.upKey=b64url(32);
+    (c.upOld=c.upOld||[]).push(oldId); if(c.upOld.length>10) c.upOld=c.upOld.slice(-10);
+    saveGarage(s);
+    await retagLocal(oldId,c.upId);
+    await register(c);
+    var body={}; if(c.upPaused) body.paused=true; if(c.upCode) body.code=c.upCode;
+    if(Object.keys(body).length) await setControls(i,body);
+    return {car:garage().cars[i],downloaded:got};
+  }
+  window.DipUploads={setControls:setControls,rotate:rotate,api:API,garage:garage,ensureIds:ensureIds,link:link,register:register,checkCar:checkCar,checkAll:checkAll,
     jobsFor:jobsFor,getFile:getFile,removeLocal:removeLocal,unseenCount:unseenCount,markSeen:markSeen,niceName:niceName,cleanPlate:cleanPlate,fileTitle:fileTitle,cleanTitle:cleanTitle};
 })();

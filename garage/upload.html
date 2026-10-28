@@ -77,6 +77,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 .err{color:#ff6b6b}
 .hide,button.btn.hide,#form .hide{display:none !important}
 .foot{font-size:12px;color:#6b6b6b;text-align:center;margin-top:14px;line-height:1.5}
+.codeBig{width:100%;font-size:34px !important;letter-spacing:.45em;text-align:center;padding:14px !important;border-radius:14px !important;font-variant-numeric:tabular-nums;margin-top:6px}
 </style>
 </head>
 <body>
@@ -84,6 +85,14 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   <p class="kicker">Driv3 · for the mechanic</p>
   <h1>Send work to the owner</h1>
   <div class="card"><div class="carRow" id="carRow"><b>Car</b></div><div class="msg bad" id="linkErr"></div><button class="btn ownerBtn hide" type="button" id="ownerBtn">I'm the owner, get my mechanic link</button></div>
+
+  <div class="card hide" id="codeCard">
+    <p class="step">Job code</p>
+    <p class="sub">The owner has set a 4-digit code. Ask them for it, then enter it here.</p>
+    <input class="codeBig" id="jobCode" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" placeholder="0000" aria-label="4-digit job code"/>
+    <button class="btn" type="button" id="codeGo">Continue</button>
+    <div class="msg" id="codeMsg"></div>
+  </div>
 
   <div class="card">
     <p class="step">1. Photos</p>
@@ -133,7 +142,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 
 <script src="./uploads-config.js?v=1"></script>
 <script src="./icons.js?v=32"></script>
-<script src="./voice-note.js?v=1"></script>
+<script src="./voice-note.js?v=2"></script>
 <script>
 (function(){
   var API=window.UPLOADS_API;
@@ -154,7 +163,48 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
     try{ var g=JSON.parse(localStorage.getItem("gt.garage")||"null"); if(g&&g.cars&&g.cars.length){ var ob=$("ownerBtn"); ob.classList.remove("hide"); ob.onclick=function(){location.href="./mechanic.html"}; } }catch(e){}
   }
   else if(!/^[A-Za-z0-9_-]{22,43}$/.test(uid)){ lockForm(); linkError("This link looks cut off. Ask the owner to send it again.","warn"); }
-  else fetch(API+"/info/"+uid).then(function(r){ if(r.status===404) return r.json().then(function(j){linkError(j.error||"This link is not active.")}); },function(){ /* offline: try at upload time */ });
+  else fetch(API+"/info/"+uid).then(function(r){
+    return r.json().catch(function(){return {}}).then(function(j){
+      if(r.status===404||r.status===410){ lockForm(); linkError(j.error||"This link is not active.",r.status===410?"warn":"bad"); return; }
+      if(!r.ok) return;
+      if(j.paused){ showPaused(); return; }
+      if(j.needCode){ askCode(j.locked?"Too many wrong codes. This link is locked for 15 minutes. Try again later.":""); }
+    });
+  },function(){ /* offline: try at upload time */ });
+
+  // ---- owner controls: paused / job code ----
+  var jobCode="";
+  try{ jobCode=sessionStorage.getItem("dip.code."+uid)||""; }catch(e){}
+  var PAUSED="The owner has paused uploads for this car. Ask them to turn uploads back on.";
+  function showPaused(){ lockForm(); $("codeCard").classList.add("hide"); linkError(PAUSED,"warn"); }
+  function unlockForm(){ var cs=document.querySelectorAll("#form > .card"); for(var i=1;i<cs.length;i++) if(cs[i].id!=="codeCard") cs[i].classList.remove("hide"); $("codeCard").classList.add("hide"); $("send").classList.remove("hide"); }
+  function codeSay(t,bad){ $("codeMsg").textContent=t; $("codeMsg").className="msg"+(bad?" bad":""); }
+  function askCode(msg){
+    lockForm(); $("codeCard").classList.remove("hide"); codeSay(msg||"",!!msg);
+    if(jobCode&&!msg){ $("jobCode").value=jobCode; checkCode(); }
+  }
+  // Server answers for code/paused/retired problems; returns true if handled.
+  function handleGate(status,j){
+    if(status===423||j.state==="paused"){ showPaused(); return true; }
+    if(status===410){ lockForm(); $("codeCard").classList.add("hide"); linkError(j.error||"This link is not active.","warn"); return true; }
+    if(j.state==="code"||j.state==="locked"){ jobCode=""; try{sessionStorage.removeItem("dip.code."+uid)}catch(e){} askCode(j.error); return true; }
+    return false;
+  }
+  $("jobCode").oninput=function(){ this.value=this.value.replace(/\D/g,"").slice(0,4); if(this.value.length===4) checkCode(); };
+  $("jobCode").onkeydown=function(e){ if(e.key==="Enter") checkCode(); };
+  $("codeGo").onclick=checkCode;
+  var checking=false;
+  function checkCode(){
+    var v=$("jobCode").value; if(!/^\d{4}$/.test(v)){ codeSay("Enter all 4 digits.",true); return; }
+    if(checking) return; checking=true; $("codeGo").disabled=true; codeSay("Checking…");
+    fetch(API+"/code/"+encodeURIComponent(uid),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:v})})
+      .then(function(r){ return r.json().catch(function(){return {}}).then(function(j){
+        if(r.ok){ jobCode=v; try{sessionStorage.setItem("dip.code."+uid,v)}catch(e){} codeSay(""); unlockForm(); return; }
+        $("jobCode").value="";
+        if(!handleGate(r.status,j)) codeSay(j.error||("Couldn't check the code ("+r.status+")"),true);
+      }); },function(){ codeSay("No connection. Check signal or Wi-Fi and try again.",true); })
+      .then(function(){ checking=false; $("codeGo").disabled=false; });
+  }
 
   // ---- files ----
   function fmt(n){ return n>=1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB"; }
@@ -275,12 +325,12 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   if(window.Driv3Voice&&uid){
     window.Driv3Voice.attach({btn:$("mic"),note:$("note"),hint:$("micHint"),max:4000,
       idleHint:"Tap the mic, speak, tap again to finish.",
-      url:function(){ return API+"/transcribe/"+encodeURIComponent(uid); }});
+      url:function(){ return API+"/transcribe/"+encodeURIComponent(uid); },
+      headers:function(){ return jobCode?{"X-Job-Code":jobCode}:{}; }});
   }
 
   function say(t,bad){ $("msg").textContent=t; $("msg").className="msg"+(bad?" bad":""); }
   $("send").onclick=function(){
-    if(listening&&rec){ listening=false; try{rec.stop()}catch(e){} }
     var note=$("note").value.trim();
     if(items.some(function(i){return i.busy})){ say("Still preparing photos, one moment…"); return; }
     if(!items.length&&!note){ say("Add a photo, a PDF or a note first.",true); return; }
@@ -301,10 +351,10 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
         var parts=[]; if(ph) parts.push(ph+" photo"+(ph>1?"s":"")); if(pd) parts.push(pd+" PDF"+(pd>1?"s":"")); if(note) parts.push("your note");
         $("doneTxt").textContent=(parts.length?parts.join(", ").replace(/, ([^,]*)$/," and $1"):"Your upload")+" sent to the owner of "+(plate||name||"the car")+".";
         $("form").classList.add("hide"); $("done").classList.remove("hide"); window.scrollTo(0,0);
-      }else{ fail(j.error||("Upload failed ("+x.status+")")); }
+      }else{ fail(j.error||("Upload failed ("+x.status+")")); if(x.status!==413) handleGate(x.status,j); }
     };
     x.onerror=function(){ fail("No connection. Check signal or Wi-Fi and tap Upload again."); };
-    x.open("POST",API+"/upload/"+encodeURIComponent(uid)); x.send(fd);
+    x.open("POST",API+"/upload/"+encodeURIComponent(uid)); if(jobCode) x.setRequestHeader("X-Job-Code",jobCode); x.send(fd);
   };
   function fail(t){ say(t,true); $("send").disabled=false; $("send").textContent="Upload"; $("bar").style.display="none"; $("bar").firstChild.style.width="0"; }
   $("again").onclick=function(){

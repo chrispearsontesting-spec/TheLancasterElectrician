@@ -90,11 +90,24 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 #dues .cOver .left{color:#ff2a2a !important;animation:flashRed .55s ease-in-out infinite}
 .secLink{display:flex;align-items:center;justify-content:center;gap:7px;margin:14px auto 4px;color:#8b8b8b !important;font-size:13.5px;text-decoration:none;padding:8px}
 .secLink i{font-style:normal;font-size:11.5px;color:#f5b84a;background:#2e2410;border:1px solid #5c4a1f;border-radius:999px;padding:1px 8px}
+.topRow{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}
+.topRow b{font-size:18px;letter-spacing:.3px}
+#gear{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:#1c1c1e;color:#f2f2f2;display:flex;align-items:center;justify-content:center;padding:0}
+#gear.dot::after{content:"";position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:#f5b84a}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#141416;border:1px solid #2a2a2e;border-radius:16px;padding:4px;margin:0 0 12px;position:sticky;top:0;z-index:5}
+.tabs button{background:none;border:0;color:#8b8b8b;font:600 12.5px/1.15 inherit;font-family:inherit;padding:10px 2px;border-radius:12px;min-height:44px}
+.tabs button[aria-selected=true]{background:#2a2a2e;color:#f2f2f2}
+.tabp{display:none}.tabp.on{display:block}
+.tsub{display:block;font-size:11.5px;font-weight:500;color:#8b8b8b;margin-left:auto}
+.chip{margin-left:auto;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;background:#2a2a2e;color:#b0b0b0}
+.chip.pub{background:#163d27;color:#3dd68c}
+.due{font-style:normal;font-size:11.5px;color:#f5b84a;background:#2e2410;border:1px solid #5c4a1f;border-radius:999px;padding:1px 8px;margin-left:auto}
 </style>
 </head>
 <body>
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <input id="plateCam" type="file" accept="image/*" capture="environment" hidden/>
+<div class="topRow"><b>Driv3</b><button type="button" id="gear" aria-label="Settings" title="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
 <div class="hero" id="hero"></div>
 <div class="bar"><div class="nameRow">
 <div class="side left">
@@ -107,17 +120,45 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <button type="button" id="btnEdit">&#9998;</button>
 </div>
 </div><p class="dots" id="dots"></p></div>
+<div class="tabs" role="tablist" id="tabs">
+<button type="button" role="tab" data-tab="car">My car</button>
+<button type="button" role="tab" data-tab="docs">History &amp; docs</button>
+<button type="button" role="tab" data-tab="qr">QR &amp; sharing</button>
+<button type="button" role="tab" data-tab="drive">Drive</button>
+</div>
+<section class="tabp" data-tab="car">
 <button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
 <div class="card hide" id="dues"></div>
-<a class="btn wide" href="drive-hub.html" data-ico="wheel">Drive</a>
+<a class="btn wide" id="lnkTax" href="tax.html" data-ico="shield">MOT &amp; tax status</a>
+<a class="btn wide" href="insurance.html" data-ico="doc">Insurance</a>
 <a class="btn wide" href="service.html" data-ico="wrench">Maintenance</a>
-<a class="btn wide" href="./" data-ico="map">Route costs</a>
-<a class="btn wide" href="buy.html" data-ico="search">Buying guide</a>
-<a class="btn wide" href="history.html" data-ico="cal">History</a>
-<a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase</a>
-<a class="secLink" id="secLink" href="security.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Security &amp; backup</span><i id="secDue" hidden></i></a>
+<a class="btn wide" href="buy.html" data-ico="search">Buying guide <small class="tsub">for your next car</small></a>
+</section>
+<section class="tabp" data-tab="docs">
+<a class="btn wide" href="history.html" data-ico="cal">History <small class="tsub">work, invoices &amp; mechanic uploads</small></a>
+<a class="btn wide" id="lnkMot" href="mot.html#history" data-ico="doc">MOT history</a>
+</section>
+<section class="tabp" data-tab="qr">
+<a class="btn wide" href="mechanic.html" data-ico="box">Mechanic QR sticker</a>
+<a class="btn wide" href="share.html" data-ico="mail">Share for sale</a>
+<a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase <span class="chip" id="showChip" hidden></span></a>
+</section>
+<section class="tabp" data-tab="drive">
+<a class="btn wide" href="drive.html" data-ico="cam">Record</a>
+<a class="btn wide" href="performance.html" data-ico="turbo">Performance</a>
+<a class="btn wide" href="g-meter.html" data-ico="wheel">G-meter</a>
+<a class="btn wide" href="calendar.html" data-ico="cal">Drive diary</a>
+<a class="btn wide" id="lnkRoute" href="./" data-ico="map">Route costs</a>
+</section>
+<div class="sheet" id="settings"><div class="panel">
+<h2>Settings</h2>
+<a class="btn wide" href="security.html" data-ico="shield">Security &amp; backup <i class="due" id="secDue" hidden></i></a>
+<a class="btn wide" href="security.html#lockCard" data-ico="shield">App lock</a>
+<a class="btn wide" href="privacy.html" data-ico="doc">Privacy</a>
+<button class="btn wide" type="button" id="setClose" data-ico="back">Back</button>
+</div></div>
 <script>(function(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null"),t=+localStorage.getItem("gt.lastBackup")||0;
-if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";}}catch(e){}})();</script>
+if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";document.getElementById("gear").classList.add("dot");}}catch(e){}})();</script>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
 <label>Number plate</label>
@@ -162,6 +203,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./home-app.js?v=81"></script>
 <script src="./home-insure.js?v=2"></script>
 <script src="./icons.js?v=31"></script>
+<script src="./home-tabs.js?v=1"></script>
 <script>
 (function(){
   var dues=document.getElementById("dues");

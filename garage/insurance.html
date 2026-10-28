@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Insurance</title>
-<link rel="stylesheet" href="./ui.css?v=46"/>
+<link rel="stylesheet" href="./ui.css?v=78"/>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
@@ -43,43 +43,45 @@ label.btn,#renew{display:flex !important;justify-content:center !important;align
 </style>
 </head>
 <body>
+<h1>Insurance</h1>
+<div class="card"><p class="note">Renewal date</p><p class="when" id="exp">—</p><p class="left" id="expLeft"></p><p class="left">Change this date in Reminders on the home page.</p></div>
 <div class="stack">
-<div class="acc" id="docAcc">
-  <button type="button" class="accBtn" id="docToggle" data-iconed="1"><span class="lab">View insurance policy</span><span class="chev">+</span></button>
-  <div class="accBody" id="doc"></div>
+<div class="card" style="margin:0">
+  <p class="when" style="font-size:17px">Insurance documents</p>
+  <p class="note" style="margin-top:4px">Certificate, policy schedule, no claims discount proof and more. PDFs or photos.</p>
+  <input id="docTitle" placeholder="Title (optional), e.g. No claims discount" style="width:100%;margin-top:12px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:15px"/>
+  <label class="btn" for="pick" id="up" data-iconed="1">Upload insurance documents</label>
+  <input id="pick" type="file" multiple accept=".pdf,application/pdf,image/*"/>
+  <p class="left" id="pdfName"></p>
+  <div id="list"></div>
 </div>
-<button class="btn split" type="button" id="saveDate" data-iconed="1"><span>Change expiry</span><span id="exp">—</span></button>
-<input id="insDate" type="date"/>
-<label class="btn" for="pick" id="up" data-iconed="1">Upload policy PDF</label>
-<input id="pick" type="file" accept=".pdf,application/pdf,*/*"/>
-
 <a class="btn" id="renew" data-iconed="1" href="#">Renew</a>
 <a class="btn" href="home.html" data-iconed="1">Back</a>
 </div>
-<p class="left" id="pdfName" hidden></p>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="./icons.js?v=28"></script>
+<style>
+.doc{display:flex;align-items:center;gap:8px;border-top:1px solid #2a2a2e;padding:10px 0;margin-top:10px}
+.doc .t{flex:1;min-width:0}.doc .t b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.doc .t span{color:#8b8b8b;font-size:12px}
+.doc button,.doc a{background:#1c1c1e;color:#f2f2f2;border:0;border-radius:12px;padding:9px 12px;font-weight:600;font-size:14px;text-decoration:none}
+.doc .del{color:#ff8a80}
+</style>
 <script>
 function state(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
   return {i:0,cars:[{plate:"",ins:"",insWeb:"",nick:"Car"}]};
 }
 function car(){var s=state();return s.cars[s.i]||s.cars[0]}
-function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"No plate yet"}
-function nice(iso){if(!iso)return "Set date in Edit";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
-function daysLeft(iso){
-  if(!iso)return null;
-  var end=new Date(iso+"T12:00:00"),now=new Date();now.setHours(12,0,0,0);
-  return Math.round((end-now)/86400000);
-}
+function nice(iso){if(!iso)return "Not set";var d=new Date(iso+"T12:00:00");return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
 function leftTxt(iso){
-  var days=daysLeft(iso);
-  if(days==null)return "Set expiry in Edit";
+  if(!iso)return "Set it in Reminders on the home page";
+  var end=new Date(iso+"T12:00:00"),now=new Date();now.setHours(12,0,0,0);
+  var days=Math.round((end-now)/86400000);
   if(days<0)return Math.abs(days)+" days overdue";
   if(days===0)return "Due today";
   return days+" days left";
 }
-function key(){return "gt.insPdf."+String((car().plate||"none")).toUpperCase().replace(/[^A-Z0-9]/g,"")}
+function vrn(){return String((car().plate||"none")).toUpperCase().replace(/[^A-Z0-9]/g,"")}
+function key(){return "gt.insPdf."+vrn()}      /* legacy single doc (kept, still read) */
+function listKey(){return "gt.insDocs."+vrn()} /* new: array of docs */
 function db(){
   return new Promise(function(res,rej){
     var r=indexedDB.open("dipstick",2);
@@ -88,97 +90,70 @@ function db(){
     r.onerror=function(){rej(r.error)};
   });
 }
-async function getPdf(){
-  try{
-    var d=await db();
-    return await new Promise(function(res,rej){
-      var t=d.transaction("files").objectStore("files").get(key());
-      t.onsuccess=function(){res(t.result||null)};
-      t.onerror=function(){rej(t.error)};
-    });
-  }catch(e){return null}
+async function get(k){
+  try{var d=await db();return await new Promise(function(res,rej){var t=d.transaction("files").objectStore("files").get(k);t.onsuccess=function(){res(t.result||null)};t.onerror=function(){rej(t.error)}})}catch(e){return null}
 }
-async function putPdf(blob,name){
+async function put(k,v){
   var d=await db();
-  return new Promise(function(res,rej){
-    var t=d.transaction("files","readwrite").objectStore("files").put({blob:blob,name:name,at:Date.now()},key());
-    t.onsuccess=function(){res()};
-    t.onerror=function(){rej(t.error)};
-  });
+  return new Promise(function(res,rej){var t=d.transaction("files","readwrite").objectStore("files").put(v,k);t.onsuccess=function(){res()};t.onerror=function(){rej(t.error)}});
 }
+async function del(k){
+  var d=await db();
+  return new Promise(function(res,rej){var t=d.transaction("files","readwrite").objectStore("files").delete(k);t.onsuccess=function(){res()};t.onerror=function(){rej(t.error)}});
+}
+async function docs(){
+  var arr=await get(listKey());arr=Array.isArray(arr)?arr:[];
+  var old=await get(key());
+  if(old&&old.blob) arr=[{id:"legacy",title:"Policy",name:old.name||"policy.pdf",type:"application/pdf",blob:old.blob,at:old.at||0,legacy:1}].concat(arr);
+  return arr;
+}
+function esc(t){return String(t||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 async function show(){
-  var rec=await getPdf();
-  var doc=document.getElementById("doc");
-  doc.innerHTML="";
-  if(!rec||!rec.blob){
-    document.getElementById("pdfName").textContent="No document yet";
-    return;
-  }
-  document.getElementById("pdfName").textContent=rec.name||"Policy PDF";
-  var blob=rec.blob.type==="application/pdf"?rec.blob:new Blob([rec.blob],{type:"application/pdf"});
-  var url=URL.createObjectURL(blob);
-  var open=document.createElement("a");
-  open.className="btn";
-  open.href=url;
-  open.target="_blank";
-  open.textContent="Open full PDF";
-  doc.appendChild(open);
-  try{
-    if(!window.pdfjsLib) return;
-    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    var data=await blob.arrayBuffer();
-    var pdf=await pdfjsLib.getDocument({data:data}).promise;
-    var n=Math.min(pdf.numPages,6), i;
-    for(i=1;i<=n;i++){
-      var page=await pdf.getPage(i);
-      var vp=page.getViewport({scale:1.2});
-      var cv=document.createElement("canvas");
-      cv.width=vp.width;cv.height=vp.height;
-      await page.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;
-      doc.appendChild(cv);
-    }
-  }catch(e){
-    doc.insertAdjacentHTML("beforeend","<p class='left'>Saved. Use Open full PDF if the preview does not draw.</p>");
-  }
+  var arr=await docs(),list=document.getElementById("list");
+  list.innerHTML="";
+  document.getElementById("pdfName").textContent=arr.length?arr.length+" document"+(arr.length>1?"s":"")+" saved":"No documents yet";
+  arr.forEach(function(d){
+    var type=d.type||(d.blob&&d.blob.type)||"application/pdf";
+    var blob=d.blob.type?d.blob:new Blob([d.blob],{type:type});
+    var row=document.createElement("div");row.className="doc";
+    row.innerHTML="<div class='t'><b>"+esc(d.title||d.name)+"</b><span>"+esc(d.name)+(d.at?" · "+new Date(d.at).toLocaleDateString("en-GB"):"")+"</span></div>";
+    var v=document.createElement("a");v.textContent="View";v.href=URL.createObjectURL(blob);v.target="_blank";v.rel="noopener";
+    var x=document.createElement("button");x.type="button";x.className="del";x.textContent="Delete";
+    x.onclick=async function(){
+      if(!confirm("Delete "+(d.title||d.name)+"?"))return;
+      if(d.legacy) await del(key());
+      else{var a=await get(listKey());a=(Array.isArray(a)?a:[]).filter(function(y){return y.id!==d.id});await put(listKey(),a)}
+      show();
+    };
+    row.appendChild(v);row.appendChild(x);list.appendChild(row);
+  });
 }
 var c=car();
 document.getElementById("exp").textContent=nice(c.ins);
-document.getElementById("insDate").value=c.ins||"";
-document.getElementById("saveDate").onclick=function(){
-  var input=document.getElementById("insDate");
-  input.focus();
-  if(input.showPicker) input.showPicker();
-};
-document.getElementById("insDate").onchange=function(){
-  var iso=this.value;
-  if(!iso) return;
-  var s=state();
-  s.cars[s.i].ins=iso;
-  localStorage.setItem("gt.garage", JSON.stringify(s));
-  document.getElementById("exp").textContent=nice(iso);
-};
+document.getElementById("expLeft").textContent=leftTxt(c.ins);
 document.getElementById("renew").href=c.insWeb||"https://www.gov.uk/vehicle-insurance";
 var pick=document.getElementById("pick");
 pick.addEventListener("change", async function(){
-  var f=pick.files&&pick.files[0];
-  if(!f){document.getElementById("pdfName").textContent="No file was returned. Try Downloads again.";return}
-  document.getElementById("pdfName").textContent="Got "+(f.name||"file")+" ("+Math.max(1,Math.round(f.size/1024))+" KB). Saving…";
+  var fs=Array.prototype.slice.call(pick.files||[]);
+  if(!fs.length){document.getElementById("pdfName").textContent="No file was returned. Try again.";return}
+  var title=document.getElementById("docTitle").value.trim();
+  document.getElementById("pdfName").textContent="Saving "+fs.length+" file"+(fs.length>1?"s":"")+"…";
   try{
-    var bytes=await f.arrayBuffer();
-    var blob=new Blob([bytes],{type:"application/pdf"});
-    await putPdf(blob,f.name||"policy.pdf");
-    await document.getElementById("docToggle").addEventListener("click",function(){
-  document.getElementById("docAcc").classList.toggle("open");
-});
-show();
+    var a=await get(listKey());a=Array.isArray(a)?a:[];
+    for(var i=0;i<fs.length;i++){
+      var f=fs[i],type=f.type||(/\.pdf$/i.test(f.name)?"application/pdf":"application/octet-stream");
+      var blob=new Blob([await f.arrayBuffer()],{type:type});
+      a.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title?(fs.length>1?title+" ("+(i+1)+")":title):"",name:f.name||"document",type:type,blob:blob,at:Date.now()});
+    }
+    await put(listKey(),a);
+    document.getElementById("docTitle").value="";pick.value="";
+    show();
   }catch(e){
-    document.getElementById("pdfName").textContent="Could not save: "+(e&&e.message?e.message:"try a smaller PDF");
+    document.getElementById("pdfName").textContent="Could not save: "+(e&&e.message?e.message:"try a smaller file");
   }
-});
-document.getElementById("docToggle").addEventListener("click",function(){
-  document.getElementById("docAcc").classList.toggle("open");
 });
 show();
 </script>
+<script src="./icons.js?v=29"></script>
 </body>
 </html>

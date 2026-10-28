@@ -4,7 +4,7 @@
    The car keeps showId (public) + showKey (secret, the Worker only stores its SHA-256). */
 (function(){
   var API=window.UPLOADS_API, U=window.DipUploads;
-  var LIM={gallery:12,videos:6,mods:40,clipBytes:20*1024*1024,photoBytes:1.5*1024*1024};
+  var LIM={gallery:12,videos:12,socials:12,mods:40,clipBytes:20*1024*1024,photoBytes:1.5*1024*1024};
   function rid(){ var a=new Uint8Array(9); crypto.getRandomValues(a); return Array.from(a).map(function(b){return b.toString(16).padStart(2,"0")}).join(""); }
   function drafts(){ try{ return JSON.parse(localStorage.getItem("gt.showDrafts")||"{}")||{}; }catch(e){ return {}; } }
   function carAt(i){ var s=U.garage(); return s&&s.cars[i]; }
@@ -15,9 +15,10 @@
   }
   function blank(c){
     return {title:"",basics:{make:c.make||"",model:c.model||(c.make?"":(c.nick||c.name||"")),variant:"",year:c.year||"",colour:c.colour||c.color||"",plate:U.cleanPlate(c.plate),hidePlate:false},
-      stats:{bhp:"",torque:"",zero60:"",top:"",weight:"",best:{time:"",label:"",venue:""}},mods:[],story:"",gallery:[],hero:0,videos:[],playlist:"",instagram:"",clips:[]};
+      stats:{bhp:"",torque:"",zero60:"",top:"",weight:"",best:{time:"",label:"",venue:""}},mods:[],story:"",gallery:[],hero:0,videos:[],socials:[],playlist:"",instagram:"",clips:[]};
   }
-  function getDraft(i){ var c=carAt(i); var d=drafts()[localId(i)]; return d||blank(c); }
+  function getDraft(i){ var c=carAt(i); var d=drafts()[localId(i)]||blank(c);
+    d.videos=(d.videos||[]).map(function(v){ return typeof v==="string"?{url:v,title:""}:v; }); d.socials=d.socials||[]; return d; }
   function saveDraft(i,d){ var all=drafts(); d.saved=Date.now(); all[localId(i)]=d; localStorage.setItem("gt.showDrafts",JSON.stringify(all)); }
   // ---- media store ----
   var dbp=null;
@@ -87,7 +88,7 @@
         }
         for(var j=0;j<d.clips.length;j++){ say("Uploading clip…"); var cn=await sendMedia(c,d.clips[j].m,"clip"); if(cn) clips.push({n:cn,cap:d.clips[j].cap||""}); }
         say("Publishing…");
-        var card={title:d.title,basics:d.basics,stats:d.stats,mods:d.mods,story:d.story,gallery:gal,hero:d.hero,videos:d.videos,playlist:d.playlist,instagram:d.instagram,clips:clips};
+        var card={title:d.title,basics:d.basics,stats:d.stats,mods:d.mods,story:d.story,gallery:gal,hero:d.hero,videos:d.videos.filter(function(v){return v.url}),socials:d.socials.filter(function(v){return v.url}),playlist:d.playlist,instagram:d.instagram,clips:clips};
         var r=await (await api("/show/"+c.showId,{method:"PUT",headers:{"X-Show-Key":c.showKey,"Content-Type":"application/json"},body:JSON.stringify(card)})).json();
         setCar(i,function(c){ c.showPublished=Date.now(); });
         // Keep the sticker pointing at this showcase (and register the link if this car never had one).

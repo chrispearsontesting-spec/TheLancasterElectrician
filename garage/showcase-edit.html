@@ -45,6 +45,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 .item{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:14px;padding:8px 10px;margin-top:8px}
 .item .hd{display:flex;gap:8px;align-items:center}
 .item .hd .in{flex:1}
+.item button.x.mv{color:#cfcfcf;font-size:16px;width:32px}
 .item button.x{background:none;border:0;color:#ff6b6b;font-size:20px;width:36px;height:36px;cursor:pointer}
 .add{background:none;border:1px dashed #3a3a3e;color:#cfcfcf;border-radius:12px;width:100%;padding:11px;margin-top:10px;font-size:14px;cursor:pointer}
 .qrBox{background:#fff;border-radius:14px;padding:12px;text-align:center;color:#111;margin-top:10px}
@@ -124,9 +125,16 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 
 <div class="card">
   <h2>Videos</h2>
-  <p class="note">Up to 6 YouTube links.</p>
+  <p class="note">Up to 12 YouTube links (normal videos, Shorts or lives). Visitors watch them in a player on your card, one at a time.</p>
   <div id="videos"></div>
   <button class="add" type="button" id="addVid">+ Add a YouTube link</button>
+</div>
+
+<div class="card">
+  <h2>Photos from socials</h2>
+  <p class="note">Paste links to your public Instagram or Facebook posts (up to 12). They're shown using Instagram's and Facebook's own embeds, so nothing is copied or stored by Driv3.</p>
+  <div id="socials"></div>
+  <button class="add" type="button" id="addSoc">+ Add an Instagram or Facebook link</button>
 </div>
 
 <div class="card">
@@ -153,8 +161,8 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=4"></script>
-<script src="./show-parse.js?v=1"></script>
-<script src="./show-client.js?v=1"></script>
+<script src="./show-parse.js?v=2"></script>
+<script src="./show-client.js?v=2"></script>
 <script src="./icons.js?v=31"></script>
 <script>
 (function(){
@@ -236,7 +244,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   };
 
   // ---- lists (mods, videos) ----
-  function paintList(boxId,arr,fields,max,addId){
+  function paintList(boxId,arr,fields,max,addId,order){
     var box=$(boxId); box.innerHTML="";
     arr.forEach(function(v,i){
       var el=document.createElement("div"); el.className="item";
@@ -247,7 +255,10 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
         var err=document.createElement("div"); err.className="err";
         inp.oninput=function(){ if(f.key) v[f.key]=inp.value; else arr[i]=inp.value; if(f.check) err.textContent=inp.value&&!f.check(inp.value)?f.bad:""; S.saveDraft(idx,d); };
         if(f.check&&inp.value&&!f.check(inp.value)) err.textContent=f.bad;
-        if(fi===0){ hd.appendChild(inp); var x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="✕"; x.setAttribute("aria-label","Remove"); x.onclick=function(){ arr.splice(i,1); S.saveDraft(idx,d); paintAll(); }; hd.appendChild(x); el.appendChild(hd); el.appendChild(err); }
+        if(fi===0){ hd.appendChild(inp);
+          if(order){ [["↑",-1,"Move up"],["↓",1,"Move down"]].forEach(function(a){ var mv=document.createElement("button"); mv.type="button"; mv.className="x mv"; mv.textContent=a[0]; mv.setAttribute("aria-label",a[2]);
+            mv.onclick=function(){ var j=i+a[1]; if(j<0||j>=arr.length) return; var t=arr[i]; arr[i]=arr[j]; arr[j]=t; S.saveDraft(idx,d); paintAll(); }; hd.appendChild(mv); }); }
+          var x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="✕"; x.setAttribute("aria-label","Remove"); x.onclick=function(){ arr.splice(i,1); S.saveDraft(idx,d); paintAll(); }; hd.appendChild(x); el.appendChild(hd); el.appendChild(err); }
         else { el.appendChild(inp); el.appendChild(err); }
       });
       box.appendChild(el);
@@ -256,10 +267,12 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   }
   function paintAll(){
     paintList("mods",d.mods,[{key:"name",max:60,ph:"Mod, e.g. Stage 1 remap"},{key:"notes",max:200,ph:"Notes (optional)",area:true}],40,"addMod");
-    paintList("videos",d.videos,[{max:200,ph:"https://youtu.be/…",check:P.youtubeId,bad:"That isn't a YouTube video link."}],6,"addVid");
+    paintList("videos",d.videos,[{key:"url",max:300,ph:"https://youtu.be/…",check:P.youtubeId,bad:"That isn't a YouTube video link. Copy it from YouTube's Share button."},{key:"title",max:80,ph:"Title (optional)"}],12,"addVid",true);
+    paintList("socials",d.socials,[{key:"url",max:500,ph:"https://www.instagram.com/p/…",check:P.social,bad:"Use the link to one Instagram post or reel, or one Facebook post or video."},{key:"title",max:80,ph:"Caption (optional)"}],12,"addSoc",true);
   }
   $("addMod").onclick=function(){ d.mods.push({name:"",notes:""}); S.saveDraft(idx,d); paintAll(); var l=$("mods").querySelectorAll("input"); l[l.length-1].focus(); };
-  $("addVid").onclick=function(){ d.videos.push(""); S.saveDraft(idx,d); paintAll(); var l=$("videos").querySelectorAll("input"); l[l.length-1].focus(); };
+  $("addSoc").onclick=function(){ d.socials.push({url:"",title:""}); S.saveDraft(idx,d); paintAll(); var l=$("socials").querySelectorAll(".hd input"); l[l.length-1].focus(); };
+  $("addVid").onclick=function(){ d.videos.push({url:"",title:""}); S.saveDraft(idx,d); paintAll(); var l=$("videos").querySelectorAll(".hd input"); l[l.length-1].focus(); };
 
   // ---- clips ----
   function mb(n){ return (n/1048576).toFixed(1)+" MB"; }
@@ -328,8 +341,10 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   }
   async function publish(){
     save();
-    var bad=d.videos.filter(function(v){return v&&!P.youtubeId(v)}).length;
+    var bad=d.videos.filter(function(v){return v.url&&!P.youtubeId(v.url)}).length;
     if(bad){ say("pubStatus","Fix or remove the video link"+(bad>1?"s":"")+" that aren't YouTube first.","bad"); $("videos").scrollIntoView({block:"center"}); return; }
+    var bad2=d.socials.filter(function(v){return v.url&&!P.social(v.url)}).length;
+    if(bad2){ say("pubStatus","Fix or remove the social link"+(bad2>1?"s":"")+" that aren't a single Instagram or Facebook post.","bad"); $("socials").scrollIntoView({block:"center"}); return; }
     $("pub1").disabled=$("pub2").disabled=true;
     try{
       var r=await S.publish(idx,function(t){ say("pubStatus",t); $("saveStatus").textContent=t; });

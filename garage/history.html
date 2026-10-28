@@ -54,7 +54,9 @@ input[type=file]{margin:8px 0}
   <button class="acc" type="button">Work & invoices <span>+</span></button>
   <div class="panel">
     <p class="note">Photograph or upload invoices and photos of work. Each upload is dated and added to the calendar.</p>
-    <input type="file" id="file" accept="image/*,application/pdf"/>
+    <label class="btn" for="file" data-ico="doc">Choose photo or PDF</label>
+    <input type="file" id="file" accept="image/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0"/>
+    <p class="note" id="fileName" style="margin:6px 0 0"></p>
     <label class="btn" for="cam" style="margin-top:6px">Take photo</label>
     <input type="file" id="cam" accept="image/*" capture="environment" style="display:none"/>
     <input type="text" id="note" placeholder="Short note (e.g. Clutch replaced)" style="width:100%;padding:10px;border-radius:10px;border:0;background:#1c1c1e;color:#fff;margin:6px 0"/>
@@ -154,6 +156,7 @@ async function showIns(){
   }
 }
 showIns();
+['file','cam'].forEach(function(id){document.getElementById(id).addEventListener('change',function(){var f=this.files[0];document.getElementById('fileName').textContent=f?'Chosen: '+f.name:'';});});
 document.getElementById('insFile').onchange=async e=>{
   const f=e.target.files[0];
   if(!f) return;
@@ -204,7 +207,7 @@ render();
     const events = JSON.parse(localStorage.getItem('dipstick-cal-events') || '[]');
     events.push({ date: item.date, title: item.note, type: 'work' });
     localStorage.setItem('dipstick-cal-events', JSON.stringify(events));
-    document.getElementById('file').value = ''; document.getElementById('cam').value = '';
+    document.getElementById('file').value = ''; document.getElementById('cam').value = ''; document.getElementById('fileName').textContent='';
     document.getElementById('note').value = '';
     alert('Saved to history and calendar');
   };

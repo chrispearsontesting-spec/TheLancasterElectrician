@@ -36,7 +36,8 @@ function paintPrices(){
   var k=car&&car.kind?car.kind:"diesel";
   var bits=["Diesel "+PRICE.diesel+"p","Petrol "+PRICE.petrol+"p"];
   if(k==="electric"||k==="phev") bits.push("Electric "+PRICE.electric+"p/kWh");
-  $("priceLine").textContent=bits.join(" \u00b7 ")+" \u00b7 "+PRICE.date+" UK average";
+  var pl=$("priceLine"); if(!pl) return; // price tiles are drawn by route-prices.js now
+  pl.textContent=bits.join(" \u00b7 ")+" \u00b7 "+PRICE.date+" UK average";
 }
 function paintResult(title,oneMiles,oneSecs,roads){
   oneMiles=+oneMiles||0;oneSecs=+oneSecs||0;

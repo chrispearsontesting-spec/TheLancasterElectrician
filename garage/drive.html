@@ -5,16 +5,17 @@
 <script src="./app-lock.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
-<title>Drive</title>
+<title>Record</title>
+<link rel="stylesheet" href="./tool-bar.css?v=1"/>
 <style>
-:root{--bg:#050608;--ink:#f3efe6;--dim:#9aa3b0}
+:root{--bg:#0b0c0e;--ink:#f3efe6;--dim:#9aa3b0}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
 .stage{position:fixed;inset:0;background:#0b0c0e}
 #rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
 #front{position:absolute;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));width:26vw;max-width:200px;height:16vw;max-height:120px;object-fit:cover;background:#111;border-radius:12px;border:2px solid rgba(255,255,255,.35);z-index:3}
 body.track #rear,body.track #front,body.track #flip{display:none}
-.top{position:absolute;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));z-index:4;display:flex;gap:8px;align-items:center}
+.top{position:absolute;right:max(12px,env(safe-area-inset-right));top:calc(64px + env(safe-area-inset-top));z-index:4;display:flex;gap:8px;align-items:center}
 .dock{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;align-items:center;padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.65))}
 .ticker{display:flex;gap:18px;align-items:baseline;margin-bottom:8px}
 .ticker b{font-size:22px}
@@ -28,6 +29,7 @@ body.track #rear,body.track #front,body.track #flip{display:none}
 </style>
 </head>
 <body>
+<header class="appbar"><a class="back" href="drive-hub.html">Back</a><h1>Record</h1></header>
 <div class="stage">
   <video id="rear" playsinline muted autoplay></video>
   <video id="front" playsinline muted autoplay></video>
@@ -43,7 +45,7 @@ body.track #rear,body.track #front,body.track #flip{display:none}
     </div>
     <button class="go" id="go" type="button">Start</button>
     <p class="err" id="err"></p>
-    <p class="links"><a href="calendar.html">Drive diary</a><a class="btn" href="drive-hub.html" data-iconed="1">Back</a></p>
+    <p class="links"><a href="calendar.html">Drive diary</a></p>
   </div>
 </div>
 <script src="drive-app.js?v=2"></script>

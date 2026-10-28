@@ -6,9 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Performance</title>
+<link rel="stylesheet" href="./tool-bar.css?v=1"/>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden}
+html,body{margin:0;background:#0b0c0e;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden}
 #vid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
 .overlay{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:center;gap:18px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));pointer-events:none;z-index:5}
 .hud{background:rgba(0,0,0,.45);border-radius:14px;padding:8px 12px;text-align:center;min-width:70px;backdrop-filter:blur(4px)}
@@ -16,9 +17,13 @@ html,body{margin:0;background:#000;color:#fff;font-family:-apple-system,BlinkMac
 .hud span{font-size:10px;color:#ccc;text-transform:uppercase}
 #gDot{width:88px;height:88px;border-radius:50%;background:rgba(20,20,22,.55);border:1px solid rgba(255,255,255,.25);position:relative}
 #gDot i{position:absolute;width:14px;height:14px;border-radius:50%;background:#73BDE0;left:50%;top:50%;transform:translate(-50%,-50%)}
-.top{position:fixed;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) 12px 8px;display:flex;gap:8px;flex-wrap:wrap;z-index:6;background:linear-gradient(#000,#0000)}
-select,button,.btn{background:#1c1c1e;color:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:600;font-size:14px}
-.disclaimer{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);padding:16px;border-radius:14px;text-align:center;max-width:280px;z-index:10;font-size:13px}
+.top{position:fixed;top:calc(62px + env(safe-area-inset-top));left:0;right:0;padding:0 12px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:6}
+select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,255,255,.08);border-radius:18px;min-height:40px;padding:10px 14px;font-weight:600;font-size:14px}
+.disclaimer{position:fixed;left:12px;right:12px;top:calc(112px + env(safe-area-inset-top));background:rgba(28,22,8,.92);border:1px solid #5c4a1f;color:#f2f2f2;padding:10px 12px;border-radius:14px;z-index:10;font-size:13px;line-height:1.4;display:flex;gap:10px;align-items:center}
+.disclaimer span{flex:1}
+.disclaimer button{background:#f5b84a;color:#111;border:0;white-space:nowrap}
+.disclaimer.flash{animation:fl .5s 2}
+@keyframes fl{50%{background:#7a4b00}}
 #bigStart{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7;background:#1a7f3a;color:#fff;border:0;border-radius:20px;padding:18px 28px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 #bigStart.hide{display:none}
 .light{width:42px;height:42px;border-radius:50%;background:#333;border:2px solid #555;box-shadow:inset 0 0 8px #000}
@@ -31,6 +36,7 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
 </head>
 <body>
 <video id="vid" playsinline muted autoplay></video>
+<header class="appbar"><a class="back" href="drive-hub.html">Back</a><h1>Performance</h1></header>
 <div class="top">
   <select id="run">
     <option value="60">0–60 mph</option>
@@ -42,7 +48,6 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
   </select>
   <button id="cancel" type="button">Cancel run</button>
   <label style="font-size:13px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="keep"/> Keep video</label>
-  <a class="btn" href="drive-hub.html">Back</a>
 </div>
 <div id="lights" style="display:none;position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:8;gap:28px">
   <span class="light"></span><span class="light"></span><span class="light"></span>
@@ -56,7 +61,7 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
   <div id="gDot"><i id="dot"></i></div>
   <div class="hud"><b id="spd">0</b><span>mph</span></div>
 </div>
-<div class="disclaimer" id="disc">Closed roads or tracks only.<br>Phone estimate — not for public roads.<br><button id="ok" type="button" style="margin-top:10px">I understand</button></div>
+<div class="disclaimer" id="disc" role="note"><span><b>Closed roads or tracks only.</b> Phone estimate, not for public roads. Tap “I understand” before your first run.</span><button id="ok" type="button">I understand</button></div>
 <div class="chart-wrap" id="chartWrap">
   <h2 id="result" style="margin:0 0 8px">Run complete</h2>
   <canvas id="chart" width="340" height="160"></canvas>
@@ -76,7 +81,9 @@ const resultEl = document.getElementById('result');
 const savedEl = document.getElementById('saved');
 let stream, recorder, chunks = [], running = false, startTs = 0, speed = 0, lon = 0, samples = [], watchId = null, lastFrame = null, motionStart = false, goTs = 0, reactMs = 0;
 
-document.getElementById('ok').onclick = () => document.getElementById('disc').style.display = 'none';
+let acked = false;
+document.getElementById('ok').onclick = () => { acked = true; document.getElementById('disc').style.display = 'none'; };
+function needAck(){ if(acked) return false; const d=document.getElementById('disc'); d.classList.remove('flash'); void d.offsetWidth; d.classList.add('flash'); return true; }
 document.getElementById('again').onclick = () => { chartWrap.classList.remove('show'); location.reload(); };
 
 async function startCam(){
@@ -210,6 +217,7 @@ document.getElementById('cancel').onclick = () => {
 };
 
 async function beginRun(){
+  if(needAck()) return;
   document.getElementById('bigStart').classList.add('hide');
   document.getElementById('cancel').style.display = 'inline-block';
   const lights = document.querySelectorAll('.light');

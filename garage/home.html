@@ -105,7 +105,8 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 #remBanner{margin:10px 0}
 .remB{display:flex;align-items:center;gap:10px;background:#141416;border:1px solid #2a2a2e;border-radius:16px;padding:12px 12px 12px 14px;margin-bottom:8px}
 .remB b{display:block;font-size:15px}.remB span{display:block;color:#a8a8a8;font-size:13px;margin-top:2px}
-.remB .btn{width:auto;min-width:72px;margin:0;padding:10px 14px}
+.remB .btn{flex:0 0 auto !important;width:auto !important;min-width:72px;max-width:96px;margin:0 !important;padding:10px 14px !important;min-height:0 !important}
+.remB>div{min-width:0}
 .remSet{display:block;text-align:right;color:#8b8b8b;font-size:13px;margin:2px 4px 0}
 #gForm input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:15px}
 </style>
@@ -208,7 +209,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="plate-fill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="./reminders-core.js?v=1"></script>
-<script src="./home-app.js?v=85"></script>
+<script src="./home-app.js?v=86"></script>
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=31"></script>
 <script src="./home-tabs.js?v=2"></script>

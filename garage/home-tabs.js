@@ -1,10 +1,11 @@
 /* Driv3 home: 4 tabs, gear settings, per-car links. Last tab kept in localStorage 'driv3.homeTab'. */
 (function(){
-  // Single scrolling page (tabs removed). Old tab hashes (#car #docs #qr #drive) scroll to that section.
+  // Simple home (groups open their own pages). Old tab hashes go to the matching page.
   function jump(){
     var h=(location.hash||"").replace("#","");
-    if(!/^(car|docs|qr|drive|more)$/.test(h)) return;
-    var el=document.getElementById(h); if(el) setTimeout(function(){el.scrollIntoView({block:"start"})},60);
+    var to={drive:"drive-hub.html",docs:"history.html",qr:"history.html#share"}[h];
+    if(to){ location.replace(to); return; }
+    if(h==="car"){ var el=document.getElementById("datesToggle"); if(el) el.scrollIntoView({block:"start"}); }
   }
   jump(); window.addEventListener("hashchange",jump);
   var st=document.getElementById("settings");

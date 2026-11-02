@@ -112,6 +112,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 .remSet{display:block;text-align:right;color:#8b8b8b;font-size:13px;margin:2px 4px 0}
 #gForm input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:15px}
 #dues .notifSet{display:flex;align-items:center;justify-content:center;margin-top:10px;text-decoration:none}
+.secLink{display:block;text-align:center;color:#8b8b8b;font-size:13px;margin:14px 0 4px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -130,35 +131,16 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <button type="button" id="btnEdit">&#9998;</button>
 </div>
 </div><p class="dots" id="dots"></p></div>
-<section class="tabp on" data-tab="car" id="car">
+<section class="tabp on" id="car">
 <button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
 <div class="card hide" id="dues"></div>
-<a class="btn wide" id="lnkTax" href="tax.html" data-ico="shield">MOT &amp; tax status</a>
-<a class="btn wide" href="insurance.html?v=19" data-ico="doc">Insurance</a>
+<a class="btn wide" href="drive-hub.html?v=20" data-ico="wheel">Drive</a>
 <a class="btn wide" href="service.html?v=12" data-ico="wrench">Maintenance planner</a>
-</section>
-<section class="tabp on" data-tab="drive" id="drive">
-<h2 class="grp">Drive</h2>
-<a class="btn wide" href="drive.html" data-ico="cam">Record</a>
-<a class="btn wide" href="performance.html" data-ico="turbo">Performance</a>
-<a class="btn wide" href="g-meter.html" data-ico="wheel">G-meter</a>
-<a class="btn wide" href="calendar.html" data-ico="cal">Drive diary</a>
 <a class="btn wide" id="lnkRoute" href="route.html" data-ico="map">Route costs</a>
-</section>
-<section class="tabp on" data-tab="docs" id="docs">
-<h2 class="grp">History &amp; docs</h2>
-<a class="btn wide" href="history.html" data-ico="cal">History <small class="tsub">work, invoices &amp; mechanic uploads</small></a>
-<a class="btn wide" id="lnkMot" href="mot.html#history" data-ico="doc">MOT history</a>
-</section>
-<section class="tabp on" data-tab="qr" id="qr">
-<h2 class="grp">QR &amp; sharing</h2>
-<a class="btn wide" href="mechanic.html?v=16" data-ico="box">Mechanic QR sticker</a>
-<a class="btn wide" href="share.html" data-ico="mail">Share for sale</a>
+<a class="btn wide" href="buy.html" data-ico="search">Buying guide</a>
+<a class="btn wide" href="history.html?v=20" data-ico="cal">History</a>
 <a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase <span class="chip" id="showChip" hidden></span></a>
-</section>
-<section class="tabp on" data-tab="more" id="more">
-<h2 class="grp">Next car</h2>
-<a class="btn wide" href="buy.html" data-ico="search">Buying guide <small class="tsub">for your next car</small></a>
+<a class="secLink" href="security.html"><span>Security &amp; backup</span></a>
 </section>
 <div class="sheet" id="settings"><div class="panel">
 <h2>Settings</h2>
@@ -212,10 +194,10 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="plate-fill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="./reminders-core.js?v=2"></script>
-<script src="./home-app.js?v=89"></script>
+<script src="./home-app.js?v=90"></script>
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=31"></script>
-<script src="./home-tabs.js?v=3"></script>
+<script src="./home-tabs.js?v=4"></script>
 <script>
 (function(){
   var dues=document.getElementById("dues");

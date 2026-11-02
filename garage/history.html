@@ -60,6 +60,7 @@ input[type=file]{margin:8px 0}
 <div class="card">
   <button class="acc" type="button">Insurance <span>+</span></button>
   <div class="panel">
+    <a class="btn" href="insurance.html?v=19">Insurance documents &amp; renewal</a>
     <p class="note">Your uploaded insurance document.</p>
     <label class="btn" for="insFile">Upload policy PDF or photo</label>
     <input id="insFile" type="file" accept="image/*,application/pdf" style="display:none"/>
@@ -72,6 +73,15 @@ input[type=file]{margin:8px 0}
   <div class="panel">
     <p class="note">Full MOT history, recent work and future costs.</p>
     <a class="btn" id="motLink" href="mot.html">View MOT history</a>
+    <a class="btn" id="taxLink" href="tax.html">MOT &amp; tax status</a>
+  </div>
+</div>
+
+<div class="card" id="share">
+  <button class="acc" type="button">QR &amp; sharing <span>+</span></button>
+  <div class="panel">
+    <a class="btn" href="mechanic.html?v=16">Mechanic QR sticker</a>
+    <a class="btn" href="share.html">Share for sale</a>
   </div>
 </div>
 
@@ -241,6 +251,7 @@ try{
   if(s&&s.cars&&s.cars.length){
     var pl=(s.cars[s.i]||s.cars[0]).plate||"";
     if(pl) document.getElementById("motLink").href="mot.html?plate="+encodeURIComponent(pl);
+    if(pl) document.getElementById("taxLink").href="tax.html?plate="+encodeURIComponent(pl);
   }
 }catch(e){}
 
@@ -290,5 +301,6 @@ document.getElementById('save').onclick = () => {
   render(); go(false);
 })();
 </script>
+<script>if(location.hash==="#share"){var b=document.querySelector("#share .acc");if(b){b.click();setTimeout(function(){document.getElementById("share").scrollIntoView({block:"center"})},100)}}</script>
 </body>
 </html>

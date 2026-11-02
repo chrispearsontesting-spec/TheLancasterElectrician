@@ -13,14 +13,14 @@ body{margin:0 auto;max-width:440px;padding:16px;background:#0b0c0e;color:#f3efe6
 h1{font-size:22px;margin:8px 0}
 .plate{display:flex;align-items:center;justify-content:center;background:#f5c518;color:#111;font-weight:800;font-size:28px;letter-spacing:2px;border-radius:8px;padding:12px 16px;margin:16px auto;width:fit-content}
 .box{border-radius:18px;color:#fff;text-align:center;padding:24px 16px;margin:14px 0;font-weight:700;border:1px solid rgba(255,255,255,.08)}
-.ok{background:#1f5f2a}.bad{background:#8e2b20}.wait,.unk{background:#2a2b2f;color:#c9c5bb}
+.ok{background:#1f5f2a}.bad{background:#8e2b20}.amber{background:#7a5a0c;color:#fff3c4}.amber .link,.ok .link,.bad .link{color:#fff !important}.wait,.unk{background:#2a2b2f;color:#c9c5bb}
 .box b{display:block;font-size:22px;margin-bottom:6px}
 .box small{display:block;font-weight:500;font-size:14px;opacity:.85}
 .note{color:#a8a39a;font-size:14px}
-#taxDate .edit{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:12px;flex-wrap:wrap}
-#taxDate input[type=date]{background:#111214;color:#f3efe6;border:1px solid #3a3b40;border-radius:10px;padding:10px;font-size:16px;color-scheme:dark}
-#taxDate button{background:#f5c518;color:#111;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:15px}
-#taxDate .link{background:none;color:#f5c518;text-decoration:underline;padding:6px;font-weight:600}
+#tax .edit{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:12px;flex-wrap:wrap}
+#tax input[type=date]{background:#111214;color:#f3efe6;border:1px solid #3a3b40;border-radius:10px;padding:10px;font-size:16px;color-scheme:dark}
+#tax button{background:#f5c518;color:#111;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:15px}
+#tax .link{background:none;color:#f5c518;text-decoration:underline;padding:6px;font-weight:600}
 #gov{display:block;color:#f5c518;font-weight:600;margin:12px 0}
 .back{display:flex;margin-top:16px;justify-content:center;text-decoration:none}
 </style>
@@ -29,7 +29,6 @@ h1{font-size:22px;margin:8px 0}
 <h1>Tax &amp; MOT</h1>
 <div class="plate" id="plate">—</div>
 <div class="box wait" id="tax"><b>Checking…</b></div>
-<div class="box unk" id="taxDate" style="display:none"></div>
 <div class="box wait" id="mot"><b>Checking…</b></div>
 <p class="note" id="note"></p>
 <a id="gov" href="https://vehicleenquiry.service.gov.uk/" target="_blank" rel="noopener">Open the official GOV.UK page</a>
@@ -51,20 +50,16 @@ function saveGarage(){ try{ localStorage.setItem("gt.garage",JSON.stringify(G));
 var lastT="";
 function paintTax(t, apiDue){
   lastT=t;
-  var tax=document.getElementById("tax"), box=document.getElementById("taxDate"), due=(car&&car.tax)||apiDue||"";
+  var box=document.getElementById("tax"), due=(car&&car.tax)||apiDue||"";
   var ok=/^\d{4}-\d{2}-\d{2}$/.test(due), left=ok?Math.ceil((new Date(due+"T23:59:59")-new Date())/864e5):0;
-  if(t){ var taxed=/taxed/i.test(t)&&!/untaxed/i.test(t), sorn=/sorn/i.test(t); tax.className="box "+(taxed?"ok":sorn?"wait":"bad"); tax.innerHTML="<b>"+esc(t)+"</b>"+(sorn?"<small>Declared off the road</small>":""); }
-  else if(ok){ tax.className="box "+(left>=0?"ok":"bad"); tax.innerHTML="<b>"+(left>=0?"Taxed":"Untaxed")+"</b><small>From your saved renewal date. Check GOV.UK to be sure.</small>"; }
-  else unk(tax,"Tax");
-  box.style.display="block";
+  var taxed=/taxed/i.test(t)&&!/untaxed/i.test(t), sorn=/sorn/i.test(t);
+  var label=t?esc(t):ok?(left>=0?"Taxed":"Untaxed"):"Couldn't check Tax";
+  var cls=sorn?"amber":t&&!taxed?"bad":ok?(left<0?"bad":left<=30?"amber":"ok"):t?"ok":"unk";
+  var sub=ok?(left<0?(-left)+" day"+(left===-1?"":"s")+" overdue":left===0?"Due today":left+" day"+(left===1?"":"s")+" left")+(t?"":" · from your saved date"):sorn?"Declared off the road":t?"":"Try again later, or use the GOV.UK link below.";
   var edit=car?"<div class='edit'><input type='date' id='taxIn' aria-label='Tax renewal date' value='"+(ok?due:"")+"'/><button type='button' id='taxSave'>Save date</button></div>":"<small>Add this car in My garage to save a renewal date.</small>";
-  if(ok){
-    box.className="box "+(left<0?"bad":left<=30?"wait":"ok");
-    box.innerHTML="<b>Tax due "+uk(due)+"</b><small>Renew by "+uk(due)+" · "+(left<0?(-left)+" day"+(left===-1?"":"s")+" overdue":left===0?"due today":left+" day"+(left===1?"":"s")+" left")+"</small>"+(car?"<button type='button' class='link' id='taxEdit'>Change date</button><div id='taxEd' style='display:none'>"+edit+"</div>":"");
-  } else {
-    box.className="box unk";
-    box.innerHTML="<b>Tax renewal date</b><small>We couldn't find the date. Add it from your V5C, tax reminder or GOV.UK and we'll remind you.</small>"+edit;
-  }
+  box.className="box "+cls;
+  box.innerHTML="<b>"+label+(ok?" (Renew "+uk(due)+")":"")+"</b>"+(sub?"<small>"+sub+"</small>":"")+
+    (ok?(car?"<button type='button' class='link' id='taxEdit'>Change date</button><div id='taxEd' style='display:none'>"+edit+"</div>":""):(car?"<button type='button' class='link' id='taxEdit'>Add renewal date</button><div id='taxEd' style='display:none'>"+edit+"</div>":edit));
   var e=document.getElementById("taxEdit"); if(e) e.onclick=function(){ document.getElementById("taxEd").style.display="block"; e.style.display="none"; };
   var sv=document.getElementById("taxSave"); if(sv) sv.onclick=function(){ var v=document.getElementById("taxIn").value; if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return; car.tax=v; saveGarage(); paintTax(lastT,""); };
 }

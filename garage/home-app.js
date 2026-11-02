@@ -416,11 +416,13 @@ if(dues) dues.addEventListener("click",function(e){
     sheet.querySelector("#dateOk").onclick=function(){
       var newDate=sheet.querySelector("#dateCal").value;
       if(!newDate){ alert("Please pick a date."); return; }
+      var before=JSON.parse(JSON.stringify(c));
       if(key==="mot") c.mot=newDate;
       else if(key==="tax") c.tax=newDate;
       else if(key==="insurance") c.ins=newDate;
       else if(key==="fullservice") c.oil=newDate;
       else if(key==="timingbelt") c.beltDate=newDate;
+      if(window.D3Diy) try{ D3Diy.onEdit(before,c); }catch(e){}
       save(s);
       paint();
       sheet.remove();
@@ -449,6 +451,7 @@ on("btnSave",function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
   if(mode==="add" && s.cars.length>=20){ alert("Maximum 20 cars."); return; }
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
+  var before=mode==="add"?{}:JSON.parse(JSON.stringify(c));
   var looked = lastLooked || {};
   var plateNow=document.getElementById("fPlate").value.toUpperCase();
   var plateKey=plateNow.replace(/[^A-Z0-9]/g,"");
@@ -476,6 +479,7 @@ on("btnSave",function(){
   c.motEmail=document.getElementById("fEmail").value;
   c.insWeb=document.getElementById("fInsWeb").value;
   if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}
+  if(window.D3Diy) try{ D3Diy.onEdit(before,c); }catch(e){}
   save(s);paint();document.getElementById("sheet").className="sheet";
 });
 var swipeAt=0;

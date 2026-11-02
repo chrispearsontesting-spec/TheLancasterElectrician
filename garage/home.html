@@ -32,6 +32,14 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .dots{text-align:center;color:#8b8b8b;font-size:12px;margin:6px 0 0;height:16px;line-height:16px}
 .card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;overflow:hidden;margin-bottom:12px}
 .card.hide{display:none}
+.btn.dd .chev{margin-left:auto;font-size:15px;opacity:.75;transition:transform .2s ease}
+.btn.dd[aria-expanded="true"] .chev{transform:rotate(180deg)}
+#dues:not(.hide),.ddMenu:not(.hide){animation:ddIn .18s ease-out}
+@keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.ddMenu a{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#f2f2f2;text-decoration:none;font-size:16px;font-weight:600;border-top:1px solid #2a2a2e}
+.ddMenu a:first-child{border-top:0}
+.ddMenu a::after{content:"\203A";color:#8b8b8b;font-size:20px}
+.ddMenu a:active{background:#1d1d21}
 .item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #2a2a2e}
 .item h3{margin:0;font-size:17px;font-weight:700;letter-spacing:.2px}
 .when{margin:3px 0 0;color:#b0b0b0;font-size:14px;font-weight:500}
@@ -132,13 +140,20 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 </div>
 </div><p class="dots" id="dots"></p></div>
 <section class="tabp on" id="car">
-<button class="btn wide" type="button" id="datesToggle" data-ico="cal"><span class="lab">Reminders</span></button>
+<button class="btn wide dd" type="button" id="datesToggle" data-ico="cal" aria-expanded="false" aria-controls="dues"><span class="lab">Reminders</span><span class="chev" aria-hidden="true">&#9662;</span></button>
 <div class="card hide" id="dues"></div>
-<a class="btn wide" href="drive-hub.html?v=20" data-ico="wheel">Drive</a>
+<button class="btn wide dd" type="button" id="driveToggle" data-ico="wheel" aria-expanded="false" aria-controls="driveMenu"><span class="lab">Drive</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<div class="card hide ddMenu" id="driveMenu">
+<a href="drive.html">Record</a>
+<a href="performance.html">Performance</a>
+<a href="g-meter.html">G-meter</a>
+<a href="calendar.html">Drive diary</a>
+<a href="route.html">Route costs</a>
+</div>
 <a class="btn wide" href="service.html?v=12" data-ico="wrench">Maintenance planner</a>
 <a class="btn wide" id="lnkRoute" href="route.html" data-ico="map">Route costs</a>
 <a class="btn wide" href="buy.html" data-ico="search">Buying guide</a>
-<a class="btn wide" href="history.html?v=20" data-ico="cal">History</a>
+<a class="btn wide" href="history.html?v=21" data-ico="cal">History</a>
 <a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase <span class="chip" id="showChip" hidden></span></a>
 <a class="secLink" href="security.html"><span>Security &amp; backup</span></a>
 </section>
@@ -194,22 +209,24 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="plate-fill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="./reminders-core.js?v=2"></script>
-<script src="./home-app.js?v=91"></script>
+<script src="./diy-work.js?v=1"></script>
+<script src="./home-app.js?v=92"></script>
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=31"></script>
-<script src="./home-tabs.js?v=4"></script>
+<script src="./home-tabs.js?v=5"></script>
 <script>
 (function(){
-  var dues=document.getElementById("dues");
-  var btn=document.getElementById("datesToggle");
-  function lab(){return btn.querySelector(".lab")||btn}
-  function setOpen(on){
-    dues.classList.toggle("hide",!on);
-    lab().textContent="Reminders";
-    try{sessionStorage.setItem("gt.datesOpen",on?"1":"0")}catch(e){}
+  // Group buttons open inline dropdowns, like Reminders. One open at a time; remembered for this session.
+  var G=[["datesToggle","dues","dates"],["driveToggle","driveMenu","drive"],["histToggle","histMenu","hist"]];
+  function setOpen(key){
+    G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[1]); if(!b||!m) return; var on=g[2]===key; m.classList.toggle("hide",!on); b.setAttribute("aria-expanded",on?"true":"false"); });
+    try{ sessionStorage.setItem("gt.homeOpen",key||""); sessionStorage.setItem("gt.datesOpen",key==="dates"?"1":"0"); }catch(e){}
   }
-  setOpen(sessionStorage.getItem("gt.datesOpen")==="1");
-  btn.onclick=function(){setOpen(dues.classList.contains("hide"))};
+  window.driv3OpenGroup=function(key){ setOpen(key); var g=G.filter(function(x){return x[2]===key})[0]; if(g){ var b=document.getElementById(g[0]); if(b) b.scrollIntoView({block:"start"}); } };
+  G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[1]); if(b&&m) b.onclick=function(){ setOpen(m.classList.contains("hide")?g[2]:""); }; });
+  var k=""; try{ k=sessionStorage.getItem("gt.homeOpen"); if(k===null) k=sessionStorage.getItem("gt.datesOpen")==="1"?"dates":""; }catch(e){}
+  var h=(location.hash||"").replace("#",""), fromHash={drive:"drive",docs:"hist",qr:"hist",history:"hist"}[h];
+  if(fromHash) window.driv3OpenGroup(fromHash); else setOpen(k||"");
 })();
 </script>
 </body>

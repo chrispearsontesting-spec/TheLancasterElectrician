@@ -135,13 +135,27 @@ async function render(){
   var U=window.DipUploads, jobs=[];
   if(U&&U.allJobs){ try{ jobs=(await U.allJobs()).filter(function(j){ return (car&&car.upId&&j.up===car.upId)||(pl&&j.plate===pl); }); }catch(e){} }
   jobs.forEach(function(j){ ev.push({k:"mech",t:j.created||j.received||0,j:j}); });
+  if(window.D3Diy){ try{ D3Diy.backfill(); }catch(x){} D3Diy.forPlate(car&&car.plate).forEach(function(w){ var p=w.date.split("-"); ev.push({k:"diy",t:new Date(+p[0],+p[1]-1,+p[2],12).getTime(),w:w}); }); }
   if(gen!==tlGen) return;
   ev.sort(function(a,b){return b.t-a.t});
   if(!ev.length){ box.innerHTML='<p class="note">Nothing yet. Tap + Add for a photo, invoice or note. Work your mechanic sends appears here too.</p>'; return; }
   box.innerHTML="";
   for(var n=0;n<ev.length;n++){
     var e=ev[n], el=document.createElement("div");
-    if(e.k==="own"){
+    if(e.k==="diy"){
+      var w=e.w, fs=w.files||[];
+      el.className="ev own diyEv";
+      el.innerHTML='<span class="dot"></span><div><div class="d">'+escH(niceD(e.t))+'<span class="tag">DIY</span></div><div class="t">'+escH(w.title||"Work done")+'</div>'+
+        (w.desc?'<div class="d" style="white-space:pre-wrap">'+escH(w.desc)+'</div>':'')+'<div class="files"></div>'+
+        '<a class="rm" style="display:inline-block;text-decoration:none" href="calendar.html?d='+escH(w.date)+'">Open in Drive diary to edit</a></div>';
+      var fl=el.querySelector(".files");
+      for(var q=0;q<fs.length;q++){
+        var b=null; try{ b=await D3Diy.getBlob(fs[q].id); }catch(x){} if(!b) continue;
+        var u2=URL.createObjectURL(b); tlUrls.push(u2);
+        if(fs[q].kind==="photo"){ var im2=document.createElement("img"); im2.src=u2; im2.alt=""; fl.parentNode.insertBefore(im2,fl); }
+        else { var a2=document.createElement("a"); a2.href=u2; a2.target="_blank"; a2.rel="noopener"; a2.textContent="Invoice: "+(fs[q].title||fs[q].name)+(fs[q].price?" · £"+fs[q].price:""); fl.appendChild(a2); }
+      }
+    }else if(e.k==="own"){
       var it=e.it, img=/^image\//.test(it.type||""), hasF=!!it.data;
       el.className="ev own";
       el.innerHTML='<span class="dot"></span><div><div class="d">'+escH(it.ts?niceD(it.ts):(it.date||""))+'</div><div class="t">'+escH(it.note||"Work")+'</div>'+
@@ -283,6 +297,7 @@ document.getElementById('save').onclick = () => {
 (function(){ try{ var a=JSON.parse(localStorage.getItem("gt.shares")||"[]"), n=a.filter(function(s){return s.expires>Date.now()}).length;
   if(n) document.getElementById("shareNote").textContent=n+" active share link"+(n>1?"s":"")+". Tap to manage or make a new one."; }catch(e){} })();
 </script>
+<script src="./diy-work.js?v=1"></script>
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=5"></script>
 <script>

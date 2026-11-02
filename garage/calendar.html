@@ -11,8 +11,8 @@
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
 h1{font-size:22px;margin:0 0 6px;font-weight:650}
-.nav{display:flex;justify-content:space-between;align-items:center;margin:8px 0 12px}
-.nav b{font-size:16px}
+.nav{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;margin:8px 0 12px}
+.nav b{font-size:clamp(15px,4.4vw,18px);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .btn{border:0;border-radius:18px;padding:10px 14px;font-weight:600;background:#1c1c1e;color:#f2f2f2;text-decoration:none}
 .wide{display:block;width:100%;text-align:left;margin-top:10px;padding:16px 18px;border-radius:18px}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -43,11 +43,25 @@ input{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;borde
 .rem-card{border-left:4px solid var(--rc)!important}
 .rem-card .row a,.rem-card .row button{flex:1;text-align:center;text-decoration:none}
 #upNext .rem-card{margin-bottom:8px}
+.day .dot.w{background:#3dd68c}
+.diy{border-left:4px solid #3dd68c!important}
+.diy .ph{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.diy .ph img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #2a2a2e}
+.diy .inv{display:block;color:#7dd3fc;font-size:14px;margin-top:6px}
+.addw{display:block;width:100%;margin-top:10px;background:#14532d;color:#fff;text-align:center}
+.wsheet{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.wsheet .panel{background:#141416;border:1px solid #2a2a2e;border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:92vh;overflow:auto;padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
+.wsheet h2{margin:0 0 4px;font-size:19px}
+textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font:inherit;font-size:16px}
+.fl{display:flex;gap:8px;align-items:center;margin-top:8px;background:#1c1c1e;border-radius:12px;padding:6px}
+.fl img{width:48px;height:48px;object-fit:cover;border-radius:8px}.fl .fi{flex:1;min-width:0;font-size:13px}
+.fl input{padding:6px 8px;font-size:14px;margin-top:4px}.fl .x{background:none;border:0;color:#f87171;font-size:13px;padding:6px}
+.pick{display:flex;gap:8px;margin-top:8px}.pick label{flex:1;margin:0;text-align:center;background:#1c1c1e;color:#f2f2f2;border-radius:14px;padding:11px 6px;font-size:14px;font-weight:600}
+.pick input{display:none}
 </style>
 </head>
 <body>
 <h1>Drive diary</h1>
-<p class="muted">Tap a day. Edit mpg to recount the cost, or delete the trip.</p>
+<p class="muted">Tap a day to add work you did (photos, invoices). Edit mpg to recount the cost, or delete the trip.</p>
 <div class="nav">
   <button class="btn" type="button" id="prev">Prev</button>
   <b id="label"></b>
@@ -66,6 +80,7 @@ input{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;borde
 <a class="btn" href="home.html#drive" data-iconed="1">Back</a>
 <script src="./trip-engine.js"></script>
 <script src="./reminders-core.js?v=2"></script>
+<script src="./diy-work.js?v=1"></script>
 <script>
 var view=new Date();
 view.setDate(1);
@@ -88,6 +103,7 @@ function costOf(t,mpg){
 }
 function render(sel){
   var remMap=remByDay();
+  var wmap=diyByDay();
   var map=byDay(), rmap={}; tripStore().forEach(function(t){ var dk=key(new Date(t.when||0)); (rmap[dk]=rmap[dk]||[]).push(t); });
   var y=view.getFullYear(),m=view.getMonth();
   document.getElementById("label").textContent=view.toLocaleDateString("en-GB",{month:"long",year:"numeric"});
@@ -96,15 +112,18 @@ function render(sel){
   for(var i=0;i<start;i++) html+="<div class='day empty'></div>";
   for(var d=1;d<=days;d++){
     var k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+(map[k]?"<span class='dot'></span>":"")+(rmap[k]?"<span class='dot r'></span>":"")+(remMap[k]?"<span class='evs'>"+remMap[k].map(function(e){return "<i style='background:"+e.color+"'></i>"}).join("")+"</span>":"")+"</button>";
+    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+(map[k]?"<span class='dot'></span>":"")+(rmap[k]?"<span class='dot r'></span>":"")+(wmap[k]?"<span class='dot w' title='Work done'></span>":"")+(remMap[k]?"<span class='evs'>"+remMap[k].map(function(e){return "<i style='background:"+e.color+"'></i>"}).join("")+"</span>":"")+"</button>";
   }
   document.getElementById("grid").innerHTML=html;
   var items=sel&&map[sel]?map[sel]:[];
   var box=document.getElementById("list");
   var rItems=sel&&rmap[sel]?rmap[sel]:[];
   var remItems=sel&&remMap[sel]?remMap[sel]:[];
-  if(!items.length&&!rItems.length&&!remItems.length){box.innerHTML="<p class='muted'>Nothing on this day.</p>"+upNext();return}
-  box.innerHTML=remItems.map(remCard).join("")+items.map(function(t){
+  var wItems=sel&&wmap[sel]?wmap[sel]:[];
+  var wHtml=sel?"<p class='muted' style='margin-top:12px'>"+D3Rem.niceDate(sel)+"</p>"+wItems.map(diyCard).join("")+"<button class='btn addw' type='button' data-addw='"+sel+"'>+ Add work</button>":"";
+  setTimeout(function(){fillThumbs(box)},0);
+  if(!items.length&&!rItems.length&&!remItems.length){box.innerHTML=wHtml+(wItems.length?"":"<p class='muted'>Nothing else on this day.</p>")+upNext();return}
+  box.innerHTML=wHtml+remItems.map(remCard).join("")+items.map(function(t){
     var tm=new Date(t.when).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
     var end=t.end?new Date(t.end).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
     var ico = t.type==="run" ? "🏁 " : "📍 ";
@@ -155,13 +174,18 @@ document.getElementById("rList").addEventListener("click",function(e){
   var b=e.target.closest(".route"); if(!b) return; var m=b.querySelector(".more"); if(m) m.classList.toggle("hide");
 });
 renderRoutes();
-var selected=key(new Date());
+if(window.D3Diy) try{D3Diy.backfill()}catch(e){}
+var qd=/[?&]d=(\d{4}-\d\d-\d\d)/.exec(location.search);
+var selected=qd?qd[1]:key(new Date());
+if(qd){ view=new Date(+qd[1].slice(0,4),+qd[1].slice(5,7)-1,1); }
 render(selected);
 document.getElementById("grid").addEventListener("click",function(e){
   var b=e.target.closest("[data-k]"); if(!b)return;
   selected=b.getAttribute("data-k"); render(selected);
 });
 document.getElementById("list").addEventListener("click",function(e){
+  var aw=e.target.closest("[data-addw]"); if(aw){ openWork(null,aw.getAttribute("data-addw")); return; }
+  var ow=e.target.closest("[data-openw]"); if(ow){ openWork(ow.getAttribute("data-openw")); return; }
   var edit=e.target.closest("[data-edit]");
   if(edit){
     var box=document.getElementById("ed-"+edit.getAttribute("data-edit"));
@@ -189,6 +213,70 @@ document.getElementById("list").addEventListener("click",function(e){
     render(selected);
   }
 });
+/* ---- DIY "Work done" entries (shared with History via diy-work.js) ---- */
+function curPlate(){ try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null");var c=g&&g.cars&&(g.cars[g.i]||g.cars[0]);return c?c.plate:""}catch(e){return ""} }
+function diyByDay(){ var m={}; if(!window.D3Diy) return m; D3Diy.forPlate(curPlate()).forEach(function(w){(m[w.date]=m[w.date]||[]).push(w)}); return m; }
+function diyCard(w){
+  var ph=(w.files||[]).filter(function(f){return f.kind==="photo"}), inv=(w.files||[]).filter(function(f){return f.kind!=="photo"});
+  return "<div class='card diy'><b class='title'>🔧 "+escR(w.title||"Work done")+"</b><p class='muted'>DIY work"+(ph.length?" · "+ph.length+" photo"+(ph.length>1?"s":""):"")+(inv.length?" · "+inv.length+" invoice"+(inv.length>1?"s":""):"")+"</p>"+
+    (w.desc?"<p style='margin:6px 0 0;font-size:14px;white-space:pre-wrap'>"+escR(w.desc)+"</p>":"")+
+    "<div class='ph'>"+ph.map(function(f){return "<img alt='' data-blob='"+f.id+"'/>"}).join("")+"</div>"+
+    inv.map(function(f){return "<a class='inv' target='_blank' rel='noopener' data-blob='"+f.id+"' data-type='"+escR(f.type)+"'>🧾 "+escR(f.title||f.name)+(f.price?" · £"+escR(f.price):"")+"</a>"}).join("")+
+    "<div class='row'><button class='btn' type='button' data-openw='"+w.id+"'>✎ Open / edit</button></div></div>";
+}
+var diyUrls=[];
+function fillThumbs(root){
+  root.querySelectorAll("[data-blob]").forEach(function(el){
+    D3Diy.getBlob(el.getAttribute("data-blob")).then(function(b){ if(!b) return; var u=URL.createObjectURL(b); diyUrls.push(u); if(el.tagName==="IMG") el.src=u; else el.href=u; }).catch(function(){});
+  });
+}
+function openWork(id,date){
+  var w=id?JSON.parse(JSON.stringify(D3Diy.get(id))):{date:date,plate:D3Diy.vrn(curPlate()),title:"",desc:"",files:[]};
+  if(!w) return;
+  var pending=[], removed=[];
+  var sh=document.createElement("div"); sh.className="wsheet"; sh.id="wSheet";
+  sh.innerHTML="<div class='panel'><h2>"+(id?"Work done":"Add work")+"</h2><p class='muted'>Your own DIY work. Saved on this phone and shown in History.</p>"+
+    "<label>Date</label><input type='date' id='wDate' value='"+escR(w.date)+"'/>"+
+    "<label>What did you do?</label><input id='wTitle' maxlength='80' placeholder='e.g. Full service, oil + filters' value='"+escR(w.title)+"'/>"+
+    "<label>Description</label><textarea id='wDesc' placeholder='Parts used, mileage, notes…'>"+escR(w.desc)+"</textarea>"+
+    "<label>Photos</label><div class='pick'><label>📷 Camera<input type='file' accept='image/*' capture='environment' id='wCam'/></label><label>🖼 Gallery<input type='file' accept='image/*' multiple id='wGal'/></label></div>"+
+    "<label>Invoices / receipts</label><div class='pick'><label>🧾 Add PDF or photo<input type='file' accept='application/pdf,image/*' multiple id='wInv'/></label></div>"+
+    "<div id='wFiles'></div>"+
+    "<div class='row'><button class='btn' type='button' id='wCancel'>Cancel</button><button class='btn' type='button' id='wSave' style='background:#14532d;color:#fff'>Save</button></div>"+
+    (id?"<button class='btn' type='button' id='wDel' style='display:block;width:100%;margin-top:10px;background:#3a1414;color:#fca5a5'>Delete this work</button>":"")+"</div>";
+  document.body.appendChild(sh);
+  var urls=[];
+  function list(){
+    var box=sh.querySelector("#wFiles"), rows=[];
+    w.files.forEach(function(f){ if(removed.indexOf(f.id)<0) rows.push({old:f}); });
+    pending.forEach(function(p){ rows.push({p:p}); });
+    box.innerHTML=rows.map(function(r,i){ var f=r.old||r.p, inv=f.kind!=="photo";
+      return "<div class='fl'>"+(inv?"<span style='font-size:26px'>🧾</span>":"<img alt='' data-i='"+i+"'/>")+"<div class='fi'>"+escR(f.name)+
+        (inv?"<input placeholder='Title (optional)' data-t='"+i+"' value='"+escR(f.title||"")+"'/><input placeholder='Price £ (optional)' inputmode='decimal' data-pr='"+i+"' value='"+escR(f.price||"")+"'/>":"")+
+        "</div><button class='x' type='button' data-rm='"+i+"'>Remove</button></div>"; }).join("");
+    rows.forEach(function(r,i){ var im=box.querySelector("img[data-i='"+i+"']"); if(!im) return;
+      if(r.p){ var u=URL.createObjectURL(r.p.file); urls.push(u); im.src=u; } else D3Diy.getBlob(r.old.id).then(function(b){ if(b){var u=URL.createObjectURL(b);urls.push(u);im.src=u;} }); });
+    box.oninput=function(e){ var t=e.target, i=t.getAttribute("data-t")||t.getAttribute("data-pr"); if(i==null) return; var f=rows[+i].old||rows[+i].p; if(t.hasAttribute("data-t")) f.title=t.value; else f.price=t.value; };
+    box.onclick=function(e){ var b=e.target.closest("[data-rm]"); if(!b) return; var r=rows[+b.getAttribute("data-rm")]; if(r.old) removed.push(r.old.id); else pending.splice(pending.indexOf(r.p),1); list(); };
+  }
+  function add(inp,kind){ inp.onchange=function(){ Array.prototype.forEach.call(inp.files,function(f){ pending.push({file:f,kind:kind==="inv"&&/^image\//.test(f.type)?"invoice":kind==="inv"?"invoice":"photo",name:f.name,title:"",price:""}); }); inp.value=""; list(); }; }
+  add(sh.querySelector("#wCam"),"photo"); add(sh.querySelector("#wGal"),"photo"); add(sh.querySelector("#wInv"),"inv");
+  list();
+  function close(){ urls.forEach(function(u){URL.revokeObjectURL(u)}); sh.remove(); }
+  sh.querySelector("#wCancel").onclick=close;
+  if(id) sh.querySelector("#wDel").onclick=function(){ if(!confirm("Delete this work entry and its photos/invoices?")) return; D3Diy.remove(id).then(function(){ close(); render(selected); }); };
+  sh.querySelector("#wSave").onclick=async function(){
+    var btn=this; w.date=sh.querySelector("#wDate").value||w.date; w.title=sh.querySelector("#wTitle").value.trim()||"Work done"; w.desc=sh.querySelector("#wDesc").value.trim();
+    btn.disabled=true; btn.textContent="Saving…";
+    try{
+      for(var i=0;i<removed.length;i++){ await D3Diy.delBlob(removed[i]).catch(function(){}); }
+      w.files=w.files.filter(function(f){return removed.indexOf(f.id)<0});
+      for(var j=0;j<pending.length;j++){ var p=pending[j]; await D3Diy.addFile(w,p.file,p.kind,p.title,p.price); }
+      D3Diy.save(w);
+    }catch(e){ alert("Could not save — phone storage may be full."); btn.disabled=false; btn.textContent="Save"; return; }
+    close(); selected=w.date; view=new Date(+w.date.slice(0,4),+w.date.slice(5,7)-1,1); render(selected);
+  };
+}
 document.getElementById("prev").onclick=function(){view.setMonth(view.getMonth()-1);render(selected)};
 document.getElementById("next").onclick=function(){view.setMonth(view.getMonth()+1);render(selected)};
 </script>

@@ -222,8 +222,7 @@ function paint(){
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"<span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>"+
-    "<a class='btn wide notifSet' href='reminders.html?v=15#notif' data-ico='cal'>Notification settings</a>";
+    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"<span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>";
   try{remindBanner()}catch(e){}
 }
 function savePic(f){

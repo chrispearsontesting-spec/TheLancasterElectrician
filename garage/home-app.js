@@ -151,7 +151,7 @@ function mark(iso){
 function row(title,iso,extra,buttons){
   var key = title.toLowerCase().replace(/\s+/g,"");
   var niceName = {"mot":"MOT","tax":"Tax","insurance":"Insurance","fullservice":"Full service","timingbelt":"Timing belt"}[key] || title;
-  return "<div class='item"+tone(iso)+"' data-key='"+key+"'><div><h3>"+title+mark(iso)+"</h3><p class='when' data-date='"+key+"' data-name='"+niceName+"' style='cursor:pointer'>"+nice(iso)+"</p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  return "<div class='item"+tone(iso)+"' data-key='"+key+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'><button type='button' class='dchip' data-date='"+key+"' data-name='"+niceName+"' aria-label='Change "+niceName+" date and reminder'>"+(iso?nice(iso):"Add date")+"<span class='pen' aria-hidden='true'>\u270e</span></button></p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
 function carLogoHtml(name){
@@ -222,7 +222,7 @@ function paint(){
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>"+
+    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"<span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>"+
     "<a class='btn wide notifSet' href='reminders.html?v=15#notif' data-ico='cal'>Notification settings</a>";
   try{remindBanner()}catch(e){}
 }
@@ -396,7 +396,6 @@ if(dues) dues.addEventListener("click",function(e){
   if(dateEl){
     var key = dateEl.getAttribute("data-date");
     var niceName = dateEl.getAttribute("data-name") || key;
-    if(!confirm((key==="timingbelt"?"Edit the date the timing belt was fitted":"Edit expiry date for "+niceName)+"?")) return;
     var s=state(), c=s.cars[s.i];
     var current = "";
     if(key==="mot") current=c.mot||"";
@@ -404,14 +403,26 @@ if(dues) dues.addEventListener("click",function(e){
     else if(key==="insurance") current=c.ins||"";
     else if(key==="fullservice") current=c.oil||"";
     else if(key==="timingbelt") current=c.beltDate||"";
+    else if(key==="tyres") current=c.tyreDate||"";
+    var rType={mot:"mot",tax:"tax",insurance:"insurance",fullservice:"service",timingbelt:"belt"}[key];
+    var R=window.D3Rem&&rType?D3Rem.load():null, rt=R&&R.types[rType];
+    var LEADS=[[1,"1 day"],[3,"3 days"],[7,"1 week"],[14,"2 weeks"],[21,"3 weeks"],[30,"1 month"]];
+    var REP=[[1,"Daily"],[2,"Every other day"],[3,"Every 3 days"],[7,"Weekly"],[0,"Once only"]];
+    var known=rt&&LEADS.some(function(l){return l[0]===rt.lead});
+    var remHtml=rt?'<div class="remBox"><div class="remHead"><b>Reminder</b><label class="tg"><input type="checkbox" id="remOn"'+(rt.on?' checked':'')+'/><span></span></label></div>'+
+      '<div id="remOpts"'+(rt.on?'':' style="opacity:.45"')+'><label>Start reminding</label><select id="remLead">'+LEADS.map(function(l){return '<option value="'+l[0]+'"'+(l[0]===rt.lead?' selected':'')+'>'+l[1]+' before</option>'}).join("")+'<option value="c"'+(known?'':' selected')+'>Custom…</option></select>'+
+      '<div id="remCust"'+(known?' style="display:none"':'')+'><label>Days before</label><input type="number" min="0" max="365" inputmode="numeric" id="remDays" value="'+rt.lead+'"/></div>'+
+      '<label>Repeat</label><select id="remEvery">'+REP.map(function(r){return '<option value="'+r[0]+'"'+(r[0]===rt.every?' selected':'')+'>'+r[1]+'</option>'}).join("")+'</select></div></div>':'';
     var sheet=document.createElement("div");
     sheet.className="sheet on";
     sheet.style.zIndex="30";
     var isBelt = key==="timingbelt";
-    var lab = isBelt ? "Date the belt was fitted" : "New expiry date";
+    var lab = isBelt ? "Date the belt was fitted" : (key==="tyres" ? "Date the tyres were fitted" : "New expiry date");
     var note = isBelt ? '<p class="left" style="margin-top:8px">Next change is worked out as fitted date + '+(c.beltYears||5)+' years (change the years in Edit).</p>' : '';
-    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>'+lab+'</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/>'+note+'<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
+    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>'+lab+'</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/>'+note+remHtml+'<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
     document.body.appendChild(sheet);
+    if(rt){ sheet.querySelector("#remOn").onchange=function(){ sheet.querySelector("#remOpts").style.opacity=this.checked?"":".45"; };
+      sheet.querySelector("#remLead").onchange=function(){ sheet.querySelector("#remCust").style.display=this.value==="c"?"":"none"; }; }
     sheet.querySelector("#dateCancel").onclick=function(){ sheet.remove(); };
     sheet.querySelector("#dateOk").onclick=function(){
       var newDate=sheet.querySelector("#dateCal").value;
@@ -422,6 +433,10 @@ if(dues) dues.addEventListener("click",function(e){
       else if(key==="insurance") c.ins=newDate;
       else if(key==="fullservice") c.oil=newDate;
       else if(key==="timingbelt") c.beltDate=newDate;
+      else if(key==="tyres") c.tyreDate=newDate;
+      if(rt){ var lv=sheet.querySelector("#remLead").value, ld=lv==="c"?parseInt(sheet.querySelector("#remDays").value,10):+lv;
+        rt.on=sheet.querySelector("#remOn").checked; if(ld>=0&&ld<=365) rt.lead=ld; rt.every=+sheet.querySelector("#remEvery").value; delete rt.daily;
+        D3Rem.save(R); }
       if(window.D3Diy) try{ D3Diy.onEdit(before,c); }catch(e){}
       save(s);
       paint();

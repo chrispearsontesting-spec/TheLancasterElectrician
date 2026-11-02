@@ -139,7 +139,7 @@ window.addEventListener("hashchange",remindHash);
 function btns(list){
   return "<div class='acts'>"+list.map(function(b){
     if(b.job) return "<button class='btn' type='button' data-iconed='1' data-job='"+b.job+"'>"+b.lab+"</button>";
-    return "<a class='btn' href='"+b.href+"' data-iconed='1'>"+b.lab+"</a>";
+    return "<a class='btn' href='"+b.href+"' data-iconed='1'"+(b.ext?" target='_blank' rel='noopener'":"")+">"+b.lab+"</a>";
   }).join("")+"</div>";
 }
 function mark(iso){
@@ -222,7 +222,7 @@ function paint(){
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"}])+"</div>"+
+    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add tyre date in Edit")+"</p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>"+
     "<a class='btn wide notifSet' href='reminders.html?v=15#notif' data-ico='cal'>Notification settings</a>";
   try{remindBanner()}catch(e){}
 }

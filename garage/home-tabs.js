@@ -1,16 +1,12 @@
 /* Driv3 home: 4 tabs, gear settings, per-car links. Last tab kept in localStorage 'driv3.homeTab'. */
 (function(){
-  var KEY="driv3.homeTab", tabs=document.querySelectorAll("#tabs [data-tab]"), panes=document.querySelectorAll(".tabp");
-  function show(t){
-    var ok=false; for(var i=0;i<tabs.length;i++) if(tabs[i].dataset.tab===t) ok=true;
-    if(!ok) t="car";
-    for(var i=0;i<tabs.length;i++) tabs[i].setAttribute("aria-selected", tabs[i].dataset.tab===t?"true":"false");
-    for(var j=0;j<panes.length;j++) panes[j].classList.toggle("on", panes[j].dataset.tab===t);
-    try{localStorage.setItem(KEY,t)}catch(e){}
+  // Single scrolling page (tabs removed). Old tab hashes (#car #docs #qr #drive) scroll to that section.
+  function jump(){
+    var h=(location.hash||"").replace("#","");
+    if(!/^(car|docs|qr|drive|more)$/.test(h)) return;
+    var el=document.getElementById(h); if(el) setTimeout(function(){el.scrollIntoView({block:"start"})},60);
   }
-  for(var i=0;i<tabs.length;i++) tabs[i].onclick=function(){show(this.dataset.tab)};
-  var h=(location.hash||"").replace("#","");
-  show(/^(car|docs|qr|drive)$/.test(h)?h:(localStorage.getItem(KEY)||"car"));
+  jump(); window.addEventListener("hashchange",jump);
   var st=document.getElementById("settings");
   document.getElementById("gear").onclick=function(){st.classList.add("on")};
   document.getElementById("setClose").onclick=function(){st.classList.remove("on")};

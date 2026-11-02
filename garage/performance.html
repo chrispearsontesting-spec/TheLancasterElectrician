@@ -29,9 +29,16 @@ select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,25
 .light{width:42px;height:42px;border-radius:50%;background:#333;border:2px solid #555;box-shadow:inset 0 0 8px #000}
 .light.on{background:#e10600;box-shadow:0 0 12px #e10600}
 #cancel{display:none}
-.chart-wrap{position:fixed;inset:0;background:#0b0c0e;z-index:8;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.chart-wrap{position:fixed;inset:0;background:#0b0c0e;z-index:12;display:none;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:calc(72px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));overflow-y:auto;max-width:520px;margin:0 auto}
+.chart-wrap .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.chart-wrap .row button{flex:1 1 45%}
+#runVid{width:100%;border-radius:14px;background:#000;max-height:46vh;margin:6px 0}
+.gpk{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(118px + env(safe-area-inset-bottom));z-index:5;background:rgba(0,0,0,.5);border-radius:12px;padding:6px 10px;font-size:12px;color:#ddd;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none}
+.hud small{display:block;font-size:10px;color:#aaa;font-variant-numeric:tabular-nums}
+.runItem{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;margin:6px 0;border-radius:14px}
+.runItem small{color:#9a9aa0;font-weight:500}
 .chart-wrap.show{display:flex}
-canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-radius:12px}
+canvas#chart{width:100%;height:auto;background:#0b0c0e;border-radius:12px;display:block}
 </style>
 </head>
 <body>
@@ -48,6 +55,7 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
   </select>
   <button id="cancel" type="button">Cancel run</button>
   <label style="font-size:13px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="keep"/> Keep video</label>
+  <button id="runsBtn" type="button">Saved runs</button>
 </div>
 <div id="lights" style="display:none;position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:8;gap:28px">
   <span class="light"></span><span class="light"></span><span class="light"></span>
@@ -56,19 +64,26 @@ canvas#chart{width:100%;max-width:360px;height:160px;background:#141416;border-r
 <div id="react" style="position:fixed;top:22%;left:50%;transform:translateX(-50%);z-index:8;font-size:18px;font-weight:700;color:#fff;text-shadow:0 1px 4px #000;display:none"></div>
 <div id="listening" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:13px;color:#73BDE0;display:none">Listening for “start run”</div>
 <button id="bigStart" type="button">🏁 Start run</button>
+<div class="gpk" id="gPeak">Peak accel 0.00 · brake 0.00 · corner 0.00 G</div>
 <div class="overlay">
   <div class="hud"><b id="time">0.0</b><span>Time</span></div>
   <div id="gDot"><i id="dot"></i></div>
+  <div class="hud"><b id="gNow">0.00</b><span>G</span><small id="gDet">Lat 0.00 · Long 0.00</small></div>
   <div class="hud"><b id="spd">0</b><span>mph</span></div>
 </div>
 <div class="disclaimer" id="disc" role="note"><span><b>Closed roads or tracks only.</b> Phone estimate, not for public roads. Tap “I understand” before your first run.</span><button id="ok" type="button">I understand</button></div>
 <div class="chart-wrap" id="chartWrap">
   <h2 id="result" style="margin:0 0 8px">Run complete</h2>
-  <canvas id="chart" width="340" height="160"></canvas>
+  <div id="runView">
+  <video id="runVid" controls playsinline style="display:none"></video>
+  <canvas id="chart" width="720" height="1110" aria-label="G-force chart for this run"></canvas>
   <p id="saved" style="font-size:13px;color:#aaa;margin:8px 0"></p>
-  <button id="dlChart" type="button">Download chart</button>
-  <button id="again" type="button">New run</button>
+  <div class="row"><button id="dlChart" type="button">Share G chart</button><button id="dlVid" type="button" style="display:none">Save video</button></div>
+  </div>
+  <div id="runList" style="display:none"></div>
+  <div class="row"><button id="runsBtn2" type="button">Saved runs</button><button id="again" type="button">New run</button></div>
 </div>
+<script src="./perf-g.js?v=2"></script>
 <script>
 const vid = document.getElementById('vid');
 const timeEl = document.getElementById('time');
@@ -84,7 +99,7 @@ let stream, recorder, chunks = [], running = false, startTs = 0, speed = 0, lon 
 let acked = false;
 document.getElementById('ok').onclick = () => { acked = true; document.getElementById('disc').style.display = 'none'; };
 function needAck(){ if(acked) return false; const d=document.getElementById('disc'); d.classList.remove('flash'); void d.offsetWidth; d.classList.add('flash'); return true; }
-document.getElementById('again').onclick = () => { chartWrap.classList.remove('show'); location.reload(); };
+document.getElementById('again').onclick = () => { chartWrap.classList.remove('show'); location.replace('performance.html'); };
 
 async function startCam(){
   try{
@@ -94,15 +109,19 @@ async function startCam(){
 }
 startCam();
 
+const gNowEl=document.getElementById('gNow'), gDetEl=document.getElementById('gDet'), gPeakEl=document.getElementById('gPeak');
+let lat=0;
 function onMotion(e){
-  const a = e.accelerationIncludingGravity || e.acceleration;
-  if(!a) return;
-  const rawY = (a.y||0)/9.81;
-  lon = lon*0.6 + rawY*0.4;
-  const x = (a.x||0)/9.81;
+  const r = PerfG.read(e);
+  if(!r) return;
+  lon = r.lon; lat = r.lat;
   if(dot){
-    dot.style.transform = `translate(calc(-50% + ${x*22}px), calc(-50% - ${lon*22}px))`;
+    dot.style.transform = `translate(calc(-50% + ${lat*22}px), calc(-50% - ${lon*22}px))`;
   }
+  gNowEl.textContent = r.comb.toFixed(2);
+  gDetEl.textContent = 'Lat ' + lat.toFixed(2) + ' · Long ' + lon.toFixed(2);
+  const pk = PerfG.peaks();
+  gPeakEl.textContent = 'Peak accel ' + pk.acc.toFixed(2) + ' · brake ' + pk.brk.toFixed(2) + ' · corner ' + pk.lat.toFixed(2) + ' G';
   if(running && !startTs && (Math.abs(lon) > 0.25 || motionStart)){
     startTs = performance.now();
     if(goTs && !reactMs){
@@ -114,17 +133,20 @@ function onMotion(e){
   if(running && startTs){
     const t = (performance.now()-startTs)/1000;
     timeEl.textContent = t.toFixed(1);
-    samples.push({t, speed, lon});
+    samples.push({t:+t.toFixed(3), speed:+speed.toFixed(1), lon:+lon.toFixed(3), lat:+lat.toFixed(3)});
     checkFinish(t);
   }
 }
 
+let motionOn = false;
 async function enableMotion(){
   if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
     try{ await DeviceMotionEvent.requestPermission(); }catch(e){}
   }
-  window.addEventListener('devicemotion', onMotion);
+  if(!motionOn){ motionOn = true; window.addEventListener('devicemotion', onMotion); }
 }
+// Android and desktop need no permission, so start the live G read-out straight away (it also calibrates while still).
+if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') enableMotion();
 
 function checkVisual(){
   if(!running || startTs || !vid.videoWidth) return;
@@ -153,59 +175,77 @@ function checkFinish(t){
   if(done) finish(t, label);
 }
 
-function finish(t, label){
+let stopP = null;
+async function finish(t, label){
   running = false;
-  if(recorder && recorder.state==='recording') recorder.stop();
+  const hadRec = recorder && recorder.state==='recording';
+  if(hadRec) recorder.stop();
   if(watchId) navigator.geolocation.clearWatch(watchId);
+  const runLabel = runSel.options[runSel.selectedIndex].text;
   resultEl.textContent = label + '  ' + t.toFixed(2) + 's' + (reactMs ? '  ·  reaction ' + reactMs + ' ms' : '');
-  
   // Save to shared diary
   try{
     const list = JSON.parse(localStorage.getItem("gt.driveLog")||"[]");
-    const label = runSel.options[runSel.selectedIndex].text;
-    list.unshift({
-      id: "run-"+Date.now(),
-      type: "run",
-      when: Date.now(),
-      from: label,
-      to: t.toFixed(2)+"s",
-      time: t.toFixed(2)+"s",
-      miles: 0,
-      cost: 0,
-      mpg: null
-    });
+    list.unshift({ id: "run-"+Date.now(), type: "run", when: Date.now(), from: runLabel, to: t.toFixed(2)+"s", time: t.toFixed(2)+"s", miles: 0, cost: 0, mpg: null });
     localStorage.setItem("gt.driveLog", JSON.stringify(list.slice(0,200)));
   }catch(e){}
-  chartWrap.classList.add('show');
-  drawChart();
-  if(!keepChk.checked){
-    savedEl.textContent = 'Video discarded (Keep video was off)';
-    chunks = [];
-  } else {
-    savedEl.textContent = 'Video saved — check your downloads';
-  }
-}
-
-function drawChart(){
+  let video = null;
+  if(hadRec && stopP){ try{ await stopP; }catch(e){} }
+  if(keepChk.checked && chunks.length) video = new Blob(chunks, {type: (chunks[0]&&chunks[0].type) || 'video/webm'});
+  chunks = [];
+  const run = { id: 'run-' + Date.now(), when: Date.now(), label: runLabel, result: resultEl.textContent, time: t.toFixed(2), reactMs, samples: samples.slice(), stats: PerfG.stats(samples), video };
   const cv = document.getElementById('chart');
-  const ctx = cv.getContext('2d');
-  ctx.clearRect(0,0,cv.width,cv.height);
-  if(samples.length<2) return;
-  ctx.strokeStyle='#73BDE0'; ctx.lineWidth=2; ctx.beginPath();
-  samples.forEach((s,i)=>{
-    const x=10+(i/(samples.length-1))*(cv.width-20);
-    const y=cv.height-10 - (Math.max(0,s.lon)*0.8)*(cv.height-20);
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  });
-  ctx.stroke();
+  PerfG.draw(cv, run);
+  run.chart = await new Promise(r => cv.toBlob(r, 'image/png'));
+  let ok = true;
+  try{ await PerfG.save(run); }catch(e){ ok = false; }
+  showRun(run, ok ? (video ? 'Saved on this phone with its video and G chart.' : 'Saved on this phone with its G chart. Video discarded (Keep video was off).') : 'Could not save on this phone (storage full?). You can still share the chart.');
 }
 
-document.getElementById('dlChart').onclick = () => {
-  const a = document.createElement('a');
-  a.href = document.getElementById('chart').toDataURL('image/png');
-  a.download = 'run-chart.png';
-  a.click();
+let shown = null;
+function blobUrl(b){ return b ? URL.createObjectURL(b) : ''; }
+function showRun(run, note){
+  shown = run;
+  chartWrap.classList.add('show');
+  document.getElementById('runList').style.display = 'none';
+  document.getElementById('runView').style.display = 'block';
+  resultEl.textContent = run.result || (run.label + '  ' + run.time + 's');
+  const v = document.getElementById('runVid');
+  if(run.video){ v.src = blobUrl(run.video); v.style.display = 'block'; } else { v.removeAttribute('src'); v.style.display = 'none'; }
+  document.getElementById('dlVid').style.display = run.video ? 'block' : 'none';
+  PerfG.draw(document.getElementById('chart'), run);
+  savedEl.textContent = note || ('Saved ' + new Date(run.when).toLocaleString('en-GB'));
+}
+async function shareBlob(blob, name, title){
+  const f = new File([blob], name, {type: blob.type});
+  if(navigator.canShare && navigator.canShare({files:[f]})){ try{ await navigator.share({files:[f], title}); return; }catch(e){ if(e && e.name==='AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+document.getElementById('dlChart').onclick = async () => {
+  if(!shown) return;
+  const b = shown.chart || await new Promise(r => document.getElementById('chart').toBlob(r, 'image/png'));
+  shareBlob(b, 'driv3-run-g-chart.png', 'Driv3 run G chart');
 };
+document.getElementById('dlVid').onclick = () => { if(shown && shown.video) shareBlob(shown.video, 'driv3-run.' + (/mp4/.test(shown.video.type) ? 'mp4' : 'webm'), 'Driv3 run video'); };
+async function showList(){
+  chartWrap.classList.add('show');
+  resultEl.textContent = 'Saved runs';
+  document.getElementById('runView').style.display = 'none';
+  const box = document.getElementById('runList'); box.style.display = 'block'; box.textContent = 'Loading…';
+  let runs = []; try{ runs = await PerfG.list(); }catch(e){}
+  box.innerHTML = runs.length ? '' : '<p style="color:#9a9aa0">No saved runs yet.</p>';
+  runs.forEach(r => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'runItem';
+    const st = r.stats || {};
+    b.innerHTML = '<span>' + (r.label||'Run') + ' · ' + r.time + 's<br><small>' + new Date(r.when).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) + (r.video ? ' · video' : '') + '</small></span><small>' + ((st.maxComb||0).toFixed(2)) + ' G</small>';
+    b.onclick = () => showRun(r);
+    box.appendChild(b);
+  });
+}
+document.getElementById('runsBtn').onclick = showList;
+document.getElementById('runsBtn2').onclick = showList;
+(function(){ const q = new URLSearchParams(location.search); const id = q.get('run');
+  if(id) PerfG.get(id).then(r => r ? showRun(r) : showList()).catch(showList); else if(q.has('runs') || location.hash === '#runs') showList(); })();
 
 document.getElementById('cancel').onclick = () => {
   running = false;
@@ -235,24 +275,17 @@ async function beginRun(){
   goTs = performance.now();
   setTimeout(()=>go.style.display='none', 800);
 
+  await enableMotion();
+  PerfG.zero();
   running = true; startTs = 0; samples = []; motionStart = false; speed = 0; reactMs = 0;
   timeEl.textContent = '0.0';
-  await enableMotion();
 
   if(stream){
     chunks = [];
     try{
       recorder = new MediaRecorder(stream);
       recorder.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
-      recorder.onstop = () => {
-        if(keepChk.checked && chunks.length){
-          const blob = new Blob(chunks, {type:'video/webm'});
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = 'run.webm';
-          a.click();
-        }
-      };
+      stopP = new Promise(res => { recorder.onstop = res; });
       recorder.start();
     }catch(e){}
   }

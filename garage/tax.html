@@ -17,6 +17,10 @@ h1{font-size:22px;margin:8px 0}
 .box b{display:block;font-size:22px;margin-bottom:6px}
 .box small{display:block;font-weight:500;font-size:14px;opacity:.85}
 .note{color:#a8a39a;font-size:14px}
+#taxDate .edit{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:12px;flex-wrap:wrap}
+#taxDate input[type=date]{background:#111214;color:#f3efe6;border:1px solid #3a3b40;border-radius:10px;padding:10px;font-size:16px;color-scheme:dark}
+#taxDate button{background:#f5c518;color:#111;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:15px}
+#taxDate .link{background:none;color:#f5c518;text-decoration:underline;padding:6px;font-weight:600}
 #gov{display:block;color:#f5c518;font-weight:600;margin:12px 0}
 .back{display:flex;margin-top:16px;justify-content:center;text-decoration:none}
 </style>
@@ -25,6 +29,7 @@ h1{font-size:22px;margin:8px 0}
 <h1>Tax &amp; MOT</h1>
 <div class="plate" id="plate">—</div>
 <div class="box wait" id="tax"><b>Checking…</b></div>
+<div class="box unk" id="taxDate" style="display:none"></div>
 <div class="box wait" id="mot"><b>Checking…</b></div>
 <p class="note" id="note"></p>
 <a id="gov" href="https://vehicleenquiry.service.gov.uk/" target="_blank" rel="noopener">Open the official GOV.UK page</a>
@@ -37,20 +42,49 @@ var plate=(new URLSearchParams(location.search).get("plate")||"").toUpperCase().
 document.getElementById("plate").textContent=plate||"—";
 var proxy=(window.MOT_PROXY||"").replace(/\/$/,"");
 function j(u){ return fetch(u).then(function(r){ if(!r.ok) throw 0; return r.json(); }).catch(function(){ return {}; }); }
+var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function uk(iso){ var x=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso||""); return x?(+x[3])+" "+MON[+x[2]-1]+" "+x[1]:""; }
+function toIso(txt){ var x=/(\d{1,2}) (\w{3})\w* (\d{4})/.exec(txt||""); if(!x) return ""; var i=MON.indexOf(x[2].charAt(0).toUpperCase()+x[2].slice(1,3).toLowerCase()); return i<0?"":x[3]+"-"+("0"+(i+1)).slice(-2)+"-"+("0"+x[1]).slice(-2); }
+var G={cars:[]}; try{ G=JSON.parse(localStorage.getItem("gt.garage")||"{}")||{}; }catch(e){}
+var car=(G.cars||[]).filter(function(c){ return String(c.plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"")===plate; })[0]||null;
+function saveGarage(){ try{ localStorage.setItem("gt.garage",JSON.stringify(G)); }catch(e){} }
+var lastT="";
+function paintTax(t, apiDue){
+  lastT=t;
+  var tax=document.getElementById("tax"), box=document.getElementById("taxDate"), due=(car&&car.tax)||apiDue||"";
+  var ok=/^\d{4}-\d{2}-\d{2}$/.test(due), left=ok?Math.ceil((new Date(due+"T23:59:59")-new Date())/864e5):0;
+  if(t){ var taxed=/taxed/i.test(t)&&!/untaxed/i.test(t), sorn=/sorn/i.test(t); tax.className="box "+(taxed?"ok":sorn?"wait":"bad"); tax.innerHTML="<b>"+esc(t)+"</b>"+(sorn?"<small>Declared off the road</small>":""); }
+  else if(ok){ tax.className="box "+(left>=0?"ok":"bad"); tax.innerHTML="<b>"+(left>=0?"Taxed":"Untaxed")+"</b><small>From your saved renewal date. Check GOV.UK to be sure.</small>"; }
+  else unk(tax,"Tax");
+  box.style.display="block";
+  var edit=car?"<div class='edit'><input type='date' id='taxIn' aria-label='Tax renewal date' value='"+(ok?due:"")+"'/><button type='button' id='taxSave'>Save date</button></div>":"<small>Add this car in My garage to save a renewal date.</small>";
+  if(ok){
+    box.className="box "+(left<0?"bad":left<=30?"wait":"ok");
+    box.innerHTML="<b>Tax due "+uk(due)+"</b><small>Renew by "+uk(due)+" · "+(left<0?(-left)+" day"+(left===-1?"":"s")+" overdue":left===0?"due today":left+" day"+(left===1?"":"s")+" left")+"</small>"+(car?"<button type='button' class='link' id='taxEdit'>Change date</button><div id='taxEd' style='display:none'>"+edit+"</div>":"");
+  } else {
+    box.className="box unk";
+    box.innerHTML="<b>Tax renewal date</b><small>We couldn't find the date. Add it from your V5C, tax reminder or GOV.UK and we'll remind you.</small>"+edit;
+  }
+  var e=document.getElementById("taxEdit"); if(e) e.onclick=function(){ document.getElementById("taxEd").style.display="block"; e.style.display="none"; };
+  var sv=document.getElementById("taxSave"); if(sv) sv.onclick=function(){ var v=document.getElementById("taxIn").value; if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return; car.tax=v; saveGarage(); paintTax(lastT,""); };
+}
 if(!proxy||!plate){ unk(document.getElementById("tax"),"Tax"); unk(document.getElementById("mot"),"MOT"); document.getElementById("note").textContent="No number plate given."; }
 else Promise.all([ j(proxy+"/?plate="+plate+"&tax=1"), j(proxy+"/?plate="+plate) ]).then(function(both){
   var d=both[0]||{}, m=both[1]||{};
   var tax=document.getElementById("tax"), mot=document.getElementById("mot");
   // Only green when the service actually confirmed it. Anything unknown is grey, never green.
-  var t=String(d.tax||"").trim();
-  if(!t){ unk(tax,"Tax"); }
-  else { var taxed=/taxed/i.test(t)&&!/untaxed/i.test(t), sorn=/sorn/i.test(t); tax.className="box "+(taxed?"ok":sorn?"wait":"bad"); tax.innerHTML="<b>"+esc(t)+"</b>"+(sorn?"<small>Declared off the road</small>":""); }
+  // The GOV.UK check can come back as a timed-out page whose title still says "taxed", so only trust a status the page really stated.
+  var raw=String(d.raw||""), t=String(d.tax||"").trim();
+  if(/timed out|session/i.test(raw) || !/tax due|tax expired|untaxed|sorn/i.test(raw)) t="";
+  var m2=/tax due:?\s*(\d{1,2} \w+ \d{4})/i.exec(raw), apiDue=m2?toIso(m2[1]):"";
+  if(apiDue&&car&&car.tax!==apiDue){ car.tax=apiDue; saveGarage(); }
+  paintTax(t, apiDue);
   var tests=m.motTests||[], latest=tests[0]||{}, exp=String(latest.expiryDate||"");
   if(!/^\d{4}-\d{2}-\d{2}/.test(exp)){ unk(mot,"MOT"); }
   else {
     var nice=exp.slice(8,10).replace(/^0/,"")+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+exp.slice(5,7)-1]+" "+exp.slice(0,4);
     var overdue=new Date(exp.slice(0,10)+"T23:59:59")<new Date();
-    mot.className="box "+(overdue?"bad":"ok"); mot.innerHTML="<b>MOT</b>"+(overdue?"Expired: ":"Expires: ")+nice;
+    mot.className="box "+(overdue?"bad":"ok"); mot.innerHTML="<b>"+(overdue?"MOT expired":"MOT valid until")+"</b>"+nice;
   }
   if(/unk/.test(tax.className+mot.className)) document.getElementById("note").textContent="We couldn't get an answer just now. The official GOV.UK page always has the latest.";
 });

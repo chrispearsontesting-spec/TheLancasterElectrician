@@ -3,8 +3,8 @@
   // Simple home (groups open their own pages). Old tab hashes go to the matching page.
   function jump(){
     var h=(location.hash||"").replace("#","");
-    var to={drive:"drive-hub.html",docs:"history.html",qr:"history.html#share"}[h];
-    if(to){ location.replace(to); return; }
+    var grp={drive:"drive",docs:"hist",qr:"hist",history:"hist"}[h];
+    if(grp){ if(window.driv3OpenGroup) window.driv3OpenGroup(grp); return; }
     if(h==="car"){ var el=document.getElementById("datesToggle"); if(el) el.scrollIntoView({block:"start"}); }
   }
   jump(); window.addEventListener("hashchange",jump);

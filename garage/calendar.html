@@ -122,7 +122,7 @@ function remCard(e){
   if(e.type==="mot") acts.push("<a class='btn' href='mot.html?plate="+e.vrn+"#history'>View history</a>");
   if(e.book) acts.push("<a class='btn' href='home.html#remind="+e.type+"&car="+e.vrn+"'>Book / email garage</a>");
   if(e.type==="tax") acts.push("<a class='btn' href='https://www.gov.uk/vehicle-tax' target='_blank' rel='noopener'>Renew</a>","<a class='btn' href='tax.html?plate="+e.vrn+"'>Check tax</a>");
-  if(e.type==="insurance") acts.push("<a class='btn' href='insurance.html?v=12'>Policy</a>","<a class='btn' href='renew.html?v=13'>Renew</a>");
+  if(e.type==="insurance") acts.push("<a class='btn' href='insurance.html?v=19'>Policy</a>","<a class='btn' href='renew.html?v=13'>Renew</a>");
   return "<div class='card rem-card' style='--rc:"+e.color+"'><b class='title'>"+e.icon+" "+escR(e.label)+" · "+escR(e.plate)+"</b><p class='muted'>"+escR(e.name)+" · "+D3Rem.niceDate(e.due)+" · "+left+"</p><div class='row'>"+acts.join("")+"</div></div>";
 }
 function upNext(){

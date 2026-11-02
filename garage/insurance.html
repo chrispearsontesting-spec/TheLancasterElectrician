@@ -64,6 +64,14 @@ label.btn,#renew{display:flex !important;justify-content:center !important;align
 .doc button,.doc a{background:#1c1c1e;color:#f2f2f2;border:0;border-radius:12px;padding:9px 12px;font-weight:600;font-size:14px;text-decoration:none}
 .doc .del{color:#ff8a80}
 </style>
+<div class="rnS" id="rnSheet" role="dialog" aria-modal="true" aria-labelledby="rnH"><div class="box"><h3 id="rnH">Rename document</h3><input id="rnIn" maxlength="80" placeholder="e.g. Hastings Car Insurance 2026"/><div class="rnB"><button type="button" class="btn" id="rnCancel">Cancel</button><button type="button" class="btn pri" id="rnSave">Save</button></div></div></div>
+<style>
+.doc .nm{cursor:pointer}.doc .pen{font-style:normal;color:#8b8b8b;font-size:13px;margin-left:4px}.doc .t span{cursor:pointer}
+.rnS{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:50;align-items:flex-end;justify-content:center;padding:16px}.rnS.on{display:flex}
+.rnS .box{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:18px;width:100%;max-width:440px}.rnS h3{margin:0 0 10px;font-size:18px}
+.rnS input{width:100%;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:16px}
+.rnB{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.rnB .btn{justify-content:center !important}.rnB .pri{background:#f2f2f2 !important;color:#0b0c0e !important}
+</style>
 <script>
 function state(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
@@ -107,6 +115,33 @@ async function docs(){
   if(old&&old.blob) arr=[{id:"legacy",title:"Policy",name:old.name||"policy.pdf",type:"application/pdf",blob:old.blob,at:old.at||0,legacy:1}].concat(arr);
   return arr;
 }
+function sheet(cur){
+  return new Promise(function(res){
+    var m=document.getElementById("rnSheet"),i=document.getElementById("rnIn");
+    i.value=cur||"";m.classList.add("on");setTimeout(function(){i.focus();i.select()},50);
+    function done(v){m.classList.remove("on");document.getElementById("rnSave").onclick=document.getElementById("rnCancel").onclick=m.onclick=i.onkeydown=null;res(v)}
+    document.getElementById("rnSave").onclick=function(){done(i.value.trim())};
+    document.getElementById("rnCancel").onclick=function(){done(null)};
+    m.onclick=function(e){if(e.target===m)done(null)};
+    i.onkeydown=function(e){if(e.key==="Enter")done(i.value.trim());if(e.key==="Escape")done(null)};
+  });
+}
+async function renameDoc(d){
+  var t=await sheet(d.title||d.name);
+  if(t==null||t===(d.title||""))return;
+  var a=await get(listKey());a=Array.isArray(a)?a:[];
+  if(d.legacy){
+    var old=await get(key());if(!old||!old.blob)return;
+    a.unshift({id:"legacy-"+(old.at||Date.now()),title:t,name:old.name||"policy.pdf",type:"application/pdf",blob:old.blob,at:old.at||Date.now()});
+    await put(listKey(),a);           /* saved into the new list first… */
+    var chk=await get(listKey());
+    if(Array.isArray(chk)&&chk.some(function(y){return y.id===a[0].id})) await del(key()); /* …then retire the legacy record */
+  }else{
+    a.forEach(function(y){if(y.id===d.id)y.title=t});
+    await put(listKey(),a);
+  }
+  show();
+}
 function esc(t){return String(t||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 async function show(){
   var arr=await docs(),list=document.getElementById("list");
@@ -116,7 +151,9 @@ async function show(){
     var type=d.type||(d.blob&&d.blob.type)||"application/pdf";
     var blob=d.blob.type?d.blob:new Blob([d.blob],{type:type});
     var row=document.createElement("div");row.className="doc";
-    row.innerHTML="<div class='t'><b>"+esc(d.title||d.name)+"</b><span>"+esc(d.name)+(d.at?" · "+new Date(d.at).toLocaleDateString("en-GB"):"")+"</span></div>";
+    row.innerHTML="<div class='t'><b class='nm' role='button' tabindex='0' title='Tap to rename'>"+esc(d.title||d.name)+" <i class='pen' aria-hidden='true'>&#9998;</i></b><span>"+esc(d.name)+(d.at?" · "+new Date(d.at).toLocaleDateString("en-GB"):"")+"</span></div>";
+    row.querySelector(".nm").onclick=function(e){e.stopPropagation();renameDoc(d)};
+    row.querySelector(".t span").onclick=function(){v.click()};
     var v=document.createElement("a");v.textContent="View";v.href=URL.createObjectURL(blob);v.target="_blank";v.rel="noopener";
     var x=document.createElement("button");x.type="button";x.className="del";x.textContent="Delete";
     x.onclick=async function(){

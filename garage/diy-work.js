@@ -44,5 +44,8 @@
   /* Backfill from saved dates: last-done within the past 60 days */
   function backfill(){var g=rd("gt.garage",null),t=new Date(),lo=iso(new Date(t.getTime()-60*864e5)),hi=iso(t);
     ((g&&g.cars)||[]).forEach(function(c){var d=doneDates(c);Object.keys(d).forEach(function(k){if(d[k]&&d[k]>=lo&&d[k]<=hi)markDone(c,k,d[k])})})}
-  root.D3Diy={KEY:KEY,all:all,get:get,forPlate:forPlate,save:save,remove:remove,addFile:addFile,getBlob:getBlob,delBlob:delBlob,markDone:markDone,onEdit:onEdit,backfill:backfill,vrn:vrn,LABEL:LABEL};
+  /* Cost of an entry: typed prices always count; prices read from receipts count once per identical amount (order confirmation + delivery screenshot), unticked (skip) ones don't. */
+  function cost(e){var seen={},t=0;(e&&e.files||[]).forEach(function(f){if(f.skip)return;var n=parseFloat(String(f.price||"").replace(/[^0-9.]/g,""));if(!isFinite(n)||!n)return;
+    if(f.priceSrc==="receipt"){var k=n.toFixed(2);if(seen[k])return;seen[k]=1}t+=n});return Math.round(t*100)/100}
+  root.D3Diy={cost:cost,KEY:KEY,all:all,get:get,forPlate:forPlate,save:save,remove:remove,addFile:addFile,getBlob:getBlob,delBlob:delBlob,markDone:markDone,onEdit:onEdit,backfill:backfill,vrn:vrn,LABEL:LABEL};
 })(this);

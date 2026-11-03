@@ -18,7 +18,7 @@
 
   function recent(){
     var now=Date.now(), lo=now-30*DAY, it=[];
-    diy().forEach(function(w){ var t=noon(w.date); if(t>=lo&&t<=now+DAY){ var cost=(w.files||[]).reduce(function(a,f){return a+price(f)},0), ph=(w.files||[]).filter(function(f){return f.kind==="photo"}).length; it.push({t:t,day:w.date,ico:"🔧",title:w.title||"Work done",sub:"DIY"+(ph?" · "+ph+" photo"+(ph>1?"s":""):""),right:cost?gbp(cost):""}); } });
+    diy().forEach(function(w){ var t=noon(w.date); if(t>=lo&&t<=now+DAY){ var cost=(D3Diy.cost?D3Diy.cost(w):(w.files||[]).reduce(function(a,f){return a+price(f)},0)), ph=(w.files||[]).filter(function(f){return f.kind==="photo"}).length; it.push({t:t,day:w.date,ico:"🔧",title:w.title||"Work done",sub:"DIY"+(ph?" · "+ph+" photo"+(ph>1?"s":""):""),right:cost?gbp(cost):""}); } });
     media().forEach(function(e){ if(e.t<lo) return; var d=k(e.t);
       if(e.k==="run") it.push({t:e.t,day:d,ico:"🏁",title:(e.r.label||"Performance run")+" · "+e.r.time+"s",sub:"Performance"+(e.r.video?" · video":"")});
       else if(e.k==="mech") it.push({t:e.t,day:d,ico:"🛠",title:e.j.note||"Work from your mechanic",sub:"Mechanic"+(e.j.garage?" · "+e.j.garage:"")});
@@ -35,10 +35,10 @@
     if(over.length) html+="<p class='clHead clOver'>Overdue</p>"+over.map(function(e){ var d=-D3Rem.daysUntil(e.due); return row({day:e.due,ico:"⚠️",title:e.label+" · "+e.plate,sub:(e.type==="insurance"?"expired ":"was due ")+ago(d)+" ago — update the date if it’s been done"}); }).join("");
     html+="<p class='clHead'>Coming up · next 60 days</p>"+(up.length?up.map(function(e){ var d=D3Rem.daysUntil(e.due); return row({day:e.due,ico:e.icon,title:e.label+" · "+e.plate,sub:d===0?"due today":d+" day"+(d===1?"":"s")+" left"}); }).join(""):empty("Nothing due in the next 60 days."));
     var lo=now-365*DAY, done=[], total=0;
-    diy().forEach(function(w){ var t=noon(w.date); if(t<lo||t>now+DAY) return; var cost=(w.files||[]).reduce(function(a,f){return a+price(f)},0); total+=cost; done.push({t:t,day:w.date,ico:"🔧",title:w.title||"Work done",sub:"DIY",right:cost?gbp(cost):""}); });
+    diy().forEach(function(w){ var t=noon(w.date); if(t<lo||t>now+DAY) return; var cost=(D3Diy.cost?D3Diy.cost(w):(w.files||[]).reduce(function(a,f){return a+price(f)},0)); total+=cost; done.push({t:t,day:w.date,ico:"🔧",title:w.title||"Work done",sub:"DIY",right:cost?gbp(cost):""}); });
     media().forEach(function(e){ if(e.k!=="run"&&e.t>=lo) done.push({t:e.t,day:k(e.t),ico:e.k==="mech"?"🛠":"📝",title:e.k==="mech"?(e.j.note||"Work from your mechanic"):(e.it.note||"Note"),sub:e.k==="mech"?"Mechanic":"Your note"}); });
     done.sort(function(a,b){return b.t-a.t});
-    html+="<p class='clHead'>Done · last 12 months <span class='clTot'>"+gbp(total)+" on DIY invoices</span></p>"+(done.length?done.map(row).join(""):empty("No work logged in the last 12 months."));
+    html+="<p class='clHead'>Done · last 12 months <span class='clTot'>"+gbp(total)+" on DIY work</span></p>"+(done.length?done.map(row).join(""):empty("No work logged in the last 12 months."));
     return html;
   }
   function journ(){

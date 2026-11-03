@@ -61,6 +61,9 @@ h1{margin:0;font-size:22px}
 <a class="btn wide" id="official" href="https://www.check-mot.service.gov.uk/" target="_blank" rel="noopener" style="margin-top:8px">Official MOT history</a>
 <script src="mot-config.js"></script>
 <script src="mot-client.js"></script>
+<script src="car-scope.js?v=1"></script>
+<script src="diy-work.js?v=3"></script>
+<script src="maint-link.js?v=1"></script>
 <script src="icons.js?v=32"></script>
 <script>
 function $(id){return document.getElementById(id)}
@@ -164,10 +167,10 @@ function render(info){
   ];
   var totals="<div class='row' id='outRow'><b>Estimated outstanding work</b><p class='outTotal' id='outTotal'></p><p class='muted' id='outNote'></p></div>";
   $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+(age?"About "+age+" years on record. ":"")+"Typical life, not a quote, and only for this car.</p>";
-  // Done ticks are saved per car (by plate). Older saves used one shared key; read it as a fallback.
-  var doneKey="gt.motDone."+String(plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-  var done={};
-  try{ done=JSON.parse(localStorage.getItem(doneKey)||localStorage.getItem("gt.motDone")||"{}")||{}; }catch(e){ done={}; }
+  // Done ticks are saved per car (by plate) through D3Maint, which also moves the car's tyre/service/belt dates
+  // so the Maintenance planner, reminders and Drive diary follow. A tick made before a newer MOT no longer counts.
+  var motDay=String(latest.completedDate||latest.testDate||"").slice(0,10);
+  function isDone(job){return window.D3Maint?D3Maint.isDone(plate,job,job==="Service"?D3Maint.iso(new Date(Date.now()-365*864e5)):job==="Timing belt"?"":motDay):false}
   function gbp(n){return "\u00a3"+String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",")}
   function updateTotals(){
     var best=0, worst=0, n=0, off=0;
@@ -186,14 +189,15 @@ function render(info){
       row.classList.toggle("isDone",checked);
       if(lab) lab.textContent=checked?"Done \u2713 \u00b7 tap to undo":"Mark done";
     }
-    cb.checked=!!done[job]; style(cb.checked);
+    cb.checked=isDone(job); style(cb.checked);
     cb.onchange=function(){
-      if(cb.checked) done[job]=true; else delete done[job];
-      try{ localStorage.setItem(doneKey, JSON.stringify(done)); }catch(e){}
+      if(window.D3Maint) D3Maint.setDone(plate,job,cb.checked);
       style(cb.checked);
       updateTotals();
     };
   });
+  window.motDoneSync=function(){document.querySelectorAll("#future .done").forEach(function(cb){var row=cb.closest(".row"),j=row.getAttribute("data-job"),v=isDone(j);if(cb.checked!==v){cb.checked=v;row.classList.toggle("isDone",v);var l=row.querySelector(".doneLab");if(l)l.textContent=v?"Done \u2713 \u00b7 tap to undo":"Mark done";}});updateTotals();};
+  if(window.D3Maint&&!window.motDoneWired){window.motDoneWired=1;D3Maint.onChange(function(){if(window.motDoneSync)motDoneSync()});}
   updateTotals();
 }
 $("tabHist").onclick=function(){show("hist")};

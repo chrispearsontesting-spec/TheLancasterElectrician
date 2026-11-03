@@ -11,7 +11,7 @@
   function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k)||"null");return v==null?d:v}catch(e){return d}}
   function wr(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
   function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
-  function car(){var g=rd("gt.garage",null);return g&&g.cars&&(g.cars[g.i]||g.cars[0])||{}}
+  function car(){var g=rd("gt.garage",null),i=root.D3Car?D3Car.curIndex():g&&g.i;return g&&g.cars&&(g.cars[i]||g.cars[0])||{}}
   function vrn(){return root.D3Car?D3Car.curVrn():String(car().plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"")}
   function job(id){return (root.WORK||[]).filter(function(w){return w.id===id})[0]||null}
   /* Guess size class from the saved details */
@@ -76,6 +76,7 @@
         sub=x.val?"Your figure":"Type what you pay to include it"; }
       else if(x.job){ var e=est(x.job); if(e){ if(!x.ask) tot+=(e.glo+e.ghi)/2; right=x.ask?"<span class='pMoney q'>"+rng(e.glo,e.ghi)+"</span>":"<span class='pMoney'>"+(x.key==="mot"?"up to £54.85":rng(e.glo,e.ghi))+"</span>"; } sub=x.key==="mot"?"Test fee (DVSA maximum)":"Garage estimate"+(x.tyre?" · from your tyre details":""); }
       if(x.ask) sub="When were the tyres fitted? <input type='date' class='pDate' data-tyre='1'/>";
+      var MN={tyres:"Tyres",service:"Service",belt:"Timing belt"}[x.key]; if(MN&&!x.ask&&root.D3Maint) sub+="<br><button type='button' class='pDoneBtn' data-pdone='"+MN+"'>"+(x.key==="tyres"?"Tyres changed today":"Done today")+"</button>";
       return "<div class='pRow'><div class='pTop'><b>"+esc(x.name)+"</b>"+right+"</div><p class='pEst muted'>"+(x.due?"<span class='pWhen"+(x.d<0?" over":"")+"'>"+fmtD(x.due)+" · "+whenTxt(x.d)+"</span><br>":"")+sub+"</p></div>"; }).join("")
       :"<p class='muted pEmpty'>Nothing due in the next 12 months. Add MOT, service and timing belt dates on your car to see costs here.</p>";
     var h=document.getElementById("planHead"); if(h) h.textContent="Planned work"+(tot?" · about "+money(r5(tot)):"");
@@ -123,13 +124,17 @@
     if(!L){ box.innerHTML="<p class='muted pEmpty'>No MOT history found for this car yet. New cars don't need an MOT until they're 3 years old.</p>"; h.textContent="Expected costs from MOT"; return; }
     if(!L.defs.length){ box.innerHTML="<p class='src'>From MOT on "+fmtD(L.day)+"</p><p class='muted pEmpty'>No advisories on the last MOT. Nothing extra to budget for.</p>"; h.textContent="Expected costs from MOT · none"; return; }
     var lo=0,hi=0,q=0;
+    var M=root.D3Maint, nd=0;
     var rows=motGroups(L).map(function(G){ var j=G.m.id&&G.m.id!=="inspect"?job(G.m.id):null, e=j?est(j):null, right, nm;
-      if(e){ lo+=e.glo; hi+=e.ghi; right="<span class='pMoney'>"+rng(e.glo,e.ghi)+"</span>"; nm=j.name+(G.m.axle?" ("+G.m.axle+")":""); }
-      else if(G.m.id==="inspect"){ right="<span class='pMoney q'>Needs inspection</span>"; nm="Corrosion check"; q++; }
-      else { right="<span class='pMoney q'>Get a quote</span>"; nm="Other repair"; q++; }
-      return "<div class='pRow'><div class='pTop'><b>"+esc(nm)+"</b>"+right+"</div>"+G.defs.map(function(d){return "<p class='pEst muted'><span class='tg "+d.type.toLowerCase()+"'>"+lbl(d.type)+"</span> "+esc(d.text)+"</p>"}).join("")+"</div>"; });
+      var dk=(M&&M.catOf(G.m.id))||("adv:"+G.defs[0].text), dn=M?M.isDone(vrn(),dk,L.day):false;
+      if(e){ if(!dn){lo+=e.glo; hi+=e.ghi;} right="<span class='pMoney'>"+rng(e.glo,e.ghi)+"</span>"; nm=j.name+(G.m.axle?" ("+G.m.axle+")":""); }
+      else if(G.m.id==="inspect"){ right="<span class='pMoney q'>Needs inspection</span>"; nm="Corrosion check"; if(!dn)q++; }
+      else { right="<span class='pMoney q'>Get a quote</span>"; nm="Other repair"; if(!dn)q++; }
+      if(dn){ nd++; right="<span class='pMoney done'>Done ✓</span>"; }
+      return "<div class='pRow"+(dn?" isDone":"")+"'><div class='pTop'><b>"+esc(nm)+"</b>"+right+"</div>"+G.defs.map(function(d){return "<p class='pEst muted'><span class='tg "+d.type.toLowerCase()+"'>"+lbl(d.type)+"</span> "+esc(d.text)+"</p>"}).join("")+
+        (M?"<label class='pDone'><input type='checkbox' data-mdone='"+esc(dk)+"'"+(dn?" checked":"")+"/> "+(dn?"Done · not counted (tap to undo)":"Mark done")+"</label>":"")+"</div>"; });
     box.innerHTML="<p class='src'>From MOT on "+fmtD(L.day)+(L.passed?" (passed)":" (failed)")+"</p>"+rows.join("")+
-      "<p class='tot'>Expected from MOT advisories: about <b>"+rng(r5(lo),r5(hi))+"</b> <small>garage estimate"+(q?" · plus "+q+" item"+(q===1?"":"s")+" to price":"")+"</small></p>";
+      "<p class='tot'>Expected from MOT advisories: about <b>"+rng(r5(lo),r5(hi))+"</b> <small>garage estimate"+(q?" · plus "+q+" item"+(q===1?"":"s")+" to price":"")+(nd?" · "+nd+" done and left out":"")+"</small></p>";
     h.textContent="Expected costs from MOT"+(hi?" · about "+money(r5((lo+hi)/2)):"");
   }
   function loadMot(){
@@ -164,6 +169,10 @@
     document.getElementById("planList").addEventListener("change",function(e){var t=e.target;
       if(t.getAttribute("data-amt")){setAmt(t.getAttribute("data-amt"),+t.value);drawPlan();}
       else if(t.getAttribute("data-tyre")&&t.value){var g=rd("gt.garage",null),i=root.D3Car?D3Car.curIndex():g.i;if(g&&g.cars[i]){g.cars[i].tyreDate=t.value;if(!g.cars[i].tyreLife)g.cars[i].tyreLife="20000";wr("gt.garage",g);}drawPlan();}});
+    document.getElementById("planList").addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-pdone]");if(!b||!root.D3Maint)return;
+      var n=b.getAttribute("data-pdone"); if(!confirm("Mark "+n.toLowerCase()+" as done today? Your car's dates, reminders and Drive diary will move on.")) return; D3Maint.setDone(car().plate,n,true); all();});
+    var ml=document.getElementById("motList"); if(ml) ml.addEventListener("change",function(e){var t=e.target,k=t.getAttribute&&t.getAttribute("data-mdone");if(!k||!root.D3Maint)return;D3Maint.setDone(car().plate,k,t.checked);all();});
+    if(root.D3Maint) D3Maint.onChange(function(){all()});
     ["planToggle","motToggle"].forEach(function(id){var b=document.getElementById(id);if(b)b.onclick=function(){var a=b.parentNode;a.classList.toggle("open")}});
     loadMot();
     document.getElementById("guideQ").addEventListener("input",drawGuide);

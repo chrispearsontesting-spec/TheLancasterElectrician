@@ -26,8 +26,9 @@
     try{
       var g=JSON.parse(localStorage.getItem("gt.garage")||"null"), c=g&&g.cars&&g.cars[g.i||0]||{};
       var p=String(c.plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-      document.getElementById("lnkTax").href="tax.html"+(p?"?plate="+p:"");
-      document.getElementById("lnkMot").href="mot.html"+(p?"?plate="+p:"")+"#history";
+      var lt=document.getElementById("lnkTax"), lm=document.getElementById("lnkMot");
+      if(lt) lt.href="tax.html"+(p?"?plate="+p:"");
+      if(lm) lm.href="mot.html"+(p?"?plate="+p:"")+"#history";
     }catch(e){}
     if(window.driv3ShowChip) window.driv3ShowChip();
   }

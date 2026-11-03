@@ -190,7 +190,7 @@ async function finish(t, label){
   try{
     const list = JSON.parse(localStorage.getItem("gt.driveLog")||"[]");
     list.unshift({ id: "run-"+Date.now(), type: "run", plate: (window.D3Car&&D3Car.curVrn())||"", when: Date.now(), from: runLabel, to: t.toFixed(2)+"s", time: t.toFixed(2)+"s", miles: 0, cost: 0, mpg: null });
-    localStorage.setItem("gt.driveLog", JSON.stringify(list.slice(0,200)));
+    localStorage.setItem("gt.driveLog", JSON.stringify(list.slice(0,500)));
   }catch(e){}
   let video = null;
   if(hadRec && stopP){ try{ await stopP; }catch(e){} }

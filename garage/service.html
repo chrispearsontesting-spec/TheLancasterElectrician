@@ -33,16 +33,41 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 .acc .panel{display:none;padding:0 14px 14px}
 .acc.open .panel{display:block}
 .acc.open > button .chev{transform:rotate(45deg)}
+.chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 6px}
+.chip{appearance:none;-webkit-appearance:none;background:#1c1f26;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;max-width:100%}
+.rate{display:flex;align-items:center;gap:6px;background:#1c1f26;border:1px solid var(--line);border-radius:999px;padding:3px 6px 3px 12px;font-size:13px;color:#9aa3b0;margin:0}
+.rate input{width:56px;background:transparent;border:0;color:var(--ink);font-size:14px;font-weight:600;padding:4px 0}
+.hcard{background:#14161b;border:1px solid var(--line);border-radius:16px;margin:14px 0;padding:4px 14px 12px}
+.hcard h2{font-size:16px;margin:12px 0 4px}
+.pRow{border-top:1px solid var(--line);padding:11px 0}.pRow:first-of-type{border-top:0}
+.pTop{display:flex;align-items:center;gap:8px}.pTop b{flex:1;font-size:15px}
+.pWhen{font-size:12px;color:#9aa3b0}.pWhen.over{color:#f59e0b}
+.pX{background:none;border:0;color:#8b8b8b;font-size:15px;padding:2px 4px;cursor:pointer}
+.pEst{margin:4px 0 0;font-size:14px;color:#e8e3d8}.pEst.muted,.muted{color:#9aa3b0}
+.pPick{display:flex;align-items:center;gap:6px;margin:6px 0 0;font-size:12px}
+.pPick select{flex:1;min-width:0;background:#171a20;border:1px solid var(--line);color:#cfd5de;border-radius:8px;padding:5px 6px;font-size:12px}
+.pEmpty{font-size:13px;margin:8px 0}
+.tot{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:14px}.tot:empty{display:none}
+.tot b{color:#fff}.tot small,.act small{color:#8b93a0;font-size:11px;margin-left:4px}
+.act{margin:6px 0 0;font-size:13px;color:#cfd5de}.act b{color:#7ee0a1}
+.gSearch{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:11px;font-size:15px;margin:2px 0 6px}
+.gRow{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
+.gTxt{flex:1;min-width:0}.gTxt b{display:block;font-size:14px}.gTxt small{display:block;font-size:13px;color:#e8e3d8;margin-top:2px}.gTxt .gH{color:#8b93a0;font-size:12px}
+.gAdd{background:#1f2a1f;color:#a7f3d0;border:1px solid #2c4a33;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:600;white-space:nowrap}.gAdd[disabled]{opacity:.55}
+.gCount{font-size:12px;color:#8b93a0;margin:0 0 4px}
+.addPlan{margin:0 14px 14px;width:calc(100% - 28px);background:#1f2a1f;color:#a7f3d0;border:1px solid #2c4a33;border-radius:12px;padding:11px;font-size:14px;font-weight:600}
 </style>
 </head>
 <body>
 <h1>Maintenance planner</h1>
 <p class="sub" id="carLine">Volvo XC60 D5</p>
+<div class="chips"><select class="chip" id="sizeSel" aria-label="Car size for estimates"></select><label class="rate" for="rateIn">Labour £<input id="rateIn" type="number" inputmode="decimal" min="10" max="400" step="1"/>/hr</label></div>
+<section class="hcard" id="planCard"><h2>Planned work</h2><div id="planList"></div><p class="tot" id="planTot"></p><p class="act" id="planAct"></p></section>
 <label>Search a job or part</label>
 <input type="search" id="qBox" placeholder="Start typing, e.g. clutch" autocomplete="off"/>
 <div class="sugs" id="sugs"></div>
 <p class="status" id="status"></p>
-<div class="card hide" id="quoteBox"><div id="quotes"></div><p class="note" id="jobNote"></p></div>
+<div class="card hide" id="quoteBox"><div id="quotes"></div><p class="note" id="jobNote"></p><button type="button" class="addPlan" id="addPlan">+ Add to planned work</button></div>
 <div class="acc" id="buyAcc">
   <button type="button" id="buyToggle" data-ico="box">Where to buy <span class="chev">+</span></button>
   <div class="panel">
@@ -58,8 +83,17 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
     <a class="btn" id="btnHaynes" data-ico="book" target="_blank" rel="noopener" href="#">Haynes</a>
   </div>
 </div>
+<div class="acc" id="costAcc">
+  <button type="button" id="costToggle" data-ico="book">Job cost guide <span class="chev">+</span></button>
+  <div class="panel"><p class="gCount" id="guideCount"></p><input type="search" class="gSearch" id="guideQ" placeholder="Search jobs, e.g. timing belt" autocomplete="off"/><div id="guideList"></div>
+  <p class="note" style="padding:8px 0 0">Estimates for the North West in 2026, sized for your car. DIY is parts only; garage adds labour at your hourly rate. Not a quote.</p></div>
+</div>
 <a class="btn" href="home.html" data-ico="back">Back</a>
 <script src="./jobs-data.js"></script>
+<script src="./car-scope.js?v=1"></script>
+<script src="./reminders-core.js?v=2"></script>
+<script src="./diy-work.js?v=3"></script>
+<script src="./planner-costs.js?v=1"></script>
 <script src="./icons.js?v=27"></script>
 <script>
 var picked=null;
@@ -127,26 +161,26 @@ function pickJob(id){
   draw();
 }
 function draw(){
-  var c=car(), name=qname(c), cls=clsOf(c);
-  document.getElementById("carLine").textContent=name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"")+" \u00b7 "+cls.lab+" estimate";
+  var c=car(), name=qname(c), sz=D3Cost.size(), R=D3Cost.rate();
+  document.getElementById("carLine").textContent=name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"");
   var job=picked;
   if(job){
-    var m=cls.m;
-    var partsLo=job.plo*m, partsHi=job.phi*m;
-    var indLo=job.hrs*cls.indie+partsLo;
-    var indHi=job.hrs*cls.indie+partsHi;
-    var dealLo=job.hrs*cls.dealer+partsLo*1.35;
-    var dealHi=job.hrs*cls.dealer+partsHi*1.45;
+    var e=D3Cost.est(job), m=D3Cost.MULT[sz], dealer=Math.round(R*1.75);
+    var dLo=Math.round((job.plo*1.35+job.hrs*dealer)*m/5)*5, dHi=Math.round((job.phi*1.45+job.hrs*dealer)*m/5)*5;
     document.getElementById("quotes").innerHTML=
-      row("DIY (parts only)",gbp(partsLo)+"\u2013"+gbp(partsHi))+
-      row("Local garage",gbp(indLo)+"\u2013"+gbp(indHi))+
-      row("Main dealer",gbp(dealLo)+"\u2013"+gbp(dealHi))+
-      row("Labour used",job.hrs+" hrs \u00b7 indie \u00a3"+cls.indie+"/hr \u00b7 dealer \u00a3"+cls.dealer+"/hr");
-    document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"North West 2026 estimate for a "+cls.lab+". Not a quote.";
+      row("DIY (parts only)","\u00a3"+e.dlo+"\u2013\u00a3"+e.dhi)+
+      row("Local garage","\u00a3"+e.glo+"\u2013\u00a3"+e.ghi)+
+      row("Main dealer","\u00a3"+dLo+"\u2013\u00a3"+dHi)+
+      row("Labour used",job.hrs+" hrs \u00b7 \u00a3"+R+"/hr \u00b7 dealer about \u00a3"+dealer+"/hr");
+    document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"Estimate sized for a "+D3Cost.LAB[sz].toLowerCase()+". Not a quote.";
     document.getElementById("quoteBox").className="card";
+    var ap=document.getElementById("addPlan"); ap.textContent="+ Add to planned work"; ap.disabled=false;
   }else document.getElementById("quoteBox").className="card hide";
   links();
 }
+window.plannerRedraw=draw;
+document.getElementById("addPlan").onclick=function(){ if(!picked) return; var ok=D3Cost.addPlan(picked.id); D3Cost.redraw(); this.textContent=ok?"Added to planned work":"Already planned"; this.disabled=true; document.getElementById("planCard").scrollIntoView({behavior:"smooth",block:"start"}); };
+document.getElementById("costToggle").onclick=function(){toggleAcc("costAcc")};
 function toggleAcc(id){
   var el=document.getElementById(id);
   el.className=el.className.indexOf("open")>=0?"acc":"acc open";

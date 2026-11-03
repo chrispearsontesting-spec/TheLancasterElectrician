@@ -27,3 +27,27 @@ Family-class parts/hours set so p + h×£75 lands inside the guide ranges above.
 per-category multipliers (see jobs-db-gen notes in commit) unless a job has explicit figures (cambelt, clutch, brakes,
 tyres, battery, wet belt etc. were set individually). Hours are typical, not manufacturer-specific book times —
 real book times vary by engine (e.g. transverse V6 plugs, N47 rear chain). Treat as guide estimates.
+
+## Revision 2 (3 Nov 2026) — verification pass
+Regenerate: `node garage/tools/gen-jobs.js garage/jobs-data.js` (edit the generator, not the output).
+New optional top-level `MODELS` array: `{id,match:[model substrings],years:[from,to],fuel,cls,label,facts:{timing,tyres,brakes,...},jobs:{jobId:{gbp?:[lo,hi] real quote, src?, warn?}}}`.
+
+Family-class totals (parts mid + hours × £75) were compared with OpenPrice 2026 typical prices, FixMyCar, BookMyGarage
+for 40 common jobs; anything more than 15% out was corrected:
+belt only, alternator, oil change, air-con regas, windscreen, timing chain, back box, cat-back, front dampers,
+gearbox oil, brake fluid, coolant, mirror, rear pads+discs, turbo, alloy refurb. Wet belt raised to specialist
+pricing (Ford 1.0 EcoBoost £850-£1,200 indie, HBM; TGPP fixed £1,100; 2.0 EcoBlue £1,000-£1,400).
+Pickup clutch / clutch+DMF / cambelt hand-set from Fixter L200 data (clutch £677-£1,403; belt £346-£701, 4.75-5.3 h).
+
+### Chris's cars
+- Volvo XC60 SB61 (2011) — 5-cyl D5244 diesel (D5/D4/D3): cambelt drives the water pump; 108k miles/10 yrs; aux belt 54k.
+  Quotes: indie ~£400 (genuine parts), Volvo dealer £555-£575 (Volvo Owners Club). Haynes: belt kit + pump 5-6 h.
+  Known: aux belt/AC pulley failure taking the cambelt, P2015 swirl-flap linkage, EGR clogging, DPF/oil dilution, injector seals.
+  Tyres 235/65 R17 or 235/60 R18 (R-Design). Source: vin-service-planner.com, carsales spec, Garage Wire/Dayco guide.
+- Mitsubishi L200: generation not confirmed. Series 4 KB (2006-15) 2.5 DI-D 4D56 = belt + balancer belt, interference,
+  ~62.5k/5 yrs (GetCarWise; Gates/PMM for the procedure). Series 5 KL (2015-19) 2.4 4N15 and Series 6 (2019+) 2.2 = chain.
+  Known: DMF ~80k, injectors, leaf spring fracture, chassis rot, rear drums.
+
+### Low confidence (no direct UK guide found; scaled/estimated)
+Class multipliers for body panels, lighting, interior; EV-specific jobs (OBC, heat pump, module repair, charge port);
+mechatronic, gearbox recon, subframe, heater matrix, ECU, ABS module, air suspension; van/premium hours generally.

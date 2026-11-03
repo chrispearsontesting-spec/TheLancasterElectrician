@@ -33,7 +33,7 @@
   }
   function costLine(){ var e=+$("mpg").value||(ELEC?3.5:38), pr=price(); fuelLine();
     $("costLine").textContent=pr?("About "+money(cost(1,e,pr))+" per mile"):""; }
-  function pushNative(){ if(!T) return; var pr=price(); if(!pr) return; var r=D3Fuel.nativeRate(+$("mpg").value,pr,ELEC); r.fuel=FO.fuel; T.configure(r).catch(function(){}); }
+  function pushNative(){ if(!T) return; var pr=price(); if(!pr) return; var r=D3Fuel.nativeRate(+$("mpg").value,pr,ELEC); r.fuel=FO.fuel; if(PL()) r.plate=PL(); T.configure(r).catch(function(){}); }
   $("mpg").addEventListener("change",function(){ var o={}; o[ELEC?"mikwh":"mpg"]=+this.value||null; setCfg(o); costLine(); pushNative(); });
   $("useOwn").addEventListener("change",function(){ $("ownBox").classList.toggle("hide",!this.checked); setCfg({useOwn:this.checked}); costLine(); pushNative(); });
   $("ppl").addEventListener("change",function(){ setCfg({ownPrice:+this.value||null}); costLine(); pushNative(); });
@@ -41,18 +41,20 @@
   costLine();
 
   // --- recent journeys ---
+  function PL(){ return window.D3Car?D3Car.curVrn():""; }
+  function mine(){ return logs().filter(function(t){ return !window.D3Car||D3Car.owns(t.plate); }); }
   function renderList(){
-    var list=logs().slice().sort(function(a,b){return (b.when||0)-(a.when||0)}).slice(0,12);
+    var list=mine().slice().sort(function(a,b){return (b.when||0)-(a.when||0)}).slice(0,12);
     $("jList").innerHTML=list.length?list.map(function(t){
       var d=new Date(t.when||0), when=d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})+" "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
       var how=t.auto?"🔵 Bluetooth":(t.hasClip||(!t.trackOnly&&t.trackOnly!==undefined)?"🎥 Dashcam":"📍 Manual");
       var route=(t.from||t.to)?esc((t.from||"Start")+" → "+(t.to||"Finish")):"";
       return "<div class='j'><div><div class='w'>"+esc(when)+"</div><div class='s'>"+how+" · "+(+t.miles||0).toFixed(1)+" mi · "+dur((t.end||t.when)-(t.when||0))+(route?" · "+route:"")+"</div></div><div class='c'>"+money(t.cost)+"</div></div>";
     }).join(""):"<p class='muted'>No journeys yet.</p>";
-    var all=logs(), m=all.reduce(function(s,t){return s+(+t.miles||0)},0), c=all.reduce(function(s,t){return s+(+t.cost||0)},0);
+    var all=mine(), m=all.reduce(function(s,t){return s+(+t.miles||0)},0), c=all.reduce(function(s,t){return s+(+t.cost||0)},0);
     $("jTotal").textContent=all.length?(all.length+" journey"+(all.length>1?"s":"")+" · "+m.toFixed(1)+" mi · "+money(c)+" in total"):"";
   }
-  function saveJourney(t){ var l=logs().filter(function(x){return x.id!==t.id}); l.unshift(t); localStorage.setItem("gt.driveLog",JSON.stringify(l.slice(0,500))); renderList(); }
+  function saveJourney(t){ if(!t.plate&&PL()) t.plate=PL(); var l=logs().filter(function(x){return x.id!==t.id}); l.unshift(t); localStorage.setItem("gt.driveLog",JSON.stringify(l.slice(0,500))); renderList(); }
   renderList();
 
   // --- manual journey (browser GPS, or native service in the app) ---
@@ -119,17 +121,17 @@
     await T.ask({what:w}).catch(function(){}); setTimeout(refresh,600); };
   async function loadDevices(sel){
     try{ var r=await T.devices(); var d=r.devices||[];
-      $("dev").innerHTML="<option value=''>"+(d.length?"Choose your car…":"No paired devices — pair your car in Bluetooth settings")+"</option>"+d.map(function(x){ return "<option value='"+esc(x.mac)+"'"+(x.mac===sel?" selected":"")+">"+esc(x.name)+"</option>"; }).join("");
+      $("dev").innerHTML="<option value=''>"+(d.length?"Choose your car…":"No paired devices — pair your car in Bluetooth settings")+"</option>"+d.map(function(x){ return "<option value='"+esc(x.mac)+"'"+(String(x.mac).toUpperCase()===String(sel).toUpperCase()?" selected":"")+">"+esc(x.name)+"</option>"; }).join("");
     }catch(e){ $("dev").innerHTML="<option value=''>Allow Nearby devices to list your car</option>"; }
   }
   async function refresh(){
-    var s=await T.status(); $("autoOn").checked=!!s.on; permLine(s); await loadDevices(s.mac);
+    var s=await T.status(); $("autoOn").checked=!!s.on; permLine(s); var mm=s.carmap||{}, mySel=""; Object.keys(mm).forEach(function(k){ if(mm[k]&&mm[k].plate===PL()) mySel=k; }); if(!mySel&&s.mac&&!Object.keys(mm).length&&PL()){ mySel=s.mac; T.configure({plate:PL(),link:s.mac,name:s.name||"",mac:""}).then(pushNative).catch(function(){}); } await loadDevices(mySel);
     if(s.running&&!on){ started=s.liveStart||Date.now(); uiOn(true); clearInterval(timer); timer=setInterval(nativeLive,2000); nativeLive(); }
     if(!s.running&&on){ clearInterval(timer); uiOn(false); }
   }
   async function nativeLive(){ try{ var s=await T.status(); if(!s.running){ clearInterval(timer); uiOn(false); pull(); return; } showLive(s.liveMiles); }catch(e){} }
   async function pull(){ if(window.driv3PullJourneys) await window.driv3PullJourneys(); renderList(); }
-  $("dev").onchange=function(){ var o=this.options[this.selectedIndex]; T.configure({mac:this.value,name:this.value?o.textContent:""}).then(refresh); setCfg({mac:this.value,name:this.value?o.textContent:""}); };
+  $("dev").onchange=function(){ var o=this.options[this.selectedIndex]; var nm=this.value?o.textContent:""; T.configure({plate:PL(),link:this.value,name:nm,mac:""}).then(function(){ pushNative(); refresh(); }); var cf=cfg(), mp=cf.macs||{}; if(this.value) mp[PL()]={mac:this.value,name:nm}; else delete mp[PL()]; setCfg({macs:mp,mac:"",name:""}); };
   $("autoOn").onchange=async function(){
     var want=this.checked;
     if(want){

@@ -195,11 +195,11 @@ async function saveTrip(blob){
   var id="d"+started;
   var fromName=await placeName(startPos);
   var toName=await placeName(last);
-  var trip={id:id,when:started,end:Date.now(),miles:+miles.toFixed(2),cost:+costNow().toFixed(2),mpg:mpg,ppl:ppl,from:fromName,to:toName,hasClip:!!(blob&&blob.size),trackOnly:trackOnly};
+  var trip={id:id,when:started,end:Date.now(),miles:+miles.toFixed(2),cost:+costNow().toFixed(2),mpg:mpg,ppl:ppl,from:fromName,to:toName,hasClip:!!(blob&&blob.size),trackOnly:trackOnly,plate:(window.D3Car?D3Car.curVrn():"")};
   var list=[];
   try{list=JSON.parse(localStorage.getItem("gt.driveLog")||"[]")}catch(e){}
   list.unshift(trip);
-  localStorage.setItem("gt.driveLog",JSON.stringify(list.slice(0,200)));
+  localStorage.setItem("gt.driveLog",JSON.stringify(list.slice(0,500)));
   if(blob&&blob.size){
     var name="driv3-"+new Date(started).toISOString().slice(0,16).replace(/[:T]/g,"-")+".webm";
     var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click();

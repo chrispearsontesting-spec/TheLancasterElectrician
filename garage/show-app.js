@@ -41,7 +41,7 @@
 
     var tt=el("section","tt");
     var hero=el("div","hero");
-    if(gal.length){ var hImg=img(gal[hi].src,name); hImg.loading="eager"; hero.appendChild(hImg); } else hero.appendChild(el("div","noimg","No photo yet"));
+    hero.className="hero head";
     hero.appendChild(el("span","badge","Show car"));
     if(plate){ var p=el("span","plate"); p.appendChild(el("span","uk","UK")); p.appendChild(el("span","reg",plate)); hero.appendChild(p); }
     var sh=el("div","shade"); sh.appendChild(el("h1","",name));
@@ -64,18 +64,11 @@
     var mods=(Array.isArray(c.mods)?c.mods:[]).slice(0,40).filter(function(m){return m&&str(m.name,60)});
     if(mods.length){ var ms=sec("Mods"), ul=el("ul","mods"); mods.forEach(function(m){ var li=el("li"); li.appendChild(el("b","",str(m.name,60))); var n=str(m.notes,200); if(n) li.appendChild(el("span","",n)); ul.appendChild(li); }); ms.appendChild(ul); }
     var story=str(c.story,3000); if(story){ sec("Story").appendChild(el("p","story",story)); }
-    if(gal.length>1){ var gs=sec("Gallery"), grid=el("div","gal");
-      gal.forEach(function(g,i){ var bt=el("button"); bt.type="button"; bt.setAttribute("aria-label","Open photo "+(i+1)); bt.appendChild(img(g.src,g.cap||("Photo "+(i+1)))); bt.onclick=function(){ lightbox(gal,i); }; grid.appendChild(bt); });
-      gs.appendChild(grid); }
+    // (Photos and videos are in the gallery at the top.)
     // Videos: old cards stored plain ids, new ones {id,title}.
     var vids=(Array.isArray(c.videos)?c.videos:[]).map(function(v){ var id=P.youtubeId(v&&typeof v==="object"?v.id:v); return id?{id:id,title:str(v&&v.title,80)}:null; }).filter(Boolean).slice(0,12);
-    if(vids.length) carousel("Videos",vids,"video",function(v){
-      var f=frame("https://www.youtube-nocookie.com/embed/"+v.id+"?rel=0&playsinline=1&modestbranding=1",v.title||"YouTube video");
-      f.setAttribute("allow","autoplay; encrypted-media; picture-in-picture; fullscreen"); return f; });
-    var socs=(Array.isArray(c.socials)?c.socials:[]).map(socialSrc).filter(Boolean).slice(0,12);
-    if(socs.length) carousel("Photos from socials",socs,"social",function(x){ var f=frame(x.src,x.label); f.classList.add(x.cls); return f; });
     var clips=(Array.isArray(c.clips)?c.clips:[]).slice(0,2).map(function(k){ return {src:k&&fileUrl(k.n),cap:str(k&&k.cap,80)}; }).filter(function(k){return k.src&&/^c/.test(k.src.split("/").pop())});
-    if(clips.length){ var cs=sec("Clips"); clips.forEach(function(k){ var w=el("div","clip"), v=el("video"); v.controls=true; v.preload="metadata"; v.playsInline=true; v.src=k.src; w.appendChild(v); if(k.cap) w.appendChild(el("div","cap",k.cap)); cs.appendChild(w); }); }
+    gallery(gal,hi,clips,vids,name,tt);
     var pl=c.playlist&&typeof c.playlist==="object"?c.playlist:null;
     if(pl){
       if(pl.kind==="spotify"&&/^[A-Za-z0-9]{22}$/.test(pl.id||"")&&(pl.type==="playlist"||pl.type==="album")){
@@ -130,6 +123,46 @@
     var x0=null; panel.addEventListener("touchstart",function(e){ x0=e.touches[0].clientX; },{passive:true});
     panel.addEventListener("touchend",function(e){ if(x0==null) return; var dx=e.changedTouches[0].clientX-x0; x0=null; if(Math.abs(dx)>50&&items.length>1) go(dx<0?1:-1); },{passive:true});
     s.appendChild(hb); s.appendChild(panel); app.appendChild(s); return s;
+  }
+  /* Gallery: Photos / Videos tabs joined to a framed viewer. Swipe the big view (scroll-snap) or tap a thumbnail. Built with DOM APIs only. */
+  function gallery(photos,start,clips,yts,name,before){
+    var vids=clips.map(function(k){ return {kind:"clip",src:k.src,cap:k.cap}; }).concat(yts.map(function(v){ return {kind:"yt",id:v.id,cap:v.title}; }));
+    if(!photos.length&&!vids.length) return;
+    var wrap=el("section","gal2"), tabs=el("div","gtabs"), bP=el("button","",""), bV=el("button","",""), frameEl=el("div","gframe"), stage=el("div","gstage"), meta=el("div","gmeta"), cap=el("b",""), pos=el("span",""), strip=el("div","gstrip");
+    bP.type=bV.type="button"; bP.appendChild(document.createTextNode("Photos")); bP.appendChild(el("span","n",photos.length||""));
+    bV.appendChild(document.createTextNode("Videos")); bV.appendChild(el("span","n",vids.length||""));
+    tabs.setAttribute("role","tablist"); tabs.appendChild(bP); tabs.appendChild(bV); meta.appendChild(cap); meta.appendChild(pos);
+    frameEl.appendChild(stage); frameEl.appendChild(meta); frameEl.appendChild(strip); wrap.appendChild(tabs); wrap.appendChild(frameEl);
+    app.insertBefore(wrap,before);
+    var tab=photos.length?"p":"v", list=[], cur=0, t=null;
+    function fill(n){ var sl=stage.children[n]; if(!sl||sl.firstChild) return; var it=list[n];
+      if(tab==="p"){ var im=img(it.src,it.cap||name); im.loading=n===cur?"eager":"lazy"; sl.appendChild(im); }
+      else if(it.kind==="clip"){ var v=el("video"); v.controls=true; v.preload="metadata"; v.playsInline=true; v.src=it.src; sl.appendChild(v); }
+      else if(n===cur){ var f=frame("https://www.youtube-nocookie.com/embed/"+it.id+"?rel=0&playsinline=1&modestbranding=1",it.cap||"YouTube video"); f.loading="eager"; f.setAttribute("allow","autoplay; encrypted-media; picture-in-picture; fullscreen"); sl.appendChild(f); }
+      else { sl.appendChild(img("https://i.ytimg.com/vi/"+it.id+"/hqdefault.jpg","Video")); } }
+    function sel(n,scroll){ if(!list.length) return; n=Math.max(0,Math.min(list.length-1,n)); var ch=n!==cur; cur=n;
+      if(ch) Array.prototype.forEach.call(stage.children,function(sl,k){ var v=sl.querySelector("video"); if(v) v.pause(); if(sl.querySelector("iframe")||(tab==="v"&&k===n&&list[k].kind==="yt")) sl.innerHTML=""; });
+      [n-1,n,n+1].forEach(fill);
+      if(scroll) stage.scrollTo({left:n*stage.clientWidth,behavior:"smooth"});
+      Array.prototype.forEach.call(strip.children,function(b,k){ b.classList.toggle("on",k===n); });
+      var tb=strip.children[n]; if(tb) strip.scrollTo({left:tb.offsetLeft-strip.clientWidth/2+tb.offsetWidth/2,behavior:"smooth"});
+      cap.textContent=list[n].cap||""; pos.textContent=(n+1)+" / "+list.length; }
+    function paint(){
+      bP.classList.toggle("on",tab==="p"); bV.classList.toggle("on",tab==="v"); frameEl.className="gframe "+(tab==="p"?"l":"r");
+      list=tab==="p"?photos:vids; stage.innerHTML=""; strip.innerHTML=""; cap.textContent=""; pos.textContent="";
+      if(!list.length){ stage.appendChild(el("div","gempty",tab==="p"?"No photos yet":"No videos yet")); return; }
+      list.forEach(function(it,k){ stage.appendChild(el("div","sl"));
+        var b=el("button"); b.type="button"; b.setAttribute("aria-label",(tab==="p"?"Photo ":"Video ")+(k+1));
+        if(tab==="p") b.appendChild(img(it.src,"")); else if(it.kind==="yt") b.appendChild(img("https://i.ytimg.com/vi/"+it.id+"/default.jpg",""));
+        else { var tv=el("video"); tv.muted=true; tv.preload="metadata"; tv.playsInline=true; tv.src=it.src+"#t=0.1"; b.appendChild(tv); }
+        if(tab==="v") b.appendChild(el("span","play2","▶"));
+        b.onclick=function(){ sel(k,true); }; strip.appendChild(b); });
+      cur=-1; var s0=tab==="p"?start:0; stage.scrollLeft=s0*stage.clientWidth; sel(s0,false); requestAnimationFrame(function(){ stage.scrollLeft=s0*stage.clientWidth; });
+    }
+    stage.addEventListener("scroll",function(){ clearTimeout(t); t=setTimeout(function(){ var n=Math.round(stage.scrollLeft/stage.clientWidth); if(n!==cur) sel(n,false); },80); },{passive:true});
+    stage.tabIndex=0; stage.addEventListener("keydown",function(e){ if(e.key==="ArrowRight") sel(cur+1,true); if(e.key==="ArrowLeft") sel(cur-1,true); });
+    bP.onclick=function(){ if(tab!=="p"){ tab="p"; paint(); } }; bV.onclick=function(){ if(tab!=="v"){ tab="v"; paint(); } };
+    paint();
   }
   function sec(title){ var s=el("section","sec"); s.appendChild(el("h2","",title)); app.appendChild(s); return s; }
   function frame(src,title){ var f=el("iframe"); f.src=src; f.title=title; f.loading="lazy"; f.referrerPolicy="strict-origin-when-cross-origin";

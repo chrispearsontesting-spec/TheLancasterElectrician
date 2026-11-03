@@ -92,12 +92,34 @@ a{color:var(--gold)}
 .lb .nav{display:flex;gap:10px;margin-top:12px}
 .lb button{background:#1c1c1e;border:1px solid var(--line);color:#fff;border-radius:12px;min-width:56px;height:46px;font-size:18px;cursor:pointer}
 .lb .close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px}
+.hero.head{aspect-ratio:auto;background:none;min-height:0;padding:44px 0 0}
+.hero.head .shade{position:static;background:none;padding:6px 14px 10px}
+.gal2{margin:0 0 12px}
+.gtabs{display:flex;gap:4px;align-items:flex-end;position:relative;z-index:2}
+.gtabs button{flex:1;background:#0f0f11;border:1px solid var(--line);border-bottom:0;color:var(--mute);border-radius:14px 14px 0 0;padding:8px 4px;font:inherit;font-size:13px;cursor:pointer;box-shadow:inset 0 -6px 8px -6px rgba(0,0,0,.6)}
+.gtabs button.on{background:var(--card);color:var(--ink);font-weight:700;padding:11px 4px 10px;margin-bottom:-2px;border:2px solid #7dd3fc;border-bottom:0;position:relative}
+.gtabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:4px;background:var(--card)}
+.gtabs .n{font-size:11px;color:var(--mute);font-weight:600;margin-left:4px}
+.gframe{background:var(--card);border:2px solid #7dd3fc;border-radius:0 18px 18px 18px;padding:8px;position:relative;z-index:1}
+.gframe.r{border-radius:18px 0 18px 18px}
+.gstage{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:12px;background:#000;aspect-ratio:4/3;overscroll-behavior-x:contain}
+.gstage::-webkit-scrollbar,.gstrip::-webkit-scrollbar{display:none}
+.gstage .sl{flex:0 0 100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center}
+.gstage img,.gstage video,.gstage iframe{width:100%;height:100%;object-fit:contain;display:block;border:0;background:#000}
+.gempty{flex:1 0 100%;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:14px}
+.gmeta{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:#a0a0a0;padding:7px 2px 6px;min-height:28px}
+.gmeta b{color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gstrip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.gstrip button{flex:0 0 64px;width:64px;height:64px;border-radius:10px;border:2px solid transparent;padding:0;background:#1c1c1e;overflow:hidden;cursor:pointer;position:relative}
+.gstrip button.on{border-color:#7dd3fc;box-shadow:0 0 0 1px #7dd3fc}
+.gstrip img,.gstrip video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.gstrip .play2{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;text-shadow:0 1px 4px #000;pointer-events:none}
 </style>
 </head>
 <body>
 <main id="app"><div class="empty"><p>Loading…</p></div></main>
 <script src="./uploads-config.js?v=1"></script>
 <script src="./show-parse.js?v=2"></script>
-<script src="./show-app.js?v=2"></script>
+<script src="./show-app.js?v=3"></script>
 </body>
 </html>

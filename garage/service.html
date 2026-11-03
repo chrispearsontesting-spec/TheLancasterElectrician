@@ -54,6 +54,7 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 .gRow{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
 .gTxt{flex:1;min-width:0}.gTxt b{display:block;font-size:14px}.gTxt small{display:block;font-size:13px;color:#e8e3d8;margin-top:2px}.gTxt .gH{color:#8b93a0;font-size:12px}
 .gAdd{background:#1f2a1f;color:#a7f3d0;border:1px solid #2c4a33;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:600;white-space:nowrap}.gAdd[disabled]{opacity:.55}
+.gCat{margin:14px 0 2px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9fd8ff}.gW{display:block;font-size:12px;color:#f59e0b;margin-top:2px}
 .gCount{font-size:12px;color:#8b93a0;margin:0 0 4px}
 .addPlan{margin:0 14px 14px;width:calc(100% - 28px);background:#1f2a1f;color:#a7f3d0;border:1px solid #2c4a33;border-radius:12px;padding:11px;font-size:14px;font-weight:600}
 </style>
@@ -93,7 +94,7 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 <script src="./car-scope.js?v=1"></script>
 <script src="./reminders-core.js?v=2"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./planner-costs.js?v=1"></script>
+<script src="./planner-costs.js?v=2"></script>
 <script src="./icons.js?v=27"></script>
 <script>
 var picked=null;
@@ -165,13 +166,13 @@ function draw(){
   document.getElementById("carLine").textContent=name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"");
   var job=picked;
   if(job){
-    var e=D3Cost.est(job), m=D3Cost.MULT[sz], dealer=Math.round(R*1.75);
-    var dLo=Math.round((job.plo*1.35+job.hrs*dealer)*m/5)*5, dHi=Math.round((job.phi*1.45+job.hrs*dealer)*m/5)*5;
+    var e=D3Cost.est(job)||{dlo:0,dhi:0,glo:0,ghi:0,h:job.hrs}, m=job.cls?1:D3Cost.MULT[sz], dealer=(window.LABOUR&&LABOUR.dealer)?Math.round((LABOUR.dealer[0]+LABOUR.dealer[1])/2):Math.round(R*1.75), hrs=e.h!=null?e.h:job.hrs;
+    var dLo=Math.round((e.dlo*1.35+hrs*dealer)/5)*5, dHi=Math.round((e.dhi*1.45+hrs*dealer)/5)*5;
     document.getElementById("quotes").innerHTML=
       row("DIY (parts only)","\u00a3"+e.dlo+"\u2013\u00a3"+e.dhi)+
       row("Local garage","\u00a3"+e.glo+"\u2013\u00a3"+e.ghi)+
       row("Main dealer","\u00a3"+dLo+"\u2013\u00a3"+dHi)+
-      row("Labour used",job.hrs+" hrs \u00b7 \u00a3"+R+"/hr \u00b7 dealer about \u00a3"+dealer+"/hr");
+      row("Labour used",hrs+" hrs \u00b7 \u00a3"+R+"/hr \u00b7 dealer about \u00a3"+dealer+"/hr");
     document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"Estimate sized for a "+D3Cost.LAB[sz].toLowerCase()+". Not a quote.";
     document.getElementById("quoteBox").className="card";
     var ap=document.getElementById("addPlan"); ap.textContent="+ Add to planned work"; ap.disabled=false;

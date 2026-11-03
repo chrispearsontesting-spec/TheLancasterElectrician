@@ -3,7 +3,10 @@
    On this phone: gt.labourRate (number), gt.sizeCls {VRN:cls}, gt.plan {VRN:[{id,job,added}]}, gt.planMatch {VRN:{type:jobId}} */
 (function(root){
   "use strict";
-  var MULT={small:0.85,family:1,suv:1.15,premium:1.35}, LAB={small:"Small car",family:"Family car",suv:"SUV / pickup",premium:"Premium car"};
+  /* 9 size classes (jobs-data CLASSES ids). MULT only used for jobs without per-class data (legacy plo/phi). */
+  var MULT={city:0.75,small:0.85,family:1,exec:1.2,premium:1.35,suv4x4:1.25,pickup:1.2,van:1.15,ev:1.1},
+      LAB={city:"City car",small:"Small car",family:"Family car",exec:"Executive car",premium:"Premium car",suv4x4:"SUV / 4x4",pickup:"Pickup",van:"Van",ev:"Electric car"};
+  if(root.CLASSES&&root.CLASSES.forEach) root.CLASSES.forEach(function(c){ if(c&&c.id&&MULT[c.id]&&c.label) LAB[c.id]=c.label; });
   var TYPEJOB={mot:"mot",service:"full",belt:"beltwp"};
   function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k)||"null");return v==null?d:v}catch(e){return d}}
   function wr(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -14,22 +17,34 @@
   /* Guess size class from the saved details */
   function guess(c){
     var n=[c.make,c.model,c.nick,c.name,c.body,c.type,c.engine].join(" ").toLowerCase();
-    if(/l200|hilux|ranger|navara|d-max|amarok|pick ?up|transit|vivaro|sprinter|crafter|trafic|transporter|\bvan\b/.test(n)) return "suv";
-    if(/range rover|land rover|defender|discovery|bmw|mercedes|benz|audi|volvo|lexus|jaguar|porsche|tesla|maserati|bentley|rolls|alfa romeo|genesis|infiniti|polestar|\bds\b/.test(n)) return "premium";
-    if(/suv|4x4|qashqai|tiguan|kuga|sportage|tucson|rav4|cr-v|karoq|kodiaq|ateca|outlander|santa fe|sorento|forester|cx-5|x-trail|juke|captur|2008|3008|5008|puma|t-roc|duster|jimny|land cruiser|shogun|pajero/.test(n)) return "suv";
-    if(/fiesta|corsa|polo|ibiza|fabia|yaris|jazz|swift|i10|i20|clio|208|207|107|108|c1|c3|micra|aygo|picanto|rio|up!|\bup\b|citigo|spark|\b500\b|panda|mini|sandero|ka\b|agila|adam|mii|celerio|alto|city car|hatch.*small/.test(n)) return "small";
-    var cc=parseFloat(String(c.engine||"").replace(/[^0-9.]/g,"")); if(cc&&(cc<=1.2||(cc>=600&&cc<=1250))) return "small";
+    if(/electric/.test(String(c.fuel||"").toLowerCase())||/tesla|leaf|\bzoe\b|e-golf|id\.3|id\.4|enyaq|ioniq 5|polestar|e-tron|\bmg4\b|\bi3\b/.test(n)) return "ev";
+    if(/l200|hilux|ranger|navara|d-max|amarok|pick ?up|pickup/.test(n)) return "pickup";
+    if(/transit|vivaro|sprinter|crafter|trafic|transporter|berlingo|partner|caddy|kangoo|doblo|ducato|boxer|relay|movano|master|\bvan\b/.test(n)) return "van";
+    if(/range rover|defender|discovery|land cruiser|shogun|pajero|\bx5\b|\bx6\b|\bx7\b|\bq7\b|\bq8\b|\bgle\b|\bgls\b|xc90|touareg|cayenne/.test(n)) return "suv4x4";
+    if(/land rover|bmw|mercedes|benz|audi|volvo|lexus|jaguar|porsche|maserati|bentley|rolls|alfa romeo|genesis|infiniti|\bds\b/.test(n)) return "premium";
+    if(/aygo|\b107\b|\b108\b|\bc1\b|\bi10\b|picanto|\bup!?\b|citigo|\bmii\b|spark|\b500\b|panda|twingo|celerio|alto|\bka\b|agila/.test(n)) return "city";
+    if(/fiesta|corsa|polo|ibiza|fabia|yaris|jazz|swift|i20|clio|\b208\b|\b207\b|\bc3\b|micra|\brio\b|sandero|mini|adam|\bmazda2\b|note/.test(n)) return "small";
+    if(/mondeo|passat|insignia|superb|\b508\b|arteon|avensis|accord|stinger|kodiaq|5008/.test(n)) return "exec";
+    if(/suv|4x4|qashqai|tiguan|kuga|sportage|tucson|rav4|cr-v|karoq|ateca|outlander|santa fe|sorento|forester|cx-5|x-trail|jimny|duster/.test(n)) return "suv4x4";
+    var cc=parseFloat(String(c.engine||"").replace(/[^0-9.]/g,"")); if(cc&&(cc<=1.1||(cc>=600&&cc<=1100))) return "city"; if(cc&&(cc<=1.4||(cc>1100&&cc<=1400))) return "small";
     return "family";
   }
-  function size(){var o=rd("gt.sizeCls",{})[vrn()];return MULT[o]?o:guess(car())}
+  function size(){var o=rd("gt.sizeCls",{})[vrn()];if(o==="suv")o="suv4x4";return MULT[o]?o:guess(car())}
   function setSize(k){var o=rd("gt.sizeCls",{});if(k===guess(car()))delete o[vrn()];else o[vrn()]=k;wr("gt.sizeCls",o)}
-  function rate(){var r=+rd("gt.labourRate",80);return r>=10&&r<=400?r:80}
+  function rate(){var L=root.LABOUR&&root.LABOUR.indie, d=L&&L.length===2?Math.round((L[0]+L[1])/2):80, r=+rd("gt.labourRate",d);return r>=10&&r<=400?r:d}
   function r5(n){return Math.round(n/5)*5}
-  function est(j){if(j.id==="mot")return {dlo:0,dhi:0,glo:55,ghi:55};  /* MOT fee is capped by DVSA (£54.85), not sized or labour-based */
-    var m=MULT[size()],R=rate();return {dlo:r5(j.plo*m),dhi:r5(j.phi*m),glo:r5((j.plo+j.hrs*R)*m),ghi:r5((j.phi+j.hrs*R)*m)}}
+  /* {dlo,dhi,glo,ghi} or null when the job doesn't apply to this class. Uses j.cls[class] {p:[lo,hi],h} when present. */
+  function est(j){
+    if(j.id==="mot")return {dlo:0,dhi:0,glo:55,ghi:55};  /* MOT fee is capped by DVSA (£54.85), not sized or labour-based */
+    var k=size(), R=rate(), c=car(), plo,phi,h,m=1;
+    if(j.cls&&typeof j.cls==="object"){ var x=j.cls[k]; if(!x||!x.p) return null; plo=+x.p[0]||0; phi=+x.p[1]||plo; h=x.h!=null?+x.h:+j.hrs||0;
+      var f=j.fuel&&j.fuel[String(c.fuel||"").toLowerCase()]; if(f&&f.p){ plo=+f.p[0]||plo; phi=+f.p[1]||phi; } if(f&&f.h!=null) h=+f.h; }
+    else { m=MULT[k]; plo=(+j.plo||0)*m; phi=(+j.phi||0)*m; h=(+j.hrs||0)*m; }
+    return {dlo:r5(plo),dhi:r5(phi),glo:r5(plo+h*R),ghi:r5(phi+h*R),h:j.cls?Math.round(h*10)/10:null};
+  }
   function money(n){return "£"+Math.round(n).toLocaleString("en-GB")}
   function rng(a,b){return a===b?money(a):money(a)+"–"+money(b)}
-  function line(j){if(j.id==="mot")return "Test fee up to £54.85 (DVSA maximum)";var e=est(j);return (e.dhi>0?"DIY about "+rng(e.dlo,e.dhi):"DIY: no parts")+" · Garage about "+rng(e.glo,e.ghi)}
+  function line(j){if(j.id==="mot")return "Test fee up to £54.85 (DVSA maximum)";var e=est(j);if(!e)return "Not usually needed on a "+LAB[size()].toLowerCase();return (e.dhi>0?"DIY about "+rng(e.dlo,e.dhi):"DIY: no parts")+" · Garage about "+rng(e.glo,e.ghi)}
   /* Match free text (reminder label / plan name) to a job */
   function match(text){var q=String(text||"").toLowerCase(),best=null,bs=0;(root.WORK||[]).forEach(function(w){var s=0,nm=w.name.toLowerCase();if(nm===q)s=100;else if(q.indexOf(nm)>=0)s=50+nm.length;else{(nm+" "+(w.buy||"")).split(/[^a-z0-9]+/).forEach(function(t){if(t.length>3&&q.indexOf(t)>=0)s+=t.length})}if(s>bs){bs=s;best=w}});return bs>=6?best:null}
 
@@ -66,9 +81,14 @@
   function drawGuide(){
     var box=document.getElementById("guideList"); if(!box) return; var q=(document.getElementById("guideQ").value||"").toLowerCase().trim(), have={};
     plan().forEach(function(p){have[p.job]=1});
-    var l=(root.WORK||[]).filter(function(w){return !q||(w.name+" "+(w.buy||"")+" "+(w.note||"")).toLowerCase().indexOf(q)>=0});
-    box.innerHTML=l.length?l.map(function(w){ return "<div class='gRow'><div class='gTxt'><b>"+esc(w.name)+"</b><small>"+line(w)+"</small><small class='gH'>"+w.hrs+" hr"+(w.hrs===1?"":"s")+" labour"+(w.note?" · "+esc(w.note):"")+"</small></div>"+
-      "<button type='button' class='gAdd' data-add='"+w.id+"'"+(have[w.id]?" disabled":"")+">"+(have[w.id]?"Planned":"+ Plan")+"</button></div>"; }).join(""):"<p class='muted'>No jobs match “"+esc(q)+"”.</p>";
+    var l=(root.WORK||[]).filter(function(w){return !q||(w.name+" "+(w.buy||"")+" "+(w.note||"")+" "+(w.cat||"")).toLowerCase().indexOf(q)>=0});
+    var stars=function(n){n=Math.max(1,Math.min(5,+n||0));return "DIY "+["easy","fairly easy","moderate","hard","expert"][n-1]+" ("+n+"/5)"};
+    var rowOf=function(w){ var e=est(w), ex=[]; if(e&&e.h!=null) ex.push(e.h+" hr"+(e.h===1?"":"s")+" labour"); else ex.push(w.hrs+" hr"+(w.hrs===1?"":"s")+" labour");
+      if(w.diy) ex.push(stars(w.diy)); if(w.interval) ex.push("Every "+esc(w.interval)); if(w.note) ex.push(esc(w.note));
+      return "<div class='gRow'><div class='gTxt'><b>"+esc(w.name)+"</b><small>"+line(w)+"</small><small class='gH'>"+ex.join(" · ")+"</small>"+(w.warn?"<small class='gW'>⚠ "+esc(w.warn)+"</small>":"")+(w.tools?"<small class='gH'>Tools: "+esc([].concat(w.tools).join(", "))+"</small>":"")+"</div>"+
+        "<button type='button' class='gAdd' data-add='"+w.id+"'"+(have[w.id]||!e?" disabled":"")+">"+(have[w.id]?"Planned":!e?"N/A":"+ Plan")+"</button></div>"; };
+    var cats={}, order=[]; l.forEach(function(w){ var c=w.cat||""; if(!cats[c]){cats[c]=[];order.push(c);} cats[c].push(w); });
+    box.innerHTML=l.length?(order.length>1||order[0]?order.map(function(c){ return "<p class='gCat'>"+esc(c||"Other")+"</p>"+cats[c].map(rowOf).join(""); }).join(""):l.map(rowOf).join("")):"<p class='muted'>No jobs match “"+esc(q)+"”.</p>";
     document.getElementById("guideCount").textContent=l.length+" of "+(root.WORK||[]).length+" jobs";
   }
   function drawChip(){

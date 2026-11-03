@@ -28,6 +28,8 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 .j{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid #222226}.j:first-child{border-top:0}
 .j .w{font-size:14px}.j .s{color:#8b8b8b;font-size:12px;margin-top:2px}.j .c{font-weight:800;color:#3dd68c;white-space:nowrap}
 .hide{display:none}
+.fuel{margin:12px 0 0;font-size:13px;color:#cfcfcf;background:#101012;border:1px solid #232327;border-radius:12px;padding:9px 11px;line-height:1.45}
+.own{display:flex;align-items:center;gap:8px;color:#8b8b8b;font-size:13px;margin-top:10px}.own input{width:18px;height:18px;accent-color:#22c55e}
 .perm{font-size:13px;margin-top:8px;line-height:1.7}.perm button{background:#26262a;color:#f2f2f2;border:0;border-radius:10px;padding:4px 10px;font-size:12px;margin-left:6px}
 </style>
 </head>
@@ -43,11 +45,11 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
     <select id="dev"><option value="">Choose your car…</option></select>
     <div class="perm" id="perms"></div>
   </div>
-  <div class="g2">
-    <div><label class="f" for="mpg">Average mpg</label><input type="number" id="mpg" inputmode="decimal" min="5" max="150" step="0.1"/></div>
-    <div><label class="f" for="ppl">Fuel price (p/litre)</label><input type="number" id="ppl" inputmode="decimal" min="50" max="400" step="0.1"/></div>
-  </div>
+  <p class="fuel" id="fuelLine">Checking live fuel price…</p>
+  <label class="f" for="mpg" id="mpgLab">Average mpg</label><input type="number" id="mpg" inputmode="decimal" min="5" max="150" step="0.1"/>
   <p class="muted" id="costLine"></p>
+  <label class="own"><input type="checkbox" id="useOwn"/> <span id="ownLab">Use my own price (p/litre)</span></label>
+  <div id="ownBox" class="hide"><input type="number" id="ppl" inputmode="decimal" min="5" max="400" step="0.1" placeholder="e.g. 185.9"/><p class="muted">Off by default. While on, the live price is ignored.</p></div>
 </section>
 
 <section class="card">
@@ -70,6 +72,7 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
   <p class="muted" id="jTotal"></p>
 </section>
 
-<script src="./record-app.js?v=1"></script>
+<script src="./fuel-live.js?v=1"></script>
+<script src="./record-app.js?v=2"></script>
 </body>
 </html>

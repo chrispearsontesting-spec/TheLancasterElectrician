@@ -8,25 +8,34 @@
   function cfg(){try{return JSON.parse(localStorage.getItem("gt.trackCfg")||"null")||{}}catch(e){return {}}}
   function setCfg(o){var c=Object.assign(cfg(),o);localStorage.setItem("gt.trackCfg",JSON.stringify(c));return c}
   function logs(){try{return JSON.parse(localStorage.getItem("gt.driveLog")||"[]")}catch(e){return []}}
-  function cost(miles,mpg,ppl){return miles/Math.max(+mpg||1,1)*L_PER_GAL*((+ppl||0)/100)}
   function money(x){return "£"+(+x||0).toFixed(2)}
   function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
   function dur(ms){var m=Math.max(0,Math.round(ms/60000));return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m+" min"}
 
-  // --- mpg + price ---
-  var c0=cfg(), g=car();
-  $("mpg").value=c0.mpg||g.mpg||38;
-  $("ppl").value=c0.ppl||"";
-  function costLine(){ var mpg=+$("mpg").value||38, ppl=+$("ppl").value||0;
-    $("costLine").textContent=ppl?("About "+money(cost(1,mpg,ppl))+" per mile at "+mpg+" mpg and "+ppl.toFixed(1)+"p/litre."):"Enter your fuel price to see costs."; }
-  function pushNative(){ if(T) T.configure({mpg:+$("mpg").value||38, ppl:+$("ppl").value||140}).catch(function(){}); }
-  ["mpg","ppl"].forEach(function(id){ $(id).addEventListener("change",function(){ var o={}; o[id]=+this.value||null; if(id==="ppl") o.pplSet=true; setCfg(o); costLine(); pushNative(); }); });
-  if(!c0.pplSet){
-    fetch("prices.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(pr){
-      var fuel=String(g.fuel||"diesel").toLowerCase(), p=fuel.indexOf("petrol")>=0?+pr.petrol_ppl:+pr.diesel_ppl;
-      if(p&&!cfg().pplSet){ $("ppl").value=p.toFixed(1); setCfg({ppl:p}); costLine(); pushNative(); }
-    }).catch(function(){ if(!$("ppl").value){ $("ppl").value="140.0"; costLine(); } });
+  // --- mpg + LIVE price (fuel-live.js -> prices.json, same source as Route costs) ---
+  var c0=cfg(), g=car(), LIVE=null;
+  if(c0.v!==2){ // migrate: earlier version stored a manual price that blocked live updates
+    delete c0.ppl; delete c0.pplSet; c0.useOwn=false; c0.v=2; localStorage.setItem("gt.trackCfg",JSON.stringify(c0));
   }
+  var FO=window.D3Fuel?D3Fuel.fuelOf(g):{fuel:"petrol"}, ELEC=FO.fuel==="electric";
+  if(ELEC){ $("mpgLab").textContent="Miles per kWh"; $("mpg").step="0.1"; $("mpg").min="1"; $("ownLab").textContent="Use my own price (p/kWh)"; }
+  $("mpg").value=c0[ELEC?"mikwh":"mpg"]||(ELEC?(+g.mikwh||3.5):(g.mpg||38));
+  $("useOwn").checked=!!c0.useOwn; $("ownBox").classList.toggle("hide",!c0.useOwn); if(c0.ownPrice) $("ppl").value=c0.ownPrice;
+  function price(){ return $("useOwn").checked&&+$("ppl").value?+$("ppl").value:(LIVE&&LIVE.price||0); }
+  function unit(){ return ELEC?"p/kWh":"p/litre"; }
+  function cost(miles,eff,pr){ return ELEC?miles/Math.max(+eff||1,0.5)*((+pr||0)/100):miles/Math.max(+eff||1,1)*L_PER_GAL*((+pr||0)/100); }
+  function fuelLine(){
+    var lab=(window.D3Fuel?D3Fuel.LABEL[FO.fuel]:FO.fuel)+(FO.known?"":" (guessed — set Fuel in Edit car)");
+    var t=LIVE?("live price "+LIVE.price.toFixed(1)+(ELEC?"p/kWh":"p/L")+" · updated "+(LIVE.date||"")+(LIVE.stale?" (offline, last known)":" · checked "+new Date(LIVE.checked).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}))):"live price unavailable";
+    $("fuelLine").innerHTML="<b>"+esc(lab)+"</b> · "+esc(t)+($("useOwn").checked?" · <span class='warn'>using your own price</span>":"");
+  }
+  function costLine(){ var e=+$("mpg").value||(ELEC?3.5:38), pr=price(); fuelLine();
+    $("costLine").textContent=pr?("About "+money(cost(1,e,pr))+" per mile at "+e+(ELEC?" mi/kWh":" mpg")+" and "+pr.toFixed(1)+unit()+"."):"Waiting for the live fuel price…"; }
+  function pushNative(){ if(!T) return; var pr=price(); if(!pr) return; var r=D3Fuel.nativeRate(+$("mpg").value,pr,ELEC); r.fuel=FO.fuel; T.configure(r).catch(function(){}); }
+  $("mpg").addEventListener("change",function(){ var o={}; o[ELEC?"mikwh":"mpg"]=+this.value||null; setCfg(o); costLine(); pushNative(); });
+  $("useOwn").addEventListener("change",function(){ $("ownBox").classList.toggle("hide",!this.checked); setCfg({useOwn:this.checked}); costLine(); pushNative(); });
+  $("ppl").addEventListener("change",function(){ setCfg({ownPrice:+this.value||null}); costLine(); pushNative(); });
+  if(window.D3Fuel) D3Fuel.live(g).then(function(l){ LIVE=l; costLine(); pushNative(); });
   costLine();
 
   // --- recent journeys ---
@@ -47,7 +56,7 @@
   // --- manual journey (browser GPS, or native service in the app) ---
   var on=false, watch=null, prev=null, miles=0, started=0, timer=null, wake=null;
   function hav(a,b){var R=3958.8,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;var x=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(x)))}
-  function showLive(m){ $("lvMiles").textContent=(+m||0).toFixed(2); $("lvCost").textContent=money(cost(m,$("mpg").value,$("ppl").value));
+  function showLive(m){ $("lvMiles").textContent=(+m||0).toFixed(2); $("lvCost").textContent=money(cost(m,$("mpg").value,price()));
     var s=Math.round((Date.now()-started)/1000); $("lvTime").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
   function uiOn(v){ on=v; $("jBtn").textContent=v?"Stop journey":"Start journey"; $("jBtn").className="btn "+(v?"stop":"go"); $("live").classList.toggle("hide",!v); }
   async function startWeb(){
@@ -64,8 +73,8 @@
   function stopWeb(){
     if(watch!=null) navigator.geolocation.clearWatch(watch); watch=null; clearInterval(timer);
     if(wake){ try{ wake.release(); }catch(e){} wake=null; }
-    var mpg=+$("mpg").value||38, ppl=+$("ppl").value||140;
-    saveJourney({id:"m"+started,when:started,end:Date.now(),miles:+miles.toFixed(2),cost:+cost(miles,mpg,ppl).toFixed(2),mpg:mpg,ppl:ppl,from:"",to:"",trackOnly:true,source:"manual"});
+    var mpg=+$("mpg").value||(ELEC?3.5:38), ppl=price();
+    saveJourney({id:"m"+started,when:started,end:Date.now(),miles:+miles.toFixed(2),cost:+cost(miles,mpg,ppl).toFixed(2),mpg:ELEC?undefined:mpg,mikwh:ELEC?mpg:undefined,ppl:ppl,fuel:FO.fuel,from:"",to:"",trackOnly:true,source:"manual"});
     uiOn(false);
   }
   async function ensureLoc(){ var s=await T.status(); if(!s.location) s=await T.ask({what:"location"}); if(!s.notifications) await T.ask({what:"notifications"}); return s.location; }
@@ -122,7 +131,7 @@
       if(!$("dev").value){ await loadDevices(""); alert("Now choose your car’s Bluetooth from the list."); }
       if(!s.background) alert("Tip: tap Allow next to “Allow all the time” and “Battery: unrestricted” so journeys start even when Driv3 is closed.");
     }
-    await T.configure({on:want,mpg:+$("mpg").value||38,ppl:+$("ppl").value||140}); setCfg({on:want}); refresh();
+    await T.configure({on:want}); pushNative(); setCfg({on:want}); refresh();
   };
   pushNative(); refresh(); pull();
   document.addEventListener("visibilitychange",function(){ if(!document.hidden){ refresh(); pull(); } });

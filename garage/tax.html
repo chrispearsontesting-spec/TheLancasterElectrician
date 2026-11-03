@@ -22,7 +22,6 @@ h1{font-size:22px;margin:8px 0}
 #tax button{background:#f5c518;color:#111;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:15px}
 #tax .link{background:none;color:#f5c518;text-decoration:underline;padding:6px;font-weight:600}
 #gov{display:block;color:#f5c518;font-weight:600;margin:12px 0}
-.back{display:flex;margin-top:16px;justify-content:center;text-decoration:none}
 </style>
 </head>
 <body>
@@ -32,7 +31,7 @@ h1{font-size:22px;margin:8px 0}
 <div class="box wait" id="mot"><b>Checking…</b></div>
 <p class="note" id="note"></p>
 <a id="gov" href="https://vehicleenquiry.service.gov.uk/" target="_blank" rel="noopener">Open the official GOV.UK page</a>
-<a class="btn back" href="home.html" data-ico="back">Back</a>
+<a class="btn" href="home.html">Back</a>
 <script src="./icons.js?v=32"></script>
 <script>
 function unk(el,what){ el.className="box unk"; el.innerHTML="<b>Couldn't check "+what+"</b><small>Try again later, or use the GOV.UK link below.</small>"; }

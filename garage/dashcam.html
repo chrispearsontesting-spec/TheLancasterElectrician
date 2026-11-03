@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
 <title>Dashcam</title>
-<link rel="stylesheet" href="./tool-bar.css?v=1"/>
+<link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <style>
 :root{--bg:#0b0c0e;--ink:#f3efe6;--dim:#9aa3b0}
 *{box-sizing:border-box}
@@ -31,7 +31,7 @@ body.track #rear,body.track #front,body.track #flip{display:none}
 </style>
 </head>
 <body>
-<header class="appbar"><a class="back" href="drive.html">Back</a><h1>Dashcam</h1></header>
+<header class="appbar"><h1>Dashcam</h1></header>
 <div class="stage">
   <video id="rear" playsinline muted autoplay></video>
   <video id="front" playsinline muted autoplay></video>
@@ -48,6 +48,7 @@ body.track #rear,body.track #front,body.track #flip{display:none}
     <button class="go" id="go" type="button">Start</button>
     <p class="err" id="err"></p>
     <p class="links"><a href="calendar.html">Drive diary</a></p>
+    <a class="btn backBtn" href="drive.html">Back</a>
   </div>
 </div>
 <script src="drive-app.js?v=6"></script>

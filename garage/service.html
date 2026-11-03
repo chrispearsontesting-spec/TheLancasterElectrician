@@ -66,7 +66,7 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 </head>
 <body>
 <h1>Maintenance planner</h1>
-<p class="sub" id="carLine">Volvo XC60 D5</p>
+<p class="sub" id="carLine"></p>
 <div class="chips"><select class="chip" id="sizeSel" aria-label="Car size for estimates"></select><label class="rate" for="rateIn">Labour £<input id="rateIn" type="number" inputmode="decimal" min="10" max="400" step="1"/>/hr</label></div>
 <div class="acc" id="planCard"><button type="button" id="planToggle" data-ico="cal"><span id="planHead">Planned work</span> <span class="chev">+</span></button><div class="panel"><div id="planList"></div><p class="tot" id="planTot"></p><p class="act" id="planAct"></p></div></div>
 <div class="acc" id="motAcc"><button type="button" id="motToggle" data-ico="check"><span id="motHead">Expected costs from MOT</span> <span class="chev">+</span></button><div class="panel"><div id="motList"></div><p class="note" style="padding:6px 0 0">Prices are garage estimates for your car's size. Advisories don't always need doing straight away — ask your garage.</p></div></div>
@@ -95,7 +95,7 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
   <div class="panel"><p class="gCount" id="guideCount"></p><input type="search" class="gSearch" id="guideQ" placeholder="Search jobs, e.g. timing belt" autocomplete="off"/><div id="guideList"></div>
   <p class="note" style="padding:8px 0 0">Estimates for the North West in 2026, sized for your car. DIY is parts only; garage adds labour at your hourly rate. Not a quote.</p></div>
 </div>
-<a class="btn" href="home.html" data-ico="back">Back</a>
+<a class="btn" href="home.html">Back</a>
 <script src="./jobs-data.js"></script>
 <script src="./car-scope.js?v=1"></script>
 <script src="./reminders-core.js?v=2"></script>
@@ -109,7 +109,7 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 var picked=null;
 function car(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s.cars[s.i]||s.cars[0]}catch(e){}
-  return {nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel"};
+  return {nick:"",name:"",plate:"",fuel:"",none:true};
 }
 function qname(c){return String(c.nick||c.name||"").trim()||"car"}
 function clsOf(c){
@@ -172,7 +172,7 @@ function pickJob(id){
 }
 function draw(){
   var c=car(), name=qname(c), sz=D3Cost.size(), R=D3Cost.rate();
-  document.getElementById("carLine").textContent=name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"");
+  document.getElementById("carLine").textContent=c.none?"No car yet. Add one on the home screen.":name+(c.plate?(" \u00b7 "+String(c.plate).toUpperCase()):"");
   var job=picked;
   if(job){
     var e=D3Cost.est(job)||{dlo:0,dhi:0,glo:0,ghi:0,h:job.hrs}, m=job.cls?1:D3Cost.MULT[sz], dealer=(window.LABOUR&&LABOUR.dealer)?Math.round((LABOUR.dealer[0]+LABOUR.dealer[1])/2):Math.round(R*1.75), hrs=e.h!=null?e.h:job.hrs;

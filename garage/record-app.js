@@ -44,6 +44,7 @@
   function PL(){ return window.D3Car?D3Car.curVrn():""; }
   function mine(){ return logs().filter(function(t){ return !window.D3Car||D3Car.owns(t.plate); }); }
   function renderList(){
+    if(!$("jList")) return;
     var list=mine().slice().sort(function(a,b){return (b.when||0)-(a.when||0)}).slice(0,12);
     $("jList").innerHTML=list.length?list.map(function(t){
       var d=new Date(t.when||0), when=d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})+" "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});

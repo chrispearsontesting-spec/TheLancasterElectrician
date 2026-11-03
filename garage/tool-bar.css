@@ -2,8 +2,9 @@
 html,body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif !important;-webkit-font-smoothing:antialiased}
 .appbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 12px;background:linear-gradient(#0b0c0e 55%,rgba(11,12,14,0))}
 .appbar.static{position:sticky;background:#0b0c0e;margin:-12px -12px 6px;width:calc(100% + 24px)}
-.appbar .back{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px 0 10px;border-radius:999px;background:#1c1c1e;border:1px solid rgba(255,255,255,.08);color:#f2f2f2;text-decoration:none;font-weight:600;font-size:15px}
-.appbar .back:before{content:"";width:9px;height:9px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin:0 2px 0 4px}
 .appbar h1{flex:1;margin:0;font-size:19px;font-weight:650;letter-spacing:-.02em;color:#f2f2f2}
 .appbar .tools{display:flex;gap:8px;align-items:center}
 .appbar .tools>*{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,255,255,.08);border-radius:999px;min-height:40px;padding:0 14px;font:inherit;font-weight:600;font-size:14px}
+/* Standard Driv3 Back button (same look as ui.css a.btn) for pages that don't load ui.css */
+a.backBtn{display:flex;width:100%;box-sizing:border-box;align-items:center;justify-content:center;min-height:52px;padding:14px 16px;margin-top:10px;border-radius:18px;font-size:16px;font-weight:600;letter-spacing:-.01em;color:#f2f2f2;text-decoration:none;border:1px solid rgba(255,255,255,0.08);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 1px 3px rgba(0,0,0,0.35);background-color:#161618;background-image:linear-gradient(rgba(22,22,24,0.65),rgba(22,22,24,0.65)),repeating-linear-gradient(45deg,#1a1a1c 0px,#1a1a1c 1px,#2a2a2e 1px,#2a2a2e 2px,#1a1a1c 2px,#1a1a1c 3px,#222226 3px,#222226 4px),repeating-linear-gradient(-45deg,#1a1a1c 0px,#1a1a1c 1px,#2a2a2e 1px,#2a2a2e 2px,#1a1a1c 2px,#1a1a1c 3px,#222226 3px,#222226 4px);background-size:100% 100%,6px 6px,6px 6px}
+a.backBtn.fixed{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));width:auto;margin:0;z-index:6}

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Record journey</title>
-<link rel="stylesheet" href="./tool-bar.css?v=1"/>
+<link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(64px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom))}
@@ -36,7 +36,7 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 </style>
 </head>
 <body>
-<header class="appbar"><a class="back" href="home.html#drive">Back</a><h1>Record journey</h1></header>
+<header class="appbar"><h1>Record journey</h1></header>
 
 <section class="card" id="autoCard">
   <div class="hd"><h2>Track driving in the background</h2><label class="tg"><input type="checkbox" id="autoOn" aria-label="Track journeys automatically"/><span></span></label></div>
@@ -68,13 +68,9 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
   <a class="btn go" href="dashcam.html?v=2" id="dashBtn">Start dashcam</a>
 </section>
 
-<section class="card">
-  <div class="hd"><h2>Recent journeys</h2><a class="muted" href="calendar.html?v=2" style="color:#7dd3fc">Drive diary</a></div>
-  <div id="jList"></div>
-  <p class="muted" id="jTotal"></p>
-</section>
+<a class="btn backBtn" href="home.html#drive">Back</a>
 
 <script src="./fuel-live.js?v=1"></script>
-<script src="./record-app.js?v=6"></script>
+<script src="./record-app.js?v=7"></script>
 </body>
 </html>

@@ -63,7 +63,7 @@ document.getElementById("mine").addEventListener("contextmenu",function(e){e.pre
 document.getElementById("cmp").onclick=function(){
   var v=vrn(),base="https://www.gocompare.com/journeys/car/vehicle";
   var u=v?base+"?registration="+v+"&vrn="+v+"&reg="+v+"&registrationNumber="+v:base;
-  try{if(v&&navigator.clipboard)navigator.clipboard.writeText(v)}catch(x){}
+  try{if(v&&navigator.clipboard)navigator.clipboard.writeText(v).catch(function(){})}catch(x){}
   if(v)document.getElementById("msg").textContent=v+" copied — paste it on GoCompare if the box is empty";
   window.open(u,"_blank","noopener");
 };

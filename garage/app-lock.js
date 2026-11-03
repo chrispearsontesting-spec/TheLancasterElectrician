@@ -101,7 +101,7 @@
     clearTimeout(timer);
     el.innerHTML='<div class="ico">'+LOCK_SVG+'</div><div class="t">Forgot your PIN?</div><div class="help">'+
       '<p>This PIN is a light privacy screen for the web version of Driv3. It stops someone casually opening the app on your phone. It does not encrypt your data.</p>'+
-      '<p>There is no reset by email, because nothing is stored on a server. The only way past it is to clear Driv3\'s data in your browser: in Brave, open Settings, Site settings, find thelancasterelectrician.com and clear its data.</p>'+
+      '<p>There is no reset by email, because nothing is stored on a server. The only way past it is to clear Driv3\'s data: open your phone\'s Settings, Apps, Driv3, Storage, Clear data.</p>'+
       '<p><b>That deletes your cars, history and photos on this phone.</b> If you made a Driv3 backup file, you can restore everything afterwards from Security &amp; backup on the home page. Without a backup the data is gone.</p></div>'+
       '<button type="button" class="lnk" id="d3back">Back to PIN</button>';
   }

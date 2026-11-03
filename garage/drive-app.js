@@ -149,7 +149,7 @@ function startRec(stream){
   try{rec=new MediaRecorder(stream,opts)}
   catch(e){
     try{rec=type?new MediaRecorder(stream,{mimeType:type}):new MediaRecorder(stream)}
-    catch(e2){document.getElementById("err").textContent="This browser cannot record video.";rec=null;return}
+    catch(e2){document.getElementById("err").textContent="Video recording isn't available on this phone.";rec=null;return}
   }
   rec.ondataavailable=function(e){if(e.data&&e.data.size) chunks.push(e.data)};
   rec.start(1000);

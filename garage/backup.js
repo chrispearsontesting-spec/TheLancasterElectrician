@@ -119,7 +119,7 @@
     return {ls:ls,dbs:dbs};
   }
   function delDb(name){ return new Promise(function(res,rej){ var r=indexedDB.deleteDatabase(name); r.onsuccess=function(){res()}; r.onerror=function(){rej(r.error)};
-    r.onblocked=function(){ rej(new Error("Close other Driv3 tabs or windows, then try again.")); }; }); }
+    r.onblocked=function(){ rej(new Error("Close Driv3 fully, reopen it, then try again.")); }; }); }
   async function writeDb(d){
     await delDb(d.name);
     var db=await new Promise(function(res,rej){ var r=indexedDB.open(d.name,d.version||1);

@@ -23,9 +23,9 @@
   // Turn an error into the message shown under the note box.
   function errorText(kind,status){
     var kb=" You can also tap the 🎤 on your keyboard.";
-    if(kind==="denied") return "Microphone blocked. Allow the mic for this site in your browser settings and try again."+kb;
+    if(kind==="denied") return "Microphone blocked. Allow the microphone in your settings and try again."+kb;
     if(kind==="nomic") return "No microphone found."+kb;
-    if(kind==="unsupported") return "Voice notes don't work in this browser."+kb;
+    if(kind==="unsupported") return "Voice notes aren't available on this device."+kb;
     if(kind==="network") return "No connection, so the voice note couldn't be turned into text."+kb;
     if(kind==="empty") return "Didn't catch anything. Tap the mic and speak a little closer.";
     if(status===429) return "Too many voice notes in a minute. Wait a moment and try again."+kb;

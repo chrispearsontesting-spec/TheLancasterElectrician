@@ -60,14 +60,14 @@
     var s=Math.round((Date.now()-started)/1000); $("lvTime").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
   function uiOn(v){ on=v; $("jBtn").textContent=v?"Stop journey":"Start journey"; $("jBtn").className="btn "+(v?"stop":"go"); $("live").classList.toggle("hide",!v); }
   async function startWeb(){
-    if(!navigator.geolocation){ $("jErr").textContent="This browser has no GPS."; return; }
+    if(!navigator.geolocation){ $("jErr").textContent="GPS isn't available on this phone."; return; }
     miles=0; prev=null; started=Date.now(); uiOn(true); $("jErr").textContent="";
     if(navigator.wakeLock){ try{ wake=await navigator.wakeLock.request("screen"); }catch(e){} }
     watch=navigator.geolocation.watchPosition(function(p){
       var here={lat:p.coords.latitude,lon:p.coords.longitude};
       if(prev&&p.coords.accuracy<=45){ var d=hav(prev,here); if(d>0.002&&d<2) miles+=d; }
       prev=here; showLive(miles);
-    },function(e){ if(on&&e.code===1) $("jErr").textContent="Location is blocked for this site — allow it in browser settings."; },{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
+    },function(e){ if(on&&e.code===1) $("jErr").textContent="Location is off for Driv3 — allow it in your phone settings."; },{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
     timer=setInterval(function(){ showLive(miles); },1000);
   }
   function stopWeb(){
@@ -77,6 +77,14 @@
     saveJourney({id:"m"+started,when:started,end:Date.now(),miles:+miles.toFixed(2),cost:+cost(miles,mpg,ppl).toFixed(2),mpg:ELEC?undefined:mpg,mikwh:ELEC?mpg:undefined,ppl:ppl,fuel:FO.fuel,from:"",to:"",trackOnly:true,source:"manual"});
     uiOn(false);
   }
+  // App-style explanation shown once, right before each Android permission prompt.
+  var WHY={location:"Driv3 uses your location while a journey is recording to measure the miles. It stays on this phone.",
+    background:"To record journeys when your car connects with Driv3 closed, choose “Allow all the time” on the next screen.",
+    bluetooth:"Driv3 needs Nearby devices to see when your phone connects to your car’s Bluetooth.",
+    notifications:"Driv3 shows a notification while a journey records, and a summary of miles and cost when it ends.",
+    battery:"So journeys can start in the background, allow Driv3 to run without battery restrictions on the next screen."};
+  if(T){ var RAW=T; T={status:function(o){return RAW.status(o)},configure:function(o){return RAW.configure(o)},devices:function(){return RAW.devices()},startJourney:function(){return RAW.startJourney()},stopJourney:function(){return RAW.stopJourney()},takeJourneys:function(){return RAW.takeJourneys()}};
+    var _ask=function(o){return RAW.ask(o)}; T.ask=function(o){ var k="driv3.why."+o.what; if(WHY[o.what]&&!localStorage.getItem(k)){ alert(WHY[o.what]); localStorage.setItem(k,"1"); } return _ask(o); }; }
   async function ensureLoc(){ var s=await T.status(); if(!s.location) s=await T.ask({what:"location"}); if(!s.notifications) await T.ask({what:"notifications"}); return s.location; }
   $("jBtn").onclick=async function(){
     if(T){
@@ -92,10 +100,10 @@
 
   // --- automatic (Android app only) ---
   if(!T){
-    $("webNote").classList.remove("hide");
+    $("nativeBox").classList.remove("hide");
     $("autoOn").checked=false;
-    $("autoOn").onchange=function(){ this.checked=false; $("webNote").scrollIntoView({block:"nearest"}); $("webNote").style.outline="2px solid #f59e0b"; setTimeout(function(){ $("webNote").style.outline=""; },1500); };
-    $("manNote").textContent="Start and stop a journey by hand. Keep this page open while you drive (GPS stops if the browser is closed).";
+    $("autoOn").onchange=function(){ this.checked=false; $("webNote").classList.remove("hide"); $("webNote").scrollIntoView({block:"nearest"}); $("webNote").style.outline="2px solid #f59e0b"; setTimeout(function(){ $("webNote").style.outline=""; },1500); };
+    $("manNote").textContent="Start and stop a journey by hand. It records your distance with GPS.";
     return;
   }
   $("nativeBox").classList.remove("hide");
@@ -105,7 +113,7 @@
     $("perms").innerHTML=rows.map(function(r){ return "<div>"+(r[2]?"<span class='ok'>✓</span> ":"<span class='warn'>•</span> ")+r[1]+(r[2]?"":"<button type='button' data-ask='"+r[0]+"'>Allow</button>")+"</div>"; }).join("");
   }
   $("perms").onclick=async function(e){ var b=e.target.closest("[data-ask]"); if(!b) return;
-    var w=b.getAttribute("data-ask"); if(w==="background"){ var s=await T.status(); if(!s.location){ await T.ask({what:"location"}); } alert("On the next screen choose “Allow all the time” so Driv3 can record when your car connects."); }
+    var w=b.getAttribute("data-ask"); if(w==="background"){ var s=await T.status(); if(!s.location){ await T.ask({what:"location"}); }  }
     await T.ask({what:w}).catch(function(){}); setTimeout(refresh,600); };
   async function loadDevices(sel){
     try{ var r=await T.devices(); var d=r.devices||[];

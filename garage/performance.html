@@ -15,7 +15,7 @@ html,body{margin:0;background:#0b0c0e;color:#fff;font-family:-apple-system,Blink
 .hud{background:rgba(0,0,0,.45);border-radius:14px;padding:8px 12px;text-align:center;min-width:70px;backdrop-filter:blur(4px)}
 .hud b{font-size:16px;font-weight:700;display:block;font-variant-numeric:tabular-nums}
 .hud span{font-size:10px;color:#ccc;text-transform:uppercase}
-#gDot{width:88px;height:88px;border-radius:50%;background:rgba(20,20,22,.55);border:1px solid rgba(255,255,255,.25);position:relative}
+#gDot{flex:0 0 auto;width:88px;height:88px;min-width:88px;aspect-ratio:1/1;border-radius:50%;background:rgba(20,20,22,.55);border:1px solid rgba(255,255,255,.25);position:relative}
 #gDot i{position:absolute;width:14px;height:14px;border-radius:50%;background:#73BDE0;left:50%;top:50%;transform:translate(-50%,-50%)}
 .top{position:fixed;top:calc(62px + env(safe-area-inset-top));left:0;right:0;padding:0 12px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:6}
 select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,255,255,.08);border-radius:18px;min-height:40px;padding:10px 14px;font-weight:600;font-size:14px}
@@ -34,6 +34,8 @@ select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,25
 .chart-wrap .row button{flex:1 1 45%}
 #runVid{width:100%;border-radius:14px;background:#000;max-height:46vh;margin:6px 0}
 .gpk{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(118px + env(safe-area-inset-bottom));z-index:5;background:rgba(0,0,0,.5);border-radius:12px;padding:6px 10px;font-size:12px;color:#ddd;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none}
+.hud{flex:0 1 auto;min-width:0}
+@media (max-width:480px){.overlay{gap:8px;padding-left:8px;padding-right:8px}.hud{padding:8px 8px;min-width:58px}}
 .hud small{display:block;font-size:10px;color:#aaa;font-variant-numeric:tabular-nums}
 .runItem{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;margin:6px 0;border-radius:14px}
 .runItem small{color:#9a9aa0;font-weight:500}

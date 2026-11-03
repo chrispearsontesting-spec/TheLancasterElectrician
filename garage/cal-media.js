@@ -33,7 +33,7 @@
     if(e.k==="run"){ var r=e.r, st=r.stats||{};
       return "<div class='card media run'><b class='title'>🏁 "+esc(r.label||"Performance run")+" · "+esc(r.time)+"s</b><p class='muted'>Performance · "+when+(st.maxComb!=null?" · peak "+(+st.maxComb).toFixed(2)+" G":"")+(r.video?" · video":"")+"</p>"+
         "<div class='row'>"+(r.video?"<button class='btn' type='button' data-mv='run:"+esc(r.id)+"'>▶ Watch video</button>":"")+"<button class='btn' type='button' data-mg='"+esc(r.id)+"'>📈 G chart</button></div>"+
-        "<a class='inv' href='performance.html?v=2&run="+encodeURIComponent(r.id)+"'>Open in Performance</a></div>";
+        "<a class='inv' href='performance.html?v=3&run="+encodeURIComponent(r.id)+"'>Open in Performance</a></div>";
     }
     if(e.k==="own"){ var it=e.it, img=/^image\//.test(it.type||"");
       return "<div class='card media own'><b class='title'>📝 "+esc(it.note||"Work")+"</b><p class='muted'>Your note"+(img?" · 1 photo":it.data?" · PDF":"")+"</p>"+
@@ -100,7 +100,7 @@
     if(t.hasAttribute("data-mv")){ var r=M.runs.filter(function(x){return "run:"+x.id===t.getAttribute("data-mv")})[0]; if(!r||!r.video) return;
       var its=[{src:url(r.video),type:r.video.type||"video/webm",cap:(r.label||"Run")+" · "+r.time+"s"}]; if(r.chart) its.push({src:url(r.chart),type:"image/png",cap:"G chart"}); viewer(its,0); return; }
     if(t.hasAttribute("data-mg")){ var r2=M.runs.filter(function(x){return x.id===t.getAttribute("data-mg")})[0]; if(!r2) return;
-      if(r2.chart) viewer([{src:url(r2.chart),type:"image/png",cap:(r2.label||"Run")+" · G chart"}],0); else location.href="performance.html?v=2&run="+encodeURIComponent(r2.id); return; }
+      if(r2.chart) viewer([{src:url(r2.chart),type:"image/png",cap:(r2.label||"Run")+" · G chart"}],0); else location.href="performance.html?v=3&run="+encodeURIComponent(r2.id); return; }
     if(t.hasAttribute("data-mrm")){ var jj=M.jobs.filter(function(x){return x.id===t.getAttribute("data-mrm")})[0]; if(jj&&confirm("Remove this upload from your phone?")){ await DipUploads.removeLocal(jj); await load(); window.render(window.selected); } }
   },true);
 

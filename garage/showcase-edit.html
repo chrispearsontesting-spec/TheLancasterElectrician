@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Car showcase</title>
 <link rel="stylesheet" href="./ui.css?v=78"/>
-<link rel="stylesheet" href="./showcase-view.css?v=1"/>
+<link rel="stylesheet" href="./showcase-view.css?v=2"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -178,7 +178,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=5"></script>
 <script src="./show-parse.js?v=2"></script>
-<script src="./show-client.js?v=2"></script>
+<script src="./show-client.js?v=3"></script>
 <script src="./icons.js?v=32"></script>
 <script>
 (function(){
@@ -227,6 +227,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
       var cap=document.createElement("input"); cap.className="in"; cap.maxLength=80; cap.placeholder="Caption (optional)"; cap.value=p.cap||"";
       cap.oninput=function(){ p.cap=cap.value; S.saveDraft(idx,d); };
       right.appendChild(cap);
+      if(p.off){ var hn=document.createElement("div"); hn.className="ext"; hn.textContent="Not shared: tick it in My car to show it."; right.appendChild(hn); el.style.opacity=".55"; }
       if(p.url){ var ex=document.createElement("div"); ex.className="ext"; ex.textContent="Linked: "+p.url; right.appendChild(ex); }
       var tools=document.createElement("div"); tools.className="tools";
       function b(t,lab,f,cls){ var x=document.createElement("button"); x.type="button"; x.textContent=t; x.setAttribute("aria-label",lab); if(cls) x.className=cls; x.onclick=f; tools.appendChild(x); }
@@ -413,12 +414,14 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   $("copy").onclick=function(){ (navigator.clipboard?navigator.clipboard.writeText(link()):Promise.reject()).then(function(){ say("pubStatus","Link copied.","good"); },function(){ say("pubStatus","Press and hold the link below to copy it."); }); };
   $("dlQr").onclick=function(){ var cv=document.createElement("canvas"); drawQr(cv,14,true); cv.toBlob(function(b){ var a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="driv3-showcase-qr.png"; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000); },"image/png"); };
 
+  // The My car gallery changes what's shared; re-read the draft so this editor never saves over it.
+  window.D3ShowcaseEditorReload=function(){ d=S.getDraft(idx); paintPhotos(); paintAll(); paintClips(); };
   paintPhotos(); paintAll(); paintClips(); paintPub();
 })();
 </script>
 <script src="./car-scope.js?v=1"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./perf-g.js?v=2"></script>
-<script src="./showcase-view.js?v=1"></script>
+<script src="./showcase-view.js?v=2"></script>
 </body>
 </html>

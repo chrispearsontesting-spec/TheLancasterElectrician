@@ -80,15 +80,24 @@
     for(var attempt=0;attempt<2;attempt++){
       c=await ensureShow(i,attempt===1);
       try{
-        var gal=[], clips=[], done=0, total=d.gallery.filter(function(g){return g.m}).length+d.clips.length;
-        for(var k=0;k<d.gallery.length;k++){
-          var g=d.gallery[k];
+        // Only items the owner has shared (off !== true) are published. Unshared ones drop off the card and the server deletes their files.
+        var G=d.gallery.filter(function(g){return g&&!g.off}), CL=d.clips.filter(function(k){return k&&!k.off}), hg=d.gallery[d.hero], hero=Math.max(0,G.indexOf(hg&&!hg.off?hg:G[0]));
+        var base={title:d.title,basics:d.basics,stats:d.stats,mods:d.mods,story:d.story,hero:0,videos:d.videos.filter(function(v){return v.url&&!v.off}).map(function(v){return {url:v.url,title:v.title||""}}),socials:d.socials.filter(function(v){return v.url}),playlist:d.playlist,instagram:d.instagram};
+        // Free server space first: if already live, re-send the card with only kept, already-uploaded files so dropped ones are deleted before new uploads.
+        if(c.showPublished){ var kg=[], kc=[];
+          for(var a=0;a<G.length;a++){ var r0=G[a].m?await getMedia(G[a].m):null; if(r0&&r0.n&&r0.sid===c.showId) kg.push({n:r0.n,cap:G[a].cap||""}); else if(G[a].url) kg.push({url:G[a].url,cap:G[a].cap||""}); }
+          for(var b2=0;b2<CL.length;b2++){ var r1=await getMedia(CL[b2].m); if(r1&&r1.n&&r1.sid===c.showId) kc.push({n:r1.n,cap:CL[b2].cap||""}); }
+          await api("/show/"+c.showId,{method:"PUT",headers:{"X-Show-Key":c.showKey,"Content-Type":"application/json"},body:JSON.stringify(Object.assign({},base,{gallery:kg,clips:kc}))});
+        }
+        var gal=[], clips=[], done=0, total=G.filter(function(g){return g.m}).length+CL.length;
+        for(var k=0;k<G.length;k++){
+          var g=G[k];
           if(g.m){ say("Uploading photo "+(++done)+" of "+total+"…"); var n=await sendMedia(c,g.m,"photo"); if(n) gal.push({n:n,cap:g.cap||""}); }
           else if(g.url) gal.push({url:g.url,cap:g.cap||""});
         }
-        for(var j=0;j<d.clips.length;j++){ say("Uploading clip…"); var cn=await sendMedia(c,d.clips[j].m,"clip"); if(cn) clips.push({n:cn,cap:d.clips[j].cap||""}); }
+        for(var j=0;j<CL.length;j++){ say("Uploading clip…"); var cn=await sendMedia(c,CL[j].m,"clip"); if(cn) clips.push({n:cn,cap:CL[j].cap||""}); }
         say("Publishing…");
-        var card={title:d.title,basics:d.basics,stats:d.stats,mods:d.mods,story:d.story,gallery:gal,hero:d.hero,videos:d.videos.filter(function(v){return v.url}),socials:d.socials.filter(function(v){return v.url}),playlist:d.playlist,instagram:d.instagram,clips:clips};
+        var card=Object.assign({},base,{gallery:gal,hero:Math.min(hero,Math.max(0,gal.length-1)),clips:clips});
         var r=await (await api("/show/"+c.showId,{method:"PUT",headers:{"X-Show-Key":c.showKey,"Content-Type":"application/json"},body:JSON.stringify(card)})).json();
         setCar(i,function(c){ c.showPublished=Date.now(); });
         // Keep the sticker pointing at this showcase (and register the link if this car never had one).

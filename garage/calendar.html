@@ -58,6 +58,18 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 .pick{display:flex;gap:8px;margin-top:8px}.pick label{flex:1;margin:0;text-align:center;background:#1c1c1e;color:#f2f2f2;border-radius:14px;padding:11px 6px;font-size:14px;font-weight:600}
 .pick input{display:none}
 .day .dot.m{background:#f5c518}
+:root{--c-due:#ff9f68;--c-over:#ff6b6b;--c-done:#3dd68c;--c-jour:#5aa9ff;--c-media:#f5c518}
+.day .dots{display:flex;gap:3px;justify-content:center;margin-top:6px;min-height:6px}
+.day .dots .dot{margin:0}
+.day .dot.due{background:var(--c-due)}.day .dot.over{background:var(--c-over)}.day .dot.w{background:var(--c-done)}.day .dot.j{background:var(--c-jour)}.day .dot.m{background:var(--c-media)}
+.rem-card{--rc:var(--c-due)!important}.rem-card.over{--rc:var(--c-over)!important}
+.card.diy,.card.media.own,.card.media.mech{border-left:4px solid var(--c-done)}
+.card[data-id],.card.media.run,.card.route{border-left:4px solid var(--c-jour)}
+.cdot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.ddb .cdots{display:inline-flex;gap:3px;margin-left:-4px}
+.clItem .cdot{margin-right:-2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:#8b8b8b;margin:8px 2px 0}.legend span{display:inline-flex;align-items:center;gap:5px}
+
 #calLists{margin-top:18px}
 .ddb{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:16px 18px;border-radius:18px;background:#1c1c1e;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit;font-size:17px;font-weight:600;text-align:left}
 .ddb .ddi{width:22px;text-align:center}.ddb .chev{margin-left:auto;font-size:15px;opacity:.75;transition:transform .2s ease}
@@ -96,13 +108,14 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 </div>
 <div class="grid" id="dows"></div>
 <div class="grid" id="grid"></div>
+<p class="legend" aria-label="Dot colours"><span><i class="cdot" style="background:var(--c-due)"></i>Due</span><span><i class="cdot" style="background:var(--c-over)"></i>Overdue</span><span><i class="cdot" style="background:var(--c-done)"></i>Work done</span><span><i class="cdot" style="background:var(--c-jour)"></i>Journeys</span><span><i class="cdot" style="background:var(--c-media)"></i>Photos/video</span></p>
 <div id="list"></div>
 <section id="calLists">
-<button class="ddb" type="button" id="clRecent" aria-expanded="false" aria-controls="clRecentMenu"><span class="ddi">🕘</span><span class="lab">Recent</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<button class="ddb" type="button" id="clRecent" aria-expanded="false" aria-controls="clRecentMenu"><span class="ddi">🕘</span><span class="cdots"><i class="cdot" style="background:var(--c-due)"></i><i class="cdot" style="background:var(--c-done)"></i><i class="cdot" style="background:var(--c-jour)"></i></span><span class="lab">Recent</span><span class="chev" aria-hidden="true">&#9662;</span></button>
 <div class="ddMenu hide" id="clRecentMenu"><input type="search" class="clQ" id="cl_recent_q" placeholder="Search recent" aria-label="Search recent"/><div id="cl_recent_list"></div></div>
-<button class="ddb" type="button" id="clMaint" aria-expanded="false" aria-controls="clMaintMenu"><span class="ddi">🔧</span><span class="lab">Maintenance</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<button class="ddb" type="button" id="clMaint" aria-expanded="false" aria-controls="clMaintMenu"><span class="ddi">🔧</span><span class="cdots"><i class="cdot" style="background:var(--c-due)"></i><i class="cdot" style="background:var(--c-done)"></i></span><span class="lab">Maintenance</span><span class="chev" aria-hidden="true">&#9662;</span></button>
 <div class="ddMenu hide" id="clMaintMenu"><input type="search" class="clQ" id="cl_maint_q" placeholder="Search maintenance" aria-label="Search maintenance"/><div id="cl_maint_list"></div></div>
-<button class="ddb" type="button" id="clJourn" aria-expanded="false" aria-controls="clJournMenu"><span class="ddi">📍</span><span class="lab">Journeys</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<button class="ddb" type="button" id="clJourn" aria-expanded="false" aria-controls="clJournMenu"><span class="ddi">📍</span><span class="cdots"><i class="cdot" style="background:var(--c-jour)"></i></span><span class="lab">Journeys</span><span class="chev" aria-hidden="true">&#9662;</span></button>
 <div class="ddMenu hide" id="clJournMenu"><input type="search" class="clQ" id="cl_journ_q" placeholder="Search journeys" aria-label="Search journeys"/><div id="cl_journ_list"></div><details class="clRoutes" id="routes"><summary>Saved routes <span class="muted" id="rCount"></span></summary><p class="muted">Routes you saved in Route costs. Tap one for the breakdown.</p><div id="rList"></div><a class="btn wide" href="route.html">Check a route cost</a></details></div>
 </section>
 <a class="btn wide" href="drive.html">Let’s drive</a>
@@ -140,9 +153,10 @@ function render(sel){
   document.getElementById("dows").innerHTML=["Mo","Tu","We","Th","Fr","Sa","Su"].map(function(d){return "<div class='dow'>"+d+"</div>"}).join("");
   var first=new Date(y,m,1), start=(first.getDay()+6)%7, days=new Date(y,m+1,0).getDate(), html="";
   for(var i=0;i<start;i++) html+="<div class='day empty'></div>";
+  var _t=new Date(), todayK=_t.getFullYear()+"-"+String(_t.getMonth()+1).padStart(2,"0")+"-"+String(_t.getDate()).padStart(2,"0");
   for(var d=1;d<=days;d++){
     var k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
-    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+(map[k]?"<span class='dot'></span>":"")+(rmap[k]?"<span class='dot r'></span>":"")+(wmap[k]?"<span class='dot w' title='Work done'></span>":"")+(remMap[k]?"<span class='evs'>"+remMap[k].map(function(e){return "<i style='background:"+e.color+"'></i>"}).join("")+"</span>":"")+"</button>";
+    html+="<button type='button' class='day"+(sel===k?" on":"")+"' data-k='"+k+"'><span class='n'>"+d+"</span>"+"<span class='dots'>"+(remMap[k]?(k<todayK?"<span class='dot over' title='Overdue'></span>":"<span class='dot due' title='Due'></span>"):"")+(wmap[k]?"<span class='dot w' title='Work done'></span>":"")+(map[k]||rmap[k]?"<span class='dot j' title='Journey'></span>":"")+"</span>"+"</button>";
   }
   document.getElementById("grid").innerHTML=html;
   var items=sel&&map[sel]?map[sel]:[];
@@ -158,7 +172,7 @@ function render(sel){
     var end=t.end?new Date(t.end).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
     var ico = t.type==="run" ? "🏁 " : "📍 ";
     return "<div class='card' data-id='"+t.id+"'><b class='title'>"+ico+(t.from||"Start")+" → "+(t.to||"Finish")+"</b><p class='muted'>"+tm+(end?" – "+end:"")+(t.type==="run"&&t.time?" · "+t.time:"")+"</p><div class='kv'><span>Miles</span><b>"+(+t.miles||0).toFixed(2)+"</b></div><div class='kv'><span>Cost</span><b>£"+(+t.cost||0).toFixed(2)+"</b></div><div class='kv'><span>MPG</span><b>"+(t.mpg||"-")+"</b></div><div class='row'><button class='btn' type='button' data-edit='"+t.id+"'>✎ Edit</button></div><div class='edit hide' id='ed-"+t.id+"'><label>Miles per gallon for this trip</label><input type='number' step='0.1' value='"+(t.mpg||"")+"' data-mpg='"+t.id+"'/><div class='row'><button class='btn' type='button' data-save='"+t.id+"'>Save mpg</button><button class='btn' type='button' data-del='"+t.id+"'>Delete journey</button></div></div></div>";
-  }).join("")+rItems.map(function(t){ return "<div class='card'><b class='title'>🗺 "+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><p class='muted'>Saved route · "+(+t.miles||0).toFixed(1)+" mi · one way "+moneyTxt(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp)+"</p></div>"; }).join("");
+  }).join("")+rItems.map(function(t){ return "<div class='card route'><b class='title'>🗺 "+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><p class='muted'>Saved route · "+(+t.miles||0).toFixed(1)+" mi · one way "+moneyTxt(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp)+"</p></div>"; }).join("");
 }
 function remByDay(){
   var m={}; if(!window.D3Rem) return m;
@@ -173,7 +187,7 @@ function remCard(e){
   if(e.book) acts.push("<a class='btn' href='home.html#remind="+e.type+"&car="+e.vrn+"'>Book / email garage</a>");
   if(e.type==="tax") acts.push("<a class='btn' href='https://www.gov.uk/vehicle-tax' target='_blank' rel='noopener'>Renew</a>","<a class='btn' href='tax.html?plate="+e.vrn+"'>Check tax</a>");
   if(e.type==="insurance") acts.push("<a class='btn' href='insurance.html?v=19'>Policy</a>","<a class='btn' href='renew.html?v=13'>Renew</a>");
-  return "<div class='card rem-card' style='--rc:"+e.color+"'><b class='title'>"+e.icon+" "+escR(e.label)+" · "+escR(e.plate)+"</b><p class='muted'>"+escR(e.name)+" · "+D3Rem.niceDate(e.due)+" · "+left+"</p><div class='row'>"+acts.join("")+"</div></div>";
+  return "<div class='card rem-card"+(D3Rem.daysUntil(e.due)<0?" over":"")+"'><b class='title'>"+e.icon+" "+escR(e.label)+" · "+escR(e.plate)+"</b><p class='muted'>"+escR(e.name)+" · "+D3Rem.niceDate(e.due)+" · "+left+"</p><div class='row'>"+acts.join("")+"</div></div>";
 }
 function upNext(){
   return ""; // replaced by the Maintenance dropdown below the calendar
@@ -316,8 +330,8 @@ document.getElementById("next").onclick=function(){view.setMonth(view.getMonth()
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=5"></script>
 <script src="./perf-g.js?v=2"></script>
-<script src="./cal-media.js?v=2"></script>
-<script src="./cal-lists.js?v=3"></script>
+<script src="./cal-media.js?v=3"></script>
+<script src="./cal-lists.js?v=4"></script>
 <script src="./receipt-scan.js?v=2"></script>
 </body>
 </html>

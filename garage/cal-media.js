@@ -50,8 +50,10 @@
     if(!M.ready) return;
     var grid=document.getElementById("grid");
     grid.querySelectorAll("[data-k]").forEach(function(b){ var d=b.getAttribute("data-k"), ev=M.byDay[d];
-      if(ev&&ev.length&&!b.querySelector(".dot.w")){ var s=document.createElement("span"); s.className="dot w"; s.title="Work done"; b.insertBefore(s,b.querySelector(".evs")); }
-      if(hasMedia(d)){ var m=document.createElement("span"); m.className="dot m"; m.title="Photos or video"; b.insertBefore(m,b.querySelector(".evs")); }
+      var row=b.querySelector(".dots")||b; function dot(c,t){ if(row.querySelector(".dot."+c)) return; var s=document.createElement("span"); s.className="dot "+c; s.title=t; row.appendChild(s); }
+      if(ev&&ev.some(function(e){return e.k!=="run"})) dot("w","Work done");
+      if(ev&&ev.some(function(e){return e.k==="run"})) dot("j","Journey or run");
+      if(hasMedia(d)) dot("m","Photos or video");
     });
     var box=document.getElementById("list"), ev=(M.byDay[sel]||[]).slice().sort(function(a,b){return a.t-b.t});
     // DIY cards: a View photos button + tap a thumbnail to open the viewer.

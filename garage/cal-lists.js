@@ -13,7 +13,8 @@
   function diy(){ return window.D3Diy?D3Diy.forPlate((car()||{}).plate):[]; }
   function media(){ var M=window.CalMedia, out=[]; if(!M) return out; Object.keys(M.byDay).forEach(function(d){ M.byDay[d].forEach(function(e){ out.push(e); }); }); return out; }
 
-  function row(it){ return "<button type='button' class='clItem' data-day='"+it.day+"' data-q='"+esc((it.title+" "+(it.sub||"")+" "+nice(it.day)).toLowerCase())+"'><span class='clIco'>"+it.ico+"</span><span class='clTxt'><b>"+esc(it.title)+"</b><small>"+esc(nice(it.day)+(it.sub?" · "+it.sub:""))+"</small></span>"+(it.right?"<span class='clR'>"+esc(it.right)+"</span>":"")+"</button>"; }
+  var JOUR={"📍":1,"🔵":1,"🏁":1};
+  function row(it){ var cat=it.cat||(JOUR[it.ico]?"jour":"done"); return "<button type='button' class='clItem' data-day='"+it.day+"' data-q='"+esc((it.title+" "+(it.sub||"")+" "+nice(it.day)).toLowerCase())+"'><i class='cdot' style='background:var(--c-"+cat+")'></i><span class='clIco'>"+it.ico+"</span><span class='clTxt'><b>"+esc(it.title)+"</b><small>"+esc(nice(it.day)+(it.sub?" · "+it.sub:""))+"</small></span>"+(it.right?"<span class='clR'>"+esc(it.right)+"</span>":"")+"</button>"; }
   function empty(t){ return "<p class='muted clEmpty'>"+t+"</p>"; }
 
   function recent(){
@@ -32,8 +33,8 @@
     var ci=window.D3Car?D3Car.curIndex():0, mine=window.D3Rem?D3Rem.dueItems(g).filter(function(e){ return e.carIndex===ci; }):[];
     var over=mine.filter(function(e){ return D3Rem.daysUntil(e.due)<0; }), up=mine.filter(function(e){ var d=D3Rem.daysUntil(e.due); return d>=0&&d<=60; });
     function ago(d){ return d>=730?Math.floor(d/365)+" years":d>=60?Math.floor(d/30.4)+" months":d+" day"+(d===1?"":"s"); }
-    if(over.length) html+="<p class='clHead clOver'>Overdue</p>"+over.map(function(e){ var d=-D3Rem.daysUntil(e.due); return row({day:e.due,ico:"⚠️",title:e.label+" · "+e.plate,sub:(e.type==="insurance"?"expired ":"was due ")+ago(d)+" ago — update the date if it’s been done"}); }).join("");
-    html+="<p class='clHead'>Coming up · next 60 days</p>"+(up.length?up.map(function(e){ var d=D3Rem.daysUntil(e.due); return row({day:e.due,ico:e.icon,title:e.label+" · "+e.plate,sub:d===0?"due today":d+" day"+(d===1?"":"s")+" left"}); }).join(""):empty("Nothing due in the next 60 days."));
+    if(over.length) html+="<p class='clHead clOver'>Overdue</p>"+over.map(function(e){ var d=-D3Rem.daysUntil(e.due); return row({cat:"over",day:e.due,ico:"⚠️",title:e.label+" · "+e.plate,sub:(e.type==="insurance"?"expired ":"was due ")+ago(d)+" ago — update the date if it’s been done"}); }).join("");
+    html+="<p class='clHead'>Coming up · next 60 days</p>"+(up.length?up.map(function(e){ var d=D3Rem.daysUntil(e.due); return row({cat:"due",day:e.due,ico:e.icon,title:e.label+" · "+e.plate,sub:d===0?"due today":d+" day"+(d===1?"":"s")+" left"}); }).join(""):empty("Nothing due in the next 60 days."));
     var lo=now-365*DAY, done=[], total=0;
     diy().forEach(function(w){ var t=noon(w.date); if(t<lo||t>now+DAY) return; var cost=(D3Diy.cost?D3Diy.cost(w):(w.files||[]).reduce(function(a,f){return a+price(f)},0)); total+=cost; done.push({t:t,day:w.date,ico:"🔧",title:w.title||"Work done",sub:"DIY",right:cost?gbp(cost):""}); });
     media().forEach(function(e){ if(e.k!=="run"&&e.t>=lo) done.push({t:e.t,day:k(e.t),ico:e.k==="mech"?"🛠":"📝",title:e.k==="mech"?(e.j.note||"Work from your mechanic"):(e.it.note||"Note"),sub:e.k==="mech"?"Mechanic":"Your note"}); });

@@ -1,0 +1,197 @@
+/* Driv3 Car showcase: "My car" (private summary) / "Show view" (public card preview) switch + gallery.
+   Read only - nothing is moved or deleted. Media for the selected car:
+   - Showcase photos/clips: gt.showDrafts + IndexedDB driv3-show (Driv3Show)       [both views]
+   - Showcase YouTube links: gt.showDrafts videos                                   [both views]
+   - Home photo: gt.garage car.photo                                                 [My car]
+   - Work done photos: gt.diy + IndexedDB dipstick files (D3Diy)                      [My car]
+   - Mechanic upload photos: IndexedDB dipstick-uploads (DipUploads)                  [My car]
+   - Old History photos: localStorage dipstick-history                               [My car]
+   - Performance run videos: IndexedDB driv3-runs (PerfG)                             [My car]
+   Money (My car only, never in Show view): Work done receipts (D3Diy.cost) + journey costs (gt.driveLog). */
+(function(){
+  var U=window.DipUploads, S=window.Driv3Show, P=window.Driv3Parse;
+  var $=function(id){return document.getElementById(id)};
+  function esc(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}); }
+  function rd(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)||"null"); return v==null?d:v; }catch(e){ return d; } }
+  function vrn(p){ return String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+  function gbp(n){ return "£"+(n>=1000?Math.round(n).toLocaleString("en-GB"):(Math.round(n*100)/100).toFixed(n%1?2:0)); }
+  var g=U&&U.garage(); if(!g||!g.cars||!g.cars.length) return;
+  var idx=g.i, qi=parseInt(new URLSearchParams(location.search).get("car"),10); if(!isNaN(qi)&&g.cars[qi]) idx=qi; if(!g.cars[idx]) idx=0;
+  var car=g.cars[idx], PL=vrn(car.plate);
+  function owns(p){ return window.D3Car?D3Car.owns(p,PL):(!PL||!p||vrn(p)===PL); }
+  var view=localStorage.getItem("gt.showcaseView")==="show"?"show":"mine", tab="photo";
+  var urls=[]; function ou(b){ var u=URL.createObjectURL(b); urls.push(u); return u; }
+  var gen=0; function revokeAll(){ urls.forEach(function(u){ try{URL.revokeObjectURL(u)}catch(e){} }); urls=[]; gen++; }
+  window.addEventListener("pagehide",revokeAll);
+
+  // ---------- collect media (items load lazily: get() -> Promise<{src,type}>) ----------
+  var MEDIA={mine:{photo:[],video:[]},show:{photo:[],video:[]}}, workCount=0, jobs=[], diy=[];
+  function blobItem(kind,cap,from,getBlob,when){ var c=null, cg=-1; return {kind:kind,cap:cap||"",from:from,when:when||0,get:function(){ if(c&&cg===gen) return c; cg=gen; c=Promise.resolve(getBlob()).then(function(b){ if(!b) return null; return {src:ou(b),type:b.type||(kind==="video"?"video/mp4":"image/jpeg")}; }).catch(function(){ c=null; return null; }); return c; }}; }
+  function urlItem(kind,cap,from,src,type,when){ return {kind:kind,cap:cap||"",from:from,when:when||0,get:function(){ return Promise.resolve({src:src,type:type}); }}; }
+  function ytItem(v){ var id=P&&P.youtubeId(v.url); if(!id) return null; return {kind:"video",yt:id,cap:v.title||"YouTube video",from:"Showcase",thumb:"https://i.ytimg.com/vi/"+id+"/hqdefault.jpg",get:function(){ return Promise.resolve({src:"https://www.youtube-nocookie.com/embed/"+id+"?playsinline=1&rel=0",type:"yt"}); }}; }
+  async function collect(){
+    var d=S.getDraft(idx), sp=[], sv=[];
+    (d.gallery||[]).forEach(function(p,i){ var it=p.m?blobItem("photo",p.cap,"Showcase",function(){ return S.getMedia(p.m).then(function(r){return r&&r.blob}); }):urlItem("photo",p.cap,"Showcase",p.url,"image/jpeg"); if(i===d.hero) sp.unshift(it); else sp.push(it); });
+    (d.clips||[]).forEach(function(c){ sv.push(blobItem("video",c.cap,"Showcase clip",function(){ return S.getMedia(c.m).then(function(r){return r&&r.blob}); })); });
+    (d.videos||[]).forEach(function(v){ var it=v&&v.url&&ytItem(v); if(it) sv.push(it); });
+    MEDIA.show={photo:sp,video:sv};
+    var mp=sp.slice(), mv=sv.slice(), seenPhoto={};
+    if(car.photo){ mp.push(urlItem("photo","Home photo","Home",car.photo,"image/jpeg")); }
+    // Work done (DIY) photos
+    try{ diy=window.D3Diy?D3Diy.forPlate(car.plate):[]; }catch(e){ diy=[]; }
+    diy.slice().sort(function(a,b){return String(b.date||"").localeCompare(String(a.date||""))}).forEach(function(w){ (w.files||[]).forEach(function(f){ if(f.kind==="photo"&&!seenPhoto[f.id]){ seenPhoto[f.id]=1; mp.push(blobItem("photo",w.title||"Work done","Work done",function(){ return D3Diy.getBlob(f.id); })); } }); });
+    // Old History photos
+    rd("dipstick-history",[]).forEach(function(it){ if(it&&/^image\//.test(it.type||"")&&it.data&&owns(it.plate)) mp.push(urlItem("photo",it.note||"History photo","History",it.data,it.type)); });
+    // Mechanic uploads
+    if(U.allJobs){ try{ jobs=(await U.allJobs()).filter(function(j){ return (car.upId&&j.up===car.upId)||(PL&&j.plate===PL); }); }catch(e){ jobs=[]; } }
+    jobs.forEach(function(j){ (j.files||[]).forEach(function(f){ if(/^image\//.test(f.type)) mp.push(blobItem("photo",j.note||U.fileTitle(f),"Mechanic",function(){ return U.getFile(j.id,f.key).then(function(r){return r&&r.blob}); })); if(/^video\//.test(f.type)) mv.push(blobItem("video",j.note||U.fileTitle(f),"Mechanic",function(){ return U.getFile(j.id,f.key).then(function(r){return r&&r.blob}); })); }); });
+    // Performance run videos
+    if(window.PerfG){ try{ (await PerfG.list()).forEach(function(r){ if(r&&r.video&&owns(r.plate)) mv.push(blobItem("video",(r.label||"Performance run")+(r.time?" · "+r.time+"s":""),"Performance",function(){ return r.video; },r.when)); }); }catch(e){} }
+    MEDIA.mine={photo:mp,video:mv};
+    workCount=diy.length+jobs.length;
+  }
+
+  // ---------- page shell ----------
+  var head=document.createElement("div");
+  head.innerHTML=
+    '<div class="vsw" id="vsw" role="tablist" aria-label="Showcase view"><button type="button" role="tab" id="vMine">My car</button><button type="button" role="tab" id="vShow">Show view<span class="pb">Public</span></button></div>'+
+    '<div class="privBan" id="privBan">🔒 <span>My car is private. Only you see this on your phone.</span></div>'+
+    '<div class="pubBan vhide" id="pubBan">👁 <span id="pubBanTxt">Show view is public: this is what people see when they scan your sticker in Show mode or open your showcase link.</span></div>'+
+    '<div class="gal"><div class="tabs" role="tablist"><button type="button" id="gPh" class="on">Photos<span class="n" id="nPh"></span></button><button type="button" id="gVi">Videos<span class="n" id="nVi"></span></button></div>'+
+    '<div class="gframe l" id="gframe"><div class="stage" id="stage" aria-live="polite"></div><div class="gmeta"><b id="gCap"></b><span id="gPos"></span></div><div class="strip" id="strip"></div></div></div>'+
+    '<div id="mineBox"></div><div id="showBox" class="vhide"></div>';
+  var h1=document.querySelector("body > h1"), lead=document.querySelector("body > p.lead");
+  h1.parentNode.insertBefore(head,lead.nextSibling);
+  // Switch at the very top, above the title.
+  h1.parentNode.insertBefore($("vsw"),h1);
+  // Existing editor (publish card + all edit cards + bar): kept as-is, shown in Show view.
+  var wrap=document.createElement("div"); wrap.id="editWrap";
+  var first=$("pubCard"), back=document.querySelector("body > a.btn[href='home.html']");
+  first.parentNode.insertBefore(wrap,first);
+  while(wrap.nextSibling&&wrap.nextSibling!==back&&wrap.nextSibling.tagName!=="SCRIPT") wrap.appendChild(wrap.nextSibling);
+  var editHead=document.createElement("h2"); editHead.textContent="Edit your show card"; editHead.style.cssText="font-size:18px;margin:18px 0 8px"; wrap.insertBefore(editHead,wrap.firstChild);
+
+  // ---------- gallery ----------
+  var list=[], cur=0, io=null, stageT=null;
+  function poster(it){ // first frame of a local video, small JPEG, cached on the item
+    if(it.thumb) return Promise.resolve(it.thumb);
+    if(it._poster) return it._poster;
+    it._poster=it.get().then(function(m){ if(!m) return ""; return new Promise(function(res){
+      var v=document.createElement("video"); v.muted=true; v.playsInline=true; v.preload="auto"; var done=false;
+      function fin(x){ if(done) return; done=true; v.removeAttribute("src"); try{v.load()}catch(e){} res(x); }
+      v.onloadeddata=function(){ try{ v.currentTime=Math.min(0.5,(v.duration||1)/3); }catch(e){ fin(""); } };
+      v.onseeked=function(){ try{ var c=document.createElement("canvas"), s=160/Math.max(v.videoWidth||1,v.videoHeight||1); c.width=Math.round((v.videoWidth||160)*s); c.height=Math.round((v.videoHeight||90)*s); c.getContext("2d").drawImage(v,0,0,c.width,c.height); fin(c.toDataURL("image/jpeg",0.7)); }catch(e){ fin(""); } };
+      v.onerror=function(){ fin(""); }; setTimeout(function(){ fin(""); },6000); v.src=m.src; }); });
+    return it._poster;
+  }
+  function fill(sl){ // load the big slide's media
+    if(!sl||sl._done) return; sl._done=true; var it=list[+sl.dataset.i]; sl.classList.add("ld");
+    it.get().then(function(m){ sl.classList.remove("ld"); if(!m){ sl.innerHTML='<p class="note">Couldn\'t open this one.</p>'; return; }
+      var el;
+      if(m.type==="yt"){ el=document.createElement("iframe"); el.src=m.src; el.allow="encrypted-media; picture-in-picture; fullscreen"; el.setAttribute("allowfullscreen",""); el.title=it.cap; el.loading="lazy"; }
+      else if(it.kind==="video"){ el=document.createElement("video"); el.controls=true; el.playsInline=true; el.preload="metadata"; el.src=m.src; poster(it).then(function(p){ if(p) el.poster=p; }); }
+      else { el=document.createElement("img"); el.alt=it.cap||"Car photo"; el.decoding="async"; if(it.from!=="Showcase"||/^https?:/.test(m.src)) el.referrerPolicy="no-referrer"; el.src=m.src; }
+      sl.appendChild(el); });
+  }
+  function select(i,scroll){
+    if(!list.length) return; i=Math.max(0,Math.min(list.length-1,i)); var changed=i!==cur; cur=i;
+    var st=$("stage"); [i-1,i,i+1].forEach(function(n){ fill(st.children[n]); });
+    if(changed) st.querySelectorAll("video").forEach(function(v){ v.pause(); });
+    if(changed) st.querySelectorAll("iframe").forEach(function(f){ if(f.parentNode!==st.children[i]){ var s=f.parentNode; s._done=false; s.innerHTML=""; } });
+    if(scroll) st.scrollTo({left:i*st.clientWidth,behavior:Math.abs(st.scrollLeft-i*st.clientWidth)>st.clientWidth*1.5?"auto":"smooth"});
+    $("strip").querySelectorAll("button").forEach(function(b,n){ b.classList.toggle("on",n===i); b.setAttribute("aria-current",n===i?"true":"false"); });
+    var tb=$("strip").children[i]; if(tb){ var sp=$("strip"), x=tb.offsetLeft-sp.clientWidth/2+tb.offsetWidth/2; sp.scrollTo({left:x,behavior:"smooth"}); }
+    var it=list[i]; $("gCap").textContent=it.cap||(it.kind==="video"?"Video":"Photo"); $("gPos").textContent=(view==="mine"&&it.from?it.from+" · ":"")+(i+1)+" / "+list.length;
+  }
+  function paintGallery(){
+    if(io) io.disconnect();
+    // Drop old object URLs (lists are rebuilt from the stores each time).
+    revokeAll();
+    var set=MEDIA[view]; list=set[tab]; cur=0;
+    $("nPh").textContent=set.photo.length?" "+set.photo.length:""; $("nVi").textContent=set.video.length?" "+set.video.length:"";
+    $("gPh").classList.toggle("on",tab==="photo"); $("gVi").classList.toggle("on",tab==="video");
+    $("gPh").setAttribute("aria-selected",tab==="photo"); $("gVi").setAttribute("aria-selected",tab==="video");
+    $("gframe").className="gframe "+(tab==="photo"?"l":"r");
+    var st=$("stage"), sp=$("strip");
+    if(!list.length){
+      var add=view==="show"||tab==="photo";
+      st.outerHTML='<div class="stage" id="stage"><div class="gempty" style="flex:1 0 100%">'+(tab==="photo"?"📷":"🎬")+'<div>'+(tab==="photo"?(view==="show"?"No photos on your show card yet.":"No photos of this car yet."):(view==="show"?"No videos on your show card yet.":"No videos of this car yet. Performance runs and show clips appear here."))+'</div>'+(add?'<button class="btn small" type="button" id="gAdd">'+(tab==="photo"?"+ Add photos":"+ Add a clip")+'</button>':'<a class="btn small" href="performance.html">Record a run</a>')+'</div></div>';
+      sp.innerHTML=""; $("gCap").textContent=""; $("gPos").textContent="";
+      var ga=$("gAdd"); if(ga) ga.onclick=function(){ (tab==="photo"?$("pick"):$("pickClip")).click(); };
+      return;
+    }
+    var ns=document.createElement("div"); ns.className="stage"; ns.id="stage";
+    ns.innerHTML=list.map(function(it,i){ return '<div class="sl" data-i="'+i+'"></div>'; }).join(""); st.replaceWith(ns); st=ns;
+    sp.innerHTML=list.map(function(it,i){ return '<button type="button" data-i="'+i+'" aria-label="'+esc((it.kind==="video"?"Video ":"Photo ")+(i+1))+'"><img alt="" decoding="async"/>'+(it.kind==="video"?'<span class="play">▶</span>':'')+'</button>'; }).join("");
+    io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(!e.isIntersecting) return; io.unobserve(e.target); var it=list[+e.target.dataset.i], im=e.target.querySelector("img");
+      im.onload=function(){ im.classList.add("in"); };
+      (it.kind==="video"?poster(it):it.get().then(function(m){return m&&m.src})).then(function(s){ if(s){ if(/^https?:/.test(s)) im.referrerPolicy="no-referrer"; im.src=s; } }); }); },{root:sp,rootMargin:"0px 200px"});
+    sp.querySelectorAll("button").forEach(function(b){ io.observe(b); b.onclick=function(){ select(+b.dataset.i,true); }; });
+    st.addEventListener("scroll",function(){ clearTimeout(stageT); stageT=setTimeout(function(){ var n=Math.round(st.scrollLeft/st.clientWidth); if(n!==cur) select(n,false); },70); },{passive:true});
+    st.tabIndex=0; st.onkeydown=function(e){ if(e.key==="ArrowRight") select(cur+1,true); if(e.key==="ArrowLeft") select(cur-1,true); };
+    cur=-1; select(0,false);
+  }
+  $("gPh").onclick=function(){ if(tab!=="photo"){ tab="photo"; paintGallery(); } };
+  $("gVi").onclick=function(){ if(tab!=="video"){ tab="video"; paintGallery(); } };
+
+  // ---------- My car summary ----------
+  function due(dt){ if(!dt) return null; var t=new Date(dt+"T12:00:00"); if(isNaN(t)) return null; var days=Math.round((t-Date.now())/86400000);
+    return {days:days,cls:days<0?"bad":days<=30?"amb":"ok",txt:days<0?"Overdue":days===0?"Due today":days<=60?days+" days":t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}),sub:days<0?"Was due "+t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}):"Due "+t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}; }
+  function paintMine(){
+    var d=S.getDraft(idx), b=d.basics||{};
+    var work=diy.reduce(function(s,w){ return s+(window.D3Diy?D3Diy.cost(w):0); },0);
+    var trips=rd("gt.driveLog",[]).filter(function(t){ return t&&owns(t.plate); }), tripCost=trips.reduce(function(s,t){return s+(+t.cost||0)},0), tripMiles=trips.reduce(function(s,t){return s+(+t.miles||0)},0);
+    var mot=due(car.mot), tax=due(car.tax), M=MEDIA.mine;
+    var title=[b.year,b.make,b.model].filter(Boolean).join(" ");
+    var chips=[car.plate&&String(car.plate).toUpperCase(),b.variant,b.colour||car.colour,car.engine,car.fuel,car.miles&&(Number(car.miles).toLocaleString("en-GB")+" miles a year")].filter(Boolean);
+    function tile(k,v,s,cls,href,w){ return '<'+(href?'a href="'+href+'"':'div')+' class="tile'+(w?" w":"")+'"><div class="k">'+k+'</div><div class="v'+(cls?" "+cls:"")+'">'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</'+(href?'a':'div')+'>'; }
+    $("mineBox").innerHTML='<div class="tiles">'+
+      tile(esc(U.niceName(car)),esc(title||"Your car"),'<div class="spec">'+chips.map(function(c){return "<span>"+esc(c)+"</span>"}).join("")+'</div>',"","",1)+
+      tile("Money spent",gbp(work+tripCost),"Work receipts "+gbp(work)+" · Journeys "+gbp(tripCost),"","calendar.html",1)+
+      tile("Work done",String(workCount),diy.length+" logged by you · "+jobs.length+" from your mechanic","","calendar.html")+
+      tile("Journeys",String(trips.length),tripMiles?tripMiles.toFixed(0)+" miles recorded":"None recorded yet","","drive.html")+
+      tile("Photos",String(M.photo.length),"Across showcase, work and uploads")+
+      tile("Videos",String(M.video.length),"Clips, runs and links")+
+      tile("MOT",mot?mot.txt:"Not set",mot?mot.sub:"Add it on the home screen",mot?mot.cls:"","mot.html")+
+      tile("Tax",tax?tax.txt:"Not set",tax?tax.sub:"Add it on the home screen",tax?tax.cls:"","tax.html?plate="+encodeURIComponent(PL))+
+      '</div><button class="btn wide" type="button" id="toShowView">See my public Show view</button>';
+    $("toShowView").onclick=function(){ setView("show"); window.scrollTo({top:0,behavior:"smooth"}); };
+  }
+
+  // ---------- Show view preview (only what the show card shares) ----------
+  function paintShow(){
+    var d=S.getDraft(idx), b=d.basics||{}, s=d.stats||{}, pub=!!(car.showId&&car.showPublished);
+    var name=d.title||[b.year,b.make,b.model].filter(Boolean).join(" ")||U.niceName(car);
+    var sts=[["bhp","bhp"],["torque","Nm"],["zero60","0-60 (s)"],["top","mph top"],["weight","kg"]].filter(function(x){return s[x[0]]!==""&&s[x[0]]!=null}).map(function(x){return '<div class="st"><b>'+esc(s[x[0]])+'</b><span>'+x[1]+'</span></div>'}).join("");
+    var best=s.best&&s.best.time?'<p class="note">🏁 Best: <b style="color:#f2f2f2">'+esc(s.best.time)+'</b> '+esc([s.best.label,s.best.venue].filter(Boolean).join(" · "))+'</p>':"";
+    var mods=(d.mods||[]).map(function(m){ var t=typeof m==="string"?m:(m&&(m.t||m.name||m.title||m.text))||""; return t?"<li>"+esc(t)+"</li>":""; }).join("");
+    $("pubBanTxt").textContent=pub?"Show view is public: this is what people see when they scan your sticker in Show mode or open your showcase link.":"Show view is what the public will see once you publish. It's only on this phone for now.";
+    $("showBox").innerHTML='<div class="card pv"><h2>'+esc(name)+'</h2>'+
+      '<p class="note">'+esc([b.variant,b.colour,b.hidePlate?"":U.cleanPlate(b.plate||car.plate)].filter(Boolean).join(" · "))+'</p>'+
+      (sts?'<div class="sts">'+sts+'</div>':'<p class="note">No stats yet. Add them below.</p>')+best+
+      (mods?'<h2 style="margin-top:12px">Mods</h2><ul>'+mods+'</ul>':'')+
+      (d.story?'<h2 style="margin-top:12px">Story</h2><p class="story">'+esc(d.story)+'</p>':'')+
+      (pub?'<a class="btn small wide" style="margin-top:12px" target="_blank" rel="noopener" href="'+esc(U.showLink?U.showLink(car):"#")+'">Open the live card</a>':'')+
+      '</div>';
+  }
+
+  function setView(v){
+    view=v; try{ localStorage.setItem("gt.showcaseView",v); }catch(e){}
+    var sh=v==="show"; $("vsw").classList.toggle("show",sh); $("vMine").classList.toggle("on",!sh); $("vShow").classList.toggle("on",sh);
+    $("vMine").setAttribute("aria-selected",!sh); $("vShow").setAttribute("aria-selected",sh);
+    $("privBan").classList.toggle("vhide",sh); $("pubBan").classList.toggle("vhide",!sh);
+    $("mineBox").classList.toggle("vhide",sh); $("showBox").classList.toggle("vhide",!sh); $("editWrap").classList.toggle("vhide",!sh);
+    h1.textContent=sh?"Show view":"My car"; lead.textContent=sh?"Your public show card: photos, stats, mods and videos. Nothing private (money, receipts, journeys) is ever on it.":"An at-a-glance summary of "+U.niceName(car)+". Private to this phone.";
+    if(sh) paintShow(); else paintMine();
+    paintGallery();
+  }
+  $("vMine").onclick=function(){ if(view!=="mine") setView("mine"); };
+  $("vShow").onclick=function(){ if(view!=="show") setView("show"); };
+  async function refresh(){ await collect(); setView(view); }
+  window.D3ShowcaseRefresh=function(){ clearTimeout(window.__scR); window.__scR=setTimeout(refresh,250); };
+  // Re-read when the editor adds/removes photos or clips.
+  ["photos","clips"].forEach(function(id){ var el=$(id); if(el) new MutationObserver(window.D3ShowcaseRefresh).observe(el,{childList:true}); });
+  // Show view preview follows the editor fields as you type.
+  document.addEventListener("input",function(e){ if(view==="show"&&e.target.closest("#editWrap")){ clearTimeout(window.__scP); window.__scP=setTimeout(paintShow,500); } });
+  setView(view); refresh();
+})();

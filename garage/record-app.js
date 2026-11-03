@@ -25,12 +25,14 @@
   function unit(){ return ELEC?"p/kWh":"p/litre"; }
   function cost(miles,eff,pr){ return ELEC?miles/Math.max(+eff||1,0.5)*((+pr||0)/100):miles/Math.max(+eff||1,1)*L_PER_GAL*((+pr||0)/100); }
   function fuelLine(){
-    var lab=(window.D3Fuel?D3Fuel.LABEL[FO.fuel]:FO.fuel)+(FO.known?"":" (guessed — set Fuel in Edit car)");
-    var t=LIVE?("live price "+LIVE.price.toFixed(1)+(ELEC?"p/kWh":"p/L")+" · updated "+(LIVE.date||"")+(LIVE.stale?" (offline, last known)":" · checked "+new Date(LIVE.checked).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}))):"live price unavailable";
-    $("fuelLine").innerHTML="<b>"+esc(lab)+"</b> · "+esc(t)+($("useOwn").checked?" · <span class='warn'>using your own price</span>":"");
+    var lab=ELEC?"Electricity":(window.D3Fuel?D3Fuel.LABEL[FO.fuel]:FO.fuel), pr=price(), own=$("useOwn").checked;
+    var hm=function(d){return new Date(d).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});};
+    var sub=own?"Your own price":LIVE?("Live UK average · "+(LIVE.stale?"last known "+(LIVE.date||""):"updated "+hm(LIVE.checked))):"Checking live price…";
+    if(!FO.known) sub+=" · fuel guessed, set it in Edit car";
+    $("fuelLine").innerHTML="<span class='fbig'>"+esc(lab)+" <b>"+(pr?pr.toFixed(1)+(ELEC?"p/kWh":"p/L"):"—")+"</b></span><span class='fsub'>"+esc(sub)+"</span>";
   }
   function costLine(){ var e=+$("mpg").value||(ELEC?3.5:38), pr=price(); fuelLine();
-    $("costLine").textContent=pr?("About "+money(cost(1,e,pr))+" per mile at "+e+(ELEC?" mi/kWh":" mpg")+" and "+pr.toFixed(1)+unit()+"."):"Waiting for the live fuel price…"; }
+    $("costLine").textContent=pr?("About "+money(cost(1,e,pr))+" per mile"):""; }
   function pushNative(){ if(!T) return; var pr=price(); if(!pr) return; var r=D3Fuel.nativeRate(+$("mpg").value,pr,ELEC); r.fuel=FO.fuel; T.configure(r).catch(function(){}); }
   $("mpg").addEventListener("change",function(){ var o={}; o[ELEC?"mikwh":"mpg"]=+this.value||null; setCfg(o); costLine(); pushNative(); });
   $("useOwn").addEventListener("change",function(){ $("ownBox").classList.toggle("hide",!this.checked); setCfg({useOwn:this.checked}); costLine(); pushNative(); });

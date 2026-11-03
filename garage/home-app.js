@@ -111,13 +111,15 @@ function remindBanner(){
   if(!window.D3Rem) return;
   var box=document.getElementById("remBanner"), dues=document.getElementById("dues");
   if(!box){box=document.createElement("div");box.id="remBanner";var dt=document.getElementById("datesToggle")||dues;dt.parentNode.insertBefore(box,dt);}
-  var act=D3Rem.active(state(),D3Rem.load());
-  if(!act.length){box.innerHTML="";box.style.display="none";return}
+  var st=state(), all=D3Rem.active(st,D3Rem.load()), cur=st.cars[st.i]?st.i:0;
+  var act=all.filter(function(a){return a.carIndex===cur}), oth=all.filter(function(a){return a.carIndex!==cur});
+  var othHtml=oth.length?"<button type='button' class='remOther' style='display:block;width:100%;background:none;border:0;text-align:left;color:#ffd166;font:inherit;font-size:13px;padding:6px 4px;margin:2px 0' data-rgo='"+oth[0].type+"' data-rcar='"+oth[0].carIndex+"'>Also due on another car: "+oth.map(function(a){return a.label+" \u00b7 "+a.plate}).join(", ")+" \u203a</button>":"";
+  if(!act.length&&!oth.length){box.innerHTML="";box.style.display="none";return}
   box.style.display="";
   box.innerHTML=act.map(function(a){
     return "<div class='remB' style='border-left:4px solid "+a.color+"'><div style='flex:1'><b>"+a.icon+" "+a.label+" \u00b7 "+a.plate+"</b><span>"+a.body.replace(/ Tap to email your garage\.$/,"")+"</span></div>"+
       (a.book?"<button type='button' class='btn' data-rjob='"+a.type+"' data-rcar='"+a.carIndex+"'>Book</button>":"<button type='button' class='btn' data-rgo='"+a.type+"' data-rcar='"+a.carIndex+"'>View</button>")+"</div>";
-  }).join("")+"<a class='remSet' href='reminders.html?v=15'>Reminder settings</a>";
+  }).join("")+othHtml+"<a class='remSet' href='reminders.html?v=15'>Reminder settings</a>";
 }
 function remindGo(type,ci){
   var s=state(); if(ci!=null&&s.cars[ci]&&s.i!==ci){s.i=ci;save(s);paint();}

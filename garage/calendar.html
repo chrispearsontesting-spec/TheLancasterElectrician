@@ -69,6 +69,7 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 .clHead{font-size:13px;color:#8b8b8b;margin:12px 4px 4px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.clHead .clTot{color:#3dd68c;font-weight:700}
 .clItem{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;border-top:1px solid #2a2a2e;color:#f2f2f2;padding:11px 4px;font:inherit;text-align:left}
 .clItem:first-of-type{border-top:0}.clIco{width:22px;text-align:center}.clTxt{flex:1;min-width:0}.clTxt b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.clTxt small{color:#8b8b8b;font-size:12px}
+.clHead.clOver{color:#ff6b6b;font-weight:700}
 .clR{font-weight:700;color:#3dd68c;font-size:14px}.clEmpty{margin:6px 4px}
 .clRoutes{margin-top:10px;border-top:1px solid #2a2a2e;padding-top:8px}.clRoutes summary{cursor:pointer;font-weight:600;padding:8px 4px;color:#f2f2f2}
 .media{border-left:4px solid #3dd68c!important}.media.run{border-left-color:#f5b84a!important}.media.mech{border-left-color:#7dd3fc!important}
@@ -108,7 +109,8 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 <a class="btn" href="home.html#drive" data-iconed="1">Back</a>
 <script src="./trip-engine.js"></script>
 <script src="./reminders-core.js?v=2"></script>
-<script src="./diy-work.js?v=1"></script>
+<script src="./car-scope.js?v=1"></script>
+<script src="./diy-work.js?v=2"></script>
 <script>
 var view=new Date();
 view.setDate(1);
@@ -119,7 +121,7 @@ function saveLogs(list){localStorage.setItem("gt.driveLog",JSON.stringify(list))
 function key(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function byDay(){
   var map={};
-  logs().forEach(function(t){
+  logs().filter(function(t){return !window.D3Car||D3Car.owns(t.plate)}).forEach(function(t){
     var d=new Date(t.when||t.end||Date.now());
     (map[key(d)]=map[key(d)]||[]).push(t);
   });
@@ -161,7 +163,8 @@ function render(sel){
 function remByDay(){
   var m={}; if(!window.D3Rem) return m;
   var g; try{g=JSON.parse(localStorage.getItem("gt.garage")||"null")}catch(e){}
-  D3Rem.dueItems(g).forEach(function(e){(m[e.due]=m[e.due]||[]).push(e)}); return m;
+  var ci=window.D3Car?D3Car.curIndex():0;
+  D3Rem.dueItems(g).filter(function(e){return e.carIndex===ci}).forEach(function(e){(m[e.due]=m[e.due]||[]).push(e)}); return m;
 }
 function remCard(e){
   var d=D3Rem.daysUntil(e.due), left=d<0?(-d)+" days overdue":d===0?"Due today":d+" days left";
@@ -176,7 +179,8 @@ function upNext(){
   return ""; // replaced by the Maintenance dropdown below the calendar
   if(!window.D3Rem) return "";
   var g; try{g=JSON.parse(localStorage.getItem("gt.garage")||"null")}catch(e){}
-  var n=D3Rem.dueItems(g).filter(function(e){return D3Rem.daysUntil(e.due)>=-30}).slice(0,4);
+  var ci=window.D3Car?D3Car.curIndex():0;
+  var n=D3Rem.dueItems(g).filter(function(e){return e.carIndex===ci&& D3Rem.daysUntil(e.due)>=-30}).slice(0,4);
   return n.length?"<div id='upNext'><p class='muted'>Coming up</p>"+n.map(remCard).join("")+"</div>":"";
 }
 function escR(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}); }
@@ -312,7 +316,7 @@ document.getElementById("next").onclick=function(){view.setMonth(view.getMonth()
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=5"></script>
 <script src="./perf-g.js?v=2"></script>
-<script src="./cal-media.js?v=1"></script>
-<script src="./cal-lists.js?v=1"></script>
+<script src="./cal-media.js?v=2"></script>
+<script src="./cal-lists.js?v=2"></script>
 </body>
 </html>

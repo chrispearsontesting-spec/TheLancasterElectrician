@@ -81,7 +81,7 @@
   function renderHistoryFiles(){
     var html = "";
     history.forEach(function(it, i){
-      if (!it || !it.data) return;
+      if (!it || !it.data || (window.D3Car && !D3Car.owns(it.plate))) return;
       var pdf = !isImg(it.type);
       html += fileRowHtml("h" + i, !pdf, it.data, it.type, (it.date ? it.date + " · " : "") + (it.note || "Work"), pdf);
     });
@@ -133,7 +133,7 @@
   function selection(){
     var sel = {files: [], jobs: [], history: []};
     if (on("incService")) history.forEach(function(it, i){
-      if (!it) return;
+      if (!it || (window.D3Car && !D3Car.owns(it.plate))) return;
       var withFile = it.data && ticked("h" + i);
       sel.history.push({i: i, file: withFile});
       if (withFile) sel.files.push({src: "h", i: i, type: it.type, title: it.note || "Work"});

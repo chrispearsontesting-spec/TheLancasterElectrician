@@ -12,7 +12,7 @@
   function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
   function minusYear(s){var m=/^(\d{4})-(\d\d)-(\d\d)/.exec(s||"");return m?(+m[1]-1)+"-"+m[2]+"-"+m[3]:""}
   function get(id){return all().filter(function(e){return e.id===id})[0]||null}
-  function forPlate(p){var v=vrn(p);return all().filter(function(e){return !v||!e.plate||e.plate===v})}
+  function forPlate(p){var v=vrn(p);return all().filter(function(e){return !v||(e.plate?e.plate===v:(root.D3Car?D3Car.owns("",v):true))})}
   function save(e){var l=all(),i=-1;l.forEach(function(x,n){if(x.id===e.id)i=n});e.updated=Date.now();if(!e.id){e.id=uid();e.created=Date.now()}if(i<0)l.push(e);else l[i]=e;put(l);return e}
   function db(){return new Promise(function(res,rej){var r=indexedDB.open("dipstick",2);r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains("files"))r.result.createObjectStore("files")};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
   function tx(mode,fn){return db().then(function(d){return new Promise(function(res,rej){var t=d.transaction("files",mode),s=t.objectStore("files"),out=fn(s);t.oncomplete=function(){res(out&&out.result!==undefined?out.result:out)};t.onerror=function(){rej(t.error)}})})}

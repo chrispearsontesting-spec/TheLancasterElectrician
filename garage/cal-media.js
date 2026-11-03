@@ -14,11 +14,11 @@
   async function load(){
     M.byDay={}; var c=car(), pl=vrn(c&&c.plate);
     var own=[]; try{ own=JSON.parse(localStorage.getItem("dipstick-history")||"[]")||[]; }catch(e){}
-    own.forEach(function(it,i){ if(!it) return; if(it.plate&&pl&&vrn(it.plate)!==pl) return; var t=tsOf(it); if(t) add(k(t),{k:"own",t:t,it:it}); });
+    own.forEach(function(it,i){ if(!it) return; if(window.D3Car&&!D3Car.owns(it.plate)) return; var t=tsOf(it); if(t) add(k(t),{k:"own",t:t,it:it}); });
     var U=window.DipUploads;
     if(U&&U.allJobs){ try{ M.jobs=(await U.allJobs()).filter(function(j){ return (c&&c.upId&&j.up===c.upId)||(pl&&j.plate===pl); }); }catch(e){ M.jobs=[]; } }
     M.jobs.forEach(function(j){ var t=j.created||j.received||0; if(t) add(k(t),{k:"mech",t:t,j:j}); });
-    if(window.PerfG){ try{ M.runs=await PerfG.list(); }catch(e){ M.runs=[]; } }
+    if(window.PerfG){ try{ M.runs=(await PerfG.list()).filter(function(r){ return !window.D3Car||D3Car.owns(r.plate); }); }catch(e){ M.runs=[]; } }
     M.runs.forEach(function(r){ add(k(r.when),{k:"run",t:r.when,r:r}); });
     M.ready=true;
   }

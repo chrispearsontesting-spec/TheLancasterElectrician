@@ -9,7 +9,7 @@
   function gbp(n){ return "£"+(+n||0).toLocaleString("en-GB",{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function price(f){ var n=parseFloat(String(f&&f.price||"").replace(/[^0-9.]/g,"")); return isFinite(n)?n:0; }
   var DAY=864e5;
-  function journeys(){ var l=[]; try{ l=JSON.parse(localStorage.getItem("gt.driveLog")||"[]")||[]; }catch(e){} return l.filter(function(t){ return t&&t.type!=="run"; }); }
+  function journeys(){ var l=[]; try{ l=JSON.parse(localStorage.getItem("gt.driveLog")||"[]")||[]; }catch(e){} return l.filter(function(t){ return t&&t.type!=="run"&&(!window.D3Car||D3Car.owns(t.plate)); }); }
   function diy(){ return window.D3Diy?D3Diy.forPlate((car()||{}).plate):[]; }
   function media(){ var M=window.CalMedia, out=[]; if(!M) return out; Object.keys(M.byDay).forEach(function(d){ M.byDay[d].forEach(function(e){ out.push(e); }); }); return out; }
 
@@ -29,8 +29,11 @@
   }
   function maint(){
     var now=Date.now(), html="", g=null; try{ g=JSON.parse(localStorage.getItem("gt.garage")||"null"); }catch(e){}
-    var up=window.D3Rem?D3Rem.dueItems(g).filter(function(e){ var d=D3Rem.daysUntil(e.due); return d<=60; }):[];
-    html+="<p class='clHead'>Coming up · next 60 days</p>"+(up.length?up.map(function(e){ var d=D3Rem.daysUntil(e.due); return row({day:e.due,ico:e.icon,title:e.label+" · "+e.plate,sub:d<0?(-d)+" days overdue":d===0?"due today":d+" days left"}); }).join(""):empty("Nothing due in the next 60 days."));
+    var ci=window.D3Car?D3Car.curIndex():0, mine=window.D3Rem?D3Rem.dueItems(g).filter(function(e){ return e.carIndex===ci; }):[];
+    var over=mine.filter(function(e){ return D3Rem.daysUntil(e.due)<0; }), up=mine.filter(function(e){ var d=D3Rem.daysUntil(e.due); return d>=0&&d<=60; });
+    function ago(d){ return d>=730?Math.floor(d/365)+" years":d>=60?Math.floor(d/30.4)+" months":d+" day"+(d===1?"":"s"); }
+    if(over.length) html+="<p class='clHead clOver'>Overdue</p>"+over.map(function(e){ var d=-D3Rem.daysUntil(e.due); return row({day:e.due,ico:"⚠️",title:e.label+" · "+e.plate,sub:(e.type==="insurance"?"expired ":"was due ")+ago(d)+" ago — update the date if it’s been done"}); }).join("");
+    html+="<p class='clHead'>Coming up · next 60 days</p>"+(up.length?up.map(function(e){ var d=D3Rem.daysUntil(e.due); return row({day:e.due,ico:e.icon,title:e.label+" · "+e.plate,sub:d===0?"due today":d+" day"+(d===1?"":"s")+" left"}); }).join(""):empty("Nothing due in the next 60 days."));
     var lo=now-365*DAY, done=[], total=0;
     diy().forEach(function(w){ var t=noon(w.date); if(t<lo||t>now+DAY) return; var cost=(w.files||[]).reduce(function(a,f){return a+price(f)},0); total+=cost; done.push({t:t,day:w.date,ico:"🔧",title:w.title||"Work done",sub:"DIY",right:cost?gbp(cost):""}); });
     media().forEach(function(e){ if(e.k!=="run"&&e.t>=lo) done.push({t:e.t,day:k(e.t),ico:e.k==="mech"?"🛠":"📝",title:e.k==="mech"?(e.j.note||"Work from your mechanic"):(e.it.note||"Note"),sub:e.k==="mech"?"Mechanic":"Your note"}); });

@@ -83,6 +83,7 @@ canvas#chart{width:100%;height:auto;background:#0b0c0e;border-radius:12px;displa
   <div id="runList" style="display:none"></div>
   <div class="row"><button id="runsBtn2" type="button">Saved runs</button><button id="again" type="button">New run</button></div>
 </div>
+<script src="./car-scope.js?v=1"></script>
 <script src="./perf-g.js?v=2"></script>
 <script>
 const vid = document.getElementById('vid');
@@ -186,14 +187,14 @@ async function finish(t, label){
   // Save to shared diary
   try{
     const list = JSON.parse(localStorage.getItem("gt.driveLog")||"[]");
-    list.unshift({ id: "run-"+Date.now(), type: "run", when: Date.now(), from: runLabel, to: t.toFixed(2)+"s", time: t.toFixed(2)+"s", miles: 0, cost: 0, mpg: null });
+    list.unshift({ id: "run-"+Date.now(), type: "run", plate: (window.D3Car&&D3Car.curVrn())||"", when: Date.now(), from: runLabel, to: t.toFixed(2)+"s", time: t.toFixed(2)+"s", miles: 0, cost: 0, mpg: null });
     localStorage.setItem("gt.driveLog", JSON.stringify(list.slice(0,200)));
   }catch(e){}
   let video = null;
   if(hadRec && stopP){ try{ await stopP; }catch(e){} }
   if(keepChk.checked && chunks.length) video = new Blob(chunks, {type: (chunks[0]&&chunks[0].type) || 'video/webm'});
   chunks = [];
-  const run = { id: 'run-' + Date.now(), when: Date.now(), label: runLabel, result: resultEl.textContent, time: t.toFixed(2), reactMs, samples: samples.slice(), stats: PerfG.stats(samples), video };
+  const run = { id: 'run-' + Date.now(), when: Date.now(), plate: (window.D3Car&&D3Car.curVrn())||'', label: runLabel, result: resultEl.textContent, time: t.toFixed(2), reactMs, samples: samples.slice(), stats: PerfG.stats(samples), video };
   const cv = document.getElementById('chart');
   PerfG.draw(cv, run);
   run.chart = await new Promise(r => cv.toBlob(r, 'image/png'));
@@ -232,7 +233,7 @@ async function showList(){
   resultEl.textContent = 'Saved runs';
   document.getElementById('runView').style.display = 'none';
   const box = document.getElementById('runList'); box.style.display = 'block'; box.textContent = 'Loading…';
-  let runs = []; try{ runs = await PerfG.list(); }catch(e){}
+  let runs = []; try{ runs = (await PerfG.list()).filter(r => !window.D3Car || D3Car.owns(r.plate)); }catch(e){}
   box.innerHTML = runs.length ? '' : '<p style="color:#9a9aa0">No saved runs yet.</p>';
   runs.forEach(r => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'runItem';

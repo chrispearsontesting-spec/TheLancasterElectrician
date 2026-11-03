@@ -42,7 +42,8 @@ async function purgeClips(){
     };
     var list=[];
     try{list=JSON.parse(localStorage.getItem("gt.driveLog")||"[]")}catch(err){}
-    localStorage.setItem("gt.driveLog",JSON.stringify(list.filter(function(t){return (t.end||t.when||0)>cut})));
+    // Keep every journey (miles/cost history); only the 24h dashcam clip itself expires.
+    localStorage.setItem("gt.driveLog",JSON.stringify(list.map(function(t){ if(t.hasClip&&(t.end||t.when||0)<=cut) t.hasClip=false; return t; })));
   }catch(e){}
 }
 async function placeName(pos){

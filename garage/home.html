@@ -5,11 +5,28 @@
 <script src="./app-lock.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
-<link rel="manifest" href="./manifest.json"/>
-<link rel="icon" href="./icon.svg"/>
-<link rel="apple-touch-icon" href="./icon-192.png"/>
 <link rel="stylesheet" href="./ui.css?v=78"/>
 <title>Driv3</title>
+<meta name="description" content="MOT, tax and insurance reminders, service cost estimates, receipts, route costs and a share-for-sale report. Free, and your data stays on your phone."/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Driv3"/>
+<meta property="og:title" content="Driv3 – your car organiser for UK drivers"/>
+<meta property="og:description" content="MOT, tax and insurance reminders, service cost estimates, receipts, route costs and a share-for-sale report. Free, and your data stays on your phone."/>
+<meta property="og:url" content="https://thelancasterelectrician.com/garage/home.html"/>
+<meta property="og:image" content="https://thelancasterelectrician.com/garage/og-image.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="Driv3 – your car organiser for UK drivers"/>
+<meta property="og:locale" content="en_GB"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Driv3 – your car organiser for UK drivers"/>
+<meta name="twitter:description" content="MOT, tax and insurance reminders, service cost estimates, receipts, route costs and a share-for-sale report. Free, and your data stays on your phone."/>
+<meta name="twitter:image" content="https://thelancasterelectrician.com/garage/og-image.png"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="icon" href="./favicon.ico" sizes="any"/>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="./icon-192.png"/>
+<script src="./sw-reg.js?v=1" defer></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(10px + env(safe-area-inset-top)) 12px 28px}
@@ -228,10 +245,9 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="mot-config.js"></script>
 <script src="mot-client.js"></script>
 <script src="plate-fill.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="./reminders-core.js?v=2"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./home-app.js?v=96"></script>
+<script src="./home-app.js?v=97"></script>
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=32"></script>
 <script src="./home-tabs.js?v=6"></script>

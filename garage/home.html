@@ -121,7 +121,15 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 #gForm input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:15px}
 #dues .notifSet{display:flex;align-items:center;justify-content:center;margin-top:10px;text-decoration:none}
 .secLink{display:block;text-align:center;color:#8b8b8b;font-size:13px;margin:14px 0 4px;text-decoration:none}
-.dchip{background:none;border:0;padding:2px 0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted rgba(255,255,255,.4);text-underline-offset:4px;display:inline-flex;align-items:center;gap:6px}
+.dchip{background:none;border:0;padding:2px 0;font:inherit;color:inherit;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.dchip .dtxt{text-decoration:underline dotted rgba(255,255,255,.4);text-underline-offset:4px}
+.mark.soon{color:#f59e0b}
+#dues .cAmber .mark.soon{color:#f59e0b}
+body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{display:none !important}
+#emptyCar{display:none}body.noCars #emptyCar{display:block}
+#emptyCar{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:22px 16px;margin:6px 0 12px;text-align:center}
+#emptyCar h2{margin:0 0 6px;font-size:22px}#emptyCar p{color:#a8a8a8;font-size:14px;margin:0 0 14px;line-height:1.45}
+#emptyCar .plateEntry{margin:0 0 12px}
 .dchip .pen{font-size:12px;width:22px;height:22px;border-radius:50%;background:#26262a;color:#d0d0d0;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
 .remBox{margin-top:14px;padding:12px;border:1px solid #2a2a2e;border-radius:14px;background:#111113}
 .remBox label{display:block;color:#8b8b8b;font-size:12px;margin:10px 0 4px}.remBox select,.remBox input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
@@ -133,6 +141,9 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <input id="plateCam" type="file" accept="image/*" capture="environment" hidden/>
 <div class="topRow"><b>Driv3</b><button type="button" id="gear" aria-label="Settings" title="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+<section id="emptyCar"><h2>Add your car</h2><p>Enter your number plate and Driv3 will fill in the details, MOT and tax dates for you.</p>
+<div class="plateEntry"><div class="ukPlate"><span class="ukStrip">UK</span><input id="emptyPlate" type="text" placeholder="AB12 CDE" maxlength="8" autocomplete="off" aria-label="Number plate"/></div></div>
+<button class="btn wide" type="button" id="emptyGo" data-ico="search">Add car</button></section>
 <div class="hero" id="hero"></div>
 <div class="bar"><div class="nameRow">
 <div class="side left">
@@ -163,11 +174,9 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <button class="btn wide dd" type="button" id="finToggle" data-ico="gbp" aria-expanded="false" aria-controls="finMenu"><span class="lab">Financial</span><span class="chev" aria-hidden="true">&#9662;</span></button>
 <div class="card hide ddMenu" id="finMenu">
 <a href="service.html?v=13">Maintenance planner</a>
-<a id="lnkRoute" href="route.html">Route costs</a>
 <a href="buy.html">Buying guide</a>
 </div>
 <a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase <span class="chip" id="showChip" hidden></span></a>
-<a class="secLink" href="security.html"><span>Security &amp; backup</span></a>
 </section>
 <div class="sheet" id="settings"><div class="panel">
 <h2>Settings</h2>
@@ -175,7 +184,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 <a class="btn wide" href="security.html#lockCard" data-ico="shield">App lock</a>
 <a class="btn wide" href="reminders.html?v=15" data-ico="cal">Reminders &amp; my garage</a>
 <a class="btn wide" href="privacy.html" data-ico="doc">Privacy</a>
-<button class="btn wide" type="button" id="setClose" data-ico="back">Back</button>
+<button class="btn" type="button" id="setClose">Back</button>
 </div></div>
 <script>(function(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null"),t=+localStorage.getItem("gt.lastBackup")||0;
 if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";document.getElementById("gear").classList.add("dot");}}catch(e){}})();</script>
@@ -192,7 +201,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 </div>
 <div id="foundDetails" class="found" style="display:none"></div>
 <p class="left" id="plateHint">Enter plate and tap Lookup, or use the camera.</p>
-<label>Name</label><input id="fName" type="text" placeholder="e.g. Volvo XC60 D5" maxlength="60" autocomplete="off"/>
+<label>Name</label><input id="fName" type="text" placeholder="e.g. Ford Focus" maxlength="60" autocomplete="off"/>
 <label>MOT</label><input id="fMot" type="date"/>
 <label>Tax</label><input id="fTax" type="date"/>
 <label>Insurance</label><input id="fIns" type="date"/>
@@ -211,9 +220,9 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <label>Insurer website</label><input id="fInsWeb"/>
 <button class="btn wide" type="button" id="btnSave" data-ico="save">Save</button>
 <button class="btn wide" type="button" id="btnDelete" style="background:#3a1a1a;color:#ff6b6b;margin-top:8px">Delete car</button>
-<button class="btn wide" type="button" id="btnClose" data-ico="back">Back</button>
+<button class="btn" type="button" id="btnClose">Back</button>
 </div></div>
-<div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn wide" type="button" id="btnCClose" data-ico="back">Back</button></div></div>
+<div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn" type="button" id="btnCClose">Back</button></div></div>
 <script src="ncap.js"></script>
 <script src="ncap-url.js"></script>
 <script src="mot-config.js"></script>
@@ -222,7 +231,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="./reminders-core.js?v=2"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./home-app.js?v=95"></script>
+<script src="./home-app.js?v=96"></script>
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=32"></script>
 <script src="./home-tabs.js?v=6"></script>

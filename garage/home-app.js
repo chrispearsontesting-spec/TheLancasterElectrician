@@ -1,9 +1,3 @@
-function seed(){
-  return {id:"xc60",nick:"Volvo XC60 D5",name:"Volvo XC60 D5",plate:"SB61LGZ",fuel:"diesel",engine:"2401",mpg:"38",
-    mot:"2027-08-16",tax:"2026-10-01",ins:"2026-10-12",oil:"2026-12-31",photo:"",miles:"12000",
-    beltDate:"",beltYears:"5",beltMiles:"150000",tyreDate:"",tyreLife:"20000",
-    motName:"",motPhone:"",motEmail:"",insWeb:""};
-}
 function state(){
   try{
     var s=JSON.parse(localStorage.getItem("gt.garage")||"null");
@@ -12,7 +6,7 @@ function state(){
       return s;
     }
   }catch(e){}
-  return {i:0,cars:[seed()]};
+  return {i:0,cars:[]};
 }
 function save(s){
   if(s&&s.cars&&s.cars.length>20) s.cars=s.cars.slice(0,20);
@@ -21,7 +15,7 @@ function save(s){
 }
 function car(){
   var s=state();
-  if(!s.cars.length) return seed();
+  if(!s.cars.length) return {};
   if(s.i<0||s.i>=s.cars.length) s.i=0;
   return s.cars[s.i];
 }
@@ -43,7 +37,6 @@ function tone(iso){
   var d=daysLeft(iso);
   if(d==null)return "";
   if(d<0)return " cOver";
-  if(d<=31)return " cFlash";
   if(d<=90)return " cAmber c6";
   if(d<=60)return " c6";
   if(d<=120)return " c5";
@@ -119,7 +112,7 @@ function remindBanner(){
   box.innerHTML=act.map(function(a){
     return "<div class='remB' style='border-left:4px solid "+a.color+"'><div style='flex:1'><b>"+a.icon+" "+a.label+" \u00b7 "+a.plate+"</b><span>"+a.body.replace(/ Tap to email your garage\.$/,"")+"</span></div>"+
       (a.book?"<button type='button' class='btn' data-rjob='"+a.type+"' data-rcar='"+a.carIndex+"'>Book</button>":"<button type='button' class='btn' data-rgo='"+a.type+"' data-rcar='"+a.carIndex+"'>View</button>")+"</div>";
-  }).join("")+othHtml+"<a class='remSet' href='reminders.html?v=15'>Reminder settings</a>";
+  }).join("")+othHtml;
 }
 function remindGo(type,ci){
   var s=state(); if(ci!=null&&s.cars[ci]&&s.i!==ci){s.i=ci;save(s);paint();}
@@ -147,13 +140,14 @@ function btns(list){
 function mark(iso){
   var d=daysLeft(iso);
   if(d==null) return "";
-  if(d<=31) return "<span class='mark bad'>\u2715</span>";
+  if(d<0) return "<span class='mark bad'>\u2715</span>";
+  if(d<=31) return "<span class='mark soon'>!</span>";
   return "<span class='mark ok'>\u2713</span>";
 }
 function row(title,iso,extra,buttons){
   var key = title.toLowerCase().replace(/\s+/g,"");
   var niceName = {"mot":"MOT","tax":"Tax","insurance":"Insurance","fullservice":"Full service","timingbelt":"Timing belt"}[key] || title;
-  return "<div class='item"+tone(iso)+"' data-key='"+key+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'><button type='button' class='dchip' data-date='"+key+"' data-name='"+niceName+"' aria-label='Change "+niceName+" date and reminder'>"+(iso?nice(iso):"Add date")+"<span class='pen' aria-hidden='true'>\u270e</span></button></p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  return "<div class='item"+tone(iso)+"' data-key='"+key+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'><button type='button' class='dchip' data-date='"+key+"' data-name='"+niceName+"' aria-label='Change "+niceName+" date and reminder'>"+"<span class='dtxt'>"+(iso?nice(iso):"Add date")+"</span><span class='pen' aria-hidden='true'>\u270e</span></button></p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
 function carLogoHtml(name){
@@ -190,7 +184,9 @@ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitName).catc
 
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
-  if(!s.cars.length){ s.cars=[seed()]; s.i=0; save(s); }
+  var none=!s.cars.length;
+  document.body.classList.toggle("noCars",none);
+  if(none){ try{remindBanner()}catch(e){} if(window.driv3ShowChip) try{driv3ShowChip()}catch(e){} return; }
   var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
   var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
   hero.style.backgroundImage=c.photo?"none":"";
@@ -224,7 +220,7 @@ function paint(){
     row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=15?" cFlash":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=15?"<span class='mark bad'>\u2715</span>":"<span class='mark ok'>\u2713</span>"))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"<span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>";
+    "<div class='item"+(tl!=null&&tl<=0?" cOver":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=0?"<span class='mark bad'>\u2715</span>":(tl<=15?"<span class='mark soon'>!</span>":"<span class='mark ok'>\u2713</span>")))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+"<span class='dtxt'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"</span><span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>";
   try{remindBanner()}catch(e){}
 }
 function savePic(f){
@@ -450,10 +446,6 @@ on("btnClose",function(){document.getElementById("sheet").className="sheet"});
 on("btnCClose",function(){document.getElementById("contact").className="sheet"});
 on("btnDelete",function(){
   var s=state();
-  if(s.cars.length<=1){
-    alert("You need at least one car in the garage.");
-    return;
-  }
   var c=car();
   var name=c.nick||c.name||c.plate||"this car";
   if(!confirm("Are you sure you want to delete "+name+" from your garage?")) return;
@@ -512,7 +504,13 @@ function swipeEnd(e){
   el.addEventListener("touchstart",swipeStart,{passive:true});
   el.addEventListener("touchend",swipeEnd);
 });
-if(!localStorage.getItem("gt.garage")) save({i:0,cars:[seed()]});
+on("emptyGo",function(){
+  var v=document.getElementById("emptyPlate").value.trim();
+  openSheet("add");
+  if(v){ document.getElementById("fPlate").value=v; doLookup(); }
+});
+var ep=document.getElementById("emptyPlate");
+if(ep) ep.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); document.getElementById("emptyGo").click(); } });
 paint();
 var dateSynced={};
 var MOT_RECHECK_MS=7*86400000;

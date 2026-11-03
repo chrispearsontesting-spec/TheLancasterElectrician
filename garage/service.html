@@ -56,6 +56,10 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 .gAdd{background:#1f2a1f;color:#a7f3d0;border:1px solid #2c4a33;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:600;white-space:nowrap}.gAdd[disabled]{opacity:.55}
 .gCat{margin:14px 0 2px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9fd8ff}.gW{display:block;font-size:12px;color:#f59e0b;margin-top:2px}
 .gCount{font-size:12px;color:#8b93a0;margin:0 0 4px}
+.pAmt{display:flex;align-items:center;gap:2px;color:#9aa3b0;font-size:14px}.pAmt input{width:70px;background:#171a20;border:1px solid var(--line);color:#fff;border-radius:8px;padding:5px 6px;font-size:14px;font-weight:600}
+.pMoney{font-size:14px;font-weight:700;color:#fff;white-space:nowrap}.pMoney.q{color:#f59e0b;font-weight:600;font-size:13px}
+.pDate{background:#171a20;border:1px solid var(--line);color:#fff;border-radius:8px;padding:4px 6px;font-size:13px;margin-left:4px}
+.src{font-size:12px;color:#9fd8ff;margin:4px 0 2px}.tg{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-right:4px;background:#2a2f38;color:#cfd5de}.tg.major,.tg.dangerous,.tg.fail{background:#3a1d1d;color:#fca5a5}.tg.minor{background:#3a2e14;color:#fcd34d}
 .addPlan{margin:0 14px 14px;width:calc(100% - 28px);background:#1f2a1f;color:#a7f3d0;border:1px solid #2c4a33;border-radius:12px;padding:11px;font-size:14px;font-weight:600}
 </style>
 </head>
@@ -63,12 +67,13 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 <h1>Maintenance planner</h1>
 <p class="sub" id="carLine">Volvo XC60 D5</p>
 <div class="chips"><select class="chip" id="sizeSel" aria-label="Car size for estimates"></select><label class="rate" for="rateIn">Labour £<input id="rateIn" type="number" inputmode="decimal" min="10" max="400" step="1"/>/hr</label></div>
-<section class="hcard" id="planCard"><h2>Planned work</h2><div id="planList"></div><p class="tot" id="planTot"></p><p class="act" id="planAct"></p></section>
+<div class="acc" id="planCard"><button type="button" id="planToggle" data-ico="cal"><span id="planHead">Planned work</span> <span class="chev">+</span></button><div class="panel"><div id="planList"></div><p class="tot" id="planTot"></p><p class="act" id="planAct"></p></div></div>
+<div class="acc" id="motAcc"><button type="button" id="motToggle" data-ico="check"><span id="motHead">Expected costs from MOT</span> <span class="chev">+</span></button><div class="panel"><div id="motList"></div><p class="note" style="padding:6px 0 0">Prices are garage estimates for your car's size. Advisories don't always need doing straight away — ask your garage.</p></div></div>
 <label>Search a job or part</label>
 <input type="search" id="qBox" placeholder="Start typing, e.g. clutch" autocomplete="off"/>
 <div class="sugs" id="sugs"></div>
 <p class="status" id="status"></p>
-<div class="card hide" id="quoteBox"><div id="quotes"></div><p class="note" id="jobNote"></p><button type="button" class="addPlan" id="addPlan">+ Add to planned work</button></div>
+<div class="card hide" id="quoteBox"><div id="quotes"></div><p class="note" id="jobNote"></p></div>
 <div class="acc" id="buyAcc">
   <button type="button" id="buyToggle" data-ico="box">Where to buy <span class="chev">+</span></button>
   <div class="panel">
@@ -94,7 +99,9 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 <script src="./car-scope.js?v=1"></script>
 <script src="./reminders-core.js?v=2"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./planner-costs.js?v=2"></script>
+<script src="./mot-config.js"></script>
+<script src="./mot-client.js"></script>
+<script src="./planner-costs.js?v=3"></script>
 <script src="./icons.js?v=27"></script>
 <script>
 var picked=null;
@@ -175,12 +182,10 @@ function draw(){
       row("Labour used",hrs+" hrs \u00b7 \u00a3"+R+"/hr \u00b7 dealer about \u00a3"+dealer+"/hr");
     document.getElementById("jobNote").textContent=(job.note?job.note+" ":"")+"Estimate sized for a "+D3Cost.LAB[sz].toLowerCase()+". Not a quote.";
     document.getElementById("quoteBox").className="card";
-    var ap=document.getElementById("addPlan"); ap.textContent="+ Add to planned work"; ap.disabled=false;
   }else document.getElementById("quoteBox").className="card hide";
   links();
 }
 window.plannerRedraw=draw;
-document.getElementById("addPlan").onclick=function(){ if(!picked) return; var ok=D3Cost.addPlan(picked.id); D3Cost.redraw(); this.textContent=ok?"Added to planned work":"Already planned"; this.disabled=true; document.getElementById("planCard").scrollIntoView({behavior:"smooth",block:"start"}); };
 document.getElementById("costToggle").onclick=function(){toggleAcc("costAcc")};
 function toggleAcc(id){
   var el=document.getElementById(id);

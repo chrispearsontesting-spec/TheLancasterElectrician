@@ -35,7 +35,8 @@
   function r5(n){return Math.round(n/5)*5}
   /* {dlo,dhi,glo,ghi} or null when the job doesn't apply to this class. Uses j.cls[class] {p:[lo,hi],h} when present. */
   function est(j){
-    if(j.id==="mot")return {dlo:0,dhi:0,glo:55,ghi:55};  /* MOT fee is capped by DVSA (£54.85), not sized or labour-based */
+    if(j.id==="mot")return {dlo:0,dhi:0,glo:55,ghi:55};
+    if(j.fixed&&j.fixed.length===2) return {dlo:0,dhi:0,glo:r5(+j.fixed[0]),ghi:r5(+j.fixed[1]),h:null};  /* MOT fee is capped by DVSA (£54.85), not sized or labour-based */
     var k=size(), R=rate(), c=car(), plo,phi,h,m=1;
     if(j.cls&&typeof j.cls==="object"){ var x=j.cls[k]; if(!x||!x.p) return null; plo=+x.p[0]||0; phi=+x.p[1]||plo; h=x.h!=null?+x.h:+j.hrs||0;
       var f=j.fuel&&j.fuel[String(c.fuel||"").toLowerCase()]; if(f&&f.p){ plo=+f.p[0]||plo; phi=+f.p[1]||phi; } if(f&&f.h!=null) h=+f.h; }
@@ -48,45 +49,105 @@
   /* Match free text (reminder label / plan name) to a job */
   function match(text){var q=String(text||"").toLowerCase(),best=null,bs=0;(root.WORK||[]).forEach(function(w){var s=0,nm=w.name.toLowerCase();if(nm===q)s=100;else if(q.indexOf(nm)>=0)s=50+nm.length;else{(nm+" "+(w.buy||"")).split(/[^a-z0-9]+/).forEach(function(t){if(t.length>3&&q.indexOf(t)>=0)s+=t.length})}if(s>bs){bs=s;best=w}});return bs>=6?best:null}
 
-  /* ---------- planned / upcoming work for the selected car ---------- */
-  function plan(){return (rd("gt.plan",{})[vrn()]||[])}
-  function setPlan(l){var o=rd("gt.plan",{});o[vrn()]=l;wr("gt.plan",o)}
-  function matchOf(key,fallback){var m=(rd("gt.planMatch",{})[vrn()]||{})[key];return m==="none"?null:job(m)||fallback}
-  function setMatch(key,id){var o=rd("gt.planMatch",{}),v=vrn();o[v]=o[v]||{};o[v][key]=id;wr("gt.planMatch",o)}
+  /* ---------- planned work: known recurring costs for the next 12 months (garage estimate only) ---------- */
+  function migrate(){ var o=rd("gt.plan",null); if(o){ try{localStorage.setItem("gt.planOld",JSON.stringify(o));localStorage.removeItem("gt.plan")}catch(e){} } }
+  function amts(){return rd("gt.renewAmt",{})[vrn()]||{}}
+  function setAmt(k,v){var o=rd("gt.renewAmt",{}),r=vrn();o[r]=o[r]||{};if(v>0)o[r][k]=v;else delete o[r][k];wr("gt.renewAmt",o)}
+  function whenTxt(d){return d<0?"Overdue by "+(-d)+" day"+(d===-1?"":"s"):d===0?"Due today":"Due in "+(d>60?Math.round(d/30.4)+" months":d+" day"+(d===1?"":"s"))}
+  function fmtD(s){var d=new Date(s+"T12:00:00");return isNaN(d)?"":d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}
+  function iso(t){var d=new Date(t);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+  function tyreDue(c){ if(!c.tyreDate) return null; var life=+c.tyreLife||20000, mi=+c.miles||8000; return iso(new Date(c.tyreDate+"T12:00:00").getTime()+life/mi*365*864e5); }
+  var REMJOB={mot:"mot",service:"full",belt:"beltwp"};
   function items(){
-    var out=[],g=rd("gt.garage",null),ci=root.D3Car?D3Car.curIndex():(g&&g.i)||0;
-    if(root.D3Rem) D3Rem.dueItems(g).forEach(function(e){ if(e.carIndex!==ci||!TYPEJOB[e.type]) return; var d=D3Rem.daysUntil(e.due); if(d>365) return;
-      out.push({key:"rem:"+e.type,name:e.label,when:d<0?"Overdue by "+(-d)+" day"+(d===-1?"":"s"):d===0?"Due today":"Due in "+(d>60?Math.round(d/30.4)+" months":d+" day"+(d===1?"":"s")),job:matchOf("rem:"+e.type,job(TYPEJOB[e.type])||match(e.label)),d:d}); });
-    plan().forEach(function(p){ var j=job(p.job); out.push({key:"plan:"+p.id,name:j?j.name:p.name||"Planned job",when:"Planned",job:matchOf("plan:"+p.id,j),pid:p.id,d:9999}); });
-    return out.sort(function(a,b){return a.d-b.d});
+    var out=[],g=rd("gt.garage",null),ci=root.D3Car?D3Car.curIndex():(g&&g.i)||0,c=car(),a=amts();
+    if(root.D3Rem) D3Rem.dueItems(g).forEach(function(e){ if(e.carIndex!==ci) return; var d=D3Rem.daysUntil(e.due); if(d>365) return;
+      if(REMJOB[e.type]){ var j=job(REMJOB[e.type]); out.push({key:e.type,name:e.type==="mot"?"MOT test":e.type==="service"?"Full service":"Timing belt + water pump",due:e.due,d:d,job:j}); }
+      else if(e.type==="tax"||e.type==="insurance"){ var k=e.type==="tax"?"tax":"ins"; out.push({key:k,name:e.type==="tax"?"Road tax":"Insurance",due:e.due,d:d,own:k,val:a[k]||0}); } });
+    var td=tyreDue(c);
+    if(!td) out.push({key:"tyres",name:"Tyres (front pair)",d:9998,ask:true,job:job("tyres2")});
+    else { var d=root.D3Rem?D3Rem.daysUntil(td):0; if(d<=365) out.push({key:"tyres",name:"Tyres (front pair)",due:td,d:d,job:job("tyres2"),tyre:true}); }
+    return out.sort(function(x,y){return x.d-y.d});
   }
-  function opts(sel){return "<option value='none'>No estimate</option>"+(root.WORK||[]).slice().sort(function(a,b){return a.name<b.name?-1:1}).map(function(w){return "<option value='"+w.id+"'"+(sel===w.id?" selected":"")+">"+esc(w.name)+"</option>"}).join("")}
   function drawPlan(){
-    var box=document.getElementById("planList"); if(!box) return; var it=items(), dl=0,dh=0,gl=0,gh=0;
-    box.innerHTML=it.length?it.map(function(x){ var e=x.job?est(x.job):null; if(e){dl+=e.dlo;dh+=e.dhi;gl+=e.glo;gh+=e.ghi;}
-      return "<div class='pRow'><div class='pTop'><b>"+esc(x.name)+"</b><span class='pWhen"+(x.d<0?" over":"")+"'>"+esc(x.when)+"</span>"+(x.pid?"<button type='button' class='pX' data-rm='"+x.pid+"' aria-label='Remove'>✕</button>":"")+"</div>"+
-        (x.job?"<p class='pEst'>"+line(x.job)+"</p>":"<p class='pEst muted'>No estimate yet — pick the matching job</p>")+
-        "<label class='pPick'>"+(x.job?"Estimate based on":"Matching job")+" <select data-k='"+esc(x.key)+"'>"+opts(x.job&&x.job.id)+"</select></label></div>"; }).join("")
-      :"<p class='muted pEmpty'>Nothing planned. Add a job from the search above or the cost guide below, or set MOT / service dates on your car.</p>";
-    var mid=function(a,b){return money(r5((a+b)/2))};
-    document.getElementById("planTot").innerHTML=it.length?"Planned work: about <b>"+mid(dl,dh)+"</b> DIY / <b>"+mid(gl,gh)+"</b> garage <small>estimate</small>":"";
-    // actual spend from receipts / typed prices (DIY work in the Drive diary) — not an estimate
+    var box=document.getElementById("planList"); if(!box) return; var it=items(), tot=0;
+    box.innerHTML=it.length?it.map(function(x){
+      var right="", sub="";
+      if(x.own){ right="<label class='pAmt'>£<input type='number' inputmode='decimal' min='0' step='1' data-amt='"+x.own+"' value='"+(x.val||"")+"' placeholder='Add'/></label>"; tot+=+x.val||0;
+        sub=x.val?"Your figure":"Type what you pay to include it"; }
+      else if(x.job){ var e=est(x.job); if(e){ if(!x.ask) tot+=(e.glo+e.ghi)/2; right=x.ask?"<span class='pMoney q'>"+rng(e.glo,e.ghi)+"</span>":"<span class='pMoney'>"+(x.key==="mot"?"up to £54.85":rng(e.glo,e.ghi))+"</span>"; } sub=x.key==="mot"?"Test fee (DVSA maximum)":"Garage estimate"+(x.tyre?" · from your tyre details":""); }
+      if(x.ask) sub="When were the tyres fitted? <input type='date' class='pDate' data-tyre='1'/>";
+      return "<div class='pRow'><div class='pTop'><b>"+esc(x.name)+"</b>"+right+"</div><p class='pEst muted'>"+(x.due?"<span class='pWhen"+(x.d<0?" over":"")+"'>"+fmtD(x.due)+" · "+whenTxt(x.d)+"</span><br>":"")+sub+"</p></div>"; }).join("")
+      :"<p class='muted pEmpty'>Nothing due in the next 12 months. Add MOT, service and timing belt dates on your car to see costs here.</p>";
+    var h=document.getElementById("planHead"); if(h) h.textContent="Planned work"+(tot?" · about "+money(r5(tot)):"");
+    document.getElementById("planTot").innerHTML=tot?"Next 12 months: about <b>"+money(r5(tot))+"</b> <small>garage estimates plus your own figures</small>":"";
     var act=document.getElementById("planAct"); if(act&&root.D3Diy){ var lo=Date.now()-365*864e5, t=0;
       D3Diy.forPlate(car().plate).forEach(function(w){ var d=new Date(w.date+"T12:00").getTime(); if(d>=lo&&d<=Date.now()+864e5) t+=D3Diy.cost?D3Diy.cost(w):0; });
-      act.innerHTML="Spent on DIY work, last 12 months: <b>"+money(t)+"</b> <small>actual, from your receipts</small>"; }
+      act.innerHTML=t?"Already spent on DIY work, last 12 months: <b>"+money(t)+"</b> <small>from your receipts</small>":""; }
   }
-  function addPlan(id){ var l=plan(); if(l.some(function(p){return p.job===id})) return false; l.push({id:Date.now().toString(36),job:id,added:Date.now()}); setPlan(l); drawPlan(); return true; }
+  function addPlan(){return false}
+
+  /* ---------- expected costs from the latest MOT ---------- */
+  var MOTMAP=[
+    [/brake pipe/i,"brakepipe"],[/brake hose|flexible brake/i,"hoses"],[/parking brake|handbrake/i,"handbrake"],
+    [/exhaust.*corro|corro.*exhaust|exhaust/i,"exhaust"],[/silencer|back box/i,"backbox"],[/catalytic/i,"cat"],[/particulate|\bdpf\b/i,"dpfr"],
+    [/corro|rust/i,"inspect"],
+    [/tyre/i,"tyres2"],[/brake (pad|lining)s?\b(?!.*disc)/i,"pads"],[/brake disc|brake pad|brake lining/i,"fpads"],[/caliper/i,"caliper"],
+    [/coil spring|road spring/i,"spring"],[/shock absorber|damper/i,"damp"],[/anti-roll bar (linkage|link)|drop link/i,"drop"],[/anti-roll bar.*bush/i,"arbbush"],
+    [/ball joint/i,"balljoint"],[/track rod/i,"track"],[/wheel bearing|hub bearing/i,"bearing"],[/cv boot|constant velocity|drive ?shaft.*(boot|gaiter)|gaiter/i,"cvboot"],
+    [/wishbone|suspension arm|control arm/i,"wishbone"],[/pivot.*bush|bush/i,"bush"],[/subframe/i,"subframe"],
+    [/oil leak|leaking oil|engine.*leak/i,"oilleak"],[/windscreen/i,"windscreen"],[/wiper/i,"wipers"],[/washer/i,"washer"],
+    [/registration plate|number plate/i,"numberplate"],[/(lamp|light).*(not working|inoperative|missing)|bulb/i,"bulb"],[/horn/i,"horn"],[/seat belt/i,"seatbelt"],[/sill/i,"sill"]
+  ];
+  var REARJ={tyres2:"tyres2",pads:"rearpads",fpads:"rpads",damp:"rdamp"};
+  function mapDef(t){ for(var i=0;i<MOTMAP.length;i++) if(MOTMAP[i][0].test(t)){ var id=MOTMAP[i][1], rear=/\brear\b/i.test(t)&&!/\bfront\b/i.test(t);
+      if(rear&&REARJ[id]) id=REARJ[id]; return {id:id,axle:/tyre/i.test(t)?(rear?"rear":"front"):""}; } return {id:null}; }
+  function latest(tests){
+    tests=(tests||[]).slice().sort(function(a,b){return String(b.completedDate||"")<String(a.completedDate||"")?-1:1}); if(!tests.length) return null;
+    var day=String(tests[0].completedDate||"").slice(0,10), same=tests.filter(function(t){return String(t.completedDate||"").slice(0,10)===day}),
+        passed=/PASS/i.test(tests[0].testResult||""), seen={}, defs=[];
+    same.forEach(function(t){ (t.defects||t.rfrAndComments||[]).forEach(function(d){ var ty=String(d.type||"").toUpperCase(), tx=d.text||d.comment||""; if(!tx||ty==="PRS"||ty==="USER ENTERED") return;
+      if(passed&&!/ADVISORY|MINOR/.test(ty)) return; if(seen[tx]) return; seen[tx]=1; defs.push({type:d.dangerous?"DANGEROUS":ty,text:tx}); }); });
+    return {day:day,passed:passed,defs:defs};
+  }
+  function motGroups(L){
+    var g={},order=[]; L.defs.forEach(function(d){ var m=mapDef(d.text), k=m.id?m.id+(m.axle?":"+m.axle:""):"q:"+d.text;
+      if(!g[k]){ g[k]={m:m,defs:[]}; order.push(k); } g[k].defs.push(d); });
+    return order.map(function(k){return g[k]});
+  }
+  function lbl(t){return {ADVISORY:"Advisory",MINOR:"Minor",MAJOR:"Fail",DANGEROUS:"Dangerous",FAIL:"Fail"}[t]||"Note"}
+  function drawMot(){
+    var box=document.getElementById("motList"); if(!box) return; var c=rd("gt.motCache",{})[vrn()], h=document.getElementById("motHead");
+    if(!vrn()){ box.innerHTML="<p class='muted pEmpty'>Add your number plate to see costs from your last MOT.</p>"; return; }
+    if(!c){ box.innerHTML="<p class='muted pEmpty'>Checking your MOT history…</p>"; return; }
+    var L=latest(c.tests);
+    if(!L){ box.innerHTML="<p class='muted pEmpty'>No MOT history found for this car yet. New cars don't need an MOT until they're 3 years old.</p>"; h.textContent="Expected costs from MOT"; return; }
+    if(!L.defs.length){ box.innerHTML="<p class='src'>From MOT on "+fmtD(L.day)+"</p><p class='muted pEmpty'>No advisories on the last MOT. Nothing extra to budget for.</p>"; h.textContent="Expected costs from MOT · none"; return; }
+    var lo=0,hi=0,q=0;
+    var rows=motGroups(L).map(function(G){ var j=G.m.id&&G.m.id!=="inspect"?job(G.m.id):null, e=j?est(j):null, right, nm;
+      if(e){ lo+=e.glo; hi+=e.ghi; right="<span class='pMoney'>"+rng(e.glo,e.ghi)+"</span>"; nm=j.name+(G.m.axle?" ("+G.m.axle+")":""); }
+      else if(G.m.id==="inspect"){ right="<span class='pMoney q'>Needs inspection</span>"; nm="Corrosion check"; q++; }
+      else { right="<span class='pMoney q'>Get a quote</span>"; nm="Other repair"; q++; }
+      return "<div class='pRow'><div class='pTop'><b>"+esc(nm)+"</b>"+right+"</div>"+G.defs.map(function(d){return "<p class='pEst muted'><span class='tg "+d.type.toLowerCase()+"'>"+lbl(d.type)+"</span> "+esc(d.text)+"</p>"}).join("")+"</div>"; });
+    box.innerHTML="<p class='src'>From MOT on "+fmtD(L.day)+(L.passed?" (passed)":" (failed)")+"</p>"+rows.join("")+
+      "<p class='tot'>Expected from MOT advisories: about <b>"+rng(r5(lo),r5(hi))+"</b> <small>garage estimate"+(q?" · plus "+q+" item"+(q===1?"":"s")+" to price":"")+"</small></p>";
+    h.textContent="Expected costs from MOT"+(hi?" · about "+money(r5((lo+hi)/2)):"");
+  }
+  function loadMot(){
+    var r=vrn(); if(!r||!root.fetchMotVehicle) return drawMot(); var all=rd("gt.motCache",{}), c=all[r];
+    drawMot(); if(c&&Date.now()-c.at<864e5) return;
+    root.fetchMotVehicle(r).then(function(info){ if(!info.ok){ if(!c){ var b=document.getElementById("motList"); if(b) b.innerHTML="<p class='muted pEmpty'>Couldn't check your MOT history right now. It'll try again next time you open this.</p>"; } return; }
+      var o=rd("gt.motCache",{}); o[r]={at:Date.now(),tests:(info.tests||[]).slice(0,6).map(function(t){return {completedDate:t.completedDate,testResult:t.testResult,defects:(t.defects||t.rfrAndComments||[]).map(function(d){return {type:d.type,text:d.text||d.comment,dangerous:d.dangerous}})}})};
+      wr("gt.motCache",o); drawMot(); });
+  }
 
   /* ---------- cost guide ---------- */
   function drawGuide(){
     var box=document.getElementById("guideList"); if(!box) return; var q=(document.getElementById("guideQ").value||"").toLowerCase().trim(), have={};
-    plan().forEach(function(p){have[p.job]=1});
     var l=(root.WORK||[]).filter(function(w){return !q||(w.name+" "+(w.buy||"")+" "+(w.note||"")+" "+(w.cat||"")).toLowerCase().indexOf(q)>=0});
     var stars=function(n){n=Math.max(1,Math.min(5,+n||0));return "DIY "+["easy","fairly easy","moderate","hard","expert"][n-1]+" ("+n+"/5)"};
     var rowOf=function(w){ var e=est(w), ex=[]; if(e&&e.h!=null) ex.push(e.h+" hr"+(e.h===1?"":"s")+" labour"); else ex.push(w.hrs+" hr"+(w.hrs===1?"":"s")+" labour");
-      if(w.diy) ex.push(stars(w.diy)); if(w.interval) ex.push("Every "+esc(w.interval)); if(w.note) ex.push(esc(w.note));
-      return "<div class='gRow'><div class='gTxt'><b>"+esc(w.name)+"</b><small>"+line(w)+"</small><small class='gH'>"+ex.join(" · ")+"</small>"+(w.warn?"<small class='gW'>⚠ "+esc(w.warn)+"</small>":"")+(w.tools?"<small class='gH'>Tools: "+esc([].concat(w.tools).join(", "))+"</small>":"")+"</div>"+
-        "<button type='button' class='gAdd' data-add='"+w.id+"'"+(have[w.id]||!e?" disabled":"")+">"+(have[w.id]?"Planned":!e?"N/A":"+ Plan")+"</button></div>"; };
+      if(w.diy) ex.push(stars(typeof w.diy==="object"?w.diy.lvl:w.diy)+(w.diy.ok===false?" · garage job":"")); if(w.interval) ex.push("Every "+esc(w.interval)); if(w.note) ex.push(esc(w.note));
+      return "<div class='gRow'><div class='gTxt'><b>"+esc(w.name)+"</b><small>"+line(w)+"</small><small class='gH'>"+ex.join(" · ")+"</small>"+(w.warn?"<small class='gW'>⚠ "+esc(w.warn)+"</small>":"")+(w.tools?"<small class='gH'>Tools: "+esc([].concat(w.tools).join(", "))+"</small>":"")+"</div></div>"; };
     var cats={}, order=[]; l.forEach(function(w){ var c=w.cat||""; if(!cats[c]){cats[c]=[];order.push(c);} cats[c].push(w); });
     box.innerHTML=l.length?(order.length>1||order[0]?order.map(function(c){ return "<p class='gCat'>"+esc(c||"Other")+"</p>"+cats[c].map(rowOf).join(""); }).join(""):l.map(rowOf).join("")):"<p class='muted'>No jobs match “"+esc(q)+"”.</p>";
     document.getElementById("guideCount").textContent=l.length+" of "+(root.WORK||[]).length+" jobs";
@@ -95,19 +156,22 @@
     var s=size(), el=document.getElementById("sizeSel"); if(el){ el.innerHTML=Object.keys(MULT).map(function(k){return "<option value='"+k+"'"+(k===s?" selected":"")+">Sized for: "+LAB[k]+(k===guess(car())?" (auto)":"")+"</option>"}).join(""); }
     var r=document.getElementById("rateIn"); if(r&&document.activeElement!==r) r.value=rate();
   }
-  function all(){drawChip();drawPlan();drawGuide();if(root.plannerRedraw)root.plannerRedraw();}
+  function all(){drawChip();drawPlan();drawMot();drawGuide();if(root.plannerRedraw)root.plannerRedraw();}
   function wire(){
     var s=document.getElementById("sizeSel"); if(s) s.onchange=function(){setSize(this.value);all()};
-    var r=document.getElementById("rateIn"); if(r) r.oninput=function(){var v=+this.value;if(v>=10&&v<=400){wr("gt.labourRate",v);drawPlan();drawGuide();if(root.plannerRedraw)root.plannerRedraw();}};
-    document.getElementById("planList").addEventListener("change",function(e){var k=e.target.getAttribute("data-k");if(!k)return;setMatch(k,e.target.value);drawPlan()});
-    document.getElementById("planList").addEventListener("click",function(e){var b=e.target.closest("[data-rm]");if(!b)return;setPlan(plan().filter(function(p){return p.id!==b.getAttribute("data-rm")}));drawPlan();drawGuide()});
+    var r=document.getElementById("rateIn"); if(r) r.oninput=function(){var v=+this.value;if(v>=10&&v<=400){wr("gt.labourRate",v);drawPlan();drawMot();drawGuide();if(root.plannerRedraw)root.plannerRedraw();}};
+    migrate();
+    document.getElementById("planList").addEventListener("change",function(e){var t=e.target;
+      if(t.getAttribute("data-amt")){setAmt(t.getAttribute("data-amt"),+t.value);drawPlan();}
+      else if(t.getAttribute("data-tyre")&&t.value){var g=rd("gt.garage",null),i=root.D3Car?D3Car.curIndex():g.i;if(g&&g.cars[i]){g.cars[i].tyreDate=t.value;if(!g.cars[i].tyreLife)g.cars[i].tyreLife="20000";wr("gt.garage",g);}drawPlan();}});
+    ["planToggle","motToggle"].forEach(function(id){var b=document.getElementById(id);if(b)b.onclick=function(){var a=b.parentNode;a.classList.toggle("open")}});
+    loadMot();
     document.getElementById("guideQ").addEventListener("input",drawGuide);
-    document.getElementById("guideList").addEventListener("click",function(e){var b=e.target.closest("[data-add]");if(!b)return;addPlan(b.getAttribute("data-add"));drawGuide()});
     var gb=document.getElementById("guideBtn"); if(gb) gb.onclick=function(){openGuide(true)};
     all();
     if(location.hash==="#guide") setTimeout(function(){openGuide(true)},50);
   }
   function openGuide(scroll){var a=document.getElementById("costAcc");a.classList.add("open");drawGuide();if(scroll)a.scrollIntoView({block:"start"})}
-  root.D3Cost={MULT:MULT,LAB:LAB,guess:guess,size:size,rate:rate,est:est,line:line,match:match,addPlan:addPlan,redraw:all};
+  root.D3Cost={MULT:MULT,LAB:LAB,guess:guess,size:size,rate:rate,est:est,line:line,match:match,addPlan:addPlan,mapDef:mapDef,latest:latest,redraw:all};
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wire); else wire();
 })(window);

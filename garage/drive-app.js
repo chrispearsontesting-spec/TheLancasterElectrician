@@ -188,7 +188,7 @@ async function start(){
   }
   startGps();
   on=true;
-  document.getElementById("go").textContent="Stop";
+  document.getElementById("go").textContent="Stop";document.getElementById("go").classList.add("stop");
   document.getElementById("rec").textContent=trackOnly?"TRACKING":"REC";
 }
 async function saveTrip(blob){
@@ -215,7 +215,7 @@ function stop(){
       streams.forEach(function(s){s.getTracks().forEach(function(t){t.stop()})});
       streams=[];
       if(wake){try{wake.release()}catch(e){}}
-      document.getElementById("go").textContent="Start";
+      document.getElementById("go").textContent="Start";document.getElementById("go").classList.remove("stop");
       document.getElementById("rec").textContent="Saved";
     });
   }

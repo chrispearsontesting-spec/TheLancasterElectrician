@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<script src="./app-lock.js?v=1"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0f"/>
+<title>Record</title>
+<link rel="stylesheet" href="./tool-bar.css?v=1"/>
+<style>
+:root{--bg:#0b0c0e;--ink:#f3efe6;--dim:#9aa3b0}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+.stage{position:fixed;inset:0;background:#0b0c0e}
+#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
+#front{position:absolute;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));width:26vw;max-width:200px;height:16vw;max-height:120px;object-fit:cover;background:#111;border-radius:12px;border:2px solid rgba(255,255,255,.35);z-index:3}
+body.track #rear,body.track #front,body.track #flip{display:none}
+.top{position:absolute;right:max(12px,env(safe-area-inset-right));top:calc(64px + env(safe-area-inset-top));z-index:4;display:flex;gap:8px;align-items:center}
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;align-items:center;padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.65))}
+.ticker{display:flex;gap:18px;align-items:baseline;margin-bottom:8px}
+.ticker b{font-size:22px}
+.ticker span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase}
+.go{width:min(72vw,420px);height:56px;border:0;border-radius:18px;font-weight:600;font-size:20px;background:#1c1c1e;color:#fff}
+.btn{border:0;border-radius:18px;padding:10px 16px;font-weight:600;background:#1c1c1e;color:#fff}
+.rec{color:#fca5a5;font-weight:800;font-size:13px}
+.err{color:#e7b1a0;font-size:12px;margin:6px 0 0;text-align:center}
+.links{margin-top:8px;display:flex;gap:8px}
+.links a{color:#f2f2f2;text-decoration:none;background:#1c1c1e;border-radius:14px;padding:8px 12px;font-weight:600}
+</style>
+</head>
+<body>
+<header class="appbar"><a class="back" href="home.html#drive">Back</a><h1>Record</h1></header>
+<div class="stage">
+  <video id="rear" playsinline muted autoplay></video>
+  <video id="front" playsinline muted autoplay></video>
+  <div class="top">
+    <button class="btn" id="flip" type="button">Flip</button>
+    <span class="rec" id="rec">Ready</span>
+  </div>
+  <div class="dock">
+    <div class="ticker">
+      <div><span>Cost</span><b id="cost">£0.00</b></div>
+      <div><span>Miles</span><b id="miles">0.00</b></div>
+      <div><span>Speed</span><b id="speed">0</b></div>
+    </div>
+    <button class="go" id="go" type="button">Start</button>
+    <p class="err" id="err"></p>
+    <p class="links"><a href="calendar.html">Drive diary</a></p>
+  </div>
+</div>
+<script src="drive-app.js?v=2"></script>
+</body>
+</html>

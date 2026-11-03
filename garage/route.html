@@ -6,7 +6,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
 <title>Garage route</title>
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+<meta name="description" content="Work out the fuel cost of a journey for your car."/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Driv3"/>
+<meta property="og:title" content="Route costs · Driv3"/>
+<meta property="og:description" content="Work out the fuel cost of a journey for your car."/>
+<meta property="og:url" content="https://thelancasterelectrician.com/garage/route.html"/>
+<meta property="og:image" content="https://thelancasterelectrician.com/garage/og-image.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="Driv3 – your car organiser for UK drivers"/>
+<meta property="og:locale" content="en_GB"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Route costs · Driv3"/>
+<meta name="twitter:description" content="Work out the fuel cost of a journey for your car."/>
+<meta name="twitter:image" content="https://thelancasterelectrician.com/garage/og-image.png"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="icon" href="./favicon.ico" sizes="any"/>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="./icon-192.png"/>
+<script src="./sw-reg.js?v=1" defer></script>
+<link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css?v=4.7.1"/>
 <link rel="stylesheet" href="./ui.css"/>
 <style>
 :root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12);--ring:#6b7280;--ice:#9fd8ff}
@@ -129,8 +149,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
 <input id="plate" type="hidden"/>
 <input id="q" type="hidden"/>
 <div id="favs" class="hide"></div>
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="./vendor/maplibre/maplibre-gl.js?v=4.7.1"></script>
 <script src="trip-specs.js"></script>
 <script src="cars-uk-1.js"></script>
 <script src="cars-uk-2.js"></script>

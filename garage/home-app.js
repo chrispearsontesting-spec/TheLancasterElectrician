@@ -297,10 +297,14 @@ function scanPlate(file){
   var hint=document.getElementById("plateHint");
   if(hint) hint.textContent="Scanning plate\u2026 (this can take a few seconds)";
   if(typeof Tesseract==="undefined"){
-    if(hint) hint.textContent="OCR not loaded. Refresh the page.";
-    return;
+    var s=document.createElement("script"); s.src="./vendor/tesseract/tesseract.min.js?v=5.1.1";
+    s.onload=function(){ scanPlate(file); };
+    s.onerror=function(){ if(hint) hint.textContent="Plate reader could not load. Type the plate instead."; };
+    document.head.appendChild(s); return;
   }
+  var VB=new URL("vendor/tesseract/",location.href).href;
   var opts = {
+    workerPath: VB+"worker.min.js", corePath: VB, langPath: VB.replace(/\/$/,""), gzip: true, workerBlobURL: false, cacheMethod: "none",
     logger: function(m){ if(m.status==="recognizing text" && hint) hint.textContent="Reading\u2026 "+Math.round((m.progress||0)*100)+"%"; },
     tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ",
     tessedit_pageseg_mode: "7"
@@ -546,5 +550,5 @@ function syncDates(){
   }).catch(function(){});
 }
 syncDates();
-if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){});}
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"}).catch(function(){});}
 remindHash();

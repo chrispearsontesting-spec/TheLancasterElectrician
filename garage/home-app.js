@@ -493,6 +493,7 @@ on("btnSave",function(){
   if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}
   if(window.D3Diy) try{ D3Diy.onEdit(before,c); }catch(e){}
   save(s);paint();document.getElementById("sheet").className="sheet";
+  if(typeof syncDates==="function") syncDates();
 });
 var swipeAt=0;
 function swipeStart(e){swipeAt=e.changedTouches?e.changedTouches[0].clientX:e.clientX}
@@ -516,38 +517,58 @@ on("emptyGo",function(){
 var ep=document.getElementById("emptyPlate");
 if(ep) ep.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); document.getElementById("emptyGo").click(); } });
 paint();
-var dateSynced={};
+var dateSynced={}, taxSynced={};
 var MOT_RECHECK_MS=7*86400000;
+function plateKey(p){ return String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+function findCarBy(s,plate){
+  for(var k=0;k<s.cars.length;k++){ if(plateKey(s.cars[k].plate)===plate) return s.cars[k]; }
+  return null;
+}
 function syncDates(){
   var c=car();
-  var plate=String(c.plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
-  if(!plate||dateSynced[plate]||!window.fetchMotVehicle) return;
-  if(c.motChecked && (Date.now()-c.motChecked) < MOT_RECHECK_MS) return;
-  dateSynced[plate]=1;
-  function findCar(s){
-    for(var k=0;k<s.cars.length;k++){ if(String(s.cars[k].plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"")===plate) return s.cars[k]; }
-    return null;
-  }
-  window.fetchMotVehicle(plate).then(function(info){
-    var s=state(), target=findCar(s);
-    if(!target) return;
-    if(!info||!info.ok){
-      // Not found or proxy down: back off for a day instead of retrying every load.
-      target.motChecked=Date.now()-MOT_RECHECK_MS+86400000;
+  var plate=plateKey(c.plate);
+  if(!plate) return;
+  // MOT expiry from the DVSA history.
+  if(!dateSynced[plate] && window.fetchMotVehicle && !(c.motChecked && (Date.now()-c.motChecked) < MOT_RECHECK_MS)){
+    dateSynced[plate]=1;
+    window.fetchMotVehicle(plate).then(function(info){
+      var s=state(), target=findCarBy(s,plate);
+      if(!target) return;
+      if(!info||!info.ok){
+        // Not found or proxy down: back off for a day instead of retrying every load.
+        target.motChecked=Date.now()-MOT_RECHECK_MS+86400000;
+        save(s);
+        return;
+      }
+      target.motChecked=Date.now();
+      var exp="";
+      var tests=(info&&info.tests)||[];
+      for(var i=0;i<tests.length;i++){
+        if(tests[i].expiryDate){exp=String(tests[i].expiryDate).slice(0,10);break;}
+      }
+      if(exp) target.mot=exp;
       save(s);
-      return;
-    }
-    target.motChecked=Date.now();
-    var exp="";
-    var tests=(info&&info.tests)||[];
-    var i;
-    for(i=0;i<tests.length;i++){
-      if(tests[i].expiryDate){exp=String(tests[i].expiryDate).slice(0,10);break;}
-    }
-    if(exp) target.mot=exp;
-    save(s);
-    if(exp) paint();
-  }).catch(function(){});
+      if(exp) paint();
+    }).catch(function(){});
+  }
+  // Tax renewal date from GOV.UK (same rules as tax.html).
+  if(!taxSynced[plate] && window.D3Tax && !(c.taxChecked && (Date.now()-c.taxChecked) < MOT_RECHECK_MS)){
+    taxSynced[plate]=1;
+    window.D3Tax.fetch(plate).then(function(r){
+      var s=state(), target=findCarBy(s,plate);
+      if(!target) return;
+      if(!r||!r.ok){
+        target.taxChecked=Date.now()-MOT_RECHECK_MS+86400000;
+        save(s);
+        return;
+      }
+      target.taxChecked=Date.now();
+      var changed=false;
+      if(r.due && target.tax!==r.due){ target.tax=r.due; changed=true; }
+      save(s);
+      if(changed) paint();
+    }).catch(function(){});
+  }
 }
 syncDates();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"}).catch(function(){});}

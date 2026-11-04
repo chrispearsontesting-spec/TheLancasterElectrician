@@ -28,6 +28,7 @@
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=78"/>
 <script src="./mot-config.js"></script>
+<script src="./tax-lookup.js?v=1"></script>
 <style>
 body{margin:0 auto;max-width:440px;padding:16px;background:#0b0c0e;color:#f3efe6;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 h1{font-size:22px;margin:8px 0}
@@ -62,7 +63,7 @@ var proxy=(window.MOT_PROXY||"").replace(/\/$/,"");
 function j(u){ return fetch(u).then(function(r){ if(!r.ok) throw 0; return r.json(); }).catch(function(){ return {}; }); }
 var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function uk(iso){ var x=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso||""); return x?(+x[3])+" "+MON[+x[2]-1]+" "+x[1]:""; }
-function toIso(txt){ var x=/(\d{1,2}) (\w{3})\w* (\d{4})/.exec(txt||""); if(!x) return ""; var i=MON.indexOf(x[2].charAt(0).toUpperCase()+x[2].slice(1,3).toLowerCase()); return i<0?"":x[3]+"-"+("0"+(i+1)).slice(-2)+"-"+("0"+x[1]).slice(-2); }
+var toIso=D3Tax.toIso;
 var G={cars:[]}; try{ G=JSON.parse(localStorage.getItem("gt.garage")||"{}")||{}; }catch(e){}
 var car=(G.cars||[]).filter(function(c){ return String(c.plate||"").toUpperCase().replace(/[^A-Z0-9]/g,"")===plate; })[0]||null;
 function saveGarage(){ try{ localStorage.setItem("gt.garage",JSON.stringify(G)); }catch(e){} }
@@ -88,9 +89,7 @@ else Promise.all([ j(proxy+"/?plate="+plate+"&tax=1"), j(proxy+"/?plate="+plate)
   var tax=document.getElementById("tax"), mot=document.getElementById("mot");
   // Only green when the service actually confirmed it. Anything unknown is grey, never green.
   // The GOV.UK check can come back as a timed-out page whose title still says "taxed", so only trust a status the page really stated.
-  var raw=String(d.raw||""), t=String(d.tax||"").trim();
-  if(/timed out|session/i.test(raw) || !/tax due|tax expired|untaxed|sorn/i.test(raw)) t="";
-  var m2=/tax due:?\s*(\d{1,2} \w+ \d{4})/i.exec(raw), apiDue=m2?toIso(m2[1]):"";
+  var px=D3Tax.parse(d), t=px.status, apiDue=px.due;
   if(apiDue&&car&&car.tax!==apiDue){ car.tax=apiDue; saveGarage(); }
   paintTax(t, apiDue);
   var tests=m.motTests||[], latest=tests[0]||{}, exp=String(latest.expiryDate||"");

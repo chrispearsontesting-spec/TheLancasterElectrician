@@ -121,6 +121,120 @@ export async function govukTaxText(clean) {
   return at > 0 ? text.slice(at) : text;
 }
 
+// ---- Garage website contact finder (?contact=<url>) ----
+// Reads at most 2 pages (home + one same-host contact page), 5 s each, ~500 KB each, <=3 redirects.
+const C_UA = { "User-Agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36", "Accept": "text/html,application/xhtml+xml" };
+const C_MAX = 500000;
+
+export function safeUrl(raw) {
+  let u;
+  try { u = new URL(String(raw || "").trim()); } catch (e) { return null; }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+  if (u.port && u.port !== "80" && u.port !== "443") return null;
+  if (u.username || u.password) return null;
+  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (!h.includes(".") || h === "localhost" || /\.(localhost|local|internal|lan|home|arpa)$/.test(h)) return null;
+  if (/^[\d.]+$/.test(h)) {
+    const p = h.split(".").map(Number);
+    if (p.length !== 4 || p.some(n => !(n >= 0 && n <= 255))) return null;
+    if (p[0] === 10 || p[0] === 127 || p[0] === 0 || p[0] >= 224 || (p[0] === 169 && p[1] === 254) ||
+        (p[0] === 172 && p[1] >= 16 && p[1] <= 31) || (p[0] === 192 && p[1] === 168) || (p[0] === 100 && p[1] >= 64 && p[1] <= 127)) return null;
+  }
+  if (h.includes(":")) return null; // no IPv6 literals
+  return u;
+}
+
+async function readCapped(res) {
+  if (!res.body) return "";
+  const reader = res.body.getReader(); const dec = new TextDecoder(); let out = "", n = 0;
+  while (n < C_MAX) { const { done, value } = await reader.read(); if (done) break; n += value.length; out += dec.decode(value, { stream: true }); }
+  try { reader.cancel(); } catch (e) {}
+  return out;
+}
+
+async function pageFetch(url) {
+  let u = safeUrl(url); if (!u) return null;
+  for (let i = 0; i <= 3; i++) {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 5000);
+    try {
+      const res = await fetch(u.toString(), { headers: C_UA, redirect: "manual", signal: ctl.signal });
+      const loc = res.headers.get("location");
+      if (res.status >= 300 && res.status < 400 && loc) { u = safeUrl(new URL(loc, u).toString()); if (!u) return null; continue; }
+      if (!res.ok || !/html|text/i.test(res.headers.get("content-type") || "text/html")) return null;
+      return { url: u, html: await readCapped(res) };
+    } catch (e) { return null; } finally { clearTimeout(t); }
+  }
+  return null;
+}
+
+const JUNK_MAIL = /(example\.(com|org)|sentry|wixpress|domain\.com|email\.com|yourdomain|yoursite|@\d*x\.|\.(png|jpe?g|gif|svg|webp|css|js)$)/i;
+function goodMail(m) { m = String(m || "").trim().toLowerCase(); return /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(m) && !JUNK_MAIL.test(m) ? m : ""; }
+export function normPhone(p) {
+  let d = String(p || "").replace(/[^\d+]/g, "");
+  if (d.startsWith("+44")) d = "0" + d.slice(3).replace(/^0/, ""); else if (d.startsWith("0044")) d = "0" + d.slice(4);
+  d = d.replace(/\+/g, "");
+  return /^0(1\d{8,9}|[237]\d{9}|80[08]\d{6,7})$/.test(d) ? d : "";
+}
+function prettyPhone(d) {
+  if (/^0(7\d{3})(\d{6})$/.test(d)) return d.replace(/^(07\d{3})(\d{6})$/, "$1 $2");
+  if (/^02/.test(d)) return d.replace(/^(02\d)(\d{4})(\d{4})$/, "$1 $2 $3");
+  if (/^0(1\d1|11\d)/.test(d)) return d.replace(/^(0\d{3})(\d{3})(\d{4})$/, "$1 $2 $3");
+  if (d.length === 10) return d.replace(/^(0\d{4})(\d{5})$/, "$1 $2");
+  return d.replace(/^(0\d{4})(\d{6})$/, "$1 $2");
+}
+function decode(s) { return s.replace(/&#64;|&#x40;/gi, "@").replace(/&amp;/g, "&").replace(/&nbsp;|&#160;/g, " ").replace(/%20/g, " "); }
+function pick(arr) {
+  const c = new Map(); arr.forEach((v, i) => { if (!v) return; const r = c.get(v) || { n: 0, i }; r.n++; c.set(v, r); });
+  let best = "", bn = 0, bi = 1e9; for (const [v, r] of c) if (r.n > bn || (r.n === bn && r.i < bi)) { best = v; bn = r.n; bi = r.i; }
+  return best;
+}
+
+export function extractContact(html) {
+  html = decode(String(html || ""));
+  const phones = [], mails = [], lPh = [], lMail = [];
+  for (const m of html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    for (const t of m[1].matchAll(/"telephone"\s*:\s*"([^"]+)"/gi)) lPh.push(normPhone(t[1]));
+    for (const t of m[1].matchAll(/"email"\s*:\s*"(?:mailto:)?([^"]+)"/gi)) lMail.push(goodMail(t[1]));
+  }
+  for (const m of html.matchAll(/href=["']\s*mailto:([^"'?]+)/gi)) mails.push(goodMail(decodeURIComponent(m[1])));
+  for (const m of html.matchAll(/href=["']\s*tel:([^"']+)/gi)) phones.push(normPhone(decodeURIComponent(m[1])));
+  const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ");
+  const tPh = [], tMail = [];
+  for (const m of text.matchAll(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi)) tMail.push(goodMail(m[0]));
+  for (const m of text.matchAll(/(?:\+44\s?\(?0?\)?\s?|\b0)(?:\d[\s-]?){9,10}\b/g)) tPh.push(normPhone(m[0]));
+  const phone = pick(phones) || pick(lPh) || pick(tPh);
+  const email = pick(mails) || pick(lMail) || pick(tMail);
+  return { phone: phone ? prettyPhone(phone) : "", email };
+}
+
+function contactLink(html, base) {
+  for (const m of String(html).matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    if (!/contact/i.test(m[1] + " " + m[2].replace(/<[^>]+>/g, ""))) continue;
+    try { const u = new URL(m[1], base); if (u.hostname === base.hostname && /^https?:$/.test(u.protocol)) return u.toString(); } catch (e) {}
+  }
+  return "";
+}
+
+export async function findContact(raw) {
+  const out = { phone: "", email: "", source: "" };
+  const first = await pageFetch(/^https?:\/\//i.test(raw) ? raw : "https://" + raw);
+  if (!first) return out;
+  let r = extractContact(first.html);
+  out.phone = r.phone; out.email = r.email; if (r.phone || r.email) out.source = first.url.toString();
+  if (!out.phone || !out.email) {
+    const link = contactLink(first.html, first.url);
+    if (link && link !== first.url.toString()) {
+      const second = await pageFetch(link);
+      if (second) {
+        r = extractContact(second.html);
+        if (!out.phone && r.phone) { out.phone = r.phone; out.source = out.source || second.url.toString(); }
+        if (!out.email && r.email) { out.email = r.email; out.source = out.source || second.url.toString(); }
+      }
+    }
+  }
+  return out;
+}
+
 export async function handle(req, env) {
   {
     const origin = req.headers.get("Origin") || "";
@@ -138,6 +252,11 @@ export async function handle(req, env) {
       return json({ error: "Too many lookups. Try again in a minute." }, 429, headers);
     }
 
+    const contactUrl = new URL(req.url).searchParams.get("contact");
+    if (contactUrl !== null) {
+      if (!safeUrl(/^https?:\/\//i.test(contactUrl) ? contactUrl : "https://" + contactUrl)) return json({ error: "Bad url" }, 400, headers);
+      try { return json(await findContact(contactUrl), 200, headers); } catch (e) { return json({ phone: "", email: "", source: "" }, 200, headers); }
+    }
     const plate = new URL(req.url).searchParams.get("plate") || "";
     const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
     if (!clean) return json({ error: "Add ?plate=AB12CDE" }, 400, headers);

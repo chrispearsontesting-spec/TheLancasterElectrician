@@ -363,6 +363,7 @@ function openSheet(mode){
   document.getElementById("fInsName").value=c.insName||"";
   var _ph=document.getElementById("phoneHint");if(_ph)_ph.hidden=true;
   taxAuto="";var _ts=document.getElementById("taxSorn");if(_ts)_ts.hidden=true;
+  var _wh=document.getElementById("webHint");if(_wh)_wh.hidden=true;delete document.getElementById("fGarage").dataset.web;
   [["gService",[c.oil,c.beltDate]],["gTyres",[c.tyreDate]],["gGarage",[c.motName,c.motPhone,c.motEmail]]].forEach(function(g){var el=document.getElementById(g[0]);if(el)el.open=mode!=="add"&&g[1].some(function(v){return !!v});});
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
@@ -507,6 +508,7 @@ on("btnSave",function(){
   c.motName=document.getElementById("fGarage").value;
   c.motPhone=document.getElementById("fPhone").value;
   c.motEmail=document.getElementById("fEmail").value;
+  var _gw=document.getElementById("fGarage");if(_gw.dataset.web&&_gw.dataset.webFor===_gw.value)c.motWeb=_gw.dataset.web;
   c.insWeb=document.getElementById("fInsWeb").value;
   c.insName=document.getElementById("fInsName").value.trim();
   if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}

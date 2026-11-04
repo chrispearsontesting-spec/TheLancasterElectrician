@@ -267,6 +267,20 @@ function doLookup(){
   if(hint) hint.textContent="Looking up\u2026";
   if(!window.fillFromPlate){ if(hint) hint.textContent="Lookup not ready."; return; }
   window.fillFromPlate(plate,showFound);
+  lookupTax(plate);
+}
+var taxAuto="";
+function lookupTax(plate){
+  var p=String(plate||"").toUpperCase().replace(/[^A-Z0-9]/g,""), f=document.getElementById("fTax"), h=document.getElementById("taxSorn");
+  if(!p||!f||!window.D3Tax) return;
+  if(h) h.hidden=true;
+  window.D3Tax.fetch(p).then(function(r){
+    if(!r||!r.ok) return;
+    if(String(document.getElementById("fPlate").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"")!==p) return;
+    var mine=!f.value||f.value===taxAuto;
+    if(r.due){ if(mine){ f.value=r.due; taxAuto=r.due; } }
+    else if(/sorn/i.test(r.status||"")||/sorn/i.test(String((r.data||{}).raw||""))){ if(mine){ f.value=""; taxAuto=""; } if(h) h.hidden=false; }
+  }).catch(function(){});
 }
 function extractPlate(text){
   var raw = String(text||"").toUpperCase();
@@ -348,6 +362,7 @@ function openSheet(mode){
   document.getElementById("fInsWeb").value=c.insWeb||"";
   document.getElementById("fInsName").value=c.insName||"";
   var _ph=document.getElementById("phoneHint");if(_ph)_ph.hidden=true;
+  taxAuto="";var _ts=document.getElementById("taxSorn");if(_ts)_ts.hidden=true;
   [["gService",[c.oil,c.beltDate]],["gTyres",[c.tyreDate]],["gGarage",[c.motName,c.motPhone,c.motEmail]]].forEach(function(g){var el=document.getElementById(g[0]);if(el)el.open=mode!=="add"&&g[1].some(function(v){return !!v});});
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";

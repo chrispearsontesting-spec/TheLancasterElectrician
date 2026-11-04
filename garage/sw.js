@@ -5,14 +5,14 @@
    - Never touched: non-GET, cross-origin (MOT/DVLA proxy, uploads Worker, maps, fuel APIs), /garage/proxy/, /garage/uploads-worker/.
    Bump VERSION on each release that changes this file; old caches are deleted on activate. */
 "use strict";
-var VERSION = "2026-11-04a";
+var VERSION = "2026-11-04b";
 var CACHE = "driv3-" + VERSION;
 var RUNTIME = CACHE;
 var SCOPE = new URL("./", self.location).href;
 var PAGES = ["home.html","index.html","offline.html","buy.html","calendar.html","dashcam.html","drive.html","insurance.html","jobs.html",
   "mechanic.html","mot.html","performance.html","privacy.html","reminders.html","renew.html","report.html","route.html","security.html",
   "service.html","share.html","show.html","showcase-edit.html","tax.html","upload.html","view.html"];
-var EXTRA = ["manifest.json","favicon.ico","icon.svg","icon-192.png","icon-512.png","carbon.png","audi-silver.svg","prices.json","mpg-meta.json",
+var EXTRA = ["manifest.json","favicon.ico","icon.svg","icon-192.png","icon-512.png","icon-512-maskable.png","apple-touch-icon.png","carbon.png","audi-silver.svg","prices.json","mpg-meta.json",
   "sticker/sticker.js","sticker/frame-black.png","sticker/frame-white.png","sticker/geist-mono-id.woff",
   "badges/audi-rs3.svg","badges/audi-rs4.svg","badges/audi-rs6.svg","badges/audi-s3.svg","badges/audi-s4.svg","badges/bmw-m2.svg","badges/bmw-m3.svg",
   "badges/bmw-m4.svg","badges/bmw-m5.svg","badges/bmw-m6.svg","badges/ford-rs.svg","badges/ford-st.svg","badges/mercedes-amg.svg","badges/vw-gti.svg","badges/vw-r.svg"];

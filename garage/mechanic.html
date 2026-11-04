@@ -100,6 +100,17 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .more summary{cursor:pointer;font-weight:700;padding:12px 0;color:#d7d3cb;list-style:none;min-height:44px}
 .more summary::after{content:" +";color:#8b8b8b}.more[open] summary::after{content:" \2013"}
 .more summary::-webkit-details-marker{display:none}
+#qrView{position:fixed;inset:0;z-index:1000;background:rgba(5,6,8,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));overscroll-behavior:contain}
+#qrView.hide{display:none}
+#qrView .qvHead{text-align:center;max-width:100%}#qrView .qvHead b{display:block;font-size:17px;color:#f2f2f2;margin-top:6px}
+#qrView .qvStage{display:flex;align-items:center;justify-content:center}
+#qrView canvas{display:block;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.6);touch-action:none}
+#qrView .qvBtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;max-width:420px}
+#qrView .qvBtns .btn{margin:0}
+#qrView .seg{width:100%;max-width:420px;margin:0}
+#qvPrintImg{display:none}
+.btn.viewQr{margin-top:12px}
+@media print{body>*:not(#qrView){display:none!important}body{background:#fff!important}#qrView{display:block!important;position:static;background:#fff;padding:0}#qrView>*{display:none!important}#qvPrintImg{display:block!important;width:100mm;height:100mm;margin:10mm auto}@page{size:auto;margin:10mm}}
 </style>
 </head>
 <body>
@@ -113,6 +124,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <div class="qrBox">
     <canvas id="qr" width="10" height="10" aria-hidden="true"></canvas>
     <div class="stTop"><span class="stIco" aria-hidden="true">&#9638;</span><div><b>Your car's QR sticker</b><div class="cap" id="qrCap">Your Driv3 sticker</div></div></div>
+    <button class="btn viewQr" type="button" id="viewQr" aria-haspopup="dialog" aria-controls="qrView">View QR code</button>
     <button class="btn order" type="button" id="orderSt"><span>Order a printed sticker</span><small>Tough engine-bay sticker, posted to you</small></button>
   </div>
   <div class="showOn hide" id="showBanner">Show mode is on. Anyone who scans this QR sees your car's showcase. Uploads are off until you switch back to Mechanic mode.</div>
@@ -181,6 +193,13 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <div class="row2"><button class="btn" type="button" id="mNo">Cancel</button><button class="btn danger" type="button" id="mYes"></button></div>
 </div></div>
 
+<div id="qrView" class="hide" role="dialog" aria-modal="true" aria-labelledby="qvTitle" aria-describedby="qvCap">
+  <div class="qvHead"><div id="qvPlate"></div><b id="qvTitle">Your car's QR code</b><div class="cap" id="qvCap" style="font-size:13px;color:#b0b0b0;margin-top:2px"></div></div>
+  <div class="qvStage" id="qvStage"><canvas id="qvCanvas" width="10" height="10" role="img" aria-label="QR sticker for this car"></canvas></div>
+  <div class="seg sm" role="group" aria-label="Sticker colour"><button type="button" id="qvBlack" aria-pressed="true">Black</button><button type="button" id="qvWhite" aria-pressed="false">White</button></div>
+  <div class="qvBtns"><button class="btn" type="button" id="qvPrint">Print</button><button class="btn" type="button" id="qvShare">Share</button><button class="btn" type="button" id="qvClose">Close</button></div>
+  <img id="qvPrintImg" alt=""/>
+</div>
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=5"></script>
@@ -212,7 +231,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     return Driv3Sticker.draw(cv,{url:url,id:stickerId(),theme:theme,size:1080}).then(function(){ cv.dataset.url=url; })
       .catch(function(e){ $("regStatus").textContent=e.message; $("regStatus").className="status bad"; });
   }
-  function setTheme(t){ theme=t; $("stBlack").setAttribute("aria-pressed",String(t==="black")); $("stWhite").setAttribute("aria-pressed",String(t==="white")); drawQr(); }
+  function setTheme(t){ theme=t; ["stBlack","qvBlack"].forEach(function(i){$(i).setAttribute("aria-pressed",String(t==="black"))}); ["stWhite","qvWhite"].forEach(function(i){$(i).setAttribute("aria-pressed",String(t==="white"))}); drawQr(); if(qvOpen) drawView(); }
   $("stBlack").onclick=function(){setTheme("black")}; $("stWhite").onclick=function(){setTheme("white")};
   drawQr();
   function stickerFile(size,dpi){
@@ -233,6 +252,60 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     var subj="Driv3 printed sticker – register interest"+(plate?" ("+plate+")":"");
     var body="Hi,\n\nPlease let me know when printed Driv3 stickers are available.\n\nPlate: "+(plate||"-")+"\nUpload ID: "+(car.upId||"-")+"\nSticker ID: "+stickerId()+"\n\nThanks";
     location.href="mailto:"+STICKER_CONTACT+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+  };
+  // "View QR code": this car's sticker full-screen, for a friend to scan or to print.
+  var NATIVE=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+  var qvOpen=false, qvLast=null, qvSeq=0;
+  $("qvPrint").textContent=NATIVE?"Print file":"Print";
+  $("qvPrint").setAttribute("aria-label",NATIVE?"Save or share the 100 mm print file":"Print the sticker at 100 mm");
+  function drawView(){
+    var vw=document.documentElement.clientWidth, vh=window.innerHeight;
+    var css=Math.floor(Math.max(160,Math.min(vw-32,vh-250,640)));
+    var px=Math.min(2048,Math.ceil(css*Math.max(2,window.devicePixelRatio||1))), cv=$("qvCanvas"), seq=++qvSeq;
+    $("qvStage").style.width=$("qvStage").style.height=css+"px";
+    var tmp=document.createElement("canvas");
+    return Driv3Sticker.draw(tmp,{url:url,id:stickerId(),theme:theme,size:px}).then(function(){
+      if(seq!==qvSeq) return;
+      cv.width=cv.height=px; cv.getContext("2d").drawImage(tmp,0,0); cv.style.width=cv.style.height=css+"px"; cv.dataset.url=url;
+    });
+  }
+  function qvKey(e){
+    if(e.key==="Escape"){ e.preventDefault(); closeView(); return; }
+    if(e.key!=="Tab") return;
+    var f=[].slice.call($("qrView").querySelectorAll("button")), a=document.activeElement, i=f.indexOf(a);
+    if(e.shiftKey&&(i<=0)){ e.preventDefault(); f[f.length-1].focus(); }
+    else if(!e.shiftKey&&(i<0||i===f.length-1)){ e.preventDefault(); f[0].focus(); }
+  }
+  function openView(){
+    if(qvOpen) return; qvOpen=true; qvLast=document.activeElement;
+    $("qvPlate").innerHTML=plate?'<span class="plate"><span class="uk">UK</span><span class="reg">'+esc(plate)+'</span></span>':'';
+    var nn=U.niceName(car); $("qvTitle").textContent=(nn&&U.cleanPlate(nn)!==plate)?nn:"Your car's QR code";
+    $("qvCap").textContent=showMode()?"Scan to see this car's showcase":"Scan to send photos & invoices for this car";
+    drawView(); $("qrView").classList.remove("hide"); document.documentElement.style.overflow="hidden";
+    document.addEventListener("keydown",qvKey,true); window.addEventListener("resize",drawView);
+    try{ history.pushState({qrView:1},""); }catch(e){}
+    $("qvClose").focus();
+  }
+  function closeView(fromPop){
+    if(!qvOpen) return; qvOpen=false; qvSeq++;
+    $("qrView").classList.add("hide"); document.documentElement.style.overflow="";
+    document.removeEventListener("keydown",qvKey,true); window.removeEventListener("resize",drawView);
+    if(!fromPop&&history.state&&history.state.qrView) history.back();
+    if(qvLast&&qvLast.focus) qvLast.focus();
+  }
+  window.addEventListener("popstate",function(){ if(qvOpen) closeView(true); });
+  $("viewQr").onclick=openView; $("qvClose").onclick=function(){closeView()};
+  $("qrView").addEventListener("click",function(e){ if(e.target===this||e.target.id==="qvStage") closeView(); });
+  $("qvBlack").onclick=function(){setTheme("black")}; $("qvWhite").onclick=function(){setTheme("white")};
+  $("qvShare").onclick=function(){ $("shareSt").onclick(); };
+  $("qvPrint").onclick=function(){
+    stickerFile(Driv3Sticker.SIZES.print,300).then(function(f){
+      if(NATIVE){ // Android WebView has no print dialog: hand the 100 mm / 300 dpi file to the share sheet (print, save to Files, etc).
+        return navigator.share({files:[f],title:"Driv3 sticker (100 mm print file)"}).catch(function(e){ if(e&&e.name!=="AbortError") save(f); });
+      }
+      var im=$("qvPrintImg"), u=URL.createObjectURL(f);
+      im.onload=function(){ setTimeout(function(){ window.print(); URL.revokeObjectURL(u); },50); }; im.src=u;
+    });
   };
   $("dl").onclick=function(){ stickerFile(Driv3Sticker.SIZES.hi).then(save); };
   $("dlPrint").onclick=function(){ stickerFile(Driv3Sticker.SIZES.print,300).then(save); };

@@ -68,6 +68,21 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
 .sheet.on{display:block}
 .panel{background:#141416;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
+.fGroup{background:#0f1012;border:1px solid #1f2125;border-radius:14px;padding:4px 12px 12px;margin:12px 0}
+.fHead{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#cfd2d6;font-weight:600;margin:10px 0 2px;list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+summary.fHead::-webkit-details-marker{display:none}
+summary.fHead::after{content:"\203A";margin-left:auto;font-size:18px;color:#6b6f76;transition:transform .2s}
+details[open]>summary.fHead::after{transform:rotate(90deg)}
+details.fGroup:not([open]){padding-bottom:6px}
+.fSum{text-transform:none;letter-spacing:0;color:#6b6f76;font-weight:400;font-size:12px}
+.fHint{color:#6b6f76;font-size:11.5px;margin:4px 2px 0;line-height:1.35;text-align:left}
+.fRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.suggest{position:relative}
+.suggest-list{position:absolute;left:0;right:0;top:100%;z-index:30;background:#171a20;border:1px solid #2a2a2e;border-radius:12px;margin-top:4px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.45);max-height:280px;overflow-y:auto}
+.suggest-list.hide{display:none}
+.suggest-hit{display:block;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #2a2a2e;color:#f2f2f2;padding:11px 12px;font-size:14px}
+.suggest-hit:last-child{border-bottom:0}
+.suggest-hit b{font-weight:600}.suggest-hit small{display:block;color:#8b8b8b;font-size:12px;margin-top:2px}
 label{display:block;color:#8b8b8b;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
 .plateEntry{display:flex;align-items:center;gap:8px;margin:8px 0 12px;width:100%}
@@ -207,7 +222,8 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";document.getElementById("gear").classList.add("dot");}}catch(e){}})();</script>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
-<label>Number plate</label>
+<section class="fGroup"><h4 class="fHead">Your car</h4>
+<label for="fPlate">Number plate</label>
 <div class="plateEntry">
 <div class="ukPlate">
 <span class="ukStrip">UK</span>
@@ -218,23 +234,33 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 </div>
 <div id="foundDetails" class="found" style="display:none"></div>
 <p class="left" id="plateHint">Enter plate and tap Lookup, or use the camera.</p>
-<label>Name</label><input id="fName" type="text" placeholder="e.g. Ford Focus" maxlength="60" autocomplete="off"/>
-<label>MOT</label><input id="fMot" type="date"/>
-<label>Tax</label><input id="fTax" type="date"/>
-<label>Insurance</label><input id="fIns" type="date"/>
-<label>Full service</label><input id="fOil" type="date"/>
-<label>Timing belt fitted (date)</label><input id="fBeltDate" type="date"/>
-<label>Belt years</label><input id="fBeltYears" type="number"/>
-<label>Belt miles</label><input id="fBeltMiles" type="number"/>
-<label>Tyres fitted</label><input id="fTyreDate" type="date"/>
-<label>Tyre life (miles)</label><input id="fTyreLife" type="number"/>
-<label>Miles / year</label><input id="fMiles" type="number"/>
-<label>UK MPG</label><input id="fMpg" type="number" step="0.1"/>
-<label>Fuel</label><select id="fFuel"><option value="diesel">Diesel</option><option value="petrol">Petrol</option><option value="hybrid">Hybrid</option><option value="electric">Electric</option></select>
-<label>Garage name</label><input id="fGarage"/>
-<label>Garage phone</label><input id="fPhone" type="tel"/>
-<label>Garage email</label><input id="fEmail" type="email"/>
-<label>Insurer website</label><input id="fInsWeb"/>
+<label for="fName">Car name</label><input id="fName" type="text" placeholder="e.g. Ford Focus" maxlength="60" autocomplete="off"/>
+<div class="fRow"><div><label for="fFuel">Fuel</label><select id="fFuel"><option value="diesel">Diesel</option><option value="petrol">Petrol</option><option value="hybrid">Hybrid</option><option value="electric">Electric</option></select></div>
+<div><label for="fMpg">UK MPG</label><input id="fMpg" type="number" step="0.1" placeholder="e.g. 45"/></div></div>
+<label for="fMiles">Miles you drive per year</label><input id="fMiles" type="number" placeholder="e.g. 8000"/>
+</section>
+<section class="fGroup"><h4 class="fHead">Renewal dates</h4>
+<label for="fMot">MOT expires on</label><input id="fMot" type="date"/><p class="fHint">The expiry date on your MOT certificate. We fill this in from your plate.</p>
+<label for="fTax">Tax runs out on</label><input id="fTax" type="date"/><p class="fHint">The date your road tax expires, not the day you paid. We’ll try to fill this in from your plate.</p>
+<label for="fIns">Insurance renews on</label><input id="fIns" type="date"/><p class="fHint">The renewal (end) date on your policy documents.</p>
+<label for="fInsName">Insurer</label><input id="fInsName" type="text" placeholder="Start typing, e.g. Aviva" maxlength="60" autocomplete="off"/>
+<label for="fInsWeb">Insurer website</label><input id="fInsWeb" placeholder="e.g. admiral.com"/><p class="fHint">So you can renew in one tap.</p>
+</section>
+<details class="fGroup" id="gService"><summary class="fHead">Servicing <span class="fSum">service &amp; timing belt</span></summary>
+<label for="fOil">Next full service due</label><input id="fOil" type="date"/><p class="fHint">Usually a year after your last full service.</p>
+<label for="fBeltDate">Timing belt last changed on</label><input id="fBeltDate" type="date"/><p class="fHint">Leave blank if your car has a timing chain.</p>
+<div class="fRow"><div><label for="fBeltYears">Change belt every (years)</label><input id="fBeltYears" type="number" placeholder="5"/></div>
+<div><label for="fBeltMiles">or every (miles)</label><input id="fBeltMiles" type="number" placeholder="60000"/></div></div><p class="fHint">Check your service book; whichever comes first.</p>
+</details>
+<details class="fGroup" id="gTyres"><summary class="fHead">Tyres <span class="fSum">fitted date &amp; life</span></summary>
+<label for="fTyreDate">Tyres fitted on</label><input id="fTyreDate" type="date"/><p class="fHint">The date your current tyres were put on.</p>
+<label for="fTyreLife">Expected tyre life (miles)</label><input id="fTyreLife" type="number" placeholder="20000"/><p class="fHint">Most tyres last 20,000 miles or so.</p>
+</details>
+<details class="fGroup" id="gGarage"><summary class="fHead">Your garage <span class="fSum">(add their phone and email so Driv3 can write the booking email for you)</span></summary>
+<label for="fGarage">Garage name</label><input id="fGarage" placeholder="Start typing, e.g. Kwik Fit Lancaster" autocomplete="off"/>
+<label for="fPhone">Phone</label><input id="fPhone" type="tel"/><p class="fHint" id="phoneHint" hidden>No phone listed - type it in</p>
+<label for="fEmail">Email</label><input id="fEmail" type="email"/>
+</details>
 <button class="btn wide" type="button" id="btnSave" data-ico="save">Save</button>
 <button class="btn wide" type="button" id="btnDelete" style="background:#3a1a1a;color:#ff6b6b;margin-top:8px">Delete car</button>
 <button class="btn" type="button" id="btnClose">Back</button>
@@ -248,7 +274,9 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="plate-fill.js"></script>
 <script src="./reminders-core.js?v=2"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./home-app.js?v=98"></script>
+<script src="./home-app.js?v=99"></script>
+<script src="./insurers.js?v=1"></script>
+<script src="./form-pickers.js?v=1"></script>
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=32"></script>
 <script src="./home-tabs.js?v=6"></script>

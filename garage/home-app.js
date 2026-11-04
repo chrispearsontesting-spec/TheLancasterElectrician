@@ -217,7 +217,7 @@ function paint(){
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
     row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"},{lab:"Check tax",href:"tax.html?plate="+encodeURIComponent(String(c.plate||"").replace(/\s/g,""))}])+
-    row("Insurance",c.ins,"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
+    row("Insurance",c.ins,c.insName?String(c.insName).replace(/[<>&"']/g,""):"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
     "<div class='item"+(tl!=null&&tl<=0?" cOver":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=0?"<span class='mark bad'>\u2715</span>":(tl<=15?"<span class='mark soon'>!</span>":"<span class='mark ok'>\u2713</span>")))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+"<span class='dtxt'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"</span><span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>";
@@ -346,6 +346,9 @@ function openSheet(mode){
   document.getElementById("fPhone").value=c.motPhone||"";
   document.getElementById("fEmail").value=c.motEmail||"";
   document.getElementById("fInsWeb").value=c.insWeb||"";
+  document.getElementById("fInsName").value=c.insName||"";
+  var _ph=document.getElementById("phoneHint");if(_ph)_ph.hidden=true;
+  [["gService",[c.oil,c.beltDate]],["gTyres",[c.tyreDate]],["gGarage",[c.motName,c.motPhone,c.motEmail]]].forEach(function(g){var el=document.getElementById(g[0]);if(el)el.open=mode!=="add"&&g[1].some(function(v){return !!v});});
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
   var found=document.getElementById("foundDetails");
@@ -490,6 +493,7 @@ on("btnSave",function(){
   c.motPhone=document.getElementById("fPhone").value;
   c.motEmail=document.getElementById("fEmail").value;
   c.insWeb=document.getElementById("fInsWeb").value;
+  c.insName=document.getElementById("fInsName").value.trim();
   if(mode==="add"){s.cars.push(c);s.i=s.cars.length-1}
   if(window.D3Diy) try{ D3Diy.onEdit(before,c); }catch(e){}
   save(s);paint();document.getElementById("sheet").className="sheet";

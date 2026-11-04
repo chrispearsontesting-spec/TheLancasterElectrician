@@ -80,6 +80,47 @@ function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers });
 }
 
+// GOV.UK vehicle enquiry (Nov 2026 flow): GET / -> POST /vehicle-enquiry/save (vrn) -> 302 ConfirmVehicle
+// -> POST /vehicle-enquiry/save (confirmed=Yes) -> 302 VehicleFound. Needs a real cookie jar
+// (session + TS* cookies) and the CSRF token from the vrn form, not the cookie-banner form.
+const VES_BASE = "https://vehicleenquiry.service.gov.uk";
+const VES_UA = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", "Accept": "text/html" };
+
+function formToken(html) {
+  const m = html.match(/<form[^>]*action="\/vehicle-enquiry\/save[^"]*"[^>]*>([\s\S]*?)<\/form>/);
+  const src = m ? m[1] : html;
+  return (src.match(/name="authenticity_token" value="([^"]+)"/) || [])[1] || "";
+}
+
+async function vesFetch(jar, url, opts = {}) {
+  for (let i = 0; i < 5; i++) {
+    const cookie = [...jar].map(([k, v]) => k + "=" + v).join("; ");
+    const res = await fetch(url, { ...opts, headers: { ...VES_UA, ...(opts.headers || {}), cookie }, redirect: "manual" });
+    const list = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [res.headers.get("set-cookie") || ""];
+    for (const c of list) { const kv = c.split(";")[0]; const eq = kv.indexOf("="); if (eq > 0) jar.set(kv.slice(0, eq).trim(), kv.slice(eq + 1)); }
+    const loc = res.headers.get("location");
+    if (res.status >= 300 && res.status < 400 && loc) { url = new URL(loc, url).toString(); opts = {}; continue; }
+    return res.text();
+  }
+  return "";
+}
+
+export async function govukTaxText(clean) {
+  const jar = new Map();
+  const form = { "content-type": "application/x-www-form-urlencoded", Origin: VES_BASE, Referer: VES_BASE + "/" };
+  const p1 = await vesFetch(jar, VES_BASE + "/?locale=en");
+  const p2 = await vesFetch(jar, VES_BASE + "/vehicle-enquiry/save?locale=en", { method: "POST", headers: form,
+    body: new URLSearchParams({ authenticity_token: formToken(p1), "wizard_vehicle_enquiry_capture_vrn[vrn]": clean }).toString() });
+  let result = p2;
+  if (/confirm_vehicle/.test(p2)) {
+    result = await vesFetch(jar, VES_BASE + "/vehicle-enquiry/save?locale=en", { method: "POST", headers: form,
+      body: new URLSearchParams({ authenticity_token: formToken(p2), "wizard_vehicle_enquiry_capture_confirm_vehicle[confirmed]": "Yes" }).toString() });
+  }
+  const text = result.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&#39;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+  const at = text.indexOf("Tax and MOT status results", text.indexOf("Tax and MOT status results") + 1);
+  return at > 0 ? text.slice(at) : text;
+}
+
 export async function handle(req, env) {
   {
     const origin = req.headers.get("Origin") || "";
@@ -101,29 +142,11 @@ export async function handle(req, env) {
     const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
     if (!clean) return json({ error: "Add ?plate=AB12CDE" }, 400, headers);
     if (new URL(req.url).searchParams.get("tax") === "1") {
-      const browser = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", "Accept": "text/html" };
-      const page = await fetch("https://vehicleenquiry.service.gov.uk/", { headers: browser });
-      const html = await page.text();
-      const token = (html.match(/name="authenticity_token" value="([^"]+)"/) || [])[1] || "";
-      const cookie = page.headers.get("set-cookie") || "";
-      const post = await fetch("https://vehicleenquiry.service.gov.uk/?locale=en", {
-        method: "POST",
-        headers: { ...browser, "content-type": "application/x-www-form-urlencoded", cookie },
-        body: new URLSearchParams({ utf8: "✓", authenticity_token: token, "wizard_vehicle_enquiry_capture_vrn[vrn]": clean }),
-        redirect: "manual"
-      });
-      const confirmHtml = await post.text();
-      const token2 = (confirmHtml.match(/name="authenticity_token" value="([^"]+)"/) || [])[1] || token;
-      const cookie2 = post.headers.get("set-cookie") || cookie;
-      const done = await fetch("https://vehicleenquiry.service.gov.uk/ConfirmVehicle?locale=en", {
-        method: "POST",
-        headers: { ...browser, "content-type": "application/x-www-form-urlencoded", cookie: cookie2 },
-        body: new URLSearchParams({ utf8: "✓", authenticity_token: token2, "wizard_vehicle_enquiry_capture_confirm_vehicle[confirmed]": "Yes" })
-      });
-      const result = await done.text();
-      const text = result.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-      const tax = /SORN/i.test(text) ? "SORN" : (/Untaxed/i.test(text) ? "Untaxed" : (/Taxed/i.test(text) ? "Taxed" : "Unknown"));
-      const mot = (text.match(/MOT\s*(Expires|Expired)[:\s]*([0-9]{1,2} [A-Za-z]+ [0-9]{4})/i) || [])[0] || (/No MOT/i.test(text) ? "No MOT" : "");
+      const text = await govukTaxText(clean);
+      const st = (text.match(/Vehicle [A-Z0-9]+ (is Taxed|is Untaxed|has a valid SORN|has an expired SORN|is not taxed)/i) || [])[1] || "";
+      const tax = /SORN/i.test(st) ? "SORN" : (/Untaxed|not taxed/i.test(st) ? "Untaxed" : (/Taxed/i.test(st) ? "Taxed" : "Unknown"));
+      const motM = text.match(/MOT certificate (Expires|Expired)[:\s]*([0-9]{1,2} [A-Za-z]+ [0-9]{4})/i) || text.match(/MOT (Expires|Expired)[:\s]*([0-9]{1,2} [A-Za-z]+ [0-9]{4})/i);
+      const mot = motM ? motM[1] + ": " + motM[2] : (/No MOT|does not have an MOT|no details held/i.test(text) ? "No MOT" : "");
       return json({ plate: clean, tax, mot, raw: text.slice(0, 400) }, 200, headers);
     }
     try {

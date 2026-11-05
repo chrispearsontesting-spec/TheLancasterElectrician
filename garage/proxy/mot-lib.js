@@ -124,7 +124,7 @@ export async function govukTaxText(clean) {
 // ---- Garage website contact finder (?contact=<url>) ----
 // Reads at most 2 pages (home + one same-host contact page), 5 s each, ~500 KB each, <=3 redirects.
 const C_UA = { "User-Agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36", "Accept": "text/html,application/xhtml+xml" };
-const C_MAX = 500000;
+const C_MAX = 800000;
 
 export function safeUrl(raw) {
   let u;
@@ -167,7 +167,7 @@ async function pageFetch(url) {
   return null;
 }
 
-const JUNK_MAIL = /(example\.(com|org)|sentry|wixpress|domain\.com|email\.com|yourdomain|yoursite|@\d*x\.|\.(png|jpe?g|gif|svg|webp|css|js)$)/i;
+const JUNK_MAIL = /(example\.(com|org)|sentry|wixpress|@domain\.com|@email\.com|yourdomain|yoursite|@\d*x\.|\.(png|jpe?g|gif|svg|webp|css|js)$)/i;
 function goodMail(m) { m = String(m || "").trim().toLowerCase(); return /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(m) && !JUNK_MAIL.test(m) ? m : ""; }
 export function normPhone(p) {
   let d = String(p || "").replace(/[^\d+]/g, "");
@@ -235,6 +235,96 @@ export async function findContact(raw) {
   return out;
 }
 
+
+// ---- Remembered garage contacts (KV GARAGE_CONTACTS) + domain guessing (?garage= / ?savecontact=1 / ?findcontact=) ----
+// Only a garage's business email/website is stored, keyed by normalised garage name + postcode. Nothing about the user.
+const TLDS = new Set("uk com net org biz info co io me eu ie scot wales cymru london online site shop store website services garage cars car auto autos tech email business works page".split(" "));
+export function realMail(m) {
+  m = String(m || "").trim().toLowerCase().replace(/^mailto:/, "");
+  if (m.length < 6 || m.length > 100) return "";
+  const r = m.match(/^([a-z0-9._%+-]{1,64})@((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,24}))$/);
+  if (!r || !TLDS.has(r[3]) || /\.\./.test(m) || JUNK_MAIL.test(m)) return "";
+  return m;
+}
+export function realSite(w) {
+  w = String(w || "").trim(); if (!w || w.length > 200) return "";
+  const u = safeUrl(/^https?:\/\//i.test(w) ? w : "https://" + w);
+  if (!u) return "";
+  const tld = u.hostname.split(".").pop().toLowerCase();
+  return TLDS.has(tld) ? u.origin + (u.pathname === "/" ? "/" : u.pathname) : "";
+}
+function gNorm(s) { return String(s || "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim(); }
+export function garageKey(name, postcode) {
+  const n = gNorm(name).slice(0, 80), pc = String(postcode || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+  if (n.length < 2 || !/^[A-Z]{1,2}\d[A-Z\d]?(\d[A-Z]{2})?$/.test(pc)) return "";
+  return n + "|" + pc;
+}
+const saveHits = new Map();
+function saveAllowed(ip, now = Date.now()) { // max 10 saves per IP per hour (per isolate)
+  const r = saveHits.get(ip);
+  if (!r || now - r.start > 3600000) { saveHits.set(ip, { start: now, n: 1 }); if (saveHits.size > 5000) saveHits.clear(); return true; }
+  return ++r.n <= 10;
+}
+async function kvGet(env, k) { if (!env || !env.GARAGE_CONTACTS) return null; try { return await env.GARAGE_CONTACTS.get(k, "json"); } catch (e) { return null; } }
+async function kvPut(env, k, v, ttl) { if (!env || !env.GARAGE_CONTACTS) return false; try { await env.GARAGE_CONTACTS.put(k, JSON.stringify(v), ttl ? { expirationTtl: ttl } : undefined); return true; } catch (e) { return false; } }
+
+function cfDecode(hex) { try { const k = parseInt(hex.slice(0, 2), 16); let o = ""; for (let i = 2; i < hex.length; i += 2) o += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16) ^ k); return o; } catch (e) { return ""; } }
+export function pageEmails(html) {
+  html = String(html || "");
+  const out = [];
+  for (const m of html.matchAll(/data-cfemail=["']([0-9a-f]+)["']/gi)) out.push(cfDecode(m[1]));
+  for (const m of html.matchAll(/\/cdn-cgi\/l\/email-protection#([0-9a-f]+)/gi)) out.push(cfDecode(m[1]));
+  const d = decode(html);
+  for (const m of d.matchAll(/href=["']\s*mailto:([^"'?]+)/gi)) { try { out.push(decodeURIComponent(m[1])); } catch (e) {} }
+  for (const m of d.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) for (const t of m[1].matchAll(/"email"\s*:\s*"(?:mailto:)?([^"]+)"/gi)) out.push(t[1]);
+  const text = d.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ")
+    .replace(/\s*[\[\(\{]\s*at\s*[\]\)\}]\s*/gi, "@").replace(/\s*[\[\(\{]\s*dot\s*[\]\)\}]\s*/gi, ".");
+  for (const m of text.matchAll(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,24}\b/gi)) out.push(m[0]);
+  return out.map(realMail).filter(Boolean);
+}
+function bestEmail(list, host) {
+  const base = String(host || "").toLowerCase().replace(/^www\./, "");
+  const own = list.filter(e => e.split("@")[1] === base || e.split("@")[1].endsWith("." + base));
+  return pick(own.length ? own : list);
+}
+export function guessDomains(name) {
+  const w = gNorm(name).replace(/\b(ltd|limited|plc|llp|t a|ta|the|and|co|uk|mot|mots|centre|center|station)\b/g, " ").split(" ").filter(Boolean);
+  if (!w.length) return [];
+  const all = w.join(""), core = w.filter(x => !/^(garage|garages|motors|motor|services|service|auto|autos|tyres|tyre)$/.test(x)).join("");
+  const c = [all];
+  if (core && core !== all) c.push(core);
+  if (core && !/garage/.test(all)) c.push(core + "garage");
+  if (core && !/motors/.test(all)) c.push(core + "motors");
+  const seen = new Set(), out = [];
+  for (const x of c) if (x.length >= 4 && x.length <= 40) for (const t of ["co.uk", "com"]) { const d = x + "." + t; if (!seen.has(d)) { seen.add(d); out.push(d); } }
+  return out.slice(0, 6);
+}
+function siteMatches(html, phone, postcode) {
+  const digits = String(phone || "").replace(/\D/g, "").replace(/^44/, "0").slice(-10);
+  const pc = String(postcode || "").toLowerCase().replace(/\s/g, "");
+  const text = String(html).replace(/<[^>]+>/g, " ");
+  if (digits.length >= 9 && text.replace(/\D/g, "").includes(digits)) return true;
+  return pc.length >= 5 && String(html).toLowerCase().replace(/\s|&nbsp;/g, "").includes(pc);
+}
+async function emailFromSite(first) {
+  let list = pageEmails(first.html), source = list.length ? first.url.toString() : "";
+  if (!list.length) {
+    const tries = [contactLink(first.html, first.url), new URL("/contact", first.url).toString(), new URL("/contact-us", first.url).toString()].filter((v, i, a) => v && a.indexOf(v) === i && v !== first.url.toString());
+    for (const t of tries.slice(0, 2)) { const p = await pageFetch(t); if (p) { list = pageEmails(p.html); if (list.length) { source = p.url.toString(); break; } } }
+  }
+  return { email: bestEmail(list, first.url.hostname), source };
+}
+export async function findByGuess(name, postcode, phone) {
+  const doms = guessDomains(name);
+  const pages = await Promise.all(doms.map(d => pageFetch("https://www." + d + "/").then(p => p || pageFetch("https://" + d + "/")).catch(() => null)));
+  for (const p of pages) {
+    if (!p || !siteMatches(p.html, phone, postcode)) continue;
+    const r = await emailFromSite(p);
+    return { email: r.email, website: p.url.origin + "/", source: r.source || p.url.toString() };
+  }
+  return { email: "", website: "", source: "" };
+}
+
 export async function handle(req, env) {
   {
     const origin = req.headers.get("Origin") || "";
@@ -252,6 +342,32 @@ export async function handle(req, env) {
       return json({ error: "Too many lookups. Try again in a minute." }, 429, headers);
     }
 
+    const sp = new URL(req.url).searchParams;
+    if (sp.has("garage") || sp.has("findcontact") || sp.get("savecontact") === "1") {
+      const name = sp.get("garage") || sp.get("findcontact") || sp.get("name") || "";
+      const key = garageKey(name, sp.get("postcode"));
+      if (!key) return json({ error: "Need garage name and postcode" }, 400, headers);
+      if (sp.get("savecontact") === "1") {
+        const ip = req.headers.get("CF-Connecting-IP") || "unknown";
+        if (!saveAllowed(ip)) return json({ error: "Too many saves" }, 429, headers);
+        const email = sp.get("email") ? realMail(sp.get("email")) : "", website = sp.get("website") ? realSite(sp.get("website")) : "";
+        if ((sp.get("email") && !email) || (sp.get("website") && !website) || (!email && !website)) return json({ error: "Bad email or website" }, 400, headers);
+        const old = (await kvGet(env, "u:" + key)) || {};
+        const rec = { email: email || old.email || "", website: website || old.website || "", source: "user", updated: new Date().toISOString().slice(0, 10) };
+        if (rec.email === old.email && rec.website === old.website) return json({ saved: false, unchanged: true }, 200, headers);
+        return json({ saved: await kvPut(env, "u:" + key, rec) }, 200, headers);
+      }
+      const user = await kvGet(env, "u:" + key);
+      if (sp.has("garage")) return json(user && user.email ? user : {}, 200, headers);
+      if (user && user.email) return json(user, 200, headers);
+      const cached = await kvGet(env, "f:" + key);
+      if (cached) return json(cached, 200, headers);
+      let r = { email: "", website: "", source: "" };
+      try { r = await findByGuess(name, sp.get("postcode"), sp.get("phone")); } catch (e) {}
+      const rec = { email: r.email, website: r.website, source: r.email ? "auto" : "none", updated: new Date().toISOString().slice(0, 10) };
+      await kvPut(env, "f:" + key, rec, r.email ? 180 * 86400 : 30 * 86400);
+      return json(rec, 200, headers);
+    }
     const contactUrl = new URL(req.url).searchParams.get("contact");
     if (contactUrl !== null) {
       if (!safeUrl(/^https?:\/\//i.test(contactUrl) ? contactUrl : "https://" + contactUrl)) return json({ error: "Bad url" }, 400, headers);

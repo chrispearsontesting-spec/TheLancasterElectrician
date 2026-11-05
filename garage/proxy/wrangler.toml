@@ -12,3 +12,8 @@ namespace_id = "1001"
   [ratelimits.simple]
   limit = 20
   period = 60
+
+# Remembered garage contacts (business email/website only), free tier KV.
+[[kv_namespaces]]
+binding = "GARAGE_CONTACTS"
+id = "60239f21ec7a4cff882b6e6467136b36"

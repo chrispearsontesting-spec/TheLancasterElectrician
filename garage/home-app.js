@@ -363,7 +363,7 @@ function openSheet(mode){
   document.getElementById("fInsName").value=c.insName||"";
   var _ph=document.getElementById("phoneHint");if(_ph)_ph.hidden=true;
   taxAuto="";var _ts=document.getElementById("taxSorn");if(_ts)_ts.hidden=true;
-  var _wh=document.getElementById("webHint");if(_wh)_wh.hidden=true;delete document.getElementById("fGarage").dataset.web;var _ga=document.getElementById("garageAddr");if(_ga)_ga.hidden=true;
+  var _wh=document.getElementById("webHint");if(_wh)_wh.hidden=true;delete document.getElementById("fGarage").dataset.web;var _ga=document.getElementById("garageAddr");if(_ga)_ga.hidden=true;var _gf=document.getElementById("fGarage");delete _gf.dataset.pc;var _es=document.getElementById("emailSearch");if(_es){_es.hidden=!c.motName;_es.href="https://www.google.com/search?q="+encodeURIComponent((c.motName||"")+" email")}delete document.getElementById("fEmail").dataset.found;
   [["gService",[c.oil,c.beltDate]],["gTyres",[c.tyreDate]],["gGarage",[c.motName,c.motPhone,c.motEmail]]].forEach(function(g){var el=document.getElementById(g[0]);if(el)el.open=mode!=="add"&&g[1].some(function(v){return !!v});});
   document.getElementById("sheet").dataset.mode=mode;
   document.getElementById("sheet").className="sheet on";
@@ -508,6 +508,7 @@ on("btnSave",function(){
   c.motName=document.getElementById("fGarage").value;
   c.motPhone=document.getElementById("fPhone").value;
   c.motEmail=document.getElementById("fEmail").value;
+  if(window.D3GarageRemember) try{ D3GarageRemember(); }catch(e){}
   var _gw=document.getElementById("fGarage");if(_gw.dataset.web&&_gw.dataset.webFor===_gw.value)c.motWeb=_gw.dataset.web;
   c.insWeb=document.getElementById("fInsWeb").value;
   c.insName=document.getElementById("fInsName").value.trim();

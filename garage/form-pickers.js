@@ -96,12 +96,40 @@
   });
   function setIf(el,v){if(el&&v&&(!el.value.trim()||el.dataset.auto==="1")){el.value=v;el.dataset.auto="1"}}
   [ph,em].forEach(function(el){if(el)el.addEventListener("input",function(){el.dataset.auto=""})});
+  /* Shared remembered garage emails (Driv3 server): only the garage's business email/website, never the user's details */
+  var gs=$("emailSearch");
+  function searchLink(town){if(!gs)return;var q=[g.value.trim(),town||g.dataset.town||"","email"].filter(Boolean).join(" ");
+    gs.href="https://www.google.com/search?q="+encodeURIComponent(q);gs.hidden=!g.value.trim()}
+  g.addEventListener("input",function(){delete g.dataset.pc;delete g.dataset.town;if(em)delete em.dataset.found;searchLink("")});
+  function lookupContact(name,pc,phone,town){
+    g.dataset.pc=pc||"";g.dataset.town=town||"";g.dataset.pcFor=name;searchLink(town);
+    var proxy=(window.MOT_PROXY||"").replace(/\/$/,"");if(!proxy||!pc||!em)return;
+    fetch(proxy+"/?findcontact="+encodeURIComponent(name)+"&postcode="+encodeURIComponent(pc)+"&phone="+encodeURIComponent(phone||"")+"&town="+encodeURIComponent(town||""))
+      .then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(w){
+        if(!w||g.value!==name)return;
+        if(w.website&&!g.dataset.web){g.dataset.web=w.website;g.dataset.webFor=name}
+        if(!w.email)return;em.dataset.found=w.email;
+        if(em.value.trim()&&em.dataset.auto!=="1")return;
+        em.value=w.email;em.dataset.auto="1";
+        if(webHint){webHint.textContent=w.source==="user"?"Saved by other Driv3 users - please check":"Found automatically - please check";webHint.hidden=false}
+      }).catch(function(){});
+  }
+  window.D3GarageRemember=function(){
+    var proxy=(window.MOT_PROXY||"").replace(/\/$/,"");
+    if(!proxy||!em||!g.dataset.pc||g.dataset.pcFor!==g.value)return;
+    var v=em.value.trim().toLowerCase();
+    if(!v||em.dataset.auto==="1"||v===String(em.dataset.found||"").toLowerCase())return;
+    if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v))return;
+    try{fetch(proxy+"/?savecontact=1&name="+encodeURIComponent(g.value)+"&postcode="+encodeURIComponent(g.dataset.pc)+"&email="+encodeURIComponent(v)).catch(function(){})}catch(e){}
+    em.dataset.found=v;
+  };
   function pickMot(r){
     g.value=r[0];g.dataset.addr=[r[1],r[2],r[3]].filter(Boolean).join(", ");
     if(addrHint){addrHint.textContent=g.dataset.addr;addrHint.hidden=false}
     if(em&&em.dataset.auto==="1"){em.value="";}
     setIf(ph,r[4]);
     if(hint)hint.hidden=!!(ph&&ph.value.trim());
+    lookupContact(r[0],r[3],r[4],r[2]);
     /* look for the same garage on OpenStreetMap to find its website, then email */
     var name=g.value,pcd=r[3].split(" ")[0];
     photon(r[0]+" "+r[2],"shop:car_repair").then(function(fs){
@@ -112,7 +140,8 @@
     });
   }
   function pickGarage(f,keepName){
-    var p=f.properties||{};if(!keepName){g.value=p.name||g.value;delete g.dataset.addr}
+    var p=f.properties||{};if(!keepName){g.value=p.name||g.value;delete g.dataset.addr;
+      if(p.postcode)lookupContact(g.value,String(p.postcode).toUpperCase(),"",p.city||p.town||p.village||"");else searchLink(p.city||p.town||"")}
     var ty={N:"node",W:"way",R:"relation"}[p.osm_type];
     if(!ty||!p.osm_id)return;
     var q="[out:json][timeout:15];"+ty+"("+p.osm_id+");out tags;";
@@ -139,7 +168,7 @@
           if(ph&&!ph.value.trim()&&w.phone){setIf(ph,w.phone);did=true}
           if(em&&(!em.value.trim()||em.dataset.auto==="1")&&w.email){setIf(em,w.email);did=true}
           if(hint)hint.hidden=!!(ph&&ph.value.trim());
-          if(webHint)webHint.hidden=!did;
+          if(webHint){webHint.textContent="Found on their website - please check";webHint.hidden=!did}
         });
       }).catch(function(){});
   }

@@ -44,12 +44,12 @@
   function norm(s){return String(s||"").toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()}
   function getJson(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})}
   function shard(k){if(!/^[a-z0-9]{2}$/.test(k))return Promise.resolve([]);
-    return shardCache[k]||(shardCache[k]=getJson("./data/mot/"+k+".json?v=2026-11-05").catch(function(){delete shardCache[k];return []}))}
+    return shardCache[k]||(shardCache[k]=getJson("./data/mot/"+k+".json?v=2026-11-05b").catch(function(){delete shardCache[k];return []}))}
   /* Only use location if the phone already allows it - never prompt here */
   try{if(navigator.permissions&&navigator.geolocation)navigator.permissions.query({name:"geolocation"}).then(function(st){
     if(st.state!=="granted")return;
     navigator.geolocation.getCurrentPosition(function(p){here=[p.coords.latitude,p.coords.longitude];
-      getJson("./data/mot/outcodes.json?v=2026-11-05").then(function(o){outcodes=o}).catch(function(){})},function(){},{maximumAge:600000,timeout:8000})}).catch(function(){})}catch(e){}
+      getJson("./data/mot/outcodes.json?v=2026-11-05b").then(function(o){outcodes=o}).catch(function(){})},function(){},{maximumAge:600000,timeout:8000})}).catch(function(){})}catch(e){}
   function dist(pc){if(!here||!outcodes)return 1e9;var c=outcodes[String(pc).split(" ")[0]];if(!c)return 1e9;
     var dy=c[0]-here[0],dx=(c[1]-here[1])*Math.cos(here[0]*Math.PI/180);return dx*dx+dy*dy}
   function dvsa(q){

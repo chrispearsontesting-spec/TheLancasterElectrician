@@ -39,7 +39,7 @@ const shards={}, outs=new Set(); let n=0;
 for(const r of rows){ if(r.length<8||!r[ix("Trading_Name")])continue; n++;
   const pc=(r[ix("Postcode")]||"").toUpperCase().trim(); const oc=pc.split(" ")[0]; if(oc)outs.add(oc);
   const addr=[r[ix("Address1")],r[ix("Address2")],r[ix("Address3")]].filter(Boolean).map(tidy).join(", ");
-  const rec=[tidy(r[ix("Trading_Name")]),addr,tidy(r[ix("Town")]),pc,phone(r[ix("Phone")])];
+  const rec=[tidy(r[ix("Trading_Name")]).replace(/([A-Za-z]) - ([A-Za-z])/g,"$1-$2"),addr,tidy(r[ix("Town")]),pc,phone(r[ix("Phone")])];
   const ws=norm(rec[0]).split(" ").filter(w=>w.length>=2);
   const keys=new Set(ws.filter((w,i)=>i===0||!STOP.has(w)).map(w=>w.slice(0,2)));
   const joined=norm(rec[0]).replace(/ /g,""); if(joined.length>=2)keys.add(joined.slice(0,2));

@@ -79,8 +79,8 @@ function openBook(kind){
   document.getElementById("cTitle").textContent=j.title;
   var who=c.motName?c.motName:"No garage saved yet";
   document.getElementById("cBody").textContent=who+(c.motPhone?" \u00b7 "+c.motPhone:"")+(c.motEmail?" \u00b7 "+c.motEmail:"");
-  var html="", em=window.D3Rem?D3Rem.email(c,kind):{href:mail(c,j.subject,j.body)};
-  if(c.motEmail) html+="<a class='btn wide' id='emailGarage' href='"+em.href.replace(/'/g,"%27")+"'>Email my garage</a>";
+  var booking=D3Rem.bookLink(c,kind),html=c.motEmail?"":"<a class='btn wide' href='"+booking+"'>Choose a date &amp; add comments</a>";
+  if(c.motEmail) html+="<a class='btn wide' id='emailGarage' href='"+booking+"'>Email my garage</a>";
   if(c.motPhone) html+="<a class='btn wide' href='tel:"+String(c.motPhone).replace(/\s/g,"")+"'>Call</a>";
   var form="<div id='gForm' style='"+(c.motEmail?"display:none":"")+"'><p class='left'>"+(c.motEmail?"Edit your garage":"Add your garage first so we can email them")+"</p>"+
     "<input id='gName' placeholder='Garage name' value='"+String(c.motName||"").replace(/'/g,"&#39;")+"'/>"+
@@ -104,20 +104,20 @@ function remindBanner(){
   if(!window.D3Rem) return;
   var box=document.getElementById("remBanner"), dues=document.getElementById("dues");
   if(!box){box=document.createElement("div");box.id="remBanner";var dt=document.getElementById("datesToggle")||dues;dt.parentNode.insertBefore(box,dt);}
-  var st=state(), all=D3Rem.active(st,D3Rem.load()), cur=st.cars[st.i]?st.i:0;
+  var st=state(), all=D3Rem.active(st,D3Rem.load(),null,true), cur=st.cars[st.i]?st.i:0;
   var act=all.filter(function(a){return a.carIndex===cur}), oth=all.filter(function(a){return a.carIndex!==cur});
   var othHtml=oth.length?"<button type='button' class='remOther' style='display:block;width:100%;background:none;border:0;text-align:left;color:#ffd166;font:inherit;font-size:13px;padding:6px 4px;margin:2px 0' data-rgo='"+oth[0].type+"' data-rcar='"+oth[0].carIndex+"'>Also due on another car: "+oth.map(function(a){return a.label+" \u00b7 "+a.plate}).join(", ")+" \u203a</button>":"";
   if(!act.length&&!oth.length){box.innerHTML="";box.style.display="none";return}
   box.style.display="";
   box.innerHTML=act.map(function(a){
-    return "<div class='remB' style='border-left:4px solid "+a.color+"'><div style='flex:1'><b>"+a.icon+" "+a.label+" \u00b7 "+a.plate+"</b><span>"+a.body.replace(/ Tap to email your garage\.$/,"")+"</span></div>"+
-      (a.book?"<button type='button' class='btn' data-rjob='"+a.type+"' data-rcar='"+a.carIndex+"'>Book</button>":"<button type='button' class='btn' data-rgo='"+a.type+"' data-rcar='"+a.carIndex+"'>View</button>")+"</div>";
+    return "<div class='remB' style='border-left:4px solid "+a.color+"'><div style='flex:1'><b>"+a.icon+" "+a.label+" \u00b7 "+a.plate+"</b><span>"+a.body.split(" Would you like to book")[0]+(a.emailOpened?" Booking email opened — awaiting garage confirmation.":"")+"</span></div>"+
+      (a.book?"<a class='btn' href='"+a.bookLink+"'>Book with my garage</a>":"<button type='button' class='btn' data-rgo='"+a.type+"' data-rcar='"+a.carIndex+"'>View</button>")+"</div>";
   }).join("")+othHtml;
 }
 function remindGo(type,ci){
   var s=state(); if(ci!=null&&s.cars[ci]&&s.i!==ci){s.i=ci;save(s);paint();}
-  var jobs={mot:"mot",service:"service",belt:"belt"};
-  if(jobs[type]) openBook(jobs[type]);
+  var jobs={mot:"mot",service:"service",belt:"belt",tyres:"tyres"};
+  if(jobs[type]) location.href=D3Rem.bookLink(s.cars[ci==null?s.i:ci],type);
   else{if(document.getElementById("dues").classList.contains("hide")){var tg=document.getElementById("datesToggle");if(tg)tg.click();}var el=document.querySelector("#dues [data-key='"+(type==="insurance"?"insurance":"tax")+"']");if(el){el.scrollIntoView({block:"center"});el.style.outline="2px solid #5aa9ff";setTimeout(function(){el.style.outline=""},2500)}}
 }
 document.addEventListener("click",function(e){
@@ -125,6 +125,11 @@ document.addEventListener("click",function(e){
   remindGo(b.getAttribute("data-rjob")||b.getAttribute("data-rgo"),+b.getAttribute("data-rcar"));
 });
 function remindHash(){
+  var garageKey=/^#garage=(.+)/.exec(location.hash);
+  if(garageKey){var gs=state(),gi=-1,gk;try{gk=decodeURIComponent(garageKey[1])}catch(e){return}
+    gs.cars.forEach(function(c,i){if(c.id===gk||D3Rem.vrn(c.plate)===D3Rem.vrn(gk))gi=i});
+    if(gi>=0){gs.i=gi;save(gs);paint();history.replaceState(null,"",location.pathname+location.search);setTimeout(function(){openSheet("edit");var grp=document.getElementById("gGarage");grp.open=true;grp.scrollIntoView({block:"start"})},150)}return;
+  }
   var L=window.D3Rem&&D3Rem.parseLink(location.hash); if(!L) return;
   var s=state(),ci=-1; s.cars.forEach(function(c,i){if(D3Rem.vrn(c.plate)===L.car)ci=i});
   history.replaceState(null,"",location.pathname+location.search);
@@ -424,7 +429,7 @@ if(dues) dues.addEventListener("click",function(e){
     else if(key==="fullservice") current=c.oil||"";
     else if(key==="timingbelt") current=c.beltDate||"";
     else if(key==="tyres") current=c.tyreDate||"";
-    var rType={mot:"mot",tax:"tax",insurance:"insurance",fullservice:"service",timingbelt:"belt"}[key];
+    var rType={mot:"mot",tax:"tax",insurance:"insurance",fullservice:"service",timingbelt:"belt",tyres:"tyres"}[key];
     var R=window.D3Rem&&rType?D3Rem.load():null, rt=R&&R.types[rType];
     var LEADS=[[1,"1 day"],[3,"3 days"],[7,"1 week"],[14,"2 weeks"],[21,"3 weeks"],[30,"1 month"]];
     var REP=[[1,"Daily"],[2,"Every other day"],[3,"Every 3 days"],[7,"Weekly"],[0,"Once only"]];
@@ -490,7 +495,9 @@ on("btnSave",function(){
   var typed=document.getElementById("fName").value.trim();
   c.nick=typed || looked.name || c.nick || plate(plateNow).replace("YOUR REG","") || "Car";
   c.name=c.nick;
+  if(D3Rem.vrn(c.plate)!==plateKey)["make","model","odometer","odometerDate","odometerUnit","garageBookings","garageBookingDrafts"].forEach(function(k){delete c[k]});
   if(looked.engine) c.engine = looked.engine;
+  ["make","model","odometer","odometerDate","odometerUnit"].forEach(function(k){if(looked[k])c[k]=looked[k]});
   if(looked.plate){ c.motChecked = Date.now(); }
   c.plate=plateNow;
   c.mot=document.getElementById("fMot").value;
@@ -563,6 +570,9 @@ function syncDates(){
         return;
       }
       target.motChecked=Date.now();
+      if(info.make)target.make=info.make;if(info.model)target.model=info.model;
+      var latest=(info.tests||[]).slice().sort(function(a,b){return String(b.completedDate||"").localeCompare(String(a.completedDate||""))})[0];
+      if(latest&&latest.odometerValue){target.odometer=latest.odometerValue;target.odometerDate=String(latest.completedDate||"").slice(0,10);target.odometerUnit=latest.odometerUnit||"mi";}
       var exp="";
       var tests=(info&&info.tests)||[];
       for(var i=0;i<tests.length;i++){

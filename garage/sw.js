@@ -5,13 +5,13 @@
    - Never touched: non-GET, cross-origin (MOT/DVLA proxy, uploads Worker, maps, fuel APIs), /garage/proxy/, /garage/uploads-worker/.
    Bump VERSION on each release that changes this file; old caches are deleted on activate. */
 "use strict";
-var VERSION = "2026-11-05c";
+var VERSION = "2026-11-06a";
 var CACHE = "driv3-" + VERSION;
 var RUNTIME = CACHE;
 var SCOPE = new URL("./", self.location).href;
 var PAGES = ["home.html","index.html","offline.html","buy.html","calendar.html","dashcam.html","drive.html","insurance.html","jobs.html",
   "mechanic.html","mot.html","performance.html","privacy.html","reminders.html","renew.html","report.html","route.html","security.html",
-  "service.html","share.html","show.html","showcase-edit.html","tax.html","upload.html","view.html"];
+  "book.html","service.html","share.html","show.html","showcase-edit.html","tax.html","upload.html","view.html"];
 var EXTRA = ["manifest.json","favicon.ico","icon.svg","icon-192.png","icon-512.png","icon-512-maskable.png","apple-touch-icon.png","carbon.png","audi-silver.svg","prices.json","mpg-meta.json","insurers.js","form-pickers.js",
   "sticker/sticker.js","sticker/frame-black.png","sticker/frame-white.png","sticker/geist-mono-id.woff",
   "badges/audi-rs3.svg","badges/audi-rs4.svg","badges/audi-rs6.svg","badges/audi-s3.svg","badges/audi-s4.svg","badges/bmw-m2.svg","badges/bmw-m3.svg",
@@ -96,4 +96,16 @@ self.addEventListener("fetch", function(e){
   if(req.mode === "navigate" || /\.html(\?|$)/.test(new URL(req.url).pathname + "?")){ e.respondWith(networkFirst(req, req.mode === "navigate")); return; }
   if(isData(req.url)){ e.respondWith(networkFirst(req, false)); return; }
   e.respondWith(staleWhileRevalidate(e));
+});
+
+/* Notification actions never send email: they open the on-phone booking screen. */
+self.addEventListener("notificationclick", function(e){
+  e.notification.close();
+  var d=e.notification.data||{},u;
+  try{
+    u=new URL(d.link||"home.html",SCOPE);
+    if(!ours(u.href))return;
+    if(e.action==="call"&&d.bookLink){u=new URL(d.bookLink,SCOPE);if(!ours(u.href))return;u.searchParams.set("call","1");}
+  }catch(err){return}
+  e.waitUntil(self.clients.openWindow(u.href));
 });

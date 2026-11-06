@@ -26,6 +26,7 @@ window.fillFromPlate = function (plate, done) {
     else if (/hybrid|phev/.test(fuel)) fuel = "hybrid";
     else if (/petrol|gasoline/.test(fuel)) fuel = "petrol";
     else fuel = "";
+    var latest=tests.slice().sort(function(a,b){return String(b.completedDate||"").localeCompare(String(a.completedDate||""))})[0]||{};
     if (done) done({
       name: info.name,
       fuel: fuel,
@@ -34,7 +35,10 @@ window.fillFromPlate = function (plate, done) {
       plate: raw,
       engine: info.engine,
       make: info.make,
-      model: info.model
+      model: info.model,
+      odometer: latest.odometerValue||"",
+      odometerDate: String(latest.completedDate||"").slice(0,10),
+      odometerUnit: latest.odometerUnit||"mi"
     });
   });
 };

@@ -141,7 +141,8 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 <a class="btn wide" href="drive.html">Let’s drive</a>
 <a class="btn" href="home.html#hist">Back</a>
 <script src="./trip-engine.js"></script>
-<script src="./reminders-core.js?v=2"></script>
+<script src="./reminders-core.js?v=3"></script>
+<script src="./reminders-web.js?v=1"></script>
 <script src="./car-scope.js?v=1"></script>
 <script src="./diy-work.js?v=3"></script>
 <script>
@@ -204,7 +205,7 @@ function remCard(e){
   var d=D3Rem.daysUntil(e.due), left=d<0?(-d)+" days overdue":d===0?"Due today":d+" days left";
   var acts=[];
   if(e.type==="mot") acts.push("<a class='btn' href='mot.html?plate="+e.vrn+"#history'>View history</a>");
-  if(e.book) acts.push("<a class='btn' href='home.html#remind="+e.type+"&car="+e.vrn+"'>Book / email garage</a>");
+  if(e.book) acts.push("<a class='btn' href='"+e.bookLink+"'>Book with my garage</a>");
   if(e.type==="tax") acts.push("<a class='btn' href='https://www.gov.uk/vehicle-tax' target='_blank' rel='noopener'>Renew</a>","<a class='btn' href='tax.html?plate="+e.vrn+"'>Check tax</a>");
   if(e.type==="insurance") acts.push("<a class='btn' href='insurance.html?v=19'>Policy</a>","<a class='btn' href='renew.html?v=13'>Renew</a>");
   return "<div class='card rem-card"+(D3Rem.daysUntil(e.due)<0?" over":"")+"'><b class='title'>"+e.icon+" "+escR(e.label)+" · "+escR(e.plate)+"</b><p class='muted'>"+escR(e.name)+" · "+D3Rem.niceDate(e.due)+" · "+left+"</p><div class='row'>"+acts.join("")+"</div></div>";

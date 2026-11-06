@@ -8,11 +8,12 @@
     {type:"tax",label:"Tax",icon:"£",color:"#ffd166",field:"tax"},
     {type:"insurance",label:"Insurance",icon:"🛡",color:"#7ee0a1",field:"ins"},
     {type:"service",label:"Full service",icon:"🔧",color:"#ff9f68",field:"oil",book:true,job:"service"},
-    {type:"belt",label:"Timing belt",icon:"⚙",color:"#c792ea",book:true,job:"belt"}
+    {type:"belt",label:"Timing belt",icon:"⚙",color:"#c792ea",book:true,job:"belt"},
+    {type:"tyres",label:"Tyres",icon:"◉",color:"#80cbc4",book:true,job:"tyre"}
   ];
-  var DEFAULTS={version:1,hour:9,types:{
+  var DEFAULTS={version:2,hour:9,types:{
     mot:{on:true,lead:21,every:1},tax:{on:true,lead:7,every:1},insurance:{on:true,lead:7,every:1},
-    service:{on:true,lead:14,every:1},belt:{on:true,lead:30,every:0}}};
+    service:{on:true,lead:14,every:1},belt:{on:true,lead:30,every:0},tyres:{on:true,lead:21,every:7}}};
   /* every: repeat interval in days counted from lead start (1 daily, 2 every other day, 3, 7 weekly, 0 once at start). Due day always fires. */
   var EVERY=[1,2,3,7,0];
   function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -23,12 +24,13 @@
       if(r.hour>=0&&r.hour<=23)s.hour=+r.hour;
       for(var k in s.types)if(r.types&&r.types[k]){var t=r.types[k];
         if(typeof t.on==="boolean")s.types[k].on=t.on;
+        if(typeInfo(k).book)s.types[k].book=t.book===true;
         if(t.lead>=0&&t.lead<=365)s.types[k].lead=Math.round(+t.lead);
         if(typeof t.daily==="boolean")s.types[k].every=t.daily?1:0; /* legacy */
         if(t.every!=null&&EVERY.indexOf(+t.every)>=0)s.types[k].every=+t.every;
       }
     }
-    for(var q in s.types)s.types[q].daily=s.types[q].every===1;
+    for(var q in s.types){s.types[q].daily=s.types[q].every===1;if(typeInfo(q).book)s.types[q].book=s.types[q].book===true;}
     return s;
   }
   function load(ls){ls=ls||(typeof localStorage!=="undefined"?localStorage:null);return settings(ls&&ls.getItem(KEY))}
@@ -37,7 +39,13 @@
   function plate(p){p=vrn(p);return p.length>=7?p.slice(0,4)+" "+p.slice(4):p}
   function beltDue(c){if(!c.beltDate)return "";var d=new Date(c.beltDate+"T12:00:00");if(isNaN(d))return "";d.setFullYear(d.getFullYear()+(+(c.beltYears||5)));return iso(d)}
   function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-  function day(s){var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||"");return m?new Date(+m[1],+m[2]-1,+m[3]):null}
+  function day(s){var m=/^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(s||"");if(!m)return null;var d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()===+m[2]-1&&d.getDate()===+m[3]?d:null}
+  /* Same estimate as the home tread-life gauge: fitted date + expected life / annual miles. */
+  function tyreDue(c){var d=day(c.tyreDate);if(!d||!(+c.tyreLife>0)||!(+c.miles>0))return "";d.setDate(d.getDate()+Math.round(+c.tyreLife/+c.miles*365));return isNaN(d)?"":iso(d)}
+  function dueOf(c,type){type=type==="tyre"?"tyres":type;var t=typeInfo(type);return type==="belt"?beltDue(c):type==="tyres"?tyreDue(c):t?c[t.field]||"":""}
+  function bookLink(c,type){return "book.html?car="+encodeURIComponent(c.id||vrn(c.plate)).replace(/'/g,"%27")+"&job="+(type==="tyre"?"tyres":type)}
+  function phone(c){return String(c.motPhone||"").replace(/[^+0-9]/g,"")}
+  function opened(c,type){var due=dueOf(c,type),b=c.garageBookings&&c.garageBookings[type];return !!(due&&b&&b.due===due)}
   function niceDate(s){var d=day(s);return d?d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"}):""}
   function garageOf(g){if(typeof g==="string"){try{g=JSON.parse(g)}catch(e){g=null}}return g&&g.cars?g:{i:0,cars:[]}}
   function typeInfo(t){for(var i=0;i<TYPES.length;i++)if(TYPES[i].type===t)return TYPES[i];return null}
@@ -45,9 +53,9 @@
   function dueItems(garage){
     var g=garageOf(garage),out=[];
     g.cars.forEach(function(c,ci){TYPES.forEach(function(t){
-      var due=t.type==="belt"?beltDue(c):c[t.field];
+      var due=dueOf(c,t.type);
       if(!day(due))return;
-      out.push({type:t.type,label:t.label,icon:t.icon,color:t.color,due:String(due).slice(0,10),carIndex:ci,plate:plate(c.plate),vrn:vrn(c.plate),name:c.nick||c.name||"Car",book:!!t.book});
+      out.push({type:t.type,label:t.label,icon:t.icon,color:t.color,due:String(due).slice(0,10),carIndex:ci,plate:plate(c.plate),vrn:vrn(c.plate),name:c.nick||c.name||"Car",book:!!t.book,bookLink:bookLink(c,t.type),phone:phone(c),emailOpened:opened(c,t.type),estimated:t.type==="tyres"});
     })});
     return out.sort(function(a,b){return a.due<b.due?-1:1});
   }
@@ -58,21 +66,23 @@
   }
   function daysUntil(due,now){var d=day(due),n=new Date(now||Date.now());n=new Date(n.getFullYear(),n.getMonth(),n.getDate());return Math.round((d-n)/86400000)}
   function phrase(type,days){
-    var noun={mot:"MOT",tax:"road tax",insurance:"insurance",service:"full service",belt:"timing belt change"}[type];
+    var noun={mot:"MOT",tax:"road tax",insurance:"insurance",service:"full service",belt:"timing belt change",tyres:"tyre check / change"}[type];
     var v=type==="insurance"?"expires":"is due",v2=type==="insurance"?"expired":"was due";
     return {noun:noun,tail:days<0?v2+" "+(-days)+" day"+(days===-1?"":"s")+" ago":days===0?(type==="insurance"?"expires today":"is due today"):v+" in "+days+" day"+(days===1?"":"s")};
   }
-  function text(it,days){
-    var t=typeInfo(it.type),p=phrase(it.type,days),bk=typeInfo(it.type).book;
-    return {title:t.label+" reminder — "+it.plate,body:"Your "+p.noun+" for "+it.plate+" "+p.tail+(bk?". Tap to email your garage.":".")};
+  function text(it,days,offer){
+    var t=typeInfo(it.type),p=phrase(it.type,days);
+    return {title:t.label+" reminder — "+it.plate,body:"Your "+p.noun+" for "+it.plate+" "+p.tail+"."+(it.estimated?" Estimated from your tyre life and annual miles; check tread regularly.":"")+(offer?" Would you like to book with your garage? Choose a date and Driv3 writes the email for you.":"")};
   }
-  function link(it){return "home.html#remind="+it.type+"&car="+it.vrn}
+  function link(it){return it.book?it.bookLink:"home.html#remind="+it.type+"&car="+it.vrn}
+  function offer(it,s){return !!(it.book&&s.types[it.type].book&&!it.emailOpened)}
+  function actions(it,s){return offer(it,s)?[{action:"book",title:"Book by email"}].concat(it.phone?[{action:"call",title:"Call garage"}]:[]):[]}
   function nid(s){var h=7;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h)%2000000000}
   /* Items whose reminder window is open today (incl. overdue up to 30 days). */
-  function active(garage,setts,now){
+  function active(garage,setts,now,includeOff){
     var s=settings(setts);
-    return dueItems(garage).filter(function(it){var t=s.types[it.type];if(!t||!t.on)return false;var d=daysUntil(it.due,now);return d<=t.lead&&d>=-30})
-      .map(function(it){var d=daysUntil(it.due,now),x=text(it,d);it.days=d;it.title=x.title;it.body=x.body;it.link=link(it);it.action=it.book?"email-garage":"open";return it});
+    return dueItems(garage).filter(function(it){var t=s.types[it.type];if(!t||(!t.on&&!includeOff))return false;var d=daysUntil(it.due,now);return d<=t.lead&&d>=-30})
+      .map(function(it){var d=daysUntil(it.due,now),bk=offer(it,s),x=text(it,d,bk);it.days=d;it.title=x.title;it.body=x.body;it.link=link(it);it.offer=bk;it.actions=actions(it,s);it.action=bk?"email-garage":"open";return it});
   }
   /* Notifications to schedule for the next `horizon` days (default 60).
      Each: {id,type,carIndex,plate,vrn,due,fireAt:Date(local hour),fireAtISO,title,body,action,link,extra} */
@@ -88,28 +98,38 @@
         var f=new Date(d.getFullYear(),d.getMonth(),d.getDate(),s.hour,0,0);
         if(f<=n||(f-today)/86400000>H)return;
         var left=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(due.getFullYear(),due.getMonth(),due.getDate()))/-86400000);
-        var x=text(it,left);
+        var bk=offer(it,s),x=text(it,left,bk);
         out.push({id:nid(it.type+"|"+it.vrn+"|"+iso(d)),type:it.type,carIndex:it.carIndex,plate:it.plate,vrn:it.vrn,due:it.due,daysLeft:left,
-          fireAt:f,fireAtISO:f.toISOString(),title:x.title,body:x.body,action:it.book?"email-garage":"open",link:link(it),
-          extra:{type:it.type,car:it.vrn,link:link(it)}});
+          fireAt:f,fireAtISO:f.toISOString(),title:x.title,body:x.body,offer:bk,actions:actions(it,s),action:bk?"email-garage":"open",link:link(it),
+          extra:{type:it.type,car:it.vrn,link:link(it),bookLink:it.bookLink,phone:it.phone,due:it.due}});
       });
     });
     return out.sort(function(a,b){return a.fireAt-b.fireAt});
   }
   /* Polite booking email. Returns {to,subject,body,href} (href "" when no garage email). */
-  function email(car,type){
-    var c=car||{},pl=plate(c.plate)||"my car",model=c.name||c.nick||"car";
-    var due=type==="belt"?beltDue(c):c[(typeInfo(type)||{}).field||"oil"];
-    var job={mot:"an MOT",service:"a full service",belt:"a timing belt change",tyre:"new tyres"}[type]||"a service";
-    var subj={mot:"MOT booking",service:"Full service booking",belt:"Timing belt change booking",tyre:"Tyre change booking"}[type]||"Booking";
-    var body="Hi "+(c.motName||"there")+",\n\nI'd like to book "+job+" for my "+model+", registration "+pl+"."+
-      (due&&type!=="tyre"?"\nIt is due on "+niceDate(due)+".":"")+(c.miles?"\nCurrent mileage is about "+Number(c.miles).toLocaleString("en-GB")+" miles.":"")+
-      "\n\nCould you let me know which dates and times you have available, and a rough price?\n\nMany thanks";
-    var subject=subj+" – "+pl,to=String(c.motEmail||"").trim();
-    return {to:to,subject:subject,body:body,href:to?"mailto:"+encodeURIComponent(to).replace(/%40/g,"@")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body):""};
+  function email(car,type,opts){
+    var c=car||{},o=opts||{};type=type==="tyre"?"tyres":type;
+    var pl=plate(c.plate)||"my car",model=[c.make,c.model].filter(Boolean).join(" ")||c.name||c.nick||"car";
+    var due=dueOf(c,type),job={mot:"an MOT",service:"a full service",belt:"a timing belt change",tyres:"a tyre check / change"}[type]||"a service";
+    var subj={mot:"MOT booking",service:"Full service booking",belt:"Timing belt change booking",tyres:"Tyre check / change booking"}[type]||"Booking";
+    var lines=["Hi "+(c.motName||"there")+",","","I'd like to book "+job+" for my "+model+", registration "+pl+"."];
+    function date(label,value){if(day(value))lines.push(label+": "+niceDate(value)+".")}
+    function miles(label,value,unit){var n=Number(String(value||"").replace(/,/g,""));if(isFinite(n)&&n>0)lines.push(label+": "+n.toLocaleString("en-GB")+" "+(unit||"miles")+".")}
+    if(type==="mot")date("MOT expires",due);
+    if(type==="service"){date("Last full service recorded",c.lastService||o.lastService);date("Next full service due",due);if(c.fuel)lines.push("Fuel: "+c.fuel+".")}
+    if(type==="belt"){date("Belt last changed",c.beltDate);miles("Mileage when belt changed",c.beltLastMiles);date("Next change due by date",due);lines.push("Change interval: "+(c.beltYears||5)+" years"+(c.beltMiles?" or "+Number(c.beltMiles).toLocaleString("en-GB")+" miles, whichever comes first":"")+".")}
+    if(type==="tyres"){date("Tyres fitted",c.tyreDate);if(c.tyreSize)lines.push("Tyre size: "+c.tyreSize+".");date("Estimated tyre check / change due",due);miles("Expected tyre life",c.tyreLife)}
+    miles("Mileage recorded"+(c.odometerDate?" on "+niceDate(c.odometerDate):""),c.odometer,c.odometerUnit==="km"?"km":"miles");
+    /* c.miles is ANNUAL driving, never the car's odometer. */
+    miles("Estimated annual mileage",c.miles);
+    if(day(o.preferredDate)){lines.push("");date("Preferred booking date",o.preferredDate);lines.push("Please confirm whether this date is available.")}
+    if(String(o.comments||"").trim())lines.push("","Other work / questions:",String(o.comments).trim().slice(0,4000));
+    lines.push("","Could you confirm a time and a rough price? The booking is not confirmed until I hear back.","","Many thanks");
+    var subject=subj+" – "+pl,to=String(c.motEmail||"").trim(),body=lines.join("\n");
+    return {to:to,subject:subject,body:body,href:/^[^@\s?&#]+@[^@\s?&#]+\.[^@\s?&#]+$/.test(to)?"mailto:"+encodeURIComponent(to).replace(/%40/g,"@")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body):""};
   }
   /* Parse "#remind=mot&car=AB12CDE" -> {type,car} or null */
   function parseLink(h){var m=/remind=([a-z]+)/.exec(h||""),c=/car=([A-Za-z0-9]+)/.exec(h||"");return m?{type:m[1],car:c?c[1].toUpperCase():""}:null}
-  var api={KEY:KEY,TYPES:TYPES,DEFAULTS:DEFAULTS,settings:settings,EVERY:EVERY,fireDays:fireDays,load:load,save:save,dueItems:dueItems,active:active,upcoming:upcoming,email:email,parseLink:parseLink,daysUntil:daysUntil,beltDue:beltDue,plate:plate,vrn:vrn,niceDate:niceDate};
+  var api={KEY:KEY,TYPES:TYPES,DEFAULTS:DEFAULTS,settings:settings,EVERY:EVERY,fireDays:fireDays,load:load,save:save,dueItems:dueItems,active:active,upcoming:upcoming,email:email,parseLink:parseLink,daysUntil:daysUntil,beltDue:beltDue,tyreDue:tyreDue,dueOf:dueOf,bookLink:bookLink,phone:phone,opened:opened,iso:iso,plate:plate,vrn:vrn,niceDate:niceDate};
   if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.D3Rem=api;
 })(typeof self!=="undefined"?self:this);

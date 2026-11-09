@@ -56,10 +56,12 @@ label.f{display:block;color:#8b8b8b;font-size:13px;margin-top:8px}
 <p class="note">Alerts come at 9am, and always on the due day.</p>
 <div class="card" id="types"></div>
 <a class="gline" id="garageLine" href="home.html"></a>
-<button class="btn" type="button" id="enableAlerts" hidden>Enable phone alerts</button><p class="note" id="alertsStatus" role="status"></p>
+<button class="btn" type="button" id="enableAlerts" hidden>Turn on notifications</button><p class="note" id="alertsStatus" role="status"></p>
 <button class="btn" type="button" id="save">Save</button>
 <p id="msg"></p>
 <script src="./reminders-core.js?v=5"></script>
+<script src="./mot-config.js"></script>
+<script src="./garage-contact.js?v=1"></script>
 <script>
 function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function garage(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null");if(g&&g.cars)return g}catch(e){}return {i:0,cars:[]}}
@@ -88,7 +90,11 @@ function draw(){
   var line=document.getElementById("garageLine");
   if(!selected){line.textContent="Add a car to set your garage ›";line.href="home.html"}
   else{line.href="home.html#garage="+encodeURIComponent(selected.id||D3Rem.vrn(selected.plate));
-    line.textContent=saved?"Garage for "+D3Rem.plate(selected.plate)+": "+(selected.motName||"saved")+" ›":"Add your garage to book from reminders ›"}
+    line.textContent=saved?"Garage for "+D3Rem.plate(selected.plate)+": "+(selected.motName||"saved")+(selected.motEmailAuto?" · email found, please check":"")+" ›":"Add your garage to book from reminders ›";
+    if(!selected.motEmail&&window.D3GarageContact&&D3GarageContact.needs(selected)&&!draw.looked){draw.looked=1;var key=selected.id||D3Rem.vrn(selected.plate);
+      D3GarageContact.find(selected).then(function(r){if(!r.email)return;var g2=garage(),c=g2.cars.filter(function(x){return (x.id||D3Rem.vrn(x.plate))===key})[0];
+        if(!c||String(c.motEmail||"").trim())return;c.motEmail=r.email;c.motEmailAuto=true;if(r.postcode&&!c.motPostcode){c.motPostcode=r.postcode;c.motTown=r.town||""}
+        localStorage.setItem("gt.garage",JSON.stringify(g2));draw();document.dispatchEvent(new Event("d3reminderschanged"))})}}
 }
 document.getElementById("save").onclick=function(){
   var s=D3Rem.load();
@@ -102,7 +108,7 @@ document.getElementById("save").onclick=function(){
 };
 draw();
 </script>
-<script src="./reminders-web.js?v=1"></script>
+<script src="./reminders-web.js?v=2"></script>
 <script src="./icons.js?v=32"></script>
 </body>
 </html>

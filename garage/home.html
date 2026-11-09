@@ -241,9 +241,9 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <label for="fMiles">Miles you drive per year</label><input id="fMiles" type="number" placeholder="e.g. 8000"/>
 </section>
 <section class="fGroup"><h4 class="fHead">Renewal dates</h4>
-<label for="fMot">MOT expires on</label><input id="fMot" type="date"/><p class="fHint">The expiry date on your MOT certificate. We fill this in from your plate.</p>
-<label for="fTax">Tax runs out on</label><input id="fTax" type="date"/><p class="fHint">The date your road tax expires, not the day you paid. We’ll try to fill this in from your plate.</p><p class="fHint" id="taxSorn" hidden>Declared off the road (SORN)</p>
-<label for="fIns">Insurance renews on</label><input id="fIns" type="date"/><p class="fHint">The renewal (end) date on your policy documents.</p>
+<label for="fMot">MOT expires on</label><input id="fMot" type="date"/><p class="fHint">Filled in from your plate.</p>
+<label for="fTax">Tax runs out on</label><input id="fTax" type="date"/><p class="fHint">The expiry date, not the day you paid.</p><p class="fHint" id="taxSorn" hidden>Declared off the road (SORN)</p>
+<label for="fIns">Insurance renews on</label><input id="fIns" type="date"/><p class="fHint">The end date on your policy.</p>
 <label for="fInsName">Insurer</label><input id="fInsName" type="text" placeholder="Start typing, e.g. Aviva" maxlength="60" autocomplete="off"/>
 <label for="fInsWeb">Insurer website</label><input id="fInsWeb" placeholder="e.g. admiral.com"/><p class="fHint">So you can renew in one tap.</p>
 </section>
@@ -251,13 +251,13 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <label for="fOil">Next full service due</label><input id="fOil" type="date"/><p class="fHint">Usually a year after your last full service.</p>
 <label for="fBeltDate">Timing belt last changed on</label><input id="fBeltDate" type="date"/><p class="fHint">Leave blank if your car has a timing chain.</p>
 <div class="fRow"><div><label for="fBeltYears">Change belt every (years)</label><input id="fBeltYears" type="number" placeholder="5"/></div>
-<div><label for="fBeltMiles">or every (miles)</label><input id="fBeltMiles" type="number" placeholder="60000"/></div></div><p class="fHint">Check your service book; whichever comes first.</p>
+<div><label for="fBeltMiles">or every (miles)</label><input id="fBeltMiles" type="number" placeholder="60000"/></div></div><p class="fHint">Whichever comes first. See your service book.</p>
 </details>
 <details class="fGroup" id="gTyres"><summary class="fHead">Tyres <span class="fSum">fitted date &amp; life</span></summary>
-<label for="fTyreDate">Tyres fitted on</label><input id="fTyreDate" type="date"/><p class="fHint">The date your current tyres were put on.</p>
+<label for="fTyreDate">Tyres fitted on</label><input id="fTyreDate" type="date"/>
 <label for="fTyreLife">Expected tyre life (miles)</label><input id="fTyreLife" type="number" placeholder="20000"/><p class="fHint">Most tyres last 20,000 miles or so.</p>
 </details>
-<details class="fGroup" id="gGarage"><summary class="fHead">Your garage <span class="fSum">(add their phone and email so Driv3 can write the booking email for you)</span></summary>
+<details class="fGroup" id="gGarage"><summary class="fHead">Your garage <span class="fSum">phone &amp; email for booking</span></summary>
 <label for="fGarage">Garage name</label><input id="fGarage" placeholder="Start typing, e.g. Kwik Fit Lancaster" autocomplete="off"/><p class="fHint" id="garageAddr" hidden></p>
 <label for="fPhone">Phone</label><input id="fPhone" type="tel"/><p class="fHint" id="phoneHint" hidden>No phone listed - type it in</p>
 <label for="fEmail">Email</label><input id="fEmail" type="email"/><p class="fHint" id="webHint" hidden>Found on their website - please check</p><a class="fHint" id="emailSearch" href="https://www.google.com/search?q=garage+email" target="_blank" rel="noopener" hidden>Search Google for their email</a>
@@ -274,7 +274,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="mot-client.js"></script>
 <script src="./tax-lookup.js?v=1"></script>
 <script src="plate-fill.js?v=2"></script>
-<script src="./reminders-core.js?v=3"></script>
+<script src="./reminders-core.js?v=4"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./home-app.js?v=104"></script>
 <script src="./insurers.js?v=1"></script>

@@ -72,7 +72,7 @@
   }
   function text(it,days,offer){
     var t=typeInfo(it.type),p=phrase(it.type,days);
-    return {title:t.label+" reminder — "+it.plate,body:"Your "+p.noun+" for "+it.plate+" "+p.tail+"."+(it.estimated?" Estimated from your tyre life and annual miles; check tread regularly.":"")+(offer?" Would you like to book with your garage? Choose a date and Driv3 writes the email for you.":"")};
+    return {title:t.label+" reminder — "+it.plate,body:"Your "+p.noun+" for "+it.plate+" "+p.tail+"."+(it.estimated?" Estimated date; check your tread.":"")+(offer?" Would you like to book it in? Tap to email your garage.":"")};
   }
   function link(it){return it.book?it.bookLink:"home.html#remind="+it.type+"&car="+it.vrn}
   function offer(it,s){return !!(it.book&&s.types[it.type].book&&!it.emailOpened)}
@@ -106,26 +106,23 @@
     });
     return out.sort(function(a,b){return a.fireAt-b.fireAt});
   }
-  /* Polite booking email. Returns {to,subject,body,href} (href "" when no garage email). */
+  /* Friendly booking email (no mileage). Returns {to,subject,body,href} (href "" when no garage email). */
   function email(car,type,opts){
     var c=car||{},o=opts||{};type=type==="tyre"?"tyres":type;
-    var pl=plate(c.plate)||"my car",model=[c.make,c.model].filter(Boolean).join(" ")||c.name||c.nick||"car";
-    var due=dueOf(c,type),job={mot:"an MOT",service:"a full service",belt:"a timing belt change",tyres:"a tyre check / change"}[type]||"a service";
-    var subj={mot:"MOT booking",service:"Full service booking",belt:"Timing belt change booking",tyres:"Tyre check / change booking"}[type]||"Booking";
-    var lines=["Hi "+(c.motName||"there")+",","","I'd like to book "+job+" for my "+model+", registration "+pl+"."];
-    function date(label,value){if(day(value))lines.push(label+": "+niceDate(value)+".")}
-    function miles(label,value,unit){var n=Number(String(value||"").replace(/,/g,""));if(isFinite(n)&&n>0)lines.push(label+": "+n.toLocaleString("en-GB")+" "+(unit||"miles")+".")}
-    if(type==="mot")date("MOT expires",due);
-    if(type==="service"){date("Last full service recorded",c.lastService||o.lastService);date("Next full service due",due);if(c.fuel)lines.push("Fuel: "+c.fuel+".")}
-    if(type==="belt"){date("Belt last changed",c.beltDate);miles("Mileage when belt changed",c.beltLastMiles);date("Next change due by date",due);lines.push("Change interval: "+(c.beltYears||5)+" years"+(c.beltMiles?" or "+Number(c.beltMiles).toLocaleString("en-GB")+" miles, whichever comes first":"")+".")}
-    if(type==="tyres"){date("Tyres fitted",c.tyreDate);if(c.tyreSize)lines.push("Tyre size: "+c.tyreSize+".");date("Estimated tyre check / change due",due);miles("Expected tyre life",c.tyreLife)}
-    miles("Mileage recorded"+(c.odometerDate?" on "+niceDate(c.odometerDate):""),c.odometer,c.odometerUnit==="km"?"km":"miles");
-    /* c.miles is ANNUAL driving, never the car's odometer. */
-    miles("Estimated annual mileage",c.miles);
-    if(day(o.preferredDate)){lines.push("");date("Preferred booking date",o.preferredDate);lines.push("Please confirm whether this date is available.")}
-    if(String(o.comments||"").trim())lines.push("","Other work / questions:",String(o.comments).trim().slice(0,4000));
-    lines.push("","Could you confirm a time and a rough price? The booking is not confirmed until I hear back.","","Many thanks");
-    var subject=subj+" – "+pl,to=String(c.motEmail||"").trim(),body=lines.join("\n");
+    var pl=plate(c.plate),model=[c.make,c.model].filter(Boolean).join(" ")||c.name||c.nick||"car";
+    var due=dueOf(c,type),job={mot:"an MOT",service:"a full service",belt:"a timing belt change",tyres:"a tyre check"}[type]||"a service";
+    var subj={mot:"MOT",service:"Full service",belt:"Timing belt change",tyres:"Tyre check"}[type]||"Booking";
+    var when=day(o.preferredDate)?" on "+niceDate(o.preferredDate):"",fuel=type==="service"&&c.fuel?String(c.fuel).trim().toLowerCase():"",tag=[pl,fuel].filter(Boolean).join(", "),car2="my "+model+(tag?" ("+tag+")":"");
+    var lines=["Hi "+(String(c.motName||"").trim()||"there")+",","","Could I book "+car2+" in for "+job+when+"?"],info=[];
+    function d(v){return day(v)?niceDate(v):""}
+    if(type==="mot"&&d(due))info.push("The current MOT runs out on "+d(due)+".");
+    if(type==="service"){var last=d(c.lastService||o.lastService);if(d(due))info.push("It's due on "+d(due)+(last?" and the last one was on "+last:"")+".");else if(last)info.push("The last one was on "+last+".");}
+    if(type==="belt"){var was=d(c.beltDate);if(was)info.push("The belt was last changed on "+was+(d(due)?", so it's due by "+d(due):"")+".");else if(d(due))info.push("It's due by "+d(due)+".")}
+    if(type==="tyres"){var fit=d(c.tyreDate),sz=String(c.tyreSize||"").trim();if(fit||sz)info.push("The tyres"+(sz?" ("+sz+")":"")+(fit?" were fitted on "+fit:"")+(fit?".":" need a look."));if(d(due))info.push("I reckon they're due a check around "+d(due)+".")}
+    if(info.length)lines.push(info.join(" "));
+    if(String(o.comments||"").trim())lines.push("","While it's in, could you also look at this?",String(o.comments).trim().slice(0,4000));
+    lines.push("",(when?"Let me know if that day works":"Let me know when you can fit it in")+", and roughly what it'll cost.","","Thanks!");
+    var subject=subj+(pl?" for "+pl:""),to=String(c.motEmail||"").trim(),body=lines.join("\n");
     return {to:to,subject:subject,body:body,href:/^[^@\s?&#]+@[^@\s?&#]+\.[^@\s?&#]+$/.test(to)?"mailto:"+encodeURIComponent(to).replace(/%40/g,"@")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body):""};
   }
   /* Parse "#remind=mot&car=AB12CDE" -> {type,car} or null */

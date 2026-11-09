@@ -64,7 +64,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 
 <div class="card" id="lockCard">
   <h2>App lock <span class="pill" id="lockPill">Off</span></h2>
-  <p class="note">Ask for a PIN when Driv3 opens, and again after 5 minutes in the background. This is a privacy screen, so someone picking up your phone can't browse your cars. It doesn't encrypt the data stored on the phone.</p>
+  <p class="note">Asks for a PIN when Driv3 opens and after 5 minutes away. It stops others browsing your cars, but doesn't encrypt your data.</p>
   <div id="lockOff">
     <label class="l" for="pin1">New PIN (4 to 6 digits)</label><input class="in pin" id="pin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
     <label class="l" for="pin2">Type it again</label><input class="in pin" id="pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
@@ -79,14 +79,14 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
     <div class="row2"><button class="btn" type="button" id="pinChg">Change PIN</button><button class="btn danger" type="button" id="pinOff">Turn off</button></div>
     <button class="btn" type="button" id="lockNow">Lock now</button>
   </div>
-  <p class="note">Forgot the PIN? The only way out is clearing Driv3's data in your phone's settings (Apps › Driv3 › Storage › Clear data), which deletes your cars on this phone. Keep a backup so you can restore them.</p>
+  <p class="note">Forgot the PIN? You'd have to clear Driv3's data (Settings › Apps › Driv3 › Storage › Clear data), which deletes your cars. Keep a backup.</p>
   <div class="status" id="lockStatus"></div>
 </div>
 
 <div class="card" id="bkCard">
   <h2>Make a backup</h2>
   <p class="note" id="lastBk">You haven't made a backup on this phone yet.</p>
-  <p class="note">One locked file with everything: cars, reminders, history, photos, PDFs, mechanic links and shared reports. Save it to Google Drive or email it to yourself.</p>
+  <p class="note">One locked file with your cars, reminders, history, photos and links. Save it to Google Drive or email it to yourself.</p>
   <label class="l" for="bp1">Passphrase</label><input class="in" id="bp1" type="password" autocomplete="new-password" placeholder="e.g. four random words"/>
   <div class="meter"><i id="meter"></i></div><p class="note" id="strength"></p>
   <label class="l" for="bp2">Type it again</label><input class="in" id="bp2" type="password" autocomplete="new-password"/>

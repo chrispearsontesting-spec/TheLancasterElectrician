@@ -43,7 +43,7 @@
     external(out.href).then(function(){
       update(function(c){c.garageBookings=c.garageBookings||{};c.garageBookings[type]={due:cycle,openedAt:Date.now(),preferredDate:el("preferredDate").value}});
       if(window.driv3Reschedule)window.driv3Reschedule();
-      cycleUI();message("Email opened — check it and press Send in your email app. Your garage must confirm the booking. If it did not open, check that an email app is set up, or tap “Ask me again”.");
+      cycleUI();message("Email opened. Press Send there, then wait for your garage to confirm. Didn’t open? Check you have an email app.");
     }).catch(function(err){message("Could not open your email app. Check one is set up and try again. "+(err.message||""),true)}).finally(function(){el("send").disabled=false});
   };
   var Speech=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,listening=false,failed=false;

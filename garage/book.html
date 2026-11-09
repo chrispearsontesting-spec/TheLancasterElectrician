@@ -15,33 +15,33 @@
 <body>
 <a class="back" href="home.html">‹ Home</a>
 <h1>Book with my garage</h1>
-<p class="note">Choose a date. Driv3 writes the booking email for you. Check it in your email app, then press Send there.</p>
+<p class="note">Pick a date. Driv3 writes the email; you press Send.</p>
 <div id="missing" class="card" hidden><p>This car is no longer saved on this phone.</p><a class="btn" href="home.html">Choose or add a car</a></div>
 <form id="booking" hidden>
-<section class="card"><div class="job-line"><i id="dot"></i><h2 id="jobTitle"></h2></div><p id="carTitle"></p><p id="due" class="note"></p><p id="opened" class="note" hidden>Email already opened for this due date. Your garage still needs to confirm the booking.</p><button id="askAgain" class="text-btn" type="button" hidden>Ask me again for this due date</button></section>
+<section class="card"><div class="job-line"><i id="dot"></i><h2 id="jobTitle"></h2></div><p id="carTitle"></p><p id="due" class="note"></p><p id="opened" class="note" hidden>Email opened for this due date. Wait for your garage to confirm.</p><button id="askAgain" class="text-btn" type="button" hidden>Ask me again for this due date</button></section>
 <section class="card">
 <label for="preferredDate">Preferred date</label><input id="preferredDate" type="date" required/><p id="dateChosen" class="note"></p>
 <label for="comments">Other work or questions <span class="muted">(optional)</span></label>
-<textarea id="comments" rows="3" maxlength="4000" placeholder="Anything else you would like the garage to check?"></textarea>
+<textarea id="comments" rows="3" maxlength="4000" placeholder="Anything else to check?"></textarea>
 <button class="mic" id="mic" type="button" aria-pressed="false" aria-label="Dictate other work or questions"><span aria-hidden="true">🎤</span> <span id="micText">Speak your comments</span></button>
-<p class="note" id="voiceHint" role="status">Type, or use the microphone on your keyboard. Voice typing may use your phone’s speech service.</p>
+<p class="note" id="voiceHint" role="status">Type or speak. Voice uses your phone’s speech service.</p>
 </section>
 <section class="card">
 <h2>Your garage</h2><p id="garageName"></p>
 <label for="garageEmail">Garage email <span class="muted">(editable)</span></label><input id="garageEmail" type="email" autocomplete="email" maxlength="254" required placeholder="Add their email address"/>
 <a id="emailSearch" class="text-link" target="_blank" rel="noopener">Search Google for their email</a>
 <a id="callGarage" class="btn" hidden>Call garage</a>
-<p id="noContact" class="note" hidden>No phone or email saved yet. Add your garage’s details to book or call.</p>
+<p id="noContact" class="note" hidden>Add your garage’s phone or email to book.</p>
 <a id="editGarage" class="text-link">Edit car · Your garage</a>
 </section>
 <details class="card preview"><summary>Check the booking email</summary><p id="emailSubject"></p><pre id="emailBody"></pre></details>
 <button id="send" class="btn primary" type="submit">Send</button>
-<p class="note foot">Opens your email app — nothing is sent automatically. Opening it stops booking prompts for this due date, but normal due reminders continue.</p>
+<p class="note foot">Nothing is sent until you press Send in your email app. Due reminders carry on.</p>
 <p id="status" role="status" class="note"></p>
 </form>
 <a class="btn" href="reminders.html?v=16">Reminders &amp; my garage</a>
-<script src="./reminders-core.js?v=3"></script>
-<script src="./book.js?v=1"></script>
+<script src="./reminders-core.js?v=4"></script>
+<script src="./book.js?v=2"></script>
 <script src="./reminders-web.js?v=1"></script>
 </body>
 </html>

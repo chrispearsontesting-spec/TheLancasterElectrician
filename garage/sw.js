@@ -5,7 +5,7 @@
    - Never touched: non-GET, cross-origin (MOT/DVLA proxy, uploads Worker, maps, fuel APIs), /garage/proxy/, /garage/uploads-worker/.
    Bump VERSION on each release that changes this file; old caches are deleted on activate. */
 "use strict";
-var VERSION = "2026-11-06a";
+var VERSION = "2026-11-09a";
 var CACHE = "driv3-" + VERSION;
 var RUNTIME = CACHE;
 var SCOPE = new URL("./", self.location).href;

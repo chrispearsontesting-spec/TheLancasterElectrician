@@ -85,6 +85,7 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 </style>
 </head>
 <body>
+<a class="hback" href="home.html" style="display:inline-block;color:#a8ccff;text-decoration:none;font-size:13px;padding:4px 0 8px">‹ Home</a>
 <h1>Maintenance planner</h1>
 <p class="sub" id="carLine"></p>
 <div class="chips"><select class="chip" id="sizeSel" aria-label="Car size for estimates"></select><label class="rate" for="rateIn">Labour £<input id="rateIn" type="number" inputmode="decimal" min="10" max="400" step="1"/>/hr</label></div>
@@ -115,10 +116,9 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
   <div class="panel"><p class="gCount" id="guideCount"></p><input type="search" class="gSearch" id="guideQ" placeholder="Search jobs, e.g. timing belt" autocomplete="off"/><div id="guideList"></div>
   <p class="note" style="padding:8px 0 0">Estimates for the North West in 2026, sized for your car. DIY is parts only; garage adds labour at your hourly rate. Not a quote.</p></div>
 </div>
-<a class="btn" href="home.html">Back</a>
 <script src="./jobs-data.js"></script>
 <script src="./car-scope.js?v=1"></script>
-<script src="./reminders-core.js?v=4"></script>
+<script src="./reminders-core.js?v=5"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./mot-config.js"></script>
 <script src="./mot-client.js"></script>

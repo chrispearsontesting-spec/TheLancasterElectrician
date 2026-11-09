@@ -9,11 +9,11 @@
 <link rel="manifest" href="./manifest.json"/>
 <link rel="icon" href="./favicon.ico?v=2" sizes="any"/>
 <link rel="stylesheet" href="./ui.css?v=78"/>
-<link rel="stylesheet" href="./book.css?v=1"/>
+<link rel="stylesheet" href="./book.css?v=2"/>
 <script src="./sw-reg.js?v=1" defer></script>
 </head>
 <body>
-<a class="back" href="home.html">‹ Home</a>
+<div class="top"><a class="back" href="home.html">‹ Home</a><a class="back" href="reminders.html">Reminders ›</a></div>
 <h1>Book with my garage</h1>
 <p class="note">Pick a date. Driv3 writes the email; you press Send.</p>
 <div id="missing" class="card" hidden><p>This car is no longer saved on this phone.</p><a class="btn" href="home.html">Choose or add a car</a></div>
@@ -30,17 +30,16 @@
 <h2>Your garage</h2><p id="garageName"></p>
 <label for="garageEmail">Garage email <span class="muted">(editable)</span></label><input id="garageEmail" type="email" autocomplete="email" maxlength="254" required placeholder="Add their email address"/>
 <a id="emailSearch" class="text-link" target="_blank" rel="noopener">Search Google for their email</a>
-<a id="callGarage" class="btn" hidden>Call garage</a>
 <p id="noContact" class="note" hidden>Add your garage’s phone or email to book.</p>
 <a id="editGarage" class="text-link">Edit car · Your garage</a>
 </section>
 <details class="card preview"><summary>Check the booking email</summary><p id="emailSubject"></p><pre id="emailBody"></pre></details>
-<button id="send" class="btn primary" type="submit">Send</button>
+<div class="acts"><a id="callGarage" class="btn" hidden>Call garage</a><button id="send" class="btn primary" type="submit">Send</button></div>
 <p class="note foot">Nothing is sent until you press Send in your email app. Due reminders carry on.</p>
 <p id="status" role="status" class="note"></p>
 </form>
-<a class="btn" href="reminders.html?v=16">Reminders &amp; my garage</a>
-<script src="./reminders-core.js?v=4"></script>
+
+<script src="./reminders-core.js?v=5"></script>
 <script src="./book.js?v=2"></script>
 <script src="./reminders-web.js?v=1"></script>
 </body>

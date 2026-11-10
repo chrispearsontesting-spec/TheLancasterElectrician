@@ -58,6 +58,8 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 <body>
 <header class="appbar"><h1>Record journey</h1></header>
 
+<div id="cheapFuel"></div>
+
 <section class="card" id="autoCard">
   <div class="hd"><h2>Track driving in the background</h2><label class="tg"><input type="checkbox" id="autoOn" aria-label="Track journeys automatically"/><span></span></label></div>
   <p class="muted">When your phone connects to your car’s Bluetooth a journey starts; when it disconnects the journey ends. Miles and fuel cost are saved to your Drive diary. Everything stays on your phone.</p>
@@ -90,7 +92,9 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 
 <a class="btn backBtn" href="home.html#drive">Back</a>
 
+<script src="./mot-config.js?v=1"></script>
 <script src="./fuel-live.js?v=1"></script>
+<script src="./fuel.js?v=1"></script>
 <script src="./record-app.js?v=7"></script>
 </body>
 </html>

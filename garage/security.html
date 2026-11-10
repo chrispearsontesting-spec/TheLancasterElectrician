@@ -100,10 +100,23 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
   <div class="status" id="bkStatus"></div>
 </div>
 
+<div class="card" id="exCard">
+  <h2>Free full export</h2>
+  <p class="note">A readable copy of every car, reminder, journey, cost, photo and setting on this phone. Anyone with the file can open it. For a locked copy, use the backup above.</p>
+  <button class="btn green" type="button" id="mkEx">Download all data</button>
+  <button class="btn" type="button" id="mkCsv">Download costs as CSV</button>
+  <div id="exReady" class="hide">
+    <div class="sum" id="exSum"></div>
+    <button class="btn green" type="button" id="saveEx">Save or share file</button>
+    <button class="btn" type="button" id="dlEx">Download instead</button>
+  </div>
+  <div class="status" id="exStatus"></div>
+</div>
+
 <div class="card" id="rsCard">
   <h2>Restore a backup</h2>
-  <p class="note">Use this on a new phone, or after clearing Driv3's data.</p>
-  <label class="file" id="fileLab">Choose a .driv3 backup file<input type="file" id="rsFile" accept=".driv3,application/octet-stream"/></label>
+  <p class="note">Use this on a new phone, or after clearing Driv3's data. Locked .driv3 backups and free .json exports both work.</p>
+  <label class="file" id="fileLab">Choose a .driv3 or .json file<input type="file" id="rsFile" accept=".driv3,.json,application/json,application/octet-stream"/></label>
   <label class="l" for="rp">Passphrase</label><input class="in" id="rp" type="password" autocomplete="off"/>
   <button class="btn" type="button" id="openBk">Open backup</button>
   <div id="rsReady" class="hide">
@@ -117,6 +130,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 <a class="btn" href="home.html">Back</a>
 
 <script src="./backup.js?v=2"></script>
+<script src="./export.js?v=1"></script>
 <script>
 (function(){
   var $=function(id){return document.getElementById(id)}, L=window.Driv3Lock, B=window.Driv3Backup;
@@ -193,17 +207,74 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
     }else download();
   };
 
+  // ---- free export ----
+  var exported=null;
+  function downloadBlob(blob,name,doneOk){
+    var url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);a.remove();},4000);
+    if(doneOk) doneOk();
+  }
+  function shareFile(blob,name,mime,ok,cancel){
+    var f; try{ f=new File([blob],name,{type:mime}); }catch(e){}
+    if(f&&navigator.canShare&&navigator.canShare({files:[f]})){
+      navigator.share({files:[f],title:name}).then(function(){ ok("shared"); },function(e){
+        if(e&&e.name==="AbortError") cancel(); else downloadBlob(blob,name,function(){ ok("downloaded"); });
+      });
+    }else downloadBlob(blob,name,function(){ ok("downloaded"); });
+  }
+  $("mkEx").onclick=async function(){
+    var X=window.Driv3Export, btn=this;
+    if(!X) return say("exStatus","Export isn't available.","bad");
+    btn.disabled=true; btn.textContent="Preparing…"; say("exStatus","Collecting everything on this phone.");
+    try{
+      exported=await X.makeJson();
+      var s=exported.summary, c=exported.check;
+      var checkLine=c&&c.ok
+        ? "This file can be restored — "+c.cars+" car"+(c.cars===1?"":"s")+", "+c.keys+" setting"+(c.keys===1?"":"s")+" checked."
+        : "Couldn't confirm a restore check. Try the locked backup above.";
+      $("exSum").innerHTML="<b>Export ready</b><br>"+s.cars+" car"+(s.cars===1?"":"s")+" · "+s.files+" photo"+(s.files===1?"":"s")+" &amp; files<br><span class=\"note\">"+exported.name+"</span><br>"+checkLine;
+      $("exReady").classList.remove("hide");
+      say("exStatus",c&&c.ok?"The file checked out and can be restored on this or another phone.":checkLine,c&&c.ok?"good":"bad");
+    }catch(e){ say("exStatus","Couldn't export: "+e.message,"bad"); }
+    btn.disabled=false; btn.textContent="Download all data";
+  };
+  function exportBlob(){ return new Blob([exported.text],{type:"application/json"}); }
+  $("dlEx").onclick=function(){ if(exported) downloadBlob(exportBlob(),exported.name,function(){ say("exStatus","Downloaded "+exported.name+".","good"); }); };
+  $("saveEx").onclick=function(){
+    if(!exported) return;
+    shareFile(exportBlob(),exported.name,"application/json",
+      function(how){ say("exStatus",how==="shared"?"Export shared. Keep it somewhere safe.":"Downloaded "+exported.name+".","good"); },
+      function(){ say("exStatus","Not saved yet. Tap Save again, or Download instead."); });
+  };
+  $("mkCsv").onclick=async function(){
+    var X=window.Driv3Export; if(!X) return say("exStatus","Export isn't available.","bad");
+    var ls={};
+    try{ if(B.collect){ var snap=await B.collect(); ls=snap.ls||{}; } }catch(e){}
+    if(!Object.keys(ls).length){ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); ls[k]=localStorage.getItem(k); } }
+    var csv=X.makeCsv(ls);
+    downloadBlob(new Blob([csv.text],{type:"text/csv"}),csv.name,function(){ say("exStatus","Downloaded "+csv.name+".","good"); });
+  };
+
   // ---- restore ----
   var opened=null;
-  $("rsFile").onchange=function(){ var f=this.files[0]; $("fileLab").firstChild.textContent=f?f.name+" ("+fmtSize(f.size)+")":"Choose a .driv3 backup file"; opened=null; $("rsReady").classList.add("hide"); say("rsStatus",""); };
+  $("rsFile").onchange=function(){ var f=this.files[0]; $("fileLab").firstChild.textContent=f?f.name+" ("+fmtSize(f.size)+")":"Choose a .driv3 or .json file"; opened=null; $("rsReady").classList.add("hide"); say("rsStatus",""); };
   $("openBk").onclick=async function(){
     var f=$("rsFile").files[0]; if(!f) return say("rsStatus","Choose the backup file first.","bad");
-    if(!$("rp").value) return say("rsStatus","Enter the backup's passphrase.","bad");
-    var btn=this; btn.disabled=true; say("rsStatus","Unlocking…");
+    var btn=this; btn.disabled=true; say("rsStatus","Opening…");
     try{
-      opened=await B.openFile(new Uint8Array(await f.arrayBuffer()),$("rp").value);
+      var buf=new Uint8Array(await f.arrayBuffer());
+      var isJson=/\.json$/i.test(f.name)||buf[0]===0x7b;
+      if(isJson){
+        var X=window.Driv3Export; if(!X) throw new Error("Export isn't available.");
+        opened=X.openJson(new TextDecoder().decode(buf));
+      }else{
+        if(!$("rp").value){ btn.disabled=false; return say("rsStatus","Enter the backup's passphrase.","bad"); }
+        opened=await B.openFile(buf,$("rp").value);
+      }
       var s=opened.summary;
-      $("rsSum").innerHTML="<b>"+s.cars+" car"+(s.cars===1?"":"s")+" · "+s.files+" photo"+(s.files===1?"":"s")+" &amp; files</b><br>Made on "+fmtDate(opened.created)+" · "+fmtSize(f.size);
+      var extra=(opened.check&&opened.check.ok)?"<br>Checked: this file can be restored.":"";
+      $("rsSum").innerHTML="<b>"+s.cars+" car"+(s.cars===1?"":"s")+" · "+s.files+" photo"+(s.files===1?"":"s")+" &amp; files</b><br>"+(opened.created?("Made on "+fmtDate(opened.created)+" · "):"")+fmtSize(f.size)+extra;
       $("rsReady").classList.remove("hide"); say("rsStatus","");
     }catch(e){ opened=null; $("rsReady").classList.add("hide"); say("rsStatus",e.message,"bad"); }
     btn.disabled=false;

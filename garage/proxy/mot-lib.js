@@ -75,6 +75,9 @@ export function _resetForTests() {
   tokenCache = { value: "", exp: 0, pending: null };
   memHits.clear();
   fuelCache = { at: 0, payload: null, pending: null };
+  officialMem = { at: 0, payload: null, pending: null };
+  ffToken = { value: "", exp: 0, pending: null };
+  ffLastError = null;
 }
 
 function json(obj, status, headers) {
@@ -328,10 +331,12 @@ export async function findByGuess(name, postcode, phone) {
 
 
 // ---- Cheapest fuel nearby (/fuel) ------------------------------------------
-// No-key retailer JSON feeds (former CMA open-data scheme). Many retailers
-// still publish these files. The official Fuel Finder API needs a GOV.UK One
-// Login and OAuth client secret, which we do not register for or store.
-// The merged national list is cached in memory for 45 minutes.
+// Primary source: the official GOV.UK Fuel Finder API (OAuth2 client
+// credentials kept as Worker secrets). The no-key retailer JSON feeds remain
+// as fallback if Fuel Finder fails — including CloudFront 403s from non-UK
+// IPs. A cron trigger refreshes a national snapshot into KV every 30 minutes
+// (one key, well under the free 1,000 writes/day and 25 MB value limits);
+// /fuel reads memory, then that KV snapshot, then a live pull, then retailers.
 
 export const FUEL_FEEDS = [
   { brand: "Asda", url: "https://storelocator.asda.com/fuel_prices_data.json" },
@@ -348,9 +353,21 @@ export const FUEL_FEEDS = [
   { brand: "Applegreen", url: "https://applegreenstores.com/fuel-prices/data.json" }
 ];
 
+export const FUEL_FINDER_BASE = "https://www.fuel-finder.service.gov.uk";
+export const FUEL_FINDER_TOKEN_PATH = "/api/v1/oauth/generate_access_token";
+export const FUEL_FINDER_PFS_PATH = "/api/v1/pfs";
+export const FUEL_FINDER_PRICES_PATH = "/api/v1/pfs/fuel-prices";
 const FUEL_CACHE_MS = 45 * 60 * 1000;
+const FUEL_STALE_MS = 6 * 60 * 60 * 1000;
 const FUEL_FETCH_MS = 12000;
+const FF_BATCH = 500;
+const FF_MAX_BATCH = 20;
+const FF_KV_KEY = "fuel:national";
+
 let fuelCache = { at: 0, payload: null, pending: null };
+let officialMem = { at: 0, payload: null, pending: null };
+let ffToken = { value: "", exp: 0, pending: null };
+let ffLastError = null;
 
 export function asPence(v) {
   let n = Number(v);
@@ -432,7 +449,8 @@ export function filterFuelStations(stations, opts) {
     if (!picked) continue;
     const distance = milesBetween(lat, lng, s.lat, s.lng);
     if (distance > miles) continue;
-    const when = parseUpdated(s.updated);
+    const whenStr = (s.times && (s.times[picked.grade] || s.times[String(picked.grade).toLowerCase()])) || s.updated;
+    const when = parseUpdated(whenStr);
     out.push({
       id: s.id,
       brand: s.brand,
@@ -444,7 +462,7 @@ export function filterFuelStations(stations, opts) {
       price: picked.price,
       unit: "p/L",
       grade: picked.grade,
-      updated: s.updated || "",
+      updated: whenStr || "",
       stale: !!(when && (now - when.getTime() > staleAfter))
     });
   }
@@ -482,10 +500,10 @@ export async function mergeFuelFeeds() {
     sources.push({ brand: r.brand, ok: r.ok, n: r.n });
     if (r.stations && r.stations.length) stations.push(...r.stations);
   }
-  return { updated: new Date().toISOString(), sources, stations };
+  return { updated: new Date().toISOString(), sources, stations, provider: "retailers" };
 }
 
-async function cachedFuelMerge() {
+async function cachedRetailerMerge() {
   const now = Date.now();
   if (fuelCache.payload && now - fuelCache.at < FUEL_CACHE_MS) return fuelCache.payload;
   if (fuelCache.pending) return fuelCache.pending;
@@ -502,7 +520,438 @@ async function cachedFuelMerge() {
   return fuelCache.pending;
 }
 
-async function fuelHandle(sp, headers) {
+export function normalizeFFGrade(raw) {
+  const k = String(raw || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+  if (k === "E10" || k === "UNLEADED" || k === "PETROL") return "E10";
+  if (k === "E5" || k === "SUPER" || k === "SUPER_UNLEADED" || k === "PREMIUM_UNLEADED" || k === "PREMIUM") return "E5";
+  if (k === "B7" || k === "B7S" || k === "B7_S" || k === "B7_STANDARD" || k === "DIESEL" || k === "STANDARD_DIESEL") return "B7";
+  if (k === "SDV" || k === "B7P" || k === "B7_P" || k === "B7_PREMIUM" || k === "PREMIUM_DIESEL") return "SDV";
+  return "";
+}
+
+export function extractBrand(name) {
+  const n = String(name || "").toUpperCase();
+  const brands = [
+    ["SAINSBURY", "Sainsbury's"],
+    ["MORRISONS", "Morrisons"],
+    ["WELCOME BREAK", "Welcome Break"],
+    ["APPLEGREEN", "Applegreen"],
+    ["TESCO", "Tesco"],
+    ["ASDA", "Asda"],
+    ["ESSO", "Esso"],
+    ["SHELL", "Shell"],
+    ["TEXACO", "Texaco"],
+    ["COSTCO", "Costco"],
+    ["RONTEC", "Rontec"],
+    ["ASCONA", "Ascona"],
+    ["MURCO", "Murco"],
+    ["GULF", "Gulf"],
+    ["CO-OP", "Co-op"],
+    ["COOP", "Co-op"],
+    ["MFG", "MFG"],
+    ["JET", "JET"],
+    ["SGN", "SGN"],
+    ["MOTO", "Moto"],
+    ["BP ", "BP"]
+  ];
+  for (const [needle, brand] of brands) {
+    if (n.includes(needle)) return brand;
+  }
+  if (n === "BP" || n.startsWith("BP")) return "BP";
+  if ((n.includes("SUPERSTORE") || n.includes(" EXTRA")) && !/SHELL|BP |ESSO|SAINSBURY|ASDA/.test(n)) return "Tesco";
+  return String(name || "").trim() || "Independent";
+}
+
+export function officialList(json) {
+  if (Array.isArray(json)) return json;
+  if (!json || typeof json !== "object") return [];
+  if (Array.isArray(json.data)) return json.data;
+  const data = json.data;
+  if (data && typeof data === "object") {
+    for (const k of ["forecourts", "stations", "results", "items", "content", "pfs"]) {
+      if (Array.isArray(data[k])) return data[k];
+    }
+  }
+  for (const k of ["forecourts", "stations", "results", "items", "content", "pfs"]) {
+    if (Array.isArray(json[k])) return json[k];
+  }
+  return [];
+}
+
+function officialCoord(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function officialLocation(rec) {
+  if (!rec || typeof rec !== "object") return { lat: null, lng: null, postcode: "", address: "" };
+  const loc = rec.location || (rec.forecourts && rec.forecourts.location) || {};
+  const lat = officialCoord(loc.latitude ?? loc.lat ?? rec.latitude ?? rec.lat);
+  const lng = officialCoord(loc.longitude ?? loc.lng ?? loc.lon ?? rec.longitude ?? rec.lng ?? rec.lon);
+  const postcode = String(loc.postcode || rec.postcode || rec.post_code || "").trim();
+  const bits = [
+    loc.address_line_1 || loc.addressLine1 || rec.address_line_1,
+    loc.address_line_2 || loc.addressLine2 || rec.address_line_2,
+    loc.street || rec.street,
+    loc.town || loc.city || rec.town || rec.city
+  ].map(x => String(x || "").trim()).filter(Boolean);
+  const address = bits.join(", ") || String(rec.address || "").trim();
+  return { lat, lng, postcode, address };
+}
+
+export function officialPrices(rec) {
+  const prices = {}, times = {};
+  if (!rec || typeof rec !== "object") return { prices, times };
+  const list = rec.fuel_prices || rec.fuelPrices || rec.prices;
+  if (Array.isArray(list)) {
+    for (const fp of list) {
+      if (!fp || typeof fp !== "object") continue;
+      const grade = normalizeFFGrade(fp.fuel_type || fp.fuelType || fp.grade);
+      const p = asPence(fp.price ?? fp.fuel_price);
+      if (!grade || p == null) continue;
+      prices[grade] = p;
+      const ts = fp.price_last_updated || fp.priceLastUpdated || fp.price_change_effective_timestamp || fp.priceChangeEffectiveTimestamp || "";
+      if (ts) times[grade] = ts;
+    }
+  } else if (list && typeof list === "object") {
+    for (const [k, v] of Object.entries(list)) {
+      const grade = normalizeFFGrade(k);
+      const p = asPence(v && typeof v === "object" ? v.price : v);
+      if (!grade || p == null) continue;
+      prices[grade] = p;
+      if (v && typeof v === "object" && (v.updated || v.price_last_updated)) times[grade] = v.updated || v.price_last_updated;
+    }
+  }
+  const nested = rec.fuel_price || (rec.forecourts && rec.forecourts.fuel_price);
+  if (nested && typeof nested === "object") {
+    for (const [k, v] of Object.entries(nested)) {
+      const grade = normalizeFFGrade(k);
+      const p = asPence(v && typeof v === "object" ? v.price : v);
+      if (grade && p != null && prices[grade] == null) prices[grade] = p;
+    }
+  }
+  return { prices, times };
+}
+
+export function joinOfficialStations(sites, priced) {
+  const byId = new Map();
+  for (const s of sites || []) {
+    if (!s || typeof s !== "object") continue;
+    const id = String(s.node_id || s.nodeId || s.id || "");
+    if (id) byId.set(id, s);
+  }
+  const src = (priced && priced.length) ? priced : (sites || []);
+  const out = [];
+  for (const p of src) {
+    if (!p || typeof p !== "object") continue;
+    const id = String(p.node_id || p.nodeId || p.id || "");
+    const site = (id && byId.get(id)) || p;
+    const loc = officialLocation(site);
+    const loc2 = officialLocation(p);
+    const lat = loc.lat != null ? loc.lat : loc2.lat;
+    const lng = loc.lng != null ? loc.lng : loc2.lng;
+    if (lat == null || lng == null) continue;
+    const a = officialPrices(site), b = officialPrices(p);
+    const prices = Object.assign({}, a.prices, b.prices);
+    const times = Object.assign({}, a.times, b.times);
+    if (!Object.keys(prices).length) continue;
+    const trading = site.trading_name || p.trading_name || site.name || p.name || "";
+    const brand = String(site.brand_name || site.brand || p.brand_name || p.brand || "").trim() || extractBrand(trading);
+    let best = "", bestT = 0;
+    for (const ts of Object.values(times)) {
+      const d = parseUpdated(ts);
+      if (d && +d >= bestT) { bestT = +d; best = ts; }
+      else if (!best) best = ts;
+    }
+    out.push({
+      id: id || (brand + ":" + lat + "," + lng),
+      brand,
+      address: loc.address || loc2.address || String(trading).trim(),
+      postcode: loc.postcode || loc2.postcode,
+      lat, lng,
+      prices, times,
+      updated: best
+    });
+  }
+  return out;
+}
+
+function ffMinStations(env) {
+  const n = Number(env && env.FUEL_FINDER_MIN_STATIONS);
+  return Number.isFinite(n) && n >= 0 ? n : 50;
+}
+
+function ffSafeMessage(body) {
+  let msg = "";
+  try {
+    const parsed = JSON.parse(body || "");
+    msg = String((parsed && (parsed.message || parsed.error || parsed.error_description)) || "");
+  } catch (e) { msg = ""; }
+  if (/invalid client_id or client_secret/i.test(msg)) return "invalid_client_credentials";
+  if (/missing or invalid/i.test(msg) && /client_id or client_secret/i.test(msg)) return "client_id_or_secret_missing_or_invalid";
+  if (/invalid api key or missing authentication header/i.test(msg)) return "missing_or_invalid_bearer";
+  if (/unauthorized/i.test(msg)) return "unauthorized";
+  return "";
+}
+
+function ffBlockedMeta(res, body, phase) {
+  const server = res.headers.get("server") || "";
+  const xcache = res.headers.get("x-cache") || "";
+  const empty = !(body && String(body).trim());
+  const safe = ffSafeMessage(body);
+  const base = { status: res.status, phase: phase || "", empty };
+  if (res.status === 403 && /cloudfront/i.test(server) && empty) {
+    return Object.assign(base, { error: "cloudfront_blocked", server: "CloudFront", cache: xcache });
+  }
+  if (res.status === 401) return Object.assign(base, { error: safe || "unauthorized" });
+  if (res.status === 429) return Object.assign(base, { error: "rate_limited" });
+  return Object.assign(base, { error: safe || ("http_" + res.status) });
+}
+
+async function getFuelFinderToken(env) {
+  const id = env && env.FUEL_FINDER_CLIENT_ID;
+  const secret = env && env.FUEL_FINDER_CLIENT_SECRET;
+  if (!id || !secret) return null;
+  const now = Date.now();
+  if (ffToken.value && now < ffToken.exp - TOKEN_SKEW_MS) return ffToken.value;
+  if (ffToken.pending) return ffToken.pending;
+  ffToken.pending = (async () => {
+    try {
+      const url = FUEL_FINDER_BASE + FUEL_FINDER_TOKEN_PATH;
+      const attempts = [
+        {
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ client_id: id, client_secret: secret })
+        },
+        {
+          headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+          body: new URLSearchParams({
+            grant_type: "client_credentials",
+            client_id: id,
+            client_secret: secret,
+            scope: "fuelfinder.read"
+          }).toString()
+        }
+      ];
+      let lastMeta = { error: "token_failed" };
+      for (const attempt of attempts) {
+        const res = await fetch(url, { method: "POST", headers: attempt.headers, body: attempt.body });
+        const text = await res.text();
+        if (!res.ok) {
+          lastMeta = ffBlockedMeta(res, text, "token");
+          if (lastMeta.error === "cloudfront_blocked") break;
+          continue;
+        }
+        let parsed = null;
+        try { parsed = JSON.parse(text); } catch (e) { lastMeta = { error: "token_bad_json" }; continue; }
+        const tok = (parsed && parsed.access_token) || (parsed && parsed.data && parsed.data.access_token) || "";
+        if (!tok) { lastMeta = { error: "token_missing" }; continue; }
+        const lifeRaw = parsed.expires_in != null ? parsed.expires_in : (parsed.data && parsed.data.expires_in);
+        const life = (parseInt(lifeRaw, 10) || 3600) * 1000;
+        ffToken.value = tok;
+        ffToken.exp = Date.now() + life;
+        return ffToken.value;
+      }
+      const err = new Error(lastMeta.error || "token_failed");
+      err.meta = Object.assign({ phase: "token" }, lastMeta);
+      throw err;
+    } finally {
+      ffToken.pending = null;
+    }
+  })();
+  return ffToken.pending;
+}
+
+async function ffGet(path, token, params) {
+  const u = new URL(FUEL_FINDER_BASE + path);
+  if (params) Object.keys(params).forEach(k => u.searchParams.set(k, params[k]));
+  const res = await fetch(u.toString(), {
+    headers: { Authorization: "Bearer " + token, Accept: "application/json" }
+  });
+  const text = await res.text();
+  return { res, text };
+}
+
+async function ffPaged(path, token, counter) {
+  const all = [];
+  for (let batch = 1; batch <= FF_MAX_BATCH; batch++) {
+    if (counter.count >= 48) break;
+    let emptyTries = 0;
+    while (true) {
+      counter.count++;
+      const { res, text } = await ffGet(path, token, { "batch-number": String(batch) });
+      if (res.status === 404) return { ok: true, records: all };
+      if (!res.ok) {
+        const meta = ffBlockedMeta(res, text, "prices");
+        if ((res.status === 429 || res.status >= 500) && emptyTries < 1 && counter.count < 48) {
+          emptyTries++;
+          continue;
+        }
+        if (all.length) return { ok: true, records: all, partial: true };
+        const err = new Error(meta.error);
+        err.meta = meta;
+        throw err;
+      }
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+      const list = officialList(parsed);
+      if (!list.length) {
+        emptyTries++;
+        if (emptyTries <= 1 && counter.count < 48) continue;
+        break;
+      }
+      all.push(...list);
+      if (list.length < FF_BATCH) return { ok: true, records: all };
+      break;
+    }
+  }
+  return { ok: true, records: all };
+}
+
+export async function pullOfficialFuel(env) {
+  const token = await getFuelFinderToken(env);
+  if (!token) {
+    const err = new Error("no_credentials");
+    err.meta = { error: "no_credentials" };
+    throw err;
+  }
+  const counter = { count: 0 };
+  let priced;
+  try {
+    priced = await ffPaged(FUEL_FINDER_PRICES_PATH, token, counter);
+  } catch (e) {
+    if (e && e.meta && e.meta.error === "unauthorized") {
+      ffToken.value = ""; ffToken.exp = 0;
+      const t2 = await getFuelFinderToken(env);
+      if (!t2) throw e;
+      priced = await ffPaged(FUEL_FINDER_PRICES_PATH, t2, counter);
+    } else {
+      throw e;
+    }
+  }
+  let sites = { records: [] };
+  try {
+    sites = await ffPaged(FUEL_FINDER_PFS_PATH, token, counter);
+  } catch (e) {
+    if (!(priced && priced.records && priced.records.length)) throw e;
+  }
+  const stations = joinOfficialStations(sites.records, priced.records);
+  return {
+    updated: new Date().toISOString(),
+    stations,
+    sources: [{ brand: "Fuel Finder", ok: stations.length > 0, n: stations.length }],
+    provider: "fuel-finder"
+  };
+}
+
+async function readOfficialKV(env) {
+  if (!env || !env.GARAGE_CONTACTS) return null;
+  try {
+    const rec = await env.GARAGE_CONTACTS.get(FF_KV_KEY, "json");
+    if (!rec || !Array.isArray(rec.stations) || !rec.stations.length) return null;
+    return rec;
+  } catch (e) { return null; }
+}
+
+async function writeOfficialKV(env, payload) {
+  if (!env || !env.GARAGE_CONTACTS || !payload || !payload.stations) return false;
+  if (payload.stations.length < ffMinStations(env)) return false;
+  try {
+    await env.GARAGE_CONTACTS.put(FF_KV_KEY, JSON.stringify({
+      updated: payload.updated,
+      at: Date.now(),
+      stations: payload.stations,
+      sources: payload.sources,
+      provider: "fuel-finder"
+    }));
+    return true;
+  } catch (e) { return false; }
+}
+
+async function pullAndStoreOfficial(env) {
+  const payload = await pullOfficialFuel(env);
+  if (!payload.stations || payload.stations.length < ffMinStations(env)) {
+    const err = new Error("too_few_stations");
+    err.meta = { error: "too_few_stations", n: (payload.stations || []).length };
+    throw err;
+  }
+  officialMem.payload = payload;
+  officialMem.at = Date.now();
+  await writeOfficialKV(env, payload);
+  return payload;
+}
+
+export async function refreshFuelCache(env) {
+  if (officialMem.pending) {
+    try {
+      const payload = await officialMem.pending;
+      return { ok: true, n: (payload && payload.stations && payload.stations.length) || 0 };
+    } catch (e) {
+      const meta = (e && e.meta) || { error: String((e && e.message) || e) };
+      return { ok: false, n: meta.n || 0, error: meta.error || "refresh_failed", status: meta.status };
+    }
+  }
+  try {
+    const lock = await kvGet(env, "fuel:lock");
+    if (lock && Number(lock.at) && Date.now() - Number(lock.at) < 180000) {
+      return { ok: false, error: "refresh_in_progress", n: 0 };
+    }
+  } catch (e) {}
+  officialMem.pending = (async () => {
+    await kvPut(env, "fuel:lock", { at: Date.now() }, 180);
+    try {
+      return await pullAndStoreOfficial(env);
+    } finally {
+      try { await kvPut(env, "fuel:lock", { at: 0 }, 60); } catch (e) {}
+    }
+  })();
+  try {
+    const payload = await officialMem.pending;
+    ffLastError = null;
+    return { ok: true, n: payload.stations.length };
+  } catch (e) {
+    const meta = (e && e.meta) || { error: String((e && e.message) || e) };
+    ffLastError = { status: meta.status, error: meta.error || "refresh_failed", phase: meta.phase };
+    return { ok: false, n: meta.n || 0, error: meta.error || "refresh_failed", status: meta.status, phase: meta.phase };
+  } finally {
+    officialMem.pending = null;
+  }
+}
+
+function retailerPayload(base) {
+  const out = Object.assign({}, base, { provider: base.provider || "retailers" });
+  if (ffLastError) {
+    out.sources = [{ brand: "Fuel Finder", ok: false, n: 0, status: ffLastError.status, error: ffLastError.error }].concat(base.sources || []);
+  }
+  return out;
+}
+
+// /fuel itself does not pull the national dataset (too many pages for a
+// user-facing isolate on the Free plan). It reads memory, then KV, then the
+// retailer fallback. Cron and waitUntil call refreshFuelCache() to fill KV.
+async function getFuelDataset(env) {
+  const now = Date.now();
+  if (officialMem.payload && now - officialMem.at < FUEL_STALE_MS) return officialMem.payload;
+
+  const kv = await readOfficialKV(env);
+  const kvAt = kv ? (Number(kv.at) || Date.parse(kv.updated) || 0) : 0;
+  if (kv && kv.stations && kv.stations.length >= ffMinStations(env) && kvAt && now - kvAt < FUEL_STALE_MS) {
+    officialMem.payload = kv;
+    officialMem.at = kvAt;
+    return kv;
+  }
+  return retailerPayload(await cachedRetailerMerge());
+}
+
+function shouldRefreshOfficial(env, merged) {
+  if (!(env && env.FUEL_FINDER_CLIENT_ID && env.FUEL_FINDER_CLIENT_SECRET)) return false;
+  if (officialMem.pending) return false;
+  if (ffLastError && ffLastError.error === "rate_limited") return false;
+  if (!merged || merged.provider !== "fuel-finder") return true;
+  return !officialMem.at || (Date.now() - officialMem.at > FUEL_CACHE_MS);
+}
+
+async function fuelHandle(sp, headers, env, ctx) {
   const latRaw = sp.get("lat"), lngRaw = sp.get("lng");
   const lat = Number(latRaw), lng = Number(lngRaw);
   if (latRaw == null || lngRaw == null || latRaw === "" || lngRaw === "" ||
@@ -511,7 +960,10 @@ async function fuelHandle(sp, headers) {
   }
   const miles = Math.min(30, Math.max(1, Number(sp.get("miles")) || 5));
   const fuel = String(sp.get("fuel") || "petrol").toLowerCase();
-  const merged = await cachedFuelMerge();
+  const merged = await getFuelDataset(env);
+  if (shouldRefreshOfficial(env, merged) && ctx && typeof ctx.waitUntil === "function") {
+    ctx.waitUntil(refreshFuelCache(env));
+  }
   const stations = filterFuelStations(merged.stations, { lat, lng, miles, fuel });
   const hdrs = { ...headers, "Cache-Control": "public, max-age=60, s-maxage=1800" };
   return json({
@@ -522,11 +974,12 @@ async function fuelHandle(sp, headers) {
     lng,
     count: stations.length,
     stations,
-    sources: merged.sources
+    sources: merged.sources,
+    provider: merged.provider
   }, 200, hdrs);
 }
 
-export async function handle(req, env) {
+export async function handle(req, env, ctx) {
   {
     const origin = req.headers.get("Origin") || "";
     const ok = originAllowed(origin, env);
@@ -547,7 +1000,7 @@ export async function handle(req, env) {
       const u = new URL(req.url);
       const path = u.pathname.replace(/\/+$/, "") || "/";
       if (path === "/fuel") {
-        return fuelHandle(u.searchParams, headers);
+        return fuelHandle(u.searchParams, headers, env, ctx);
       }
     }
 

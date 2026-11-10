@@ -17,3 +17,8 @@ namespace_id = "1001"
 [[kv_namespaces]]
 binding = "GARAGE_CONTACTS"
 id = "60239f21ec7a4cff882b6e6467136b36"
+
+# Refresh the official Fuel Finder snapshot about every 30 minutes (UTC).
+# One KV write per run, reused by /fuel so we stay inside the free-tier write cap.
+[triggers]
+crons = ["*/30 * * * *"]

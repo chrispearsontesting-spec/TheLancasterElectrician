@@ -116,11 +116,17 @@ const context = await browser.newContext({
   viewport: { width: 390, height: 844 },
   deviceScaleFactor: 2,
   colorScheme: "dark",
-  acceptDownloads: true
+  acceptDownloads: true,
+  geolocation: { latitude: 54.047, longitude: -2.801 },
+  permissions: ["geolocation"]
 });
 const page = await context.newPage();
 await seed(page);
 await mockApis(page);
+const pageErrors = [];
+const consoleErrors = [];
+page.on("pageerror", (err) => pageErrors.push(String(err)));
+page.on("console", (msg) => { if (msg.type() === "error") consoleErrors.push(msg.text()); });
 
 let failed = 0;
 async function step(name, fn) {
@@ -238,6 +244,81 @@ await step("CSV download includes the demo journey", async () => {
   const csv = fs.readFileSync(tmp, "utf8");
   assert.match(csv, /SB61LGZ,Volvo XC60 Volvo/);
   assert.match(csv, /Lancaster → Morecambe,18.4,6.25/);
+});
+
+
+await step("every Record journey action still works after the tidy", async () => {
+  await page.goto(base + "/drive.html", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector("#jBtn");
+  await page.waitForSelector("#cheapFuel .cf-kicker");
+  const tops = await page.evaluate(() => {
+    const pick = (sel) => {
+      const el = document.querySelector(sel);
+      return el ? el.getBoundingClientRect().top + window.scrollY : null;
+    };
+    return {
+      journey: pick("#jBtn"),
+      fuel: pick("#cheapFuel"),
+      auto: pick("#autoOn"),
+      dash: pick("#dashBtn"),
+      back: pick("a.backBtn")
+    };
+  });
+  assert.ok(tops.journey < tops.fuel, "Start journey should be above fuel");
+  assert.ok(tops.fuel < tops.auto, "fuel should be above auto journeys");
+  assert.ok(tops.auto < tops.dash, "auto journeys should be above dashcam");
+  assert.ok(tops.dash < tops.back, "dashcam should be above Back");
+  assert.equal(await page.getAttribute("#costFold", "open"), null);
+  assert.equal(await page.getAttribute("#autoSetup", "open"), null);
+  assert.equal(await page.isVisible("#mpg"), false);
+  assert.equal(await page.isVisible("#dev"), false);
+
+  await page.click("#costFold > summary");
+  assert.equal(await page.isVisible("#mpg"), true);
+  assert.equal(await page.isVisible("#fuelLine"), true);
+  assert.equal(await page.isVisible("#useOwn"), true);
+  await page.fill("#mpg", "42");
+  await page.check("#useOwn");
+  assert.equal(await page.isVisible("#ppl"), true);
+  await page.fill("#ppl", "185.9");
+
+  await page.click("#jBtn");
+  await page.waitForFunction(() => document.getElementById("jBtn")?.textContent === "Stop journey");
+  assert.equal(await page.isVisible("#live"), true);
+  await page.click("#jBtn");
+  await page.waitForFunction(() => document.getElementById("jBtn")?.textContent === "Start journey");
+
+  await page.locator("#autoCard .tg").click();
+  await page.waitForSelector("#webNote:not(.hide)");
+  assert.match(await page.textContent("#webNote"), /Available on your phone/);
+  assert.equal(await page.isChecked("#autoOn"), false);
+
+  await page.click("#autoSetup > summary");
+  assert.equal(await page.isVisible("#dev"), true);
+  assert.equal(await page.locator("#perms").count(), 1);
+
+  assert.match(await page.getAttribute("#dashBtn", "href"), /dashcam\.html/);
+  assert.match(await page.getAttribute("a.backBtn", "href"), /home\.html#drive/);
+  assert.equal(await page.locator("#cfGo").count(), 1);
+  assert.equal(await page.locator("#cfMapBtn").count(), 1);
+  assert.equal(await page.locator("#cfLoc").count(), 1);
+  assert.equal(await page.locator("#cfPcBtn").count(), 1);
+
+  await page.fill("#cfPc", "LA1 1AA");
+  await page.click("#cfPcBtn");
+  await page.waitForFunction(() => /195\.7/.test(document.querySelector("#cfPrice")?.textContent || ""));
+  await page.click("#cfMapBtn");
+  await page.waitForSelector("#cfSheet:not([hidden])");
+  await page.waitForFunction(() => document.querySelector("#cfSheet")?.dataset.ready === "1", { timeout: 45000 });
+  assert.ok(Number(await page.getAttribute("#cfSheet", "data-pins")) >= 1);
+  await page.click("#cfSheetClose");
+  await page.locator("#cfSheet").waitFor({ state: "hidden" });
+});
+
+await step("no console errors on the Record journey page", async () => {
+  const noise = (s) => /favicon|ERR_BLOCKED_BY_CLIENT|net::ERR_ABORTED/i.test(s);
+  assert.deepEqual(pageErrors.filter((s) => !noise(s)), []);
+  assert.deepEqual(consoleErrors.filter((s) => !noise(s)), []);
 });
 
 await browser.close();

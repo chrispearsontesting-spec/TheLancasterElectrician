@@ -74,6 +74,7 @@ export async function getToken(env, now = Date.now()) {
 export function _resetForTests() {
   tokenCache = { value: "", exp: 0, pending: null };
   memHits.clear();
+  fuelCache = { at: 0, payload: null, pending: null };
 }
 
 function json(obj, status, headers) {
@@ -325,6 +326,206 @@ export async function findByGuess(name, postcode, phone) {
   return { email: "", website: "", source: "" };
 }
 
+
+// ---- Cheapest fuel nearby (/fuel) ------------------------------------------
+// No-key retailer JSON feeds (former CMA open-data scheme). Many retailers
+// still publish these files. The official Fuel Finder API needs a GOV.UK One
+// Login and OAuth client secret, which we do not register for or store.
+// The merged national list is cached in memory for 45 minutes.
+
+export const FUEL_FEEDS = [
+  { brand: "Asda", url: "https://storelocator.asda.com/fuel_prices_data.json" },
+  { brand: "BP", url: "https://www.bp.com/en_gb/united-kingdom/home/fuelprices/fuel_prices_data.json" },
+  { brand: "Esso", url: "https://fuelprices.esso.co.uk/latestdata.json" },
+  { brand: "Tesco", url: "https://www.tesco.com/fuel_prices/fuel_prices_data.json" },
+  { brand: "Morrisons", url: "https://www.morrisons.com/fuel-prices/fuel.json" },
+  { brand: "Sainsbury's", url: "https://api.sainsburys.co.uk/v1/exports/latest/fuel_prices_data.json" },
+  { brand: "MFG", url: "https://fuel.motorfuelgroup.com/fuel_prices_data.json" },
+  { brand: "SGN", url: "https://www.sgnretail.uk/files/data/SGN_daily_fuel_prices.json" },
+  { brand: "JET", url: "https://jetlocal.co.uk/fuel_prices_data.json" },
+  { brand: "Moto", url: "https://moto-way.com/fuel-price/fuel_prices.json" },
+  { brand: "Rontec", url: "https://www.rontec-servicestations.co.uk/fuel-prices/data/fuel_prices_data.json" },
+  { brand: "Applegreen", url: "https://applegreenstores.com/fuel-prices/data.json" }
+];
+
+const FUEL_CACHE_MS = 45 * 60 * 1000;
+const FUEL_FETCH_MS = 12000;
+let fuelCache = { at: 0, payload: null, pending: null };
+
+export function asPence(v) {
+  let n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n < 10) n = n * 100;
+  if (n < 80 || n > 400) return null;
+  return Math.round(n * 10) / 10;
+}
+
+export function parseUpdated(s) {
+  const m = String(s || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+  const d = new Date(s);
+  return Number.isNaN(+d) ? null : d;
+}
+
+export function milesBetween(aLat, aLng, bLat, bLng) {
+  const R = 3958.7613;
+  const toR = (d) => d * Math.PI / 180;
+  const dLat = toR(bLat - aLat), dLng = toR(bLng - aLng);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(toR(aLat)) * Math.cos(toR(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(x)));
+}
+
+const GRADE = {
+  petrol: ["E10", "e10"],
+  e10: ["E10", "e10"],
+  diesel: ["B7", "b7"],
+  b7: ["B7", "b7"],
+  e5: ["E5", "e5"],
+  premium: ["E5", "e5"],
+  sdv: ["SDV", "sdv"]
+};
+
+export function pickPrice(prices, fuel) {
+  if (!prices || typeof prices !== "object") return null;
+  const keys = GRADE[String(fuel || "petrol").toLowerCase()] || GRADE.petrol;
+  for (const k of keys) {
+    if (prices[k] == null) continue;
+    const p = asPence(prices[k]);
+    if (p != null) return { price: p, grade: String(k).toUpperCase() };
+  }
+  return null;
+}
+
+export function parseFuelFeed(json, feedBrand) {
+  if (!json || typeof json !== "object") return { updated: "", stations: [] };
+  const raw = json.stations || json.Stations || (Array.isArray(json) ? json : []);
+  const updated = json.last_updated || json.lastUpdated || "";
+  const stations = [];
+  for (const s of raw) {
+    if (!s || typeof s !== "object") continue;
+    const loc = s.location || s.Location || {};
+    const lat = Number(loc.latitude ?? loc.lat);
+    const lng = Number(loc.longitude ?? loc.lng ?? loc.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    stations.push({
+      id: String(s.site_id || s.siteId || s.id || (feedBrand + ":" + lat + "," + lng)),
+      brand: String(s.brand || feedBrand || "").trim() || feedBrand,
+      address: String(s.address || s.Address || "").trim(),
+      postcode: String(s.postcode || s.Postcode || "").trim(),
+      lat, lng,
+      prices: s.prices || s.Prices || {},
+      updated: s.last_updated || updated
+    });
+  }
+  return { updated, stations };
+}
+
+export function filterFuelStations(stations, opts) {
+  const lat = Number(opts.lat), lng = Number(opts.lng);
+  const miles = Math.min(30, Math.max(1, Number(opts.miles) || 5));
+  const fuel = String(opts.fuel || "petrol").toLowerCase();
+  const staleAfter = opts.staleAfterMs != null ? opts.staleAfterMs : 7 * 86400000;
+  const now = opts.now || Date.now();
+  const out = [];
+  for (const s of stations || []) {
+    const picked = pickPrice(s.prices, fuel);
+    if (!picked) continue;
+    const distance = milesBetween(lat, lng, s.lat, s.lng);
+    if (distance > miles) continue;
+    const when = parseUpdated(s.updated);
+    out.push({
+      id: s.id,
+      brand: s.brand,
+      address: s.address,
+      postcode: s.postcode,
+      lat: s.lat,
+      lng: s.lng,
+      distance: Math.round(distance * 10) / 10,
+      price: picked.price,
+      unit: "p/L",
+      grade: picked.grade,
+      updated: s.updated || "",
+      stale: !!(when && (now - when.getTime() > staleAfter))
+    });
+  }
+  out.sort((a, b) => Number(a.stale) - Number(b.stale) || a.price - b.price || a.distance - b.distance);
+  return out.slice(0, 25);
+}
+
+async function fetchOneFeed(feed) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), FUEL_FETCH_MS);
+  try {
+    const r = await fetch(feed.url, {
+      headers: {
+        Accept: "application/json,text/plain,*/*",
+        "User-Agent": "Mozilla/5.0 (compatible; Driv3/1.0; +https://thelancasterelectrician.com/garage/) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+      },
+      signal: ctrl.signal
+    });
+    if (!r.ok) return { brand: feed.brand, ok: false, n: 0, status: r.status, stations: [] };
+    const json = await r.json();
+    const parsed = parseFuelFeed(json, feed.brand);
+    return { brand: feed.brand, ok: true, n: parsed.stations.length, updated: parsed.updated, stations: parsed.stations };
+  } catch (e) {
+    return { brand: feed.brand, ok: false, n: 0, error: String((e && e.message) || e), stations: [] };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+export async function mergeFuelFeeds() {
+  const results = await Promise.all(FUEL_FEEDS.map(fetchOneFeed));
+  const stations = [];
+  const sources = [];
+  for (const r of results) {
+    sources.push({ brand: r.brand, ok: r.ok, n: r.n });
+    if (r.stations && r.stations.length) stations.push(...r.stations);
+  }
+  return { updated: new Date().toISOString(), sources, stations };
+}
+
+async function cachedFuelMerge() {
+  const now = Date.now();
+  if (fuelCache.payload && now - fuelCache.at < FUEL_CACHE_MS) return fuelCache.payload;
+  if (fuelCache.pending) return fuelCache.pending;
+  fuelCache.pending = (async () => {
+    try {
+      const payload = await mergeFuelFeeds();
+      fuelCache.payload = payload;
+      fuelCache.at = Date.now();
+      return payload;
+    } finally {
+      fuelCache.pending = null;
+    }
+  })();
+  return fuelCache.pending;
+}
+
+async function fuelHandle(sp, headers) {
+  const latRaw = sp.get("lat"), lngRaw = sp.get("lng");
+  const lat = Number(latRaw), lng = Number(lngRaw);
+  if (latRaw == null || lngRaw == null || latRaw === "" || lngRaw === "" ||
+      !Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return json({ error: "Add ?lat=&lng=" }, 400, headers);
+  }
+  const miles = Math.min(30, Math.max(1, Number(sp.get("miles")) || 5));
+  const fuel = String(sp.get("fuel") || "petrol").toLowerCase();
+  const merged = await cachedFuelMerge();
+  const stations = filterFuelStations(merged.stations, { lat, lng, miles, fuel });
+  const hdrs = { ...headers, "Cache-Control": "public, max-age=60, s-maxage=1800" };
+  return json({
+    updated: merged.updated,
+    fuel,
+    miles,
+    lat,
+    lng,
+    count: stations.length,
+    stations,
+    sources: merged.sources
+  }, 200, hdrs);
+}
+
 export async function handle(req, env) {
   {
     const origin = req.headers.get("Origin") || "";
@@ -340,6 +541,14 @@ export async function handle(req, env) {
     if (!(await allowRequest(req, env))) {
       headers["Retry-After"] = "60";
       return json({ error: "Too many lookups. Try again in a minute." }, 429, headers);
+    }
+
+    {
+      const u = new URL(req.url);
+      const path = u.pathname.replace(/\/+$/, "") || "/";
+      if (path === "/fuel") {
+        return fuelHandle(u.searchParams, headers);
+      }
     }
 
     const sp = new URL(req.url).searchParams;

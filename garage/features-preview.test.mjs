@@ -136,8 +136,8 @@ async function step(name, fn) {
 
 await step("Record journey shows a cheapest-fuel strip for the car's diesel", async () => {
   await page.goto(base + "/drive.html", { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("#cheapFuel .cf-card");
-  const kicker = await page.textContent("#cfFuelLab");
+  await page.waitForSelector("#cheapFuel .cf-kicker");
+  const kicker = await page.textContent("#cheapFuel .cf-kicker");
   assert.match(kicker, /diesel/i);
   const meta = await page.textContent("#cfMeta");
   assert.match(meta, /diesel/i);
@@ -151,11 +151,14 @@ await step("postcode search fills the strip, lists other stations, and opens Map
   const price = await page.textContent("#cfPrice");
   assert.match(price, /195\.7/);
   const meta = await page.textContent("#cfMeta");
-  assert.match(meta, /Asda/);
-  assert.match(meta, /1\.2 miles|1.2 miles/);
+  assert.match(meta, /Asda, Ovangle Road \(1\.2 mi\)/);
+  const place = await page.getAttribute("#cfMeta a.cf-place", "href");
+  assert.match(place, /google\.com\/maps\/search/);
+  assert.match(place, /Asda/);
+  assert.equal(await page.isDisabled("#cfMapBtn"), false);
   await page.click("#cfMoreSum");
   const brands = await page.$$eval("#cfList .cf-row b", els => els.map(e => e.textContent));
-  assert.deepEqual(brands, ["Esso", "SGN", "Tesco"]);
+  assert.deepEqual(brands, ["Esso, Morecambe Road (1.5 mi)", "SGN, Owen Road (0.8 mi)", "Tesco, Caton Road (1.1 mi)"]);
   const href = await page.getAttribute("#cfList .cf-dir", "href");
   assert.match(href, /google\.com\/maps\/dir/);
   assert.match(href, /travelmode=driving/);

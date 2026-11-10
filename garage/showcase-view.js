@@ -96,8 +96,8 @@
   var head=document.createElement("div");
   head.innerHTML=
     '<div class="vsw" id="vsw" role="tablist" aria-label="Showcase view"><button type="button" role="tab" id="vMine">My car</button><button type="button" role="tab" id="vShow">Show view<span class="pb">Public</span></button></div>'+
-    '<div class="privBan" id="privBan">🔒 <span>My car is private. Only you see this on your phone.</span></div>'+
-    '<div class="pubBan vhide" id="pubBan">👁 <span id="pubBanTxt">Show view is public: this is what people see when they scan your sticker in Show mode or open your showcase link.</span></div>'+
+    '<div class="privBan" id="privBan">🔒 <span>Private — only you see this on your phone.</span></div>'+
+    '<div class="pubBan vhide" id="pubBan">👁 <span id="pubBanTxt">What people see if they scan your sticker in Show mode, or open your link.</span></div>'+
     '<div class="gal"><div class="tabs" role="tablist"><button type="button" id="gPh" class="on">Photos<span class="n" id="nPh"></span></button><button type="button" id="gVi">Videos<span class="n" id="nVi"></span></button></div>'+
     '<div class="gframe l" id="gframe"><div class="stage" id="stage" aria-live="polite"></div><div class="gmeta"><b id="gCap"></b><span id="gPos"></span></div><div class="gctl" id="gCtl"></div><div class="gsay" id="gSay" aria-live="polite"></div><div class="strip" id="strip"></div></div></div>'+
     '<div id="mineBox"></div><div id="showBox" class="vhide"></div>';
@@ -175,7 +175,7 @@
     var st=$("stage"), sp=$("strip");
     if(!list.length){
       var add=view==="show"||tab==="photo";
-      st.outerHTML='<div class="stage" id="stage"><div class="gempty" style="flex:1 0 100%">'+(tab==="photo"?"📷":"🎬")+'<div>'+(tab==="photo"?(view==="show"?"Nothing shared yet. Tick photos in My car to put them on your show card.":"No photos of this car yet."):(view==="show"?"No videos shared yet. Tick clips in My car, or add a YouTube link below.":"No videos of this car yet. Performance runs and show clips appear here."))+'</div>'+(add?'<button class="btn small" type="button" id="gAdd">'+(tab==="photo"?"+ Add photos":"+ Add a clip")+'</button>':'<a class="btn small" href="performance.html">Record a run</a>')+'</div></div>';
+      st.outerHTML='<div class="stage" id="stage"><div class="gempty" style="flex:1 0 100%">'+(tab==="photo"?"📷":"🎬")+'<div>'+(tab==="photo"?(view==="show"?"Nothing shared yet. Tick photos in My car to add them.":"No photos of this car yet."):(view==="show"?"No videos shared yet. Tick clips in My car, or add a YouTube link below.":"No videos yet. Performance runs and show clips appear here."))+'</div>'+(add?'<button class="btn small" type="button" id="gAdd">'+(tab==="photo"?"+ Add photos":"+ Add a clip")+'</button>':'<a class="btn small" href="performance.html">Record a run</a>')+'</div></div>';
       sp.innerHTML=""; $("gCap").textContent=""; $("gPos").textContent=""; $("gCtl").innerHTML="";
       var ga=$("gAdd"); if(ga) ga.onclick=function(){ (tab==="photo"?$("pick"):$("pickClip")).click(); };
       return;
@@ -225,7 +225,7 @@
     var sts=[["bhp","bhp"],["torque","Nm"],["zero60","0-60 (s)"],["top","mph top"],["weight","kg"]].filter(function(x){return s[x[0]]!==""&&s[x[0]]!=null}).map(function(x){return '<div class="st"><b>'+esc(s[x[0]])+'</b><span>'+x[1]+'</span></div>'}).join("");
     var best=s.best&&s.best.time?'<p class="note">🏁 Best: <b style="color:#f2f2f2">'+esc(s.best.time)+'</b> '+esc([s.best.label,s.best.venue].filter(Boolean).join(" · "))+'</p>':"";
     var mods=(d.mods||[]).map(function(m){ var t=typeof m==="string"?m:(m&&(m.t||m.name||m.title||m.text))||""; return t?"<li>"+esc(t)+"</li>":""; }).join("");
-    $("pubBanTxt").textContent=pub?"Show view is public: this is what people see when they scan your sticker in Show mode or open your showcase link.":"Show view is what the public will see once you publish. It's only on this phone for now.";
+    $("pubBanTxt").textContent=pub?"What people see if they scan your sticker in Show mode, or open your link.":"What the public will see once you publish. Only on this phone for now.";
     $("showBox").innerHTML='<div class="card pv"><h2>'+esc(name)+'</h2>'+
       '<p class="note">'+esc([b.variant,b.colour,b.hidePlate?"":U.cleanPlate(b.plate||car.plate)].filter(Boolean).join(" · "))+'</p>'+
       (sts?'<div class="sts">'+sts+'</div>':'<p class="note">No stats yet. Add them below.</p>')+best+
@@ -241,7 +241,7 @@
     $("vMine").setAttribute("aria-selected",!sh); $("vShow").setAttribute("aria-selected",sh);
     $("privBan").classList.toggle("vhide",sh); $("pubBan").classList.toggle("vhide",!sh);
     $("mineBox").classList.toggle("vhide",sh); $("showBox").classList.toggle("vhide",!sh); $("editWrap").classList.toggle("vhide",!sh);
-    h1.textContent=sh?"Show view":"My car"; lead.textContent=sh?"Your public show card: only the photos and videos you share, plus stats, mods and story. Money, receipts, journeys and notes are never on it.":"An at-a-glance summary of "+U.niceName(car)+". Private to this phone. Tick any photo or video to share it in Show view.";
+    h1.textContent=sh?"Show view":"My car"; lead.textContent=sh?"Your public show card — only what you share. Money, receipts and journeys stay off it.":"A private summary of "+U.niceName(car)+". Tick a photo or video to share it in Show view.";
     if(sh) paintShow(); else paintMine();
     paintGallery();
   }

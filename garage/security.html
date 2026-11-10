@@ -60,11 +60,11 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 <body>
 <a class="hback" href="home.html" style="display:inline-block;color:#a8ccff;text-decoration:none;font-size:13px;padding:4px 0 8px">‹ Home</a>
 <h1>App lock &amp; backup</h1>
-<p class="lead">Your cars, photos and invoices live only on this phone. Lock the app, and keep a backup file somewhere safe.</p>
+<p class="lead">Lock the app with a PIN, and keep a backup file somewhere safe. Your data stays on this phone.</p>
 
 <div class="card" id="lockCard">
   <h2>App lock <span class="pill" id="lockPill">Off</span></h2>
-  <p class="note">Asks for a PIN when Driv3 opens and after 5 minutes away. It stops others browsing your cars, but doesn't encrypt your data.</p>
+  <p class="note">Asks for your PIN when Driv3 opens and after 5 minutes away. It stops others browsing your cars, but does not encrypt your data.</p>
   <div id="lockOff">
     <label class="l" for="pin1">New PIN (4 to 6 digits)</label><input class="in pin" id="pin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
     <label class="l" for="pin2">Type it again</label><input class="in pin" id="pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
@@ -86,7 +86,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 <div class="card" id="bkCard">
   <h2>Make a backup</h2>
   <p class="note" id="lastBk">You haven't made a backup on this phone yet.</p>
-  <p class="note">One locked file with your cars, reminders, history, photos and links. Save it to Google Drive or email it to yourself.</p>
+  <p class="note">One locked file with your cars, reminders, history, photos and links.</p>
   <label class="l" for="bp1">Passphrase</label><input class="in" id="bp1" type="password" autocomplete="new-password" placeholder="e.g. four random words"/>
   <div class="meter"><i id="meter"></i></div><p class="note" id="strength"></p>
   <label class="l" for="bp2">Type it again</label><input class="in" id="bp2" type="password" autocomplete="new-password"/>

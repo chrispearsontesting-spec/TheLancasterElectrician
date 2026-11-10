@@ -27,6 +27,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=78"/>
+<link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <link rel="stylesheet" href="./showcase-view.css?v=2"/>
 <style>
 *{box-sizing:border-box}
@@ -82,11 +83,19 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 .bar{position:sticky;bottom:0;background:linear-gradient(transparent,#0b0c0e 30%);padding:18px 0 6px}
 .err{color:#ff6b6b;font-size:12.5px;margin-top:4px}
 .row2h{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.row2h .btn{margin:0;width:100%}
+
+details.moreCard>summary{font-size:17px;font-weight:650;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;min-height:28px}
+details.moreCard>summary::-webkit-details-marker{display:none}
+details.moreCard>summary::after{content:"\203A";margin-left:auto;color:#8b8b8b;font-size:18px;transition:transform .2s}
+details.moreCard[open]>summary::after{transform:rotate(90deg)}
+.moreLink{margin-top:10px;border-top:1px solid #2a2a2e;padding-top:2px}
+.moreLink>summary{cursor:pointer;color:#a0a0a0;font-size:13.5px;padding:10px 0;list-style:none}
+.moreLink>summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
 <h1>My car</h1>
-<p class="lead">Make a show card for your car: photos, stats, mods and videos. When your sticker is in Show mode, anyone who scans it sees this card. Nothing else from Driv3 is shown.</p>
+<p class="lead">Photos, stats, mods and videos. In Show mode, a scan of your sticker opens this card — nothing else.</p>
 
 <div class="card pubCard" id="pubCard">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="carName">Your car</h2><span class="pill" id="pubPill">Draft</span></div>
@@ -122,8 +131,8 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   <label class="chk"><input type="checkbox" id="hidePlate"/>Hide my number plate on the card</label>
 </div>
 
-<div class="card">
-  <h2>Stats</h2>
+<details class="card moreCard" id="statsCard">
+  <summary>Stats</summary>
   <p class="note">Leave any blank to hide it.</p>
   <div class="g2">
     <div><label class="f" for="bhp">Power (bhp)</label><input class="in" id="bhp" inputmode="decimal"/></div>
@@ -134,17 +143,20 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   </div>
   <label class="f" for="bestTime">Best time</label>
   <div class="g3"><input class="in" id="bestTime" maxlength="20" placeholder="12.9s"/><input class="in" id="bestLabel" maxlength="40" placeholder="1/4 mile"/><input class="in" id="bestVenue" maxlength="60" placeholder="Santa Pod"/></div>
-</div>
+</details>
 
 <div class="card">
   <h2>Photos</h2>
-  <p class="note">Up to 12. We shrink them and remove hidden location data before they leave your phone. Tap ★ for the main photo.</p>
+  <p class="note">Up to 12. Tap ★ for the main photo. Location data is stripped before they leave your phone.</p>
   <div class="photos" id="photos"></div>
   <input type="file" id="pick" accept="image/*" multiple class="hide"/>
   <button class="add" type="button" id="addPhotos">+ Add photos</button>
   <div class="row2h"><button class="btn small" type="button" id="useHome">Use my home photo</button><button class="btn small" type="button" id="toHome">Make ★ my home photo</button></div>
-  <label class="f" for="extUrl">Or link a photo hosted somewhere else (https)</label>
+  <details class="moreLink" id="extPhoto">
+  <summary>Link a photo from the web</summary>
+  <label class="f" for="extUrl">Photo URL (https)</label>
   <div style="display:flex;gap:8px"><input class="in" id="extUrl" placeholder="https://…/photo.jpg"/><button class="btn small" type="button" id="addExt" style="width:auto;margin:0">Add</button></div>
+  </details>
   <div class="status" id="phStatus"></div>
 </div>
 
@@ -159,40 +171,40 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   <textarea class="in" id="story" maxlength="3000" placeholder="How you got it, what you've done, what's next…"></textarea>
 </div>
 
-<div class="card">
-  <h2>Videos</h2>
-  <p class="note">Up to 12 YouTube links (videos, Shorts or lives).</p>
+<details class="card moreCard" id="vidCard">
+  <summary>Videos</summary>
+  <p class="note">Up to 12 YouTube links.</p>
   <div id="videos"></div>
   <button class="add" type="button" id="addVid">+ Add a YouTube link</button>
-</div>
+</details>
 
-<div class="card">
-  <h2>Photos from socials</h2>
-  <p class="note">Up to 12 public Instagram or Facebook post links. Shown with their own embeds; Driv3 doesn't copy them.</p>
+<details class="card moreCard" id="socCard">
+  <summary>Photos from socials</summary>
+  <p class="note">Up to 12 public Instagram or Facebook links. Shown as embeds; Driv3 doesn't copy them.</p>
   <div id="socials"></div>
   <button class="add" type="button" id="addSoc">+ Add an Instagram or Facebook link</button>
-</div>
+</details>
 
-<div class="card">
-  <h2>Driving playlist</h2>
+<details class="card moreCard" id="linkCard">
+  <summary>Driving playlist</summary>
   <label class="f" for="playlist">Spotify or YouTube Music playlist link</label><input class="in" id="playlist" placeholder="https://open.spotify.com/playlist/…"/>
   <div class="err" id="plErr"></div>
   <label class="f" for="insta">Instagram</label><input class="in" id="insta" placeholder="@yourcar" maxlength="60"/>
   <div class="err" id="igErr"></div>
-</div>
+</details>
 
-<div class="card">
-  <h2>Clips</h2>
-  <p class="note">Up to 2 short clips (20 MB each max). Longer videos: put them on YouTube and add the link above.</p>
+<details class="card moreCard" id="clipCard">
+  <summary>Clips</summary>
+  <p class="note">Up to 2 short clips (20 MB each). For longer videos, add a YouTube link above.</p>
   <div id="clips"></div>
   <input type="file" id="pickClip" accept="video/mp4,video/webm" class="hide"/>
   <div class="row2"><button class="add" type="button" id="addClipFile">+ From phone</button><button class="add" type="button" id="addClipApp">+ From Driv3 clips</button></div>
   <div id="appClips"></div>
   <div class="status" id="clStatus"></div>
-</div>
+</details>
 
 <div class="bar"><button class="btn go" type="button" id="pub2" data-iconed="1">Publish showcase</button><div class="status" id="saveStatus">Saved on this phone.</div></div>
-<a class="btn" href="home.html">Back</a>
+<a class="btn backBtn" href="home.html">Back</a>
 
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
@@ -392,10 +404,10 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
     car=U.garage().cars[idx];
     var st=await S.status(idx), on=st.published;
     $("pubPill").textContent=on?"Published":"Draft"; $("pubPill").className="pill"+(on?" on":""); $("pubCard").classList.toggle("live",on);
-    $("pubTxt").textContent=on?"Your showcase is live. Changes you make below stay on this phone until you press Update showcase.":"Your showcase is only on this phone until you publish it. Publishing puts the card, photos and clips online at a private link.";
+    $("pubTxt").textContent=on?"Live. Changes stay on this phone until you press Update showcase.":"Only on this phone until you publish. That puts the card online at a private link.";
     $("pub1").textContent=$("pub2").textContent=on?"Update showcase":"Publish showcase";
     var sm=car.upMode==="show"; $("qrMode").classList.toggle("on",sm); $("toShow").classList.toggle("hide",sm||!car.upId);
-    $("qrModeTxt").textContent=sm?"Show mode is on: your car sticker opens this card.":(car.upId?"Your car sticker still opens Mechanic uploads. Switch it to Show mode so anyone who scans it sees this card.":"Share the link or the QR below. To use your car sticker for this, set it up in Sticker settings first.");
+    $("qrModeTxt").textContent=sm?"Show mode is on: your sticker opens this card.":(car.upId?"Your sticker still opens Mechanic uploads. Switch it to Show mode to show this card.":"Share the link or QR below. To use your car sticker, set it up in Sticker settings first.");
     $("mechLink").href="mechanic.html?car="+idx;
     $("unpub").classList.toggle("hide",!on);
     $("liveBox").classList.toggle("hide",!on);
@@ -436,12 +448,18 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 
   // The My car gallery changes what's shared; re-read the draft so this editor never saves over it.
   window.D3ShowcaseEditorReload=function(){ d=S.getDraft(idx); paintPhotos(); paintAll(); paintClips(); };
+  function openMore(id,on){ var el=$(id); if(el&&on) el.open=true; }
+  openMore("statsCard", ST.some(function(k){return String(d.stats[k]||"").trim();}) || !!(d.stats.best&&(d.stats.best.time||d.stats.best.label||d.stats.best.venue)));
+  openMore("vidCard", d.videos&&d.videos.length);
+  openMore("socCard", d.socials&&d.socials.length);
+  openMore("linkCard", !!(d.playlist||d.instagram));
+  openMore("clipCard", d.clips&&d.clips.length);
   paintPhotos(); paintAll(); paintClips(); paintPub();
 })();
 </script>
 <script src="./car-scope.js?v=1"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./perf-g.js?v=2"></script>
-<script src="./showcase-view.js?v=2"></script>
+<script src="./showcase-view.js?v=3"></script>
 </body>
 </html>

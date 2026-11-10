@@ -108,11 +108,11 @@
     $("nativeBox").classList.remove("hide");
     $("autoOn").checked=false;
     $("autoOn").onchange=function(){ this.checked=false; $("webNote").classList.remove("hide"); $("webNote").scrollIntoView({block:"nearest"}); $("webNote").style.outline="2px solid #f59e0b"; setTimeout(function(){ $("webNote").style.outline=""; },1500); };
-    $("manNote").textContent="Start and stop a journey by hand. It records your distance with GPS.";
+    $("manNote").textContent="Start and stop by hand. Uses GPS for distance.";
     return;
   }
   $("nativeBox").classList.remove("hide");
-  $("manNote").textContent="Start and stop a journey by hand. It keeps recording with the screen off.";
+  $("manNote").textContent="Start and stop by hand. Keeps recording with the screen off.";
   function permLine(s){
     var rows=[["location","Location",s.location],["background","Location “Allow all the time”",s.background],["bluetooth","Nearby devices (Bluetooth)",s.bluetooth],["notifications","Notifications",s.notifications],["battery","Battery: unrestricted",s.batteryOk]];
     $("perms").innerHTML=rows.map(function(r){ return "<div>"+(r[2]?"<span class='ok'>✓</span> ":"<span class='warn'>•</span> ")+r[1]+(r[2]?"":"<button type='button' data-ask='"+r[0]+"'>Allow</button>")+"</div>"; }).join("");

@@ -27,6 +27,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=78"/>
+<link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <script src="./mot-config.js"></script>
 <script src="./tax-lookup.js?v=1"></script>
 <style>
@@ -52,7 +53,7 @@ h1{font-size:22px;margin:8px 0}
 <div class="box wait" id="mot"><b>Checking…</b></div>
 <p class="note" id="note"></p>
 <a id="gov" href="https://vehicleenquiry.service.gov.uk/" target="_blank" rel="noopener">Open the official GOV.UK page</a>
-<a class="btn" href="home.html">Back</a>
+<a class="btn backBtn" href="home.html">Back</a>
 <script src="./icons.js?v=32"></script>
 <script>
 function unk(el,what){ el.className="box unk"; el.innerHTML="<b>Couldn't check "+what+"</b><small>Try again later, or use the GOV.UK link below.</small>"; }

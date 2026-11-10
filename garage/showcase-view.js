@@ -99,7 +99,7 @@
     '<div class="privBan" id="privBan">🔒 <span>Private — only you see this on your phone.</span></div>'+
     '<div class="pubBan vhide" id="pubBan">👁 <span id="pubBanTxt">What people see if they scan your sticker in Show mode, or open your link.</span></div>'+
     '<div class="gal"><div class="tabs" role="tablist"><button type="button" id="gPh" class="on">Photos<span class="n" id="nPh"></span></button><button type="button" id="gVi">Videos<span class="n" id="nVi"></span></button></div>'+
-    '<div class="gframe l" id="gframe"><div class="stage" id="stage" aria-live="polite"></div><div class="gmeta"><b id="gCap"></b><span id="gPos"></span></div><div class="gctl" id="gCtl"></div><div class="gsay" id="gSay" aria-live="polite"></div><div class="strip" id="strip"></div></div></div>'+
+    '<div class="gframe l" id="gframe"><div class="stageWrap" id="stageWrap"><div class="stage" id="stage" aria-live="polite"></div><img class="gBrand hide" src="./driv3-wordmark.svg" alt="Driv3" id="gBrand"/><div class="gPlate hide" id="gPlate" aria-hidden="true"><span class="uk">UK</span><span class="reg" id="gPlateReg"></span></div></div><div class="gmeta"><b id="gCap"></b><span id="gPos"></span></div><div class="gctl" id="gCtl"></div><div class="gsay" id="gSay" aria-live="polite"></div><div class="strip" id="strip"></div></div></div>'+
     '<div id="mineBox"></div><div id="showBox" class="vhide"></div>';
   var h1=document.querySelector("body > h1"), lead=document.querySelector("body > p.lead");
   h1.parentNode.insertBefore(head,lead.nextSibling);
@@ -178,6 +178,7 @@
       st.outerHTML='<div class="stage" id="stage"><div class="gempty" style="flex:1 0 100%">'+(tab==="photo"?"📷":"🎬")+'<div>'+(tab==="photo"?(view==="show"?"Nothing shared yet. Tick photos in My car to add them.":"No photos of this car yet."):(view==="show"?"No videos shared yet. Tick clips in My car, or add a YouTube link below.":"No videos yet. Performance runs and show clips appear here."))+'</div>'+(add?'<button class="btn small" type="button" id="gAdd">'+(tab==="photo"?"+ Add photos":"+ Add a clip")+'</button>':'<a class="btn small" href="performance.html">Record a run</a>')+'</div></div>';
       sp.innerHTML=""; $("gCap").textContent=""; $("gPos").textContent=""; $("gCtl").innerHTML="";
       var ga=$("gAdd"); if(ga) ga.onclick=function(){ (tab==="photo"?$("pick"):$("pickClip")).click(); };
+      paintPlate();
       return;
     }
     var ns=document.createElement("div"); ns.className="stage"; ns.id="stage";
@@ -190,9 +191,20 @@
     st.addEventListener("scroll",function(){ clearTimeout(stageT); stageT=setTimeout(function(){ var n=Math.round(st.scrollLeft/st.clientWidth); if(n!==cur) select(n,false); },70); },{passive:true});
     st.tabIndex=0; st.onkeydown=function(e){ if(e.key==="ArrowRight") select(cur+1,true); if(e.key==="ArrowLeft") select(cur-1,true); };
     cur=-1; select(0,false);
+    paintPlate();
   }
   $("gPh").onclick=function(){ if(tab!=="photo"){ tab="photo"; paintGallery(); } };
   $("gVi").onclick=function(){ if(tab!=="video"){ tab="video"; paintGallery(); } };
+
+  function fmtPlate(p){ p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,""); return p.length>=7?p.slice(0,4)+" "+p.slice(4):p; }
+  function paintPlate(){
+    var d=S.getDraft(idx), b=d.basics||{}, hide=!!b.hidePlate, txt=fmtPlate(b.plate||car.plate);
+    var on=view==="show"&&!!txt&&!hide&&tab==="photo";
+    var el=$("gPlate"), reg=$("gPlateReg"), brand=$("gBrand");
+    if(reg) reg.textContent=txt;
+    if(el){ el.classList.toggle("hide",!on); el.setAttribute("aria-hidden", on?"false":"true"); if(on) el.setAttribute("aria-label","Number plate "+txt); }
+    if(brand) brand.classList.toggle("hide", view!=="show");
+  }
 
   // ---------- My car summary ----------
   function due(dt){ if(!dt) return null; var t=new Date(dt+"T12:00:00"); if(isNaN(t)) return null; var days=Math.round((t-Date.now())/86400000);
@@ -221,16 +233,17 @@
   // ---------- Show view preview (only what the show card shares) ----------
   function paintShow(){
     var d=S.getDraft(idx), b=d.basics||{}, s=d.stats||{}, pub=!!(car.showId&&car.showPublished);
-    var name=d.title||[b.year,b.make,b.model].filter(Boolean).join(" ")||U.niceName(car);
+    var name=d.title||[b.make,b.model].filter(Boolean).join(" ")||U.niceName(car);
+    var sub=[b.year,b.variant,car.engine||b.engine,b.colour].filter(Boolean).join(" · ");
     var sts=[["bhp","bhp"],["torque","Nm"],["zero60","0-60 (s)"],["top","mph top"],["weight","kg"]].filter(function(x){return s[x[0]]!==""&&s[x[0]]!=null}).map(function(x){return '<div class="st"><b>'+esc(s[x[0]])+'</b><span>'+x[1]+'</span></div>'}).join("");
     var best=s.best&&s.best.time?'<p class="note">🏁 Best: <b style="color:#f2f2f2">'+esc(s.best.time)+'</b> '+esc([s.best.label,s.best.venue].filter(Boolean).join(" · "))+'</p>':"";
     var mods=(d.mods||[]).map(function(m){ var t=typeof m==="string"?m:(m&&(m.t||m.name||m.title||m.text))||""; return t?"<li>"+esc(t)+"</li>":""; }).join("");
     $("pubBanTxt").textContent=pub?"What people see if they scan your sticker in Show mode, or open your link.":"What the public will see once you publish. Only on this phone for now.";
     $("showBox").innerHTML='<div class="card pv"><h2>'+esc(name)+'</h2>'+
-      '<p class="note">'+esc([b.variant,b.colour,b.hidePlate?"":U.cleanPlate(b.plate||car.plate)].filter(Boolean).join(" · "))+'</p>'+
+      (sub?'<p class="sub">'+esc(sub)+'</p>':'')+
       (sts?'<div class="sts">'+sts+'</div>':'<p class="note">No stats yet. Add them below.</p>')+best+
-      (mods?'<h2 style="margin-top:12px">Mods</h2><ul>'+mods+'</ul>':'')+
-      (d.story?'<h2 style="margin-top:12px">Story</h2><p class="story">'+esc(d.story)+'</p>':'')+
+      (mods?'<h2 class="sh">Mods</h2><ul>'+mods+'</ul>':'')+
+      (d.story?'<h2 class="sh">Story</h2><p class="story">'+esc(d.story)+'</p>':'')+
       (pub?'<a class="btn small wide" style="margin-top:12px" target="_blank" rel="noopener" href="'+esc(U.showLink?U.showLink(car):"#")+'">Open the live card</a>':'')+
       '</div>';
   }

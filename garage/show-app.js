@@ -13,7 +13,9 @@
     d.appendChild(el("h1","",title)); d.appendChild(el("p","",msg)); app.appendChild(d); app.appendChild(footer());
     document.title="Car showcase · Driv3";
   }
-  function footer(){ var f=el("div","foot"); f.appendChild(document.createTextNode("Made with ")); var a=el("a","","Driv3"); a.href="./home.html"; f.appendChild(a); return f; }
+  function footer(){ var f=el("div","foot"); f.appendChild(document.createTextNode("Made with ")); var a=el("a"); a.href="./home.html"; a.setAttribute("aria-label","Driv3"); var im=el("img","footLogo"); im.src="./driv3-wordmark.svg"; im.alt="Driv3"; a.appendChild(im); f.appendChild(a); return f; }
+  function fmtPlate(p){ p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,""); return p.length>=7?p.slice(0,4)+" "+p.slice(4):p; }
+  function plateEl(txt){ var p=el("span","plate"); p.appendChild(el("span","uk","UK")); p.appendChild(el("span","reg",fmtPlate(txt))); p.setAttribute("aria-label","Number plate "+fmtPlate(txt)); return p; }
   if(!sid){ empty("Showcase not found","This link looks cut off. Ask the owner to send it again."); return; }
   fetch(API+"/show/"+sid).then(function(r){
     if(r.status===404) return empty("Not published right now","The owner has taken this showcase down for now. Check back later.");
@@ -43,9 +45,9 @@
     var hero=el("div","hero");
     hero.className="hero head";
     hero.appendChild(el("span","badge","Show car"));
-    if(plate){ var p=el("span","plate"); p.appendChild(el("span","uk","UK")); p.appendChild(el("span","reg",plate)); hero.appendChild(p); }
+    if(plate && !gal.length) hero.appendChild(plateEl(plate));
     var sh=el("div","shade"); sh.appendChild(el("h1","",name));
-    var sub=[year,str(c.title,40)?[make,model].filter(Boolean).join(" "):"",str(b.variant,40),str(b.colour,30)].filter(Boolean).join(" · ");
+    var sub=[year,str(b.variant,40),str(b.engine,40),str(b.colour,30)].filter(Boolean).join(" · ");
     if(sub) sh.appendChild(el("div","sub",sub));
     hero.appendChild(sh); tt.appendChild(hero);
     var st=el("div","stats"), any=false;
@@ -68,7 +70,7 @@
     // Videos: old cards stored plain ids, new ones {id,title}.
     var vids=(Array.isArray(c.videos)?c.videos:[]).map(function(v){ var id=P.youtubeId(v&&typeof v==="object"?v.id:v); return id?{id:id,title:str(v&&v.title,80)}:null; }).filter(Boolean).slice(0,12);
     var clips=(Array.isArray(c.clips)?c.clips:[]).slice(0,2).map(function(k){ return {src:k&&fileUrl(k.n),cap:str(k&&k.cap,80)}; }).filter(function(k){return k.src&&/^c/.test(k.src.split("/").pop())});
-    gallery(gal,hi,clips,vids,name,tt);
+    gallery(gal,hi,clips,vids,name,tt,gal.length?plate:"");
     var pl=c.playlist&&typeof c.playlist==="object"?c.playlist:null;
     if(pl){
       if(pl.kind==="spotify"&&/^[A-Za-z0-9]{22}$/.test(pl.id||"")&&(pl.type==="playlist"||pl.type==="album")){
@@ -125,14 +127,17 @@
     s.appendChild(hb); s.appendChild(panel); app.appendChild(s); return s;
   }
   /* Gallery: Photos / Videos tabs joined to a framed viewer. Swipe the big view (scroll-snap) or tap a thumbnail. Built with DOM APIs only. */
-  function gallery(photos,start,clips,yts,name,before){
+  function gallery(photos,start,clips,yts,name,before,plate){
     var vids=clips.map(function(k){ return {kind:"clip",src:k.src,cap:k.cap}; }).concat(yts.map(function(v){ return {kind:"yt",id:v.id,cap:v.title}; }));
     if(!photos.length&&!vids.length) return;
     var wrap=el("section","gal2"), tabs=el("div","gtabs"), bP=el("button","",""), bV=el("button","",""), frameEl=el("div","gframe"), stage=el("div","gstage"), meta=el("div","gmeta"), cap=el("b",""), pos=el("span",""), strip=el("div","gstrip");
     bP.type=bV.type="button"; bP.appendChild(document.createTextNode("Photos")); bP.appendChild(el("span","n",photos.length||""));
     bV.appendChild(document.createTextNode("Videos")); bV.appendChild(el("span","n",vids.length||""));
     tabs.setAttribute("role","tablist"); tabs.appendChild(bP); tabs.appendChild(bV); meta.appendChild(cap); meta.appendChild(pos);
-    frameEl.appendChild(stage); frameEl.appendChild(meta); frameEl.appendChild(strip); wrap.appendChild(tabs); wrap.appendChild(frameEl);
+    var stageWrap=el("div","stageWrap"); stageWrap.appendChild(stage);
+    var logo=el("img","gBrand"); logo.src="./driv3-wordmark.svg"; logo.alt="Driv3"; stageWrap.appendChild(logo);
+    if(plate) stageWrap.appendChild(plateEl(plate));
+    frameEl.appendChild(stageWrap); frameEl.appendChild(meta); frameEl.appendChild(strip); wrap.appendChild(tabs); wrap.appendChild(frameEl);
     app.insertBefore(wrap,before);
     var tab=photos.length?"p":"v", list=[], cur=0, t=null;
     function fill(n){ var sl=stage.children[n]; if(!sl||sl.firstChild) return; var it=list[n];
@@ -149,6 +154,7 @@
       cap.textContent=list[n].cap||""; pos.textContent=(n+1)+" / "+list.length; }
     function paint(){
       bP.classList.toggle("on",tab==="p"); bV.classList.toggle("on",tab==="v"); frameEl.className="gframe "+(tab==="p"?"l":"r");
+      var pl=stageWrap.querySelector(".plate"); if(pl) pl.classList.toggle("hide",tab!=="p");
       list=tab==="p"?photos:vids; stage.innerHTML=""; strip.innerHTML=""; cap.textContent=""; pos.textContent="";
       if(!list.length){ stage.appendChild(el("div","gempty",tab==="p"?"No photos yet":"No videos yet")); return; }
       list.forEach(function(it,k){ stage.appendChild(el("div","sl"));

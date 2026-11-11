@@ -110,7 +110,7 @@ function remindBanner(){
   if(!act.length&&!oth.length){box.innerHTML="";box.style.display="none";return}
   box.style.display="";
   box.innerHTML=act.map(function(a){
-    return "<div class='remB' style='border-left:4px solid "+a.color+"'><div style='flex:1'><b>"+a.icon+" "+a.label+" \u00b7 "+a.plate+"</b><span>"+a.body.split(" Would you like to book")[0]+(a.emailOpened?" Booking email opened — awaiting garage confirmation.":"")+"</span></div>"+
+    var ico=(window.dipstickIconHtml&&window.dipstickIconHtml(a.icon))||a.icon||""; return "<div class='remB' style='border-left:4px solid "+a.color+"'><div style='flex:1'><b>"+ico+a.label+" \u00b7 "+a.plate+"</b><span>"+a.body.split(" Would you like to book")[0]+(a.emailOpened?" Booking email opened — awaiting garage confirmation.":"")+"</span></div>"+
       (a.book?"<a class='btn' href='"+a.bookLink+"'>Book with my garage</a>":"<button type='button' class='btn' data-rgo='"+a.type+"' data-rcar='"+a.carIndex+"'>View</button>")+"</div>";
   }).join("")+othHtml;
 }
@@ -383,7 +383,7 @@ function openSheet(mode){
   if(del) del.style.display=mode==="add"?"none":"block";
   lastLooked=null;
   var hint=document.getElementById("plateHint");
-  if(hint) hint.textContent="Enter plate and tap Lookup, or use the camera.";
+  if(hint) hint.textContent="Enter the plate and press Search, or use the camera.";
 }
 function step(dir){
   var s=state();
@@ -406,6 +406,8 @@ on("btnAdd",function(){
 });
 on("btnEdit",function(){openSheet("edit")});
 on("btnLookup",doLookup);
+var plateForm=document.getElementById("plateForm");
+if(plateForm) plateForm.addEventListener("submit",function(e){e.preventDefault();doLookup();});
 on("btnCam",function(){
   var cam=document.getElementById("plateCam");
   if(cam) cam.click();
@@ -548,13 +550,16 @@ function swipeEnd(e){
   el.addEventListener("touchstart",swipeStart,{passive:true});
   el.addEventListener("touchend",swipeEnd);
 });
-on("emptyGo",function(){
+function goEmpty(){
   var v=document.getElementById("emptyPlate").value.trim();
   openSheet("add");
   if(v){ document.getElementById("fPlate").value=v; doLookup(); }
-});
+}
+on("emptyGo",goEmpty);
+var emptyForm=document.getElementById("emptyForm");
+if(emptyForm) emptyForm.addEventListener("submit",function(e){ e.preventDefault(); goEmpty(); });
 var ep=document.getElementById("emptyPlate");
-if(ep) ep.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); document.getElementById("emptyGo").click(); } });
+if(ep) ep.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); goEmpty(); } });
 paint();
 var dateSynced={}, taxSynced={};
 var MOT_RECHECK_MS=7*86400000;

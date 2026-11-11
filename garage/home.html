@@ -5,7 +5,7 @@
 <script src="./app-lock.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
-<link rel="stylesheet" href="./ui.css?v=78"/>
+<link rel="stylesheet" href="./ui.css?v=79"/>
 <title>Trac3</title>
 <meta name="description" content="MOT, tax and insurance reminders, service cost estimates, receipts, route costs and a share-for-sale report. Free, and your data stays on your phone."/>
 <meta property="og:type" content="website"/>
@@ -49,7 +49,7 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .dots{text-align:center;color:#8b8b8b;font-size:12px;margin:6px 0 0;height:16px;line-height:16px}
 .card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;overflow:hidden;margin-bottom:12px}
 .card.hide{display:none}
-.btn.dd .chev{margin-left:auto;font-size:15px;opacity:.75;transition:transform .2s ease}
+.btn.dd .chev{margin-left:auto;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;opacity:.75;transition:transform .2s ease;flex:0 0 20px}.btn.dd .chev .ico,.btn.dd .chev svg{width:20px;height:20px;display:block}
 .btn.dd[aria-expanded="true"] .chev{transform:rotate(180deg)}
 #dues:not(.hide),.ddMenu:not(.hide){animation:ddIn .18s ease-out}
 @keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -65,9 +65,9 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .acts .btn{width:100% !important;min-width:0;display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;box-sizing:border-box;padding:6px 8px !important;font-size:12px;border-radius:14px !important;gap:0 !important}
 .datePick{display:none;width:100%;background:#161618;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:8px}
 .datePick.on{display:block}
-.sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:18px 14px;overflow:auto;z-index:20}
+.sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);padding:calc(18px + env(safe-area-inset-top,0px)) 14px calc(18px + env(safe-area-inset-bottom,0px));overflow:auto;z-index:20;-webkit-overflow-scrolling:touch}
 .sheet.on{display:block}
-.panel{background:#141416;border-radius:18px;padding:14px;max-width:440px;margin:0 auto}
+.panel{background:#141416;border-radius:18px;padding:16px 14px 18px;max-width:440px;margin:0 auto;overflow:visible}#sheet .panel>h2{margin:2px 0 14px;padding-top:2px}
 .fGroup{background:#0f1012;border:1px solid #1f2125;border-radius:14px;padding:4px 12px 12px;margin:12px 0}
 .fHead{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#cfd2d6;font-weight:600;margin:10px 0 2px;list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
 summary.fHead::-webkit-details-marker{display:none}
@@ -86,13 +86,18 @@ details.fGroup:not([open]){padding-bottom:6px}
 .suggest-hit b{font-weight:600}.suggest-hit small{display:block;color:#8b8b8b;font-size:12px;margin-top:2px}
 label{display:block;color:#8b8b8b;font-size:12px;margin:8px 0 4px}
 input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
-.plateEntry{display:flex;align-items:center;gap:8px;margin:8px 0 12px;width:100%}
-.plateEntry .ukPlate{display:flex;align-items:stretch;border:2px solid #222;border-radius:6px;overflow:hidden;background:#f4d000;flex:1;height:48px;min-width:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.plateEntry{display:flex;align-items:stretch;gap:8px;margin:8px 0 12px;width:100%}
+.plateEntry .plateField{display:flex;align-items:stretch;flex:1;min-width:0;height:48px}
+.plateEntry .ukPlate{display:flex;align-items:stretch;border:2px solid #222;border-radius:8px;overflow:hidden;background:#f4d000;flex:1;height:48px;min-width:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.plateEntry .plateField .ukPlate{border-radius:8px 0 0 8px;border-right:0;box-shadow:none}
 .plateEntry .ukStrip{background:#003399;color:#fc0;width:38px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;letter-spacing:0.5px;flex-shrink:0}
-.plateEntry .ukPlate input{flex:1;min-width:0;border:0 !important;background:transparent !important;color:#111 !important;font-family:Arial,Helvetica,sans-serif !important;font-weight:900 !important;font-size:18px !important;letter-spacing:0.12em !important;text-transform:uppercase;padding:0 10px !important;text-align:center;outline:none;width:auto !important;border-radius:0 !important;height:100% !important}
+.plateEntry .ukPlate input{flex:1;min-width:0;border:0 !important;background:transparent !important;color:#111 !important;font-family:Arial,Helvetica,sans-serif !important;font-weight:900 !important;font-size:18px !important;letter-spacing:0.1em !important;text-transform:uppercase;padding:0 8px !important;text-align:center;outline:none;width:auto !important;border-radius:0 !important;height:100% !important}
 .plateEntry .ukPlate input::placeholder{color:#666 !important;letter-spacing:0.08em;font-weight:700;opacity:0.7}
-.plateEntry button.btn{height:48px;padding:0 14px;font-size:14px;border-radius:12px;flex-shrink:0;width:auto !important;min-width:90px}
-.plateEntry .camBtn{height:48px;width:48px;min-width:48px;padding:0;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#1c1c1e;border:1px solid #2a2a2e;color:#f2f2f2;font-size:20px;cursor:pointer}
+.plateEntry .searchBtn{height:48px;width:48px;min-width:48px;margin:0;padding:0;border-radius:0 8px 8px 0;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#2a2d33;border:2px solid #222;border-left:1px solid #1c1d20;color:#7dd3fc;cursor:pointer;box-shadow:none}
+.plateEntry .searchBtn .ico,.plateEntry .camBtn .ico{width:22px;height:22px;color:#7dd3fc}
+.plateEntry .camBtn{height:48px;width:48px;min-width:48px;margin:0;padding:0;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#1c1c1e;border:1px solid #2a2a2e;color:#7dd3fc;cursor:pointer}
+.plateEntry .searchBtn:focus-visible,.plateEntry .camBtn:focus-visible,.plateEntry .ukPlate input:focus-visible{outline:2px solid #7dd3fc;outline-offset:2px}
+@media (max-width:380px){.plateEntry .ukPlate input{font-size:16px !important;letter-spacing:0.08em !important;padding:0 6px !important}}
 .found{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:12px;margin:10px 0;font-size:14px;line-height:1.5}
 .found b{color:#fff}
 .found .muted{color:#8b8b8b;font-size:13px}
@@ -135,7 +140,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 .topRow b{font-size:18px;letter-spacing:.3px}
 .topRow .brandLogo{display:block;height:20px;width:auto}
 .aboutLockup{display:block;width:min(280px,86%);height:auto;margin:2px auto 16px}
-#gear{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:#1c1c1e;color:#f2f2f2;display:flex;align-items:center;justify-content:center;padding:0}
+#gear{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:#1c1c1e;color:#7dd3fc;display:flex;align-items:center;justify-content:center;padding:0}#gear .ico,#gear svg{width:22px;height:22px;display:block}.nameRow button .ico,.nameRow button svg{width:20px;height:20px;display:block;color:#7dd3fc}.remB b{display:flex;align-items:center;gap:6px;font-size:15px}.remB b .ico,.remB b svg{width:18px;height:18px;flex:0 0 18px;color:#7dd3fc}form#emptyForm{margin:0}
 #gear.dot::after{content:"";position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:#f5b84a}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#141416;border:1px solid #2a2a2e;border-radius:16px;padding:4px;margin:0 0 12px;position:sticky;top:0;z-index:5}
 .tabs button{background:none;border:0;color:#8b8b8b;font:600 12.5px/1.15 inherit;font-family:inherit;padding:10px 2px;border-radius:12px;min-height:44px}
@@ -176,38 +181,40 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 <script src="./splash.js?v=1"></script>
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <input id="plateCam" type="file" accept="image/*" capture="environment" hidden/>
-<div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"/><button type="button" id="gear" aria-label="Settings" title="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+<div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"/><button type="button" id="gear" aria-label="Settings" title="Settings" data-ico="settings"></button></div>
 <section id="emptyCar"><h2>Add your car</h2><p>Enter your number plate and Trac3 will fill in the details, MOT and tax dates for you.</p>
-<div class="plateEntry"><div class="ukPlate"><span class="ukStrip">UK</span><input id="emptyPlate" type="text" placeholder="AB12 CDE" maxlength="8" autocomplete="off" aria-label="Number plate"/></div></div>
-<button class="btn wide" type="button" id="emptyGo" data-ico="search">Add car</button></section>
+<form id="emptyForm" action="#">
+<div class="plateEntry"><div class="ukPlate"><span class="ukStrip">UK</span><input id="emptyPlate" type="text" inputmode="text" enterkeyhint="search" placeholder="AB12 CDE" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Number plate"/></div></div>
+<button class="btn wide" type="submit" id="emptyGo" data-ico="search">Add car</button>
+</form></section>
 <div class="hero" id="hero"></div>
 <div class="bar"><div class="nameRow">
 <div class="side left">
-<button type="button" id="btnAdd">+</button>
-<button type="button" id="prev">&#8592;</button>
+<button type="button" id="btnAdd" aria-label="Add car" title="Add car" data-ico="add"></button>
+<button type="button" id="prev" aria-label="Previous car" title="Previous car" data-ico="prev"></button>
 </div>
 <div class="name" id="caption">Your car</div>
 <div class="side right">
-<button type="button" id="next">&#8594;</button>
-<button type="button" id="btnEdit">&#9998;</button>
+<button type="button" id="next" aria-label="Next car" title="Next car" data-ico="next"></button>
+<button type="button" id="btnEdit" aria-label="Edit car" title="Edit car" data-ico="edit"></button>
 </div>
 </div><p class="dots" id="dots"></p></div>
 <section class="tabp on" id="car">
-<button class="btn wide dd" type="button" id="datesToggle" data-ico="cal" aria-expanded="false" aria-controls="dues"><span class="lab">Reminders</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<button class="btn wide dd" type="button" id="datesToggle" data-ico="cal" aria-expanded="false" aria-controls="dues"><span class="lab">Reminders</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide" id="dues"></div>
-<button class="btn wide dd" type="button" id="driveToggle" data-ico="wheel" aria-expanded="false" aria-controls="driveMenu"><span class="lab">Drive</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<button class="btn wide dd" type="button" id="driveToggle" data-ico="wheel" aria-expanded="false" aria-controls="driveMenu"><span class="lab">Drive</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide ddMenu" id="driveMenu">
 <a href="drive.html?v=3">Record journey</a>
 <a href="performance.html?v=3">Performance</a>
 <a href="route.html">Route costs</a>
 </div>
-<button class="btn wide dd" type="button" id="histToggle" data-ico="cal" aria-expanded="false" aria-controls="histMenu"><span class="lab">History</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<button class="btn wide dd" type="button" id="histToggle" data-ico="cal" aria-expanded="false" aria-controls="histMenu"><span class="lab">History</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide ddMenu" id="histMenu">
 <a href="calendar.html?v=6">Drive diary</a>
 <a href="mechanic.html?v=17">Mechanic QR sticker</a>
 <a href="share.html">Share for sale</a>
 </div>
-<button class="btn wide dd" type="button" id="finToggle" data-ico="gbp" aria-expanded="false" aria-controls="finMenu"><span class="lab">Financial</span><span class="chev" aria-hidden="true">&#9662;</span></button>
+<button class="btn wide dd" type="button" id="finToggle" data-ico="gbp" aria-expanded="false" aria-controls="finMenu"><span class="lab">Financial</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide ddMenu" id="finMenu">
 <a href="service.html?v=13">Maintenance planner</a>
 <a href="buy.html">Buying guide</a>
@@ -228,16 +235,18 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <h2 id="sheetTitle">Add car</h2>
 <section class="fGroup"><h4 class="fHead">Your car</h4>
 <label for="fPlate">Number plate</label>
-<div class="plateEntry">
+<form id="plateForm" class="plateEntry" action="#">
+<div class="plateField">
 <div class="ukPlate">
 <span class="ukStrip">UK</span>
-<input id="fPlate" type="text" placeholder="AB12 CDE" maxlength="8" autocomplete="off"/>
+<input id="fPlate" type="text" inputmode="text" enterkeyhint="search" placeholder="AB12 CDE" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Number plate"/>
 </div>
-<button class="camBtn" type="button" id="btnCam" title="Scan plate">&#128247;</button>
-<button class="btn" type="button" id="btnLookup">Lookup</button>
+<button class="searchBtn" type="submit" id="btnLookup" aria-label="Search for car" title="Search" data-ico="search"></button>
 </div>
+<button class="camBtn" type="button" id="btnCam" aria-label="Scan plate" title="Scan plate" data-ico="cam"></button>
+</form>
 <div id="foundDetails" class="found" style="display:none"></div>
-<p class="left" id="plateHint">Enter plate and tap Lookup, or use the camera.</p>
+<p class="left" id="plateHint">Enter the plate and press Search, or use the camera.</p>
 <label for="fName">Car name</label><input id="fName" type="text" placeholder="e.g. Ford Focus" maxlength="60" autocomplete="off"/>
 <div class="fRow"><div><label for="fFuel">Fuel</label><select id="fFuel"><option value="diesel">Diesel</option><option value="petrol">Petrol</option><option value="hybrid">Hybrid</option><option value="electric">Electric</option></select></div>
 <div><label for="fMpg">UK MPG</label><input id="fMpg" type="number" step="0.1" placeholder="e.g. 45"/></div></div>
@@ -280,11 +289,11 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="plate-fill.js?v=2"></script>
 <script src="./reminders-core.js?v=5"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./home-app.js?v=104"></script>
+<script src="./icons.js?v=33"></script>
+<script src="./home-app.js?v=105"></script>
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>
 <script src="./home-insure.js?v=3"></script>
-<script src="./icons.js?v=32"></script>
 <script src="./home-tabs.js?v=6"></script>
 <script src="./reminders-web.js?v=2"></script>
 <script>

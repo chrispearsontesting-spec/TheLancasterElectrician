@@ -70,10 +70,10 @@ a.btn,button.btn{
   width:22px !important;
   height:22px !important;
   flex:0 0 22px !important;
-  color:#f2f2f2 !important;
+  color:#7dd3fc !important;
   opacity:.95;
 }
-.ico svg{width:22px;height:22px;display:block}
+.ico svg{width:22px;height:22px;display:block;fill:currentColor}
 .nameRow button{
   border-radius:50% !important;
   background:#1c1c1e !important;

@@ -14,7 +14,7 @@
   function media(){ var M=window.CalMedia, out=[]; if(!M) return out; Object.keys(M.byDay).forEach(function(d){ M.byDay[d].forEach(function(e){ out.push(e); }); }); return out; }
 
   var JOUR={"📍":1,"🔵":1,"🏁":1};
-  function row(it){ var cat=it.cat||(JOUR[it.ico]?"jour":"done"); return "<button type='button' class='clItem' data-day='"+it.day+"' data-q='"+esc((it.title+" "+(it.sub||"")+" "+nice(it.day)).toLowerCase())+"'><i class='cdot' style='background:var(--c-"+cat+")'></i><span class='clIco'>"+it.ico+"</span><span class='clTxt'><b>"+esc(it.title)+"</b><small>"+esc(nice(it.day)+(it.sub?" · "+it.sub:""))+"</small></span>"+(it.right?"<span class='clR'>"+esc(it.right)+"</span>":"")+"</button>"; }
+  function row(it){ var cat=it.cat||(JOUR[it.ico]?"jour":"done"); return "<button type='button' class='clItem' data-day='"+it.day+"' data-q='"+esc((it.title+" "+(it.sub||"")+" "+nice(it.day)).toLowerCase())+"'><i class='cdot' style='background:var(--c-"+cat+")'></i><span class='clIco'>"+((window.dipstickIconHtml&&window.dipstickIconHtml(it.ico))||it.ico)+"</span><span class='clTxt'><b>"+esc(it.title)+"</b><small>"+esc(nice(it.day)+(it.sub?" · "+it.sub:""))+"</small></span>"+(it.right?"<span class='clR'>"+esc(it.right)+"</span>":"")+"</button>"; }
   function empty(t){ return "<p class='muted clEmpty'>"+t+"</p>"; }
 
   function recent(){

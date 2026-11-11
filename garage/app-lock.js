@@ -48,7 +48,7 @@
   var css='html.d3lk,html.d3lk body{overflow:hidden!important}html.d3lk body>*:not(#d3lock){visibility:hidden!important}'+
     '#d3lock{position:fixed;inset:0;z-index:2147483000;background:#0b0c0e;color:#f2f2f2;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px calc(24px + env(safe-area-inset-bottom));font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;visibility:visible!important}'+
     '#d3lock .t{font-size:20px;font-weight:650;margin:10px 0 4px;letter-spacing:-.02em}#d3lock .s{font-size:13.5px;color:#8b8b8b;min-height:20px;text-align:center;max-width:320px;line-height:1.4}'+
-    '#d3lock .ico{width:46px;height:46px;border-radius:50%;background:#161618;border:1px solid #2a2a2e;display:flex;align-items:center;justify-content:center}'+
+    '#d3lock .ico{width:46px;height:46px;border-radius:50%;background:#161618;border:1px solid #2a2a2e;display:flex;align-items:center;justify-content:center;color:#7dd3fc}'+
     '#d3lock .dots{display:flex;gap:14px;margin:22px 0 26px;height:16px}#d3lock .dots i{width:14px;height:14px;border-radius:50%;border:2px solid #555;display:block}#d3lock .dots i.on{background:#f2f2f2;border-color:#f2f2f2}'+
     '#d3lock .dots.bad{animation:d3sh .35s}@keyframes d3sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}'+
     '#d3lock .pad{display:grid;grid-template-columns:repeat(3,76px);gap:14px 22px}#d3lock .pad button{width:76px;height:76px;border-radius:50%;background:#161618;border:1px solid #26262a;color:#f2f2f2;font-size:28px;font-weight:500;font-family:inherit;-webkit-tap-highlight-color:transparent;padding:0}'+
@@ -57,7 +57,7 @@
     '#d3lock .bio{margin-bottom:14px;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:999px;padding:10px 18px;font-size:15px;font-family:inherit}'+
     '#d3lock .help{max-width:360px;font-size:14px;line-height:1.5;color:#c8c8c8}#d3lock .help p{margin:0 0 10px}#d3lock .help a{color:#8ab4ff}';
   function addStyle(){ if(doc.getElementById("d3lockcss")) return; var s=doc.createElement("style"); s.id="d3lockcss"; s.textContent=css; (doc.head||doc.documentElement).appendChild(s); }
-  var LOCK_SVG='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2f2f2" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+  var LOCK_SVG='<svg width="22" height="22" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm296.5-143.5Q560-327 560-360t-23.5-56.5Q513-440 480-440t-56.5 23.5Q400-393 400-360t23.5 56.5Q447-280 480-280t56.5-23.5ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/></svg>';
   function build(){
     if(el) return;
     el=doc.createElement("div"); el.id="d3lock"; el.setAttribute("role","dialog"); el.setAttribute("aria-modal","true"); el.setAttribute("aria-label","Trac3 is locked");

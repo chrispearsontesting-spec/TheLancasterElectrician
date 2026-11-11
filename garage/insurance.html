@@ -26,7 +26,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=78"/>
+<link rel="stylesheet" href="./ui.css?v=79"/>
 <link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <style>
 *{box-sizing:border-box}
@@ -87,7 +87,7 @@ label.btn,#renew{display:flex !important;justify-content:center !important;align
 </style>
 <div class="rnS" id="rnSheet" role="dialog" aria-modal="true" aria-labelledby="rnH"><div class="box"><h3 id="rnH">Rename document</h3><input id="rnIn" maxlength="80" placeholder="e.g. Hastings Car Insurance 2026"/><div class="rnB"><button type="button" class="btn" id="rnCancel">Cancel</button><button type="button" class="btn pri" id="rnSave">Save</button></div></div></div>
 <style>
-.doc .nm{cursor:pointer}.doc .pen{font-style:normal;color:#8b8b8b;font-size:13px;margin-left:4px}.doc .t span{cursor:pointer}
+.doc .nm{cursor:pointer;display:inline-flex;align-items:center;gap:4px}.doc .pen{font-style:normal;color:#7dd3fc;font-size:13px;margin-left:4px;width:16px;height:16px;display:inline-flex}.doc .pen svg{width:16px;height:16px;display:block;fill:currentColor}.doc .t span{cursor:pointer}
 .rnS{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:50;align-items:flex-end;justify-content:center;padding:16px}.rnS.on{display:flex}
 .rnS .box{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:18px;width:100%;max-width:440px}.rnS h3{margin:0 0 10px;font-size:18px}
 .rnS input{width:100%;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:16px}
@@ -172,7 +172,8 @@ async function show(){
     var type=d.type||(d.blob&&d.blob.type)||"application/pdf";
     var blob=d.blob.type?d.blob:new Blob([d.blob],{type:type});
     var row=document.createElement("div");row.className="doc";
-    row.innerHTML="<div class='t'><b class='nm' role='button' tabindex='0' title='Tap to rename'>"+esc(d.title||d.name)+" <i class='pen' aria-hidden='true'>&#9998;</i></b><span>"+esc(d.name)+(d.at?" · "+new Date(d.at).toLocaleDateString("en-GB"):"")+"</span></div>";
+    var pen=(window.dipstickIconHtml&&window.dipstickIconHtml("edit","pen ico"))||"<i class='pen' aria-hidden='true'></i>";
+    row.innerHTML="<div class='t'><b class='nm' role='button' tabindex='0' title='Tap to rename'>"+esc(d.title||d.name)+" "+pen+"</b><span>"+esc(d.name)+(d.at?" · "+new Date(d.at).toLocaleDateString("en-GB"):"")+"</span></div>";
     row.querySelector(".nm").onclick=function(e){e.stopPropagation();renameDoc(d)};
     row.querySelector(".t span").onclick=function(){v.click()};
     var v=document.createElement("a");v.textContent="View";v.href=URL.createObjectURL(blob);v.target="_blank";v.rel="noopener";
@@ -211,6 +212,6 @@ pick.addEventListener("change", async function(){
 });
 show();
 </script>
-<script src="./icons.js?v=32"></script>
+<script src="./icons.js?v=33"></script>
 </body>
 </html>

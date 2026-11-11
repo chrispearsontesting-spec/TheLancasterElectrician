@@ -8,23 +8,23 @@
 <title>Car showcase</title>
 <meta name="description" content="Build a showcase of your car with photos, mods and its story."/>
 <meta property="og:type" content="website"/>
-<meta property="og:site_name" content="Driv3"/>
-<meta property="og:title" content="Car showcase · Driv3"/>
+<meta property="og:site_name" content="Trac3"/>
+<meta property="og:title" content="Car showcase · Trac3"/>
 <meta property="og:description" content="Build a showcase of your car with photos, mods and its story."/>
 <meta property="og:url" content="https://thelancasterelectrician.com/garage/showcase-edit.html"/>
-<meta property="og:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=2"/>
+<meta property="og:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=4"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
-<meta property="og:image:alt" content="Driv3 – your car organiser for UK drivers"/>
+<meta property="og:image:alt" content="Trac3 – your car organiser for UK drivers"/>
 <meta property="og:locale" content="en_GB"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Car showcase · Driv3"/>
+<meta name="twitter:title" content="Car showcase · Trac3"/>
 <meta name="twitter:description" content="Build a showcase of your car with photos, mods and its story."/>
-<meta name="twitter:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=2"/>
+<meta name="twitter:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=4"/>
 <link rel="manifest" href="./manifest.json"/>
-<link rel="icon" href="./favicon.ico?v=2" sizes="any"/>
-<link rel="icon" href="./icon.svg?v=2" type="image/svg+xml"/>
-<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2"/>
+<link rel="icon" href="./favicon.ico?v=4" sizes="any"/>
+<link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=78"/>
 <link rel="stylesheet" href="./showcase-view.css?v=2"/>
@@ -86,7 +86,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 </head>
 <body>
 <h1>My car</h1>
-<p class="lead">Make a show card for your car: photos, stats, mods and videos. When your sticker is in Show mode, anyone who scans it sees this card. Nothing else from Driv3 is shown.</p>
+<p class="lead">Make a show card for your car: photos, stats, mods and videos. When your sticker is in Show mode, anyone who scans it sees this card. Nothing else from Trac3 is shown.</p>
 
 <div class="card pubCard" id="pubCard">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="carName">Your car</h2><span class="pill" id="pubPill">Draft</span></div>
@@ -168,7 +168,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
 
 <div class="card">
   <h2>Photos from socials</h2>
-  <p class="note">Up to 12 public Instagram or Facebook post links. Shown with their own embeds; Driv3 doesn't copy them.</p>
+  <p class="note">Up to 12 public Instagram or Facebook post links. Shown with their own embeds; Trac3 doesn't copy them.</p>
   <div id="socials"></div>
   <button class="add" type="button" id="addSoc">+ Add an Instagram or Facebook link</button>
 </div>
@@ -186,7 +186,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   <p class="note">Up to 2 short clips (20 MB each max). Longer videos: put them on YouTube and add the link above.</p>
   <div id="clips"></div>
   <input type="file" id="pickClip" accept="video/mp4,video/webm" class="hide"/>
-  <div class="row2"><button class="add" type="button" id="addClipFile">+ From phone</button><button class="add" type="button" id="addClipApp">+ From Driv3 clips</button></div>
+  <div class="row2"><button class="add" type="button" id="addClipFile">+ From phone</button><button class="add" type="button" id="addClipApp">+ From Trac3 clips</button></div>
   <div id="appClips"></div>
   <div class="status" id="clStatus"></div>
 </div>
@@ -362,14 +362,14 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
   $("addClipApp").onclick=function(){
     var box=$("appClips"); box.innerHTML='<p class="note">Looking for clips…</p>';
     var r=indexedDB.open("dipstick");
-    r.onerror=function(){ box.innerHTML='<p class="note">No Driv3 clips on this phone.</p>'; };
+    r.onerror=function(){ box.innerHTML='<p class="note">No Trac3 clips on this phone.</p>'; };
     r.onsuccess=function(){
       var db=r.result;
-      if(!db.objectStoreNames.contains("clips")){ box.innerHTML='<p class="note">No Driv3 clips on this phone.</p>'; db.close(); return; }
+      if(!db.objectStoreNames.contains("clips")){ box.innerHTML='<p class="note">No Trac3 clips on this phone.</p>'; db.close(); return; }
       var st=db.transaction("clips").objectStore("clips"), keys, vals;
       st.getAllKeys().onsuccess=function(e){ keys=e.target.result; };
       st.getAll().onsuccess=function(e){ vals=e.target.result; box.innerHTML="";
-        if(!vals.length){ box.innerHTML='<p class="note">No Driv3 clips on this phone.</p>'; return; }
+        if(!vals.length){ box.innerHTML='<p class="note">No Trac3 clips on this phone.</p>'; return; }
         vals.forEach(function(v,i){ if(!v||!v.blob) return;
           var b=document.createElement("button"); b.type="button"; b.className="add";
           b.textContent="Use clip from "+new Date(v.when||0).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" ("+mb(v.blob.size)+")";
@@ -386,7 +386,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
     var n=q.getModuleCount(), quiet=4, px=(n+quiet*2)*scale, lab=label?Math.round(scale*7):0;
     cv.width=px; cv.height=px+lab; var c=cv.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,cv.width,cv.height); c.fillStyle="#000";
     for(var r=0;r<n;r++) for(var k=0;k<n;k++) if(q.isDark(r,k)) c.fillRect((k+quiet)*scale,(r+quiet)*scale,scale,scale);
-    if(label){ c.textAlign="center"; c.fillStyle="#111"; c.font="700 "+Math.round(scale*3)+"px Arial, sans-serif"; c.fillText("Driv3 · Scan to see my car",px/2,px+Math.round(scale*3)); }
+    if(label){ c.textAlign="center"; c.fillStyle="#111"; c.font="700 "+Math.round(scale*3)+"px Arial, sans-serif"; c.fillText("Trac3 · Scan to see my car",px/2,px+Math.round(scale*3)); }
   }
   async function paintPub(){
     car=U.garage().cars[idx];
@@ -425,7 +425,7 @@ textarea.in{min-height:120px;resize:vertical;line-height:1.45}
     paintPub();
   };
   $("shareLink").onclick=function(){ var u=link(), t="Have a look at my "+(U.niceName?U.niceName(car):"car")+":";
-    if(navigator.share) navigator.share({title:"Driv3 showcase",text:t,url:u}).catch(function(){});
+    if(navigator.share) navigator.share({title:"Trac3 showcase",text:t,url:u}).catch(function(){});
     else $("copy").onclick(); };
   $("toShow").onclick=async function(){ $("toShow").disabled=true;
     try{ await U.setMode(idx,"show"); say("pubStatus","Show mode on. Your sticker now opens this card.","good"); }

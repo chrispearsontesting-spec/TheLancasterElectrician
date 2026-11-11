@@ -28,6 +28,7 @@
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css?v=4.7.1"/>
 <link rel="stylesheet" href="./ui.css"/>
+<link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <style>
 :root{--bg:#0b0c0f;--ink:#f3efe6;--dim:#9aa3b0;--line:rgba(255,255,255,.12);--ring:#6b7280;--ice:#9fd8ff}
 *{box-sizing:border-box}
@@ -100,7 +101,7 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
     <button class="cycle on" type="button" data-cycle="combined">Combined</button>
     <button class="cycle" type="button" data-cycle="custom">Custom</button>
   </div>
-  <p class="muted" id="fuelNote">Combined figure. Use Custom if yours differs.</p>
+  <p class="muted" id="fuelNote">Combined figure. Tap Custom if yours differs.</p>
   <input id="mpgOverride" type="number" step="0.1" value="38"/>
 </div>
 <div id="phevBox" class="hide">
@@ -108,8 +109,6 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
   <input id="evRange" type="number" placeholder="e.g. 30"/>
 </div>
 <button class="btn" id="go" type="button">Check route</button>
-  <a class="btn" href="calendar.html#routes">Saved routes (Drive diary)</a>
-  <a class="btn" href="home.html#drive">Back</a>
 <p class="err" id="err"></p>
 <div id="map" class="hide"></div>
 <div class="card hide" id="result">
@@ -145,6 +144,8 @@ input{width:100%;background:#171a20;border:1px solid var(--line);color:var(--ink
     <b>Same journey, other cars</b>
     <div id="compareBody"></div>
   </div>
+  <a class="btn" href="calendar.html#routes">Saved routes (Drive diary)</a>
+  <a class="btn backBtn" href="home.html#drive">Back</a>
 
 <input id="plate" type="hidden"/>
 <input id="q" type="hidden"/>

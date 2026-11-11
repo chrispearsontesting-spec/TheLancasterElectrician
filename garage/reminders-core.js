@@ -45,6 +45,8 @@
   function dueOf(c,type){type=type==="tyre"?"tyres":type;var t=typeInfo(type);return type==="belt"?beltDue(c):type==="tyres"?tyreDue(c):t?c[t.field]||"":""}
   function bookLink(c,type){return "book.html?car="+encodeURIComponent(c.id||vrn(c.plate)).replace(/'/g,"%27")+"&job="+(type==="tyre"?"tyres":type)}
   function phone(c){return String(c.motPhone||"").replace(/[^+0-9]/g,"")}
+  /* Booking is offered automatically once the car has a valid garage email or a phone number. */
+  function garageSaved(c){return !!(phone(c)||/^[^@\s?&#]+@[^@\s?&#]+\.[^@\s?&#]+$/.test(String(c&&c.motEmail||"").trim()))}
   function opened(c,type){var due=dueOf(c,type),b=c.garageBookings&&c.garageBookings[type];return !!(due&&b&&b.due===due)}
   function niceDate(s){var d=day(s);return d?d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"}):""}
   function garageOf(g){if(typeof g==="string"){try{g=JSON.parse(g)}catch(e){g=null}}return g&&g.cars?g:{i:0,cars:[]}}
@@ -55,7 +57,7 @@
     g.cars.forEach(function(c,ci){TYPES.forEach(function(t){
       var due=dueOf(c,t.type);
       if(!day(due))return;
-      out.push({type:t.type,label:t.label,icon:t.icon,color:t.color,due:String(due).slice(0,10),carIndex:ci,plate:plate(c.plate),vrn:vrn(c.plate),name:c.nick||c.name||"Car",book:!!t.book,bookLink:bookLink(c,t.type),phone:phone(c),emailOpened:opened(c,t.type),estimated:t.type==="tyres"});
+      out.push({type:t.type,label:t.label,icon:t.icon,color:t.color,due:String(due).slice(0,10),carIndex:ci,plate:plate(c.plate),vrn:vrn(c.plate),name:c.nick||c.name||"Car",book:!!t.book,bookLink:bookLink(c,t.type),phone:phone(c),garageSaved:garageSaved(c),emailOpened:opened(c,t.type),estimated:t.type==="tyres"});
     })});
     return out.sort(function(a,b){return a.due<b.due?-1:1});
   }
@@ -75,7 +77,7 @@
     return {title:t.label+" reminder — "+it.plate,body:"Your "+p.noun+" for "+it.plate+" "+p.tail+"."+(it.estimated?" Estimated date; check your tread.":"")+(offer?" Would you like to book it in? Tap to email your garage.":"")};
   }
   function link(it){return it.book?it.bookLink:"home.html#remind="+it.type+"&car="+it.vrn}
-  function offer(it,s){return !!(it.book&&s.types[it.type].book&&!it.emailOpened)}
+  function offer(it,s){return !!(it.book&&it.garageSaved&&!it.emailOpened)}
   function actions(it,s){return offer(it,s)?[{action:"book",title:"Book by email"}].concat(it.phone?[{action:"call",title:"Call garage"}]:[]):[]}
   function nid(s){var h=7;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h)%2000000000}
   /* Items whose reminder window is open today (incl. overdue up to 30 days). */
@@ -127,6 +129,6 @@
   }
   /* Parse "#remind=mot&car=AB12CDE" -> {type,car} or null */
   function parseLink(h){var m=/remind=([a-z]+)/.exec(h||""),c=/car=([A-Za-z0-9]+)/.exec(h||"");return m?{type:m[1],car:c?c[1].toUpperCase():""}:null}
-  var api={KEY:KEY,TYPES:TYPES,DEFAULTS:DEFAULTS,settings:settings,EVERY:EVERY,fireDays:fireDays,load:load,save:save,dueItems:dueItems,active:active,upcoming:upcoming,email:email,parseLink:parseLink,daysUntil:daysUntil,beltDue:beltDue,tyreDue:tyreDue,dueOf:dueOf,bookLink:bookLink,phone:phone,opened:opened,iso:iso,plate:plate,vrn:vrn,niceDate:niceDate};
+  var api={KEY:KEY,TYPES:TYPES,DEFAULTS:DEFAULTS,settings:settings,EVERY:EVERY,fireDays:fireDays,load:load,save:save,dueItems:dueItems,active:active,upcoming:upcoming,email:email,parseLink:parseLink,daysUntil:daysUntil,beltDue:beltDue,tyreDue:tyreDue,dueOf:dueOf,bookLink:bookLink,phone:phone,garageSaved:garageSaved,opened:opened,iso:iso,plate:plate,vrn:vrn,niceDate:niceDate};
   if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.D3Rem=api;
 })(typeof self!=="undefined"?self:this);

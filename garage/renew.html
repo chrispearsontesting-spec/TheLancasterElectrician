@@ -27,6 +27,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=78"/>
+<link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
@@ -51,7 +52,7 @@ input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px soli
 </div>
 <button class="btn" type="button" id="cmp">Compare quotes</button>
 <p class="left" id="msg"></p>
-<a class="btn" href="home.html">Back</a>
+<a class="btn backBtn" href="home.html">Back</a>
 <script>
 function state(){try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}return null}
 function car(){var s=state();return s?(s.cars[s.i]||s.cars[0]):{}}

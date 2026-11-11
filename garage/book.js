@@ -23,6 +23,21 @@
   el("garageName").textContent=car.motName||"No garage name saved";
   el("emailSearch").href="https://www.google.com/search?q="+encodeURIComponent([car.motName||"garage",car.motPhone||"",car.motAddress||"","email"].filter(Boolean).join(" "));
   el("editGarage").href="home.html#garage="+encodeURIComponent(key);
+  /* Pre-fill the garage email when none is saved: remembered contacts, then the garage website. */
+  var autoEmail=car.motEmailAuto&&car.motEmail?car.motEmail:"";
+  function showFound(t){el("emailFound").textContent=t||"";el("emailFound").hidden=!t}
+  if(autoEmail&&el("garageEmail").value===autoEmail)showFound("Found automatically - please check");
+  if(!el("garageEmail").value.trim()&&window.D3GarageContact&&D3GarageContact.needs(car)){
+    showFound("Looking for their email…");
+    D3GarageContact.find(car).then(function(r){
+      var box=el("garageEmail");
+      if(!r.email||(box.value.trim()&&box.value!==autoEmail)){if(el("emailFound").textContent==="Looking for their email…")showFound("");return}
+      box.value=r.email;autoEmail=r.email;showFound(D3GarageContact.hint(r.source));
+      try{update(function(c){if(!String(c.motEmail||"").trim()||c.motEmailAuto){c.motEmail=r.email;c.motEmailAuto=true}if(r.postcode&&!c.motPostcode){c.motPostcode=r.postcode;c.motTown=r.town||""}if(r.website&&!c.motWeb)c.motWeb=r.website})}catch(e){}
+      preview();keepDraft();
+    });
+  }
+  el("garageEmail").addEventListener("input",function(){if(el("garageEmail").value!==autoEmail)showFound("")});
   var tel=R.phone(car);el("callGarage").hidden=!tel;el("callGarage").href=tel?"tel:"+tel:"#";
   el("noContact").hidden=!!(tel||car.motEmail);
   function current(){var g=read(),i=find(g);if(i<0)throw new Error("This car is no longer saved. Go Home and choose a car.");return {g:g,c:g.cars[i]}}
@@ -39,7 +54,8 @@
   form.onsubmit=function(e){e.preventDefault();if(!form.reportValidity())return;
     var out,cycle;try{car=current().c;out=email();cycle=R.dueOf(car,type)}catch(err){message(err.message,true);return}if(!out.href){message("Please enter a valid garage email.",true);return}
     el("send").disabled=true;
-    try{keepDraft();update(function(c){c.motEmail=out.to})}catch(err){message("Could not save the garage email. "+err.message,true);el("send").disabled=false;return}
+    var typed=out.to!==autoEmail;
+    try{keepDraft();update(function(c){var changed=String(c.motEmail||"").toLowerCase()!==out.to.toLowerCase();c.motEmail=out.to;c.motEmailAuto=!typed;if(typed&&changed&&window.D3GarageContact&&c.motPostcode)D3GarageContact.remember(c.motName,c.motPostcode,out.to)})}catch(err){message("Could not save the garage email. "+err.message,true);el("send").disabled=false;return}
     external(out.href).then(function(){
       update(function(c){c.garageBookings=c.garageBookings||{};c.garageBookings[type]={due:cycle,openedAt:Date.now(),preferredDate:el("preferredDate").value}});
       if(window.driv3Reschedule)window.driv3Reschedule();

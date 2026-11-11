@@ -22,7 +22,7 @@
   function fmt(ms){ var s=Math.max(0,Math.floor(ms/1000)); return Math.floor(s/60)+":"+("0"+(s%60)).slice(-2); }
   // Turn an error into the message shown under the note box.
   function errorText(kind,status){
-    var kb=" You can also tap the 🎤 on your keyboard.";
+    var kb=" You can also tap the mic on your keyboard.";
     if(kind==="denied") return "Microphone blocked. Allow the microphone in your settings and try again."+kb;
     if(kind==="nomic") return "No microphone found."+kb;
     if(kind==="unsupported") return "Voice notes aren't available on this device."+kb;
@@ -89,7 +89,7 @@
     }
     btn.onclick=function(){ if(state==="idle") start(); else if(state==="rec") stop(); };
     setState("idle"); btn.classList.remove("hide"); say(o.idleHint);
-    if(!MR||!nav.mediaDevices) { say("Tip: tap the 🎤 on your keyboard to talk instead of typing."); btn.classList.add("hide"); }
+    if(!MR||!nav.mediaDevices) { say("Tip: tap the mic on your keyboard to talk instead of typing."); btn.classList.add("hide"); }
     return {stop:stop};
   };
   if(typeof module!=="undefined"&&module.exports) module.exports=api; else root.Driv3Voice=api;

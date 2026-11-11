@@ -65,7 +65,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 .mic:active{transform:scale(.94)}
 .mic svg{width:22px;height:22px;display:block}
 .mic .vb,.mic .spin{display:none}
-.mic[data-state=rec]{background:#0a0a0a;color:#fff;border-color:rgba(255,255,255,.55);box-shadow:0 0 0 5px rgba(255,255,255,.07)}
+.mic[data-state=rec]{background:#2f6fd6;color:#fff;border-color:#2f6fd6;box-shadow:0 0 0 5px rgba(47,111,214,.25)}
 .mic[data-state=rec] .ico,.mic[data-state=busy] .ico{display:none !important}
 .mic[data-state=rec] .vb{display:flex;align-items:center;gap:3px;height:22px}
 .mic .vb i{display:block;flex:none;margin:0;padding:0;width:3px;height:22px;border-radius:2px;background:currentColor;transform:scaleY(.25);transition:transform .07s linear}
@@ -136,9 +136,9 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
     <div class="noteWrap">
       <textarea id="note" maxlength="4000" placeholder="e.g. Front pads and discs replaced. Rear tyres at 3mm, needed soon."></textarea>
       <span class="micTime" id="micTime" aria-live="off">0:00</span>
-      <button class="mic hide" type="button" id="mic" aria-label="Record a voice note"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3.5"/></svg><span class="vb" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="spin" aria-hidden="true"></span></button>
+      <button class="mic hide" type="button" id="mic" aria-label="Record a voice note"><svg class="ico" viewBox="0 -960 960 960" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/></svg><span class="vb" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="spin" aria-hidden="true"></span></button>
     </div>
-    <div class="hint" id="micHint" aria-live="polite">Tip: tap the 🎤 on your keyboard to talk instead of typing.</div>
+    <div class="hint" id="micHint" aria-live="polite">Tip: tap the mic on your keyboard to talk instead of typing.</div>
     <div class="row2">
       <div><label class="lab" for="garage">Garage / your name</label><input id="garage" maxlength="100" autocomplete="organization" placeholder="Optional"/></div>
       <div><label class="lab" for="mileage">Mileage</label><input id="mileage" inputmode="numeric" maxlength="9" placeholder="Optional"/></div>
@@ -161,7 +161,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
 
 <script src="./uploads-config.js?v=1"></script>
 <script src="./icons.js?v=32"></script>
-<script src="./voice-note.js?v=2"></script>
+<script src="./voice-note.js?v=3"></script>
 <script>
 (function(){
   var API=window.UPLOADS_API;
@@ -347,7 +347,7 @@ textarea{min-height:110px;resize:vertical;padding-right:60px}
   $("btnPdf").onclick=function(){$("pdf").click()};
   $("pdf").onchange=function(e){ addFiles(e.target.files).then(function(){e.target.value=""}); };
 
-  // ---- voice note: record (MediaRecorder) -> our Worker -> Workers AI Whisper. Keyboard 🎤 is the fallback. ----
+  // ---- voice note: record (MediaRecorder) -> our Worker -> Workers AI Whisper. Keyboard mic is the fallback. ----
   if(window.Driv3Voice&&uid){
     window.Driv3Voice.attach({btn:$("mic"),note:$("note"),hint:$("micHint"),max:4000,
       idleHint:"Tap the mic, speak, tap again to finish.",

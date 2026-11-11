@@ -154,7 +154,8 @@
       if(w.diy) ex.push(stars(typeof w.diy==="object"?w.diy.lvl:w.diy)+(w.diy.ok===false?" · garage job":"")); if(w.interval) ex.push("Every "+esc(w.interval)); if(w.note) ex.push(esc(w.note));
       return "<div class='gRow'><div class='gTxt'><b>"+esc(w.name)+"</b><small>"+line(w)+"</small><small class='gH'>"+ex.join(" · ")+"</small>"+(w.warn?"<small class='gW'>⚠ "+esc(w.warn)+"</small>":"")+(w.tools?"<small class='gH'>Tools: "+esc([].concat(w.tools).join(", "))+"</small>":"")+"</div></div>"; };
     var cats={}, order=[]; l.forEach(function(w){ var c=w.cat||""; if(!cats[c]){cats[c]=[];order.push(c);} cats[c].push(w); });
-    box.innerHTML=l.length?(order.length>1||order[0]?order.map(function(c){ return "<p class='gCat'>"+esc(c||"Other")+"</p>"+cats[c].map(rowOf).join(""); }).join(""):l.map(rowOf).join("")):"<p class='muted'>No jobs match “"+esc(q)+"”.</p>";
+    var catBlock=function(c){ var rows=cats[c].map(rowOf).join(""); if(q) return "<p class='gCat'>"+esc(c||"Other")+"</p>"+rows; return "<details class='gCatBox'><summary class='gCat'>"+esc(c||"Other")+" <span class='gCount'>"+cats[c].length+"</span></summary>"+rows+"</details>"; };
+    box.innerHTML=l.length?(order.length>1||order[0]?order.map(catBlock).join(""):l.map(rowOf).join("")):"<p class='muted'>No jobs match “"+esc(q)+"”.</p>";
     document.getElementById("guideCount").textContent=l.length+" of "+(root.WORK||[]).length+" jobs";
   }
   function drawChip(){

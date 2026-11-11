@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0f"/>
 <link rel="stylesheet" href="./ui.css?v=78"/>
+<link rel="stylesheet" href="./tool-bar.css?v=2"/>
 <title>Buying guide</title>
 <meta name="description" content="Check a used car before you buy: MOT history, common faults, running costs and what to ask the seller."/>
 <meta property="og:type" content="website"/>
@@ -84,7 +85,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 </head>
 <body>
 <h1>Buying guide</h1>
-<p class="sub">Make, model, fuel and engine size come from MOT. The litre figure is worked out from that size.</p>
+<p class="sub">Look up a plate for MOT history, common faults and what to ask the seller.</p>
 <label>Registration</label>
 <input id="plate" type="text" value="" placeholder="AB12 CDE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false"/>
 <button class="btn" type="button" id="go" data-ico="search">Look up</button>
@@ -92,7 +93,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <div class="card hide" id="resultCard">
   <b id="carName">—</b>
   <p class="muted" id="carMeta"></p>
-  <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT work, last 5 years</span><span class="count" id="motJobCount"></span><span class="chev">+</span></button><div class="accBody" id="motJobs"><p class="muted">Major fails that later passed, plus items to check from the latest test.</p></div></div>
+  <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT work, last 5 years</span><span class="count" id="motJobCount"></span><span class="chev">+</span></button><div class="accBody" id="motJobs"><p class="muted">Fails that later passed, plus items to check from the latest test.</p></div></div>
   <div class="acc"><button type="button" class="accBtn"><span class="lab">MOT history</span><span class="count" id="motHistCount"></span><span class="chev">+</span></button><div class="accBody">
   <div class="tabs"><button type="button" id="tabHist" class="on">History</button><button type="button" id="tabWork">Recent work</button><button type="button" id="tabFuture">Future costs</button></div>
   <div id="hist"><p class="muted">Official tests load here.</p></div>
@@ -134,9 +135,9 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
   </div>
 </div>
 <div class="card saved" id="saved">
-  <div class="acc open"><button type="button" class="accBtn"><span class="lab">Saved cars</span><span class="chev">+</span></button><div class="accBody"><div id="savedList"></div></div></div>
+  <div class="acc"><button type="button" class="accBtn"><span class="lab">Saved cars</span><span class="chev">+</span></button><div class="accBody"><div id="savedList"></div></div></div>
 </div>
-<a class="btn" href="home.html#car">Back</a>
+<a class="btn backBtn" href="home.html#car">Back</a>
 <script src="cars-uk-1.js"></script>
 <script src="faults.js"></script>
 <script src="faults-extra.js"></script>

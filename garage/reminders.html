@@ -5,7 +5,7 @@
 <script src="./app-lock.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
-<title>Reminders &amp; my garage</title>
+<title>Reminders</title>
 <meta name="description" content="MOT, tax, insurance and service reminders for every car in your garage."/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Driv3"/>
@@ -37,7 +37,7 @@ h1{font-size:22px;margin:0 0 4px;font-weight:650}h2{font-size:16px;margin:18px 4
 .r .n{flex:1;font-weight:600}.r .n i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
 .r input[type=number]{width:62px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:10px;padding:8px;font-size:15px;text-align:center}
 .r small{color:#8b8b8b;font-size:12px}
-.sw{appearance:none;width:44px;height:26px;border-radius:13px;background:#333;position:relative;cursor:pointer;flex:none}
+.sw{appearance:none;width:44px;height:26px;border-radius:13px;background:#333;position:relative;cursor:pointer;flex:none;margin:0}
 .sw:checked{background:#2f6fd6}.nt input.sw:checked{background:#2f6fd6!important}.sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#f2f2f2;transition:.15s}.sw:checked:after{left:21px}
 label.f{display:block;color:#8b8b8b;font-size:13px;margin-top:8px}
 .card input.t{width:100%;margin-top:4px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:11px;font-size:15px}
@@ -47,66 +47,68 @@ label.f{display:block;color:#8b8b8b;font-size:13px;margin-top:8px}
 .nt{padding:10px 0;border-top:1px solid #222}.nt:first-child{border-top:0}.nt .r{border:0;padding:0 0 8px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.nt label{display:block;color:#8b8b8b;font-size:12px}
 .nt select,.nt input[type=number]{display:block;width:100%;margin-top:4px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:11px 10px;font-size:15px;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#8b8b8b 50%),linear-gradient(135deg,#8b8b8b 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px;background-repeat:no-repeat}
-.nt .r .n small{display:block;font-weight:400;margin-top:2px}.nt.off .g2,.nt.off .cust{opacity:.45}.nt .book-offer{display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;background:#10192a;border:1px solid #1f3352;border-radius:14px;color:#e6eefc;font-size:14px;font-weight:600;line-height:1.3}.nt .book-offer span{flex:1}.nt .book-offer small{display:block;color:#9fb3d1;font-weight:400;font-size:12px;margin-top:2px}.nt .book-offer .sw{margin:0}.nt .book-link{display:inline-block;color:#a8ccff;font-size:13px;padding:8px 0 0}.nt input[type=number]{background-image:none}.nt .cust{margin-top:8px}
+.nt .r .n small{display:block;font-weight:400;margin-top:2px}.nt.off .g2,.nt.off .cust{opacity:.45}.nt .book-offer{display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;background:#10192a;border:1px solid #1f3352;border-radius:14px;color:#e6eefc;font-size:14px;font-weight:600;line-height:1.3}.nt .book-offer span{flex:1}.nt .book-offer small{display:block;color:#9fb3d1;font-weight:400;font-size:12px;margin-top:2px}.nt .book-offer .sw{margin:0}.nt .book-link{display:inline-block;color:#a8ccff;font-size:13px;padding:8px 0 0}.nt input[type=number]{background-image:none}.nt .cust{margin-top:8px}.top{display:flex;justify-content:space-between;margin-bottom:6px}.back{color:#a8ccff;text-decoration:none;font-size:13px;padding:4px 0}.sum{display:block;background:none;border:0;color:#9fb3d1;font:inherit;font-size:13px;padding:2px 0 0 18px;cursor:pointer;text-align:left}.sum.open{color:#a8ccff}.more{padding-top:8px}.hint{color:#8b8b8b;font-size:12px;margin:8px 0 0;line-height:1.4}.hint a{color:#a8ccff}.gline{display:block;color:#a8ccff;font-size:14px;text-decoration:none;margin:4px 4px 6px}.nt .r{padding:0}.colhead{display:flex;justify-content:flex-end;margin:0 0 6px;padding:0;color:#8b8b8b;font-size:11px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;line-height:1.2}
 </style>
 </head>
 <body>
-<h1>Reminders &amp; my garage</h1>
-<p class="note">Pick when each reminder starts and how often it repeats. Alerts come at 9am, and always on the due day.</p>
-<h2 id="notif">Notifications</h2>
-<div class="card" id="types"></div>
-<button class="btn" type="button" id="enableAlerts" hidden>Enable phone alerts</button><p class="note" id="alertsStatus" role="status"></p>
-<h2>My garage</h2>
-<p class="note">Used to book an MOT, service, belt or tyres. You check and send the email.</p>
-<div id="garages"></div>
+<div class="top"><a class="back" href="home.html">‹ Home</a><a class="back" href="calendar.html">Calendar ›</a></div>
+<h1>Reminders</h1>
+<p class="note">Alerts come at 9am, and always on the due day.</p>
+<div class="card" aria-labelledby="notifyHead"><p class="colhead" id="notifyHead">Notifications</p><div id="types"></div></div>
+<a class="gline" id="garageLine" href="home.html"></a>
+<button class="btn" type="button" id="enableAlerts" hidden>Turn on notifications</button><p class="note" id="alertsStatus" role="status"></p>
 <button class="btn" type="button" id="save">Save</button>
 <p id="msg"></p>
-<a class="btn" href="calendar.html">Open calendar</a>
-<a class="btn" href="home.html">Back</a>
-<script src="./reminders-core.js?v=4"></script>
+<script src="./reminders-core.js?v=5"></script>
+<script src="./mot-config.js"></script>
+<script src="./garage-contact.js?v=1"></script>
 <script>
 function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function garage(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null");if(g&&g.cars)return g}catch(e){}return {i:0,cars:[]}}
+var LEADS=[[1,"1 day"],[3,"3 days"],[7,"1 week"],[14,"2 weeks"],[21,"3 weeks"],[30,"1 month"]];
+var REP=[[1,"Daily"],[2,"Every other day"],[3,"Every 3 days"],[7,"Weekly"],[0,"Once only"]];
+function leadText(n){for(var i=0;i<LEADS.length;i++)if(LEADS[i][0]===n)return LEADS[i][1]+" before";return n===0?"On the day":n+" days before"}
+function repText(n){for(var i=0;i<REP.length;i++)if(REP[i][0]===n)return REP[i][1];return ""}
+function summary(box){var lead=parseInt(box.querySelector("[data-lead]").value,10),ev=+box.querySelector("[data-every]").value;return leadText(isNaN(lead)?0:lead)+" · "+repText(ev)}
 function draw(){
-  var s=D3Rem.load(),g=garage(),selected=g.cars[g.i]||g.cars[0];
-  var LEADS=[[1,"1 day"],[3,"3 days"],[7,"1 week"],[14,"2 weeks"],[21,"3 weeks"],[30,"1 month"]];
-  var REP=[[1,"Daily"],[2,"Every other day"],[3,"Every 3 days"],[7,"Weekly"],[0,"Once only"]];
+  var s=D3Rem.load(),g=garage(),selected=g.cars[g.i]||g.cars[0],saved=selected&&D3Rem.garageSaved(selected);
   document.getElementById("types").innerHTML=D3Rem.TYPES.map(function(t){var x=s.types[t.type],known=LEADS.some(function(l){return l[0]===x.lead});
-    var desc=t.type==="tyres"?"Estimated from tyre life and miles":"Remind me before it's due";
-    return "<div class='nt"+(x.on?"":" off")+"'><div class='r'><span class='n'><i style='background:"+t.color+"'></i>"+t.label+"<small>"+desc+"</small></span><input class='sw' type='checkbox' data-on='"+t.type+"'"+(x.on?" checked":"")+" aria-label='"+t.label+" reminders'/></div>"+
-      "<div class='g2'><label>Start<select data-lsel='"+t.type+"'>"+LEADS.map(function(l){return "<option value='"+l[0]+"'"+(l[0]===x.lead?" selected":"")+">"+l[1]+" before</option>"}).join("")+"<option value='c'"+(known?"":" selected")+">Custom…</option></select></label>"+
+    return "<div class='nt"+(x.on?"":" off")+"'><div class='r'><span class='n'><i style='background:"+t.color+"'></i>"+t.label+"</span><input class='sw' type='checkbox' data-on='"+t.type+"'"+(x.on?" checked":"")+" aria-label='"+t.label+" notifications'/></div>"+
+      "<button type='button' class='sum' aria-expanded='false' data-sum='"+t.type+"'><span></span> ›</button>"+
+      "<div class='more' hidden><div class='g2'><label>Start<select data-lsel='"+t.type+"'>"+LEADS.map(function(l){return "<option value='"+l[0]+"'"+(l[0]===x.lead?" selected":"")+">"+l[1]+" before</option>"}).join("")+"<option value='c'"+(known?"":" selected")+">Custom…</option></select></label>"+
       "<label>Repeat<select data-every='"+t.type+"'>"+REP.map(function(r){return "<option value='"+r[0]+"'"+(r[0]===x.every?" selected":"")+">"+r[1]+"</option>"}).join("")+"</select></label></div>"+
       "<label class='cust' style='"+(known?"display:none":"")+"'>Days before <input type='number' min='0' max='365' inputmode='numeric' data-lead='"+t.type+"' value='"+x.lead+"'/></label>"+
-      (t.book?"<label class='book-offer'><span>Ask to book with my garage<small>The reminder offers to email or call your garage</small></span><input class='sw' type='checkbox' data-book='"+t.type+"'"+(x.book?" checked":"")+" aria-label='Ask to book "+t.label+" with my garage'/></label>"+
-      "<a class='book-link' href='"+(selected?D3Rem.bookLink(selected,t.type):"home.html")+"'>Book now"+(selected?" · "+esc(D3Rem.plate(selected.plate)):" · add a car first")+" ›</a>":"")+"</div>"}).join("");
+      (t.type==="tyres"?"<p class='hint'>Date estimated from tyre life and miles.</p>":"")+
+      (t.book&&selected?"<p class='hint'>"+(saved?"Booking offered because your garage is saved.":"Add your garage to book from reminders.")+" <a href='"+D3Rem.bookLink(selected,t.type)+"'>Book now ›</a></p>":"")+"</div></div>"}).join("");
+  document.querySelectorAll(".nt").forEach(function(box){var sum=box.querySelector(".sum"),more=box.querySelector(".more");
+    function upd(){sum.querySelector("span").textContent=summary(box)}upd();
+    sum.onclick=function(){more.hidden=!more.hidden;sum.setAttribute("aria-expanded",String(!more.hidden));sum.classList.toggle("open",!more.hidden)};
+    box.querySelectorAll("select,input[type=number]").forEach(function(el){el.addEventListener("change",upd);el.addEventListener("input",upd)})});
+  document.querySelectorAll("[data-lsel]").forEach(function(sel){sel.addEventListener("change",function(){var box=sel.closest(".nt"),c=box.querySelector(".cust"),inp=box.querySelector("[data-lead]");
+    if(sel.value==="c"){c.style.display="";inp.focus()}else{c.style.display="none";inp.value=sel.value}box.querySelector(".sum span").textContent=summary(box)})});
   document.querySelectorAll("[data-on]").forEach(function(el){el.onchange=function(){el.closest(".nt").classList.toggle("off",!el.checked)}});
-  document.querySelectorAll("[data-lsel]").forEach(function(sel){sel.onchange=function(){var box=sel.closest(".nt"),c=box.querySelector(".cust"),inp=box.querySelector("[data-lead]");
-    if(sel.value==="c"){c.style.display="";inp.focus()}else{c.style.display="none";inp.value=sel.value}}});
-  var g=garage();
-  document.getElementById("garages").innerHTML=g.cars.length?g.cars.map(function(c,i){
-    return "<div class='card'><b>"+esc(c.nick||c.name||"Car")+" · "+esc(D3Rem.plate(c.plate))+"</b>"+
-    "<label class='f'>Garage name</label><input class='t' data-g='"+i+"' data-f='motName' value='"+esc(c.motName)+"'/>"+
-    "<label class='f'>Garage email</label><input class='t' type='email' data-g='"+i+"' data-f='motEmail' value='"+esc(c.motEmail)+"'/>"+
-    "<label class='f'>Phone (optional)</label><input class='t' type='tel' data-g='"+i+"' data-f='motPhone' value='"+esc(c.motPhone)+"'/></div>"}).join(""):"<p class='note'>Add a car on the home page first.</p>";
+  var line=document.getElementById("garageLine");
+  if(!selected){line.textContent="Add a car to set your garage ›";line.href="home.html"}
+  else{line.href="home.html#garage="+encodeURIComponent(selected.id||D3Rem.vrn(selected.plate));
+    line.textContent=saved?"Garage for "+D3Rem.plate(selected.plate)+": "+(selected.motName||"saved")+(selected.motEmailAuto?" · email found, please check":"")+" ›":"Add your garage to book from reminders ›";
+    if(!selected.motEmail&&window.D3GarageContact&&D3GarageContact.needs(selected)&&!draw.looked){draw.looked=1;var key=selected.id||D3Rem.vrn(selected.plate);
+      D3GarageContact.find(selected).then(function(r){if(!r.email)return;var g2=garage(),c=g2.cars.filter(function(x){return (x.id||D3Rem.vrn(x.plate))===key})[0];
+        if(!c||String(c.motEmail||"").trim())return;c.motEmail=r.email;c.motEmailAuto=true;if(r.postcode&&!c.motPostcode){c.motPostcode=r.postcode;c.motTown=r.town||""}
+        localStorage.setItem("gt.garage",JSON.stringify(g2));draw();document.dispatchEvent(new Event("d3reminderschanged"))})}}
 }
 document.getElementById("save").onclick=function(){
   var s=D3Rem.load();
   document.querySelectorAll("[data-lead]").forEach(function(el){var v=parseInt(el.value,10);if(v>=0&&v<=365)s.types[el.dataset.lead].lead=v});
   document.querySelectorAll("[data-on]").forEach(function(el){s.types[el.dataset.on].on=el.checked});
   document.querySelectorAll("[data-every]").forEach(function(el){s.types[el.dataset.every].every=+el.value;delete s.types[el.dataset.every].daily});
-  document.querySelectorAll("[data-book]").forEach(function(el){s.types[el.dataset.book].book=el.checked});
   D3Rem.save(s);
-  var g=garage(),bad="";
-  document.querySelectorAll("[data-g]").forEach(function(el){var c=g.cars[+el.dataset.g];if(!c)return;var v=el.value.trim();
-    if(el.dataset.f==="motEmail"&&v&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){bad=v;return}c[el.dataset.f]=v});
-  if(g.cars.length)localStorage.setItem("gt.garage",JSON.stringify(g));
-  document.getElementById("msg").textContent=bad?"Saved, but '"+bad+"' is not a valid email":"Saved";
+  document.getElementById("msg").textContent="Saved";
   draw();
   document.dispatchEvent(new Event("d3reminderschanged"));
 };
 draw();
 </script>
-<script src="./reminders-web.js?v=1"></script>
+<script src="./reminders-web.js?v=2"></script>
 <script src="./icons.js?v=32"></script>
 </body>
 </html>

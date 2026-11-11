@@ -115,11 +115,18 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 .mvstrip figure{flex:0 0 100%;margin:0;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 0 calc(14px + env(safe-area-inset-bottom))}
 .mvstrip img,.mvstrip video{max-width:100%;max-height:calc(100vh - 120px);object-fit:contain}
 .mvstrip figcaption{color:#bbb;font-size:13px;margin-top:8px;text-align:center;padding:0 12px}
+
+.legMore{margin:8px 2px 0}
+.legMore>summary{cursor:pointer;color:#8b8b8b;font-size:13px;padding:6px 0;list-style:none}
+.legMore>summary::-webkit-details-marker{display:none}
+.legMore>summary::after{content:" \203A";color:#6b6f76}
+.legMore[open]>summary::after{content:" \2013"}
 </style>
 </head>
 <body>
+<a class="hback" href="home.html#hist" style="display:inline-block;color:#a8ccff;text-decoration:none;font-size:13px;padding:4px 0 8px">‹ Home</a>
 <h1>Drive diary</h1>
-<p class="muted">Your car's past and future in one place. Tap a day to see work, mechanic uploads, photos and run videos, or to add work you did.</p>
+<p class="muted">Tap a day to see work, uploads and journeys, or to add work you did.</p>
 <p class="muted" id="mechStatus" style="display:none"></p>
 <div class="nav">
   <button class="btn" type="button" id="prev">Prev</button>
@@ -128,7 +135,7 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 </div>
 <div class="grid" id="dows"></div>
 <div class="grid" id="grid"></div>
-<p class="legend" aria-label="Dot colours"><span><i class="cdot" style="background:var(--c-due)"></i>Due</span><span><i class="cdot" style="background:var(--c-over)"></i>Overdue</span><span><i class="cdot" style="background:var(--c-done)"></i>Work done</span><span><i class="cdot" style="background:var(--c-jour)"></i>Journeys</span><span><i class="cdot" style="background:var(--c-media)"></i>Photos/video</span></p>
+<details class="legMore"><summary>What the dots mean</summary><p class="legend" aria-label="Dot colours"><span><i class="cdot" style="background:var(--c-due)"></i>Due</span><span><i class="cdot" style="background:var(--c-over)"></i>Overdue</span><span><i class="cdot" style="background:var(--c-done)"></i>Work done</span><span><i class="cdot" style="background:var(--c-jour)"></i>Journeys</span><span><i class="cdot" style="background:var(--c-media)"></i>Photos/video</span></p></details>
 <div id="list"></div>
 <section id="calLists">
 <button class="ddb" type="button" id="clRecent" aria-expanded="false" aria-controls="clRecentMenu"><span class="ddi">🕘</span><span class="lab">Recent</span><span class="chev" aria-hidden="true">&#9662;</span></button>
@@ -136,13 +143,12 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 <button class="ddb" type="button" id="clMaint" aria-expanded="false" aria-controls="clMaintMenu"><span class="ddi">🔧</span><span class="lab">Maintenance</span><span class="chev" aria-hidden="true">&#9662;</span></button>
 <div class="ddMenu hide" id="clMaintMenu"><input type="search" class="clQ" id="cl_maint_q" placeholder="Search maintenance" aria-label="Search maintenance"/><div id="cl_maint_list"></div></div>
 <button class="ddb" type="button" id="clJourn" aria-expanded="false" aria-controls="clJournMenu"><span class="ddi">📍</span><span class="lab">Journeys</span><span class="chev" aria-hidden="true">&#9662;</span></button>
-<div class="ddMenu hide" id="clJournMenu"><input type="search" class="clQ" id="cl_journ_q" placeholder="Search journeys" aria-label="Search journeys"/><div id="cl_journ_list"></div><details class="clRoutes" id="routes"><summary>Saved routes <span class="muted" id="rCount"></span></summary><p class="muted">Routes you saved in Route costs. Tap one for the breakdown.</p><div id="rList"></div><a class="btn wide" href="route.html">Check a route cost</a></details></div>
+<div class="ddMenu hide" id="clJournMenu"><input type="search" class="clQ" id="cl_journ_q" placeholder="Search journeys" aria-label="Search journeys"/><div id="cl_journ_list"></div><details class="clRoutes" id="routes"><summary>Saved routes <span class="muted" id="rCount"></span></summary><p class="muted">Saved from Route costs. Tap one for the breakdown.</p><div id="rList"></div><a class="btn wide" href="route.html">Check a route cost</a></details></div>
 </section>
 <a class="btn wide" href="drive.html">Let’s drive</a>
-<a class="btn" href="home.html#hist">Back</a>
 <script src="./trip-engine.js"></script>
-<script src="./reminders-core.js?v=4"></script>
-<script src="./reminders-web.js?v=1"></script>
+<script src="./reminders-core.js?v=5"></script>
+<script src="./reminders-web.js?v=2"></script>
 <script src="./car-scope.js?v=1"></script>
 <script src="./diy-work.js?v=3"></script>
 <script>

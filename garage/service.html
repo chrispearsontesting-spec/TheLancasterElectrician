@@ -82,14 +82,21 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 .pDate{background:#171a20;border:1px solid var(--line);color:#fff;border-radius:8px;padding:4px 6px;font-size:13px;margin-left:4px}
 .src{font-size:12px;color:#9fd8ff;margin:4px 0 2px}.tg{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;margin-right:4px;background:#2a2f38;color:#cfd5de}.tg.major,.tg.dangerous,.tg.fail{background:#3a1d1d;color:#fca5a5}.tg.minor{background:#3a2e14;color:#fcd34d}
 .addPlan{margin:0 14px 14px;width:calc(100% - 28px);background:#1f2a1f;color:#a7f3d0;border:1px solid #2c4a33;border-radius:12px;padding:11px;font-size:14px;font-weight:600}
+
+.gCatBox{margin:0;border:0;padding:0}
+.gCatBox>summary.gCat{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
+.gCatBox>summary.gCat::-webkit-details-marker{display:none}
+.gCatBox>summary.gCat::after{content:"\203A";margin-left:auto;color:#8b8b8b;font-size:16px;letter-spacing:0;text-transform:none}
+.gCatBox[open]>summary.gCat::after{transform:rotate(90deg)}
 </style>
 </head>
 <body>
+<a class="hback" href="home.html" style="display:inline-block;color:#a8ccff;text-decoration:none;font-size:13px;padding:4px 0 8px">‹ Home</a>
 <h1>Maintenance planner</h1>
 <p class="sub" id="carLine"></p>
 <div class="chips"><select class="chip" id="sizeSel" aria-label="Car size for estimates"></select><label class="rate" for="rateIn">Labour £<input id="rateIn" type="number" inputmode="decimal" min="10" max="400" step="1"/>/hr</label></div>
 <div class="acc" id="planCard"><button type="button" id="planToggle" data-ico="cal"><span id="planHead">Planned work</span> <span class="chev">+</span></button><div class="panel"><div id="planList"></div><p class="tot" id="planTot"></p><p class="act" id="planAct"></p></div></div>
-<div class="acc" id="motAcc"><button type="button" id="motToggle" data-ico="check"><span id="motHead">Expected costs from MOT</span> <span class="chev">+</span></button><div class="panel"><div id="motList"></div><p class="note" style="padding:6px 0 0">Prices are garage estimates for your car's size. Advisories don't always need doing straight away — ask your garage.</p></div></div>
+<div class="acc" id="motAcc"><button type="button" id="motToggle" data-ico="check"><span id="motHead">Expected costs from MOT</span> <span class="chev">+</span></button><div class="panel"><div id="motList"></div><p class="note" style="padding:6px 0 0">Estimates for your car's size. Advisories don't always need doing straight away.</p></div></div>
 <label>Search a job or part</label>
 <input type="search" id="qBox" placeholder="Start typing, e.g. clutch" autocomplete="off"/>
 <div class="sugs" id="sugs"></div>
@@ -113,17 +120,16 @@ input[type=search]{width:100%;background:#171a20;border:1px solid var(--line);co
 <div class="acc" id="costAcc">
   <button type="button" id="costToggle" data-ico="book">Job cost guide <span class="chev">+</span></button>
   <div class="panel"><p class="gCount" id="guideCount"></p><input type="search" class="gSearch" id="guideQ" placeholder="Search jobs, e.g. timing belt" autocomplete="off"/><div id="guideList"></div>
-  <p class="note" style="padding:8px 0 0">Estimates for the North West in 2026, sized for your car. DIY is parts only; garage adds labour at your hourly rate. Not a quote.</p></div>
+  <p class="note" style="padding:8px 0 0">North West estimates for 2026, sized for your car. DIY is parts only; a garage adds labour at your rate. Not a quote.</p></div>
 </div>
-<a class="btn" href="home.html">Back</a>
 <script src="./jobs-data.js"></script>
 <script src="./car-scope.js?v=1"></script>
-<script src="./reminders-core.js?v=4"></script>
+<script src="./reminders-core.js?v=5"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./mot-config.js"></script>
 <script src="./mot-client.js"></script>
 <script src="./maint-link.js?v=1"></script>
-<script src="./planner-costs.js?v=4"></script>
+<script src="./planner-costs.js?v=5"></script>
 <script src="./icons.js?v=32"></script>
 <script>
 var picked=null;

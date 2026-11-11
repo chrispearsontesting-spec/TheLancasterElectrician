@@ -213,9 +213,8 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 </section>
 <div class="sheet" id="settings"><div class="panel">
 <h2>Settings</h2>
-<a class="btn wide" href="security.html" data-ico="shield">Security &amp; backup <i class="due" id="secDue" hidden></i></a>
-<a class="btn wide" href="security.html#lockCard" data-ico="shield">App lock</a>
-<a class="btn wide" href="reminders.html?v=16" data-ico="cal">Reminders &amp; my garage</a>
+<a class="btn wide" href="security.html" data-ico="shield">App lock &amp; backup <i class="due" id="secDue" hidden></i></a>
+<a class="btn wide" href="reminders.html?v=16" data-ico="cal">Reminders</a>
 <a class="btn wide" href="privacy.html" data-ico="doc">Privacy</a>
 <button class="btn" type="button" id="setClose">Back</button>
 </div></div>
@@ -271,10 +270,11 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="ncap.js"></script>
 <script src="ncap-url.js"></script>
 <script src="mot-config.js"></script>
+<script src="./garage-contact.js?v=1"></script>
 <script src="mot-client.js"></script>
 <script src="./tax-lookup.js?v=1"></script>
 <script src="plate-fill.js?v=2"></script>
-<script src="./reminders-core.js?v=4"></script>
+<script src="./reminders-core.js?v=5"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./home-app.js?v=104"></script>
 <script src="./insurers.js?v=1"></script>
@@ -282,7 +282,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./home-insure.js?v=3"></script>
 <script src="./icons.js?v=32"></script>
 <script src="./home-tabs.js?v=6"></script>
-<script src="./reminders-web.js?v=1"></script>
+<script src="./reminders-web.js?v=2"></script>
 <script>
 (function(){
   // Group buttons open inline dropdowns, like Reminders. One open at a time; remembered for this session.

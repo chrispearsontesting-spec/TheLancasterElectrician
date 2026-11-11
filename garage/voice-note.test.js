@@ -13,6 +13,6 @@ assert.equal(V.appendText("Oil\n","Pads"),"Oil\nPads");
 assert.equal(V.appendText("Keep","   "),"Keep");
 assert.equal(V.appendText("ab","cdef",5),"ab. c");
 assert.equal(V.fmt(0),"0:00"); assert.equal(V.fmt(61500),"1:01"); assert.equal(V.MAX_MS,60000);
-assert.match(V.errorText("denied"),/blocked.*keyboard/s); assert.match(V.errorText("unsupported"),/keyboard 🎤|🎤 on your keyboard/);
+assert.match(V.errorText("denied"),/blocked.*keyboard/s); assert.match(V.errorText("unsupported"),/mic on your keyboard/);
 assert.match(V.errorText("network"),/connection/); assert.match(V.errorText("http",429),/Too many/); assert.match(V.errorText("http",502),/keyboard/);
 console.log("voice-note tests passed");

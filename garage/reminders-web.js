@@ -23,12 +23,12 @@
     finally{busy=false}
   }
   window.driv3CheckWebReminders=check;
-  var btn=document.getElementById("enableAlerts");
-  if(btn){btn.hidden=false;btn.onclick=async function(){var status=document.getElementById("alertsStatus");try{
-    var permission=await Notification.requestPermission();
-    status.textContent=permission==="granted"?"Alerts enabled while Driv3 is open. For reminders when closed, use the Android app.":"Alerts are off. You can still book from a reminder card or Home.";
-    check();
-  }catch(e){status.textContent="Alerts are unavailable on this phone. You can still book from Home."}}}
+  /* Website only: asks the browser for notification permission. Alerts then show while Driv3 is open (checked every minute). */
+  var btn=document.getElementById("enableAlerts"),status=document.getElementById("alertsStatus");
+  function paintAlerts(){if(!btn)return;var p=Notification.permission;
+    btn.hidden=p!=="default";
+    if(status)status.textContent=p==="granted"?"🔔 Notifications on. They show while Driv3 is open.":p==="denied"?"Notifications are blocked. Allow them in your browser’s site settings.":"Get reminders as notifications while Driv3 is open.";}
+  if(btn){paintAlerts();btn.onclick=async function(){try{await Notification.requestPermission();paintAlerts();check()}catch(e){if(status)status.textContent="Notifications aren’t available on this phone. Reminders still show on Home."}}}
   window.addEventListener("pageshow",check);window.addEventListener("storage",check);
   document.addEventListener("visibilitychange",function(){if(!document.hidden)check()});
   document.addEventListener("d3reminderschanged",check);setInterval(check,60000);check();

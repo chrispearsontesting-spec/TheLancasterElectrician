@@ -75,7 +75,7 @@ summary.fHead::after{content:"\203A";margin-left:auto;font-size:18px;color:#6b6f
 details[open]>summary.fHead::after{transform:rotate(90deg)}
 details.fGroup:not([open]){padding-bottom:6px}
 .fSum{text-transform:none;letter-spacing:0;color:#6b6f76;font-weight:400;font-size:12px}
-.fHint{color:#6b6f76;font-size:11.5px;margin:4px 2px 0;line-height:1.35;text-align:left}
+.fHint{color:#6b6f76;font-size:11.5px;margin:4px 2px 0;line-height:1.35;text-align:left}#plateHint:empty{display:none}
 #emailSearch{display:block;color:#4da3ff;text-decoration:underline;font-size:12.5px;margin-top:6px}#emailSearch[hidden]{display:none}
 .fRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .suggest{position:relative}
@@ -254,10 +254,10 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 </section>
 <section class="fGroup"><h4 class="fHead">Renewal dates</h4>
 <label for="fMot">MOT expires on</label><input id="fMot" type="date"/><p class="fHint">Filled in from your plate.</p>
-<label for="fTax">Tax runs out on</label><input id="fTax" type="date"/><p class="fHint">The expiry date, not the day you paid.</p><p class="fHint" id="taxSorn" hidden>Declared off the road (SORN)</p>
-<label for="fIns">Insurance renews on</label><input id="fIns" type="date"/><p class="fHint">The end date on your policy.</p>
+<label for="fTax">Tax runs out on</label><input id="fTax" type="date"/><p class="fHint" id="taxSorn" hidden>Declared off the road (SORN)</p>
+<label for="fIns">Insurance renews on</label><input id="fIns" type="date"/>
 <label for="fInsName">Insurer</label><input id="fInsName" type="text" placeholder="Start typing, e.g. Aviva" maxlength="60" autocomplete="off"/>
-<label for="fInsWeb">Insurer website</label><input id="fInsWeb" placeholder="e.g. admiral.com"/><p class="fHint">So you can renew in one tap.</p>
+<label for="fInsWeb">Insurer website</label><input id="fInsWeb" placeholder="e.g. admiral.com"/>
 </section>
 <details class="fGroup" id="gService"><summary class="fHead">Servicing <span class="fSum">service &amp; timing belt</span></summary>
 <label for="fOil">Next full service due</label><input id="fOil" type="date"/><p class="fHint">Usually a year after your last full service.</p>
@@ -290,7 +290,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./reminders-core.js?v=5"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./icons.js?v=33"></script>
-<script src="./home-app.js?v=105"></script>
+<script src="./home-app.js?v=106"></script>
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>
 <script src="./home-insure.js?v=3"></script>

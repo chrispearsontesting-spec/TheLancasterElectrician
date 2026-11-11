@@ -263,7 +263,7 @@ function showFound(info){
   if(info.engine) bits.push("Engine: "+info.engine+" cc");
   if(info.mot) bits.push("MOT expires: "+info.mot);
   if(found){found.innerHTML=bits.join("<br>");found.style.display="block";}
-  if(hint) hint.textContent="Details found from MOT.";
+  if(hint) hint.textContent="";
   window.applyPlateFields(info,{fuel:"fFuel",mot:"fMot"});
 }
 function doLookup(){

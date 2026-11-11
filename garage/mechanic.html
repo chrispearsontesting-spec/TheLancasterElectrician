@@ -8,23 +8,23 @@
 <title>Mechanic uploads</title>
 <meta name="description" content="Let your mechanic send photos and invoices straight to your car&#x27;s records with a QR code."/>
 <meta property="og:type" content="website"/>
-<meta property="og:site_name" content="Driv3"/>
-<meta property="og:title" content="Mechanic uploads · Driv3"/>
+<meta property="og:site_name" content="Trac3"/>
+<meta property="og:title" content="Mechanic uploads · Trac3"/>
 <meta property="og:description" content="Let your mechanic send photos and invoices straight to your car&#x27;s records with a QR code."/>
 <meta property="og:url" content="https://thelancasterelectrician.com/garage/mechanic.html"/>
-<meta property="og:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=2"/>
+<meta property="og:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=4"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
-<meta property="og:image:alt" content="Driv3 – your car organiser for UK drivers"/>
+<meta property="og:image:alt" content="Trac3 – your car organiser for UK drivers"/>
 <meta property="og:locale" content="en_GB"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Mechanic uploads · Driv3"/>
+<meta name="twitter:title" content="Mechanic uploads · Trac3"/>
 <meta name="twitter:description" content="Let your mechanic send photos and invoices straight to your car&#x27;s records with a QR code."/>
-<meta name="twitter:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=2"/>
+<meta name="twitter:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=4"/>
 <link rel="manifest" href="./manifest.json"/>
-<link rel="icon" href="./favicon.ico?v=2" sizes="any"/>
-<link rel="icon" href="./icon.svg?v=2" type="image/svg+xml"/>
-<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=2"/>
+<link rel="icon" href="./favicon.ico?v=4" sizes="any"/>
+<link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=78"/>
 <link rel="stylesheet" href="./tool-bar.css?v=2"/>
@@ -124,7 +124,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   <div class="carRow" id="carRow"></div>
   <div class="qrBox">
     <canvas id="qr" width="10" height="10" aria-hidden="true"></canvas>
-    <div class="stTop"><span class="stIco" aria-hidden="true">&#9638;</span><div><b>Your car's QR sticker</b><div class="cap" id="qrCap">Your Driv3 sticker</div></div></div>
+    <div class="stTop"><span class="stIco" aria-hidden="true">&#9638;</span><div><b>Your car's QR sticker</b><div class="cap" id="qrCap">Your Trac3 sticker</div></div></div>
     <button class="btn viewQr" type="button" id="viewQr" aria-haspopup="dialog" aria-controls="qrView">View QR code</button>
     <button class="btn order" type="button" id="orderSt"><span>Order a printed sticker</span><small>Tough engine-bay sticker, posted to you</small></button>
   </div>
@@ -221,7 +221,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   var plate=U.cleanPlate(car.plate);
   function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
   $("carRow").innerHTML=(plate?'<span class="plate"><span class="uk">UK</span><span class="reg">'+esc(plate)+'</span></span>':'')+'<b>'+esc(U.niceName(car))+'</b>';
-  $("qrCap").textContent="Your Driv3 sticker. Mechanics scan it to send photos & invoices.";
+  $("qrCap").textContent="Your Trac3 sticker. Mechanics scan it to send photos & invoices.";
   $("linkTxt").textContent=url;
 
   // Sticker: James May's v14 frame with this car's real link drawn on in the browser (the link changes with "New link").
@@ -250,8 +250,8 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   $("orderSt").onclick=async function(){
     if(STICKER_SHOP_URL){ window.open(STICKER_SHOP_URL+(STICKER_SHOP_URL.indexOf("?")<0?"?":"&")+"plate="+encodeURIComponent(plate||"")+"&id="+encodeURIComponent(car.upId||""),"_blank","noopener"); return; }
     if(!(await ask("Printed stickers coming soon",["We're getting tough, weatherproof engine-bay stickers made, posted to your door.","Register your interest and we'll email you when they're ready."],"Register interest"))) return;
-    var subj="Driv3 printed sticker – register interest"+(plate?" ("+plate+")":"");
-    var body="Hi,\n\nPlease let me know when printed Driv3 stickers are available.\n\nPlate: "+(plate||"-")+"\nUpload ID: "+(car.upId||"-")+"\nSticker ID: "+stickerId()+"\n\nThanks";
+    var subj="Trac3 printed sticker – register interest"+(plate?" ("+plate+")":"");
+    var body="Hi,\n\nPlease let me know when printed Trac3 stickers are available.\n\nPlate: "+(plate||"-")+"\nUpload ID: "+(car.upId||"-")+"\nSticker ID: "+stickerId()+"\n\nThanks";
     location.href="mailto:"+STICKER_CONTACT+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
   };
   // "View QR code": this car's sticker full-screen, for a friend to scan or to print.
@@ -302,7 +302,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   $("qvPrint").onclick=function(){
     stickerFile(Driv3Sticker.SIZES.print,300).then(function(f){
       if(NATIVE){ // Android WebView has no print dialog: hand the 100 mm / 300 dpi file to the share sheet (print, save to Files, etc).
-        return navigator.share({files:[f],title:"Driv3 sticker (100 mm print file)"}).catch(function(e){ if(e&&e.name!=="AbortError") save(f); });
+        return navigator.share({files:[f],title:"Trac3 sticker (100 mm print file)"}).catch(function(e){ if(e&&e.name!=="AbortError") save(f); });
       }
       var im=$("qvPrintImg"), u=URL.createObjectURL(f);
       im.onload=function(){ setTimeout(function(){ window.print(); URL.revokeObjectURL(u); },50); }; im.src=u;
@@ -312,7 +312,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   $("dlPrint").onclick=function(){ stickerFile(Driv3Sticker.SIZES.print,300).then(save); };
   $("shareSt").onclick=function(){
     stickerFile(Driv3Sticker.SIZES.hi).then(function(f){
-      if(navigator.canShare&&navigator.canShare({files:[f]})) return navigator.share({files:[f],title:"Driv3 sticker"}).catch(function(e){ if(e&&e.name!=="AbortError") save(f); });
+      if(navigator.canShare&&navigator.canShare({files:[f]})) return navigator.share({files:[f],title:"Trac3 sticker"}).catch(function(e){ if(e&&e.name!=="AbortError") save(f); });
       save(f); $("regStatus").textContent="Sharing files isn't available here, so the sticker was downloaded instead."; $("regStatus").className="status";
     });
   };
@@ -327,10 +327,10 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   }
   $("copy").onclick=copy;
   $("share").onclick=function(){
-    if(showMode()){ var t2="Have a look at my "+U.niceName(car)+":"; if(navigator.share){ navigator.share({title:"Driv3 showcase",text:t2,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); } else copy(); return; }
+    if(showMode()){ var t2="Have a look at my "+U.niceName(car)+":"; if(navigator.share){ navigator.share({title:"Trac3 showcase",text:t2,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); } else copy(); return; }
     var text="Please send photos, invoices and notes for my "+U.niceName(car)+(plate?" ("+plate+")":"")+" here:";
     if(car.upCode&&$("codeInMsg").checked) text+=" (job code "+car.upCode+")";
-    if(navigator.share){ navigator.share({title:"Driv3 upload link",text:text,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); }
+    if(navigator.share){ navigator.share({title:"Trac3 upload link",text:text,url:url}).catch(function(e){ if(e&&e.name!=="AbortError") copy(); }); }
     else copy();
   };
 
@@ -358,8 +358,8 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     $("pausedBanner").classList.toggle("hide",!p||sm);
     $("showBanner").classList.toggle("hide",!sm);
     $("modeMech").setAttribute("aria-pressed",String(!sm)); $("modeShow").setAttribute("aria-pressed",String(sm));
-    $("modeTxt").textContent=sm?"The QR shows your car's showcase. Nothing else from Driv3 is shared.":"The QR lets your mechanic send work photos and invoices.";
-    $("qrCap").textContent=sm?"Your Driv3 sticker. Anyone who scans it sees your showcase.":"Your Driv3 sticker. Mechanics scan it to send photos & invoices.";
+    $("modeTxt").textContent=sm?"The QR shows your car's showcase. Nothing else from Trac3 is shared.":"The QR lets your mechanic send work photos and invoices.";
+    $("qrCap").textContent=sm?"Your Trac3 sticker. Anyone who scans it sees your showcase.":"Your Trac3 sticker. Mechanics scan it to send photos & invoices.";
     $("pauseRow").classList.toggle("hide",sm); $("codeRow").classList.toggle("hide",sm); $("mechOnly").classList.toggle("hide",!sm);
     $("showTxt").textContent=car.showId&&car.showPublished?"Your showcase is published. Edit it any time.":"Make a show card with photos, stats and mods. Show mode points this same QR at it.";
     var code=car.upCode||"", unknown=!code&&car.srvCode;

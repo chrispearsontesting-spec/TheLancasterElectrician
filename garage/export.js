@@ -43,8 +43,8 @@
   }
 
   function jsonToSnap(obj){
-    if(!obj||obj.format!=="driv3-json") throw new Error("This isn't a Driv3 export file.");
-    if(obj.v!==1) throw new Error("This export was made by a newer Driv3. Update the app first.");
+    if(!obj||obj.format!=="driv3-json") throw new Error("This isn't a Trac3 export file.");
+    if(obj.v!==1) throw new Error("This export was made by a newer Trac3. Update the app first.");
     var B=bak();
     var blobs=(obj.blobs||[]).map(function(m){
       var b={}; for(var key in m) if(key!=="data") b[key]=m[key];

@@ -51,8 +51,8 @@ await t("JSON export round-trips localStorage, blobs and summary", async () => {
 
 await t("reject files that are not Driv3 JSON exports", () => {
   assert.equal(X.looksLikeExport('{"hello":1}'), false);
-  assert.throws(() => X.openJson('{"hello":1}'), /isn't a Driv3 export/);
-  assert.throws(() => X.jsonToSnap({ format: "driv3-json", v: 2, ls: {}, dbs: [] }), /newer Driv3/);
+  assert.throws(() => X.openJson('{"hello":1}'), /isn't a Trac3 export/);
+  assert.throws(() => X.jsonToSnap({ format: "driv3-json", v: 2, ls: {}, dbs: [] }), /newer Trac3/);
 });
 
 await t("CSV lists cars, journeys, work and history", () => {

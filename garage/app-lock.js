@@ -60,9 +60,9 @@
   var LOCK_SVG='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f2f2f2" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
   function build(){
     if(el) return;
-    el=doc.createElement("div"); el.id="d3lock"; el.setAttribute("role","dialog"); el.setAttribute("aria-modal","true"); el.setAttribute("aria-label","Driv3 is locked");
+    el=doc.createElement("div"); el.id="d3lock"; el.setAttribute("role","dialog"); el.setAttribute("aria-modal","true"); el.setAttribute("aria-label","Trac3 is locked");
     var keys=[1,2,3,4,5,6,7,8,9].map(function(n){return '<button type="button" data-n="'+n+'">'+n+'</button>'}).join("");
-    el.innerHTML='<div class="ico">'+LOCK_SVG+'</div><div class="t">Enter your Driv3 PIN</div><div class="s" id="d3msg"></div>'+
+    el.innerHTML='<div class="ico">'+LOCK_SVG+'</div><div class="t">Enter your Trac3 PIN</div><div class="s" id="d3msg"></div>'+
       '<button type="button" class="bio" id="d3bio" style="display:none"></button>'+
       '<div class="dots" id="d3dots"></div><div class="pad">'+keys+'<span></span><button type="button" data-n="0">0</button><button type="button" class="k" data-n="del" aria-label="Delete">Delete</button></div>'+
       '<button type="button" class="lnk" id="d3forgot">Forgot PIN?</button>';
@@ -100,9 +100,9 @@
   function forgot(){
     clearTimeout(timer);
     el.innerHTML='<div class="ico">'+LOCK_SVG+'</div><div class="t">Forgot your PIN?</div><div class="help">'+
-      '<p>This PIN is a light privacy screen for the web version of Driv3. It stops someone casually opening the app on your phone. It does not encrypt your data.</p>'+
-      '<p>There is no reset by email, because nothing is stored on a server. The only way past it is to clear Driv3\'s data: open your phone\'s Settings, Apps, Driv3, Storage, Clear data.</p>'+
-      '<p><b>That deletes your cars, history and photos on this phone.</b> If you made a Driv3 backup file, you can restore everything afterwards from Security &amp; backup on the home page. Without a backup the data is gone.</p></div>'+
+      '<p>This PIN is a light privacy screen for the web version of Trac3. It stops someone casually opening the app on your phone. It does not encrypt your data.</p>'+
+      '<p>There is no reset by email, because nothing is stored on a server. The only way past it is to clear Trac3\'s data: open your phone\'s Settings, Apps, Trac3, Storage, Clear data.</p>'+
+      '<p><b>That deletes your cars, history and photos on this phone.</b> If you made a Trac3 backup file, you can restore everything afterwards from Security &amp; backup on the home page. Without a backup the data is gone.</p></div>'+
       '<button type="button" class="lnk" id="d3back">Back to PIN</button>';
   }
   function pad(){ var p=el.parentNode; if(p) p.removeChild(el); el=null; build(); show(); }

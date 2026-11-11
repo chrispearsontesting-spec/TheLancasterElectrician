@@ -72,7 +72,7 @@
       var here={lat:p.coords.latitude,lon:p.coords.longitude};
       if(prev&&p.coords.accuracy<=45){ var d=hav(prev,here); if(d>0.002&&d<2) miles+=d; }
       prev=here; showLive(miles);
-    },function(e){ if(on&&e.code===1) $("jErr").textContent="Location is off for Driv3 — allow it in your phone settings."; },{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
+    },function(e){ if(on&&e.code===1) $("jErr").textContent="Location is off for Trac3 — allow it in your phone settings."; },{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
     timer=setInterval(function(){ showLive(miles); },1000);
   }
   function stopWeb(){
@@ -83,11 +83,11 @@
     uiOn(false);
   }
   // App-style explanation shown once, right before each Android permission prompt.
-  var WHY={location:"Driv3 uses your location while a journey is recording to measure the miles. It stays on this phone.",
-    background:"To record journeys when your car connects with Driv3 closed, choose “Allow all the time” on the next screen.",
-    bluetooth:"Driv3 needs Nearby devices to see when your phone connects to your car’s Bluetooth.",
-    notifications:"Driv3 shows a notification while a journey records, and a summary of miles and cost when it ends.",
-    battery:"So journeys can start in the background, allow Driv3 to run without battery restrictions on the next screen."};
+  var WHY={location:"Trac3 uses your location while a journey is recording to measure the miles. It stays on this phone.",
+    background:"To record journeys when your car connects with Trac3 closed, choose “Allow all the time” on the next screen.",
+    bluetooth:"Trac3 needs Nearby devices to see when your phone connects to your car’s Bluetooth.",
+    notifications:"Trac3 shows a notification while a journey records, and a summary of miles and cost when it ends.",
+    battery:"So journeys can start in the background, allow Trac3 to run without battery restrictions on the next screen."};
   if(T){ var RAW=T; T={status:function(o){return RAW.status(o)},configure:function(o){return RAW.configure(o)},devices:function(){return RAW.devices()},startJourney:function(){return RAW.startJourney()},stopJourney:function(){return RAW.stopJourney()},takeJourneys:function(){return RAW.takeJourneys()}};
     var _ask=function(o){return RAW.ask(o)}; T.ask=function(o){ var k="driv3.why."+o.what; if(WHY[o.what]&&!localStorage.getItem(k)){ alert(WHY[o.what]); localStorage.setItem(k,"1"); } return _ask(o); }; }
   async function ensureLoc(){ var s=await T.status(); if(!s.location) s=await T.ask({what:"location"}); if(!s.notifications) await T.ask({what:"notifications"}); return s.location; }
@@ -141,9 +141,9 @@
       if(!s.location) s=await T.ask({what:"location"});
       if(!s.bluetooth) s=await T.ask({what:"bluetooth"});
       if(!s.notifications) s=await T.ask({what:"notifications"});
-      if(!s.location||!s.bluetooth){ this.checked=false; alert("Driv3 needs Location and Nearby devices permission to track journeys automatically."); permLine(s); return; }
+      if(!s.location||!s.bluetooth){ this.checked=false; alert("Trac3 needs Location and Nearby devices permission to track journeys automatically."); permLine(s); return; }
       if(!$("dev").value){ await loadDevices(""); alert("Now choose your car’s Bluetooth from the list."); }
-      if(!s.background) alert("Tip: tap Allow next to “Allow all the time” and “Battery: unrestricted” so journeys start even when Driv3 is closed.");
+      if(!s.background) alert("Tip: tap Allow next to “Allow all the time” and “Battery: unrestricted” so journeys start even when Trac3 is closed.");
     }
     await T.configure({on:want}); pushNative(); setCfg({on:want}); refresh();
   };

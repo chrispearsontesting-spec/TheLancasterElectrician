@@ -189,8 +189,8 @@ await t("upload without titles still works (old pages)", async () => {
 await t("cleanTitle strips control chars and limits length", async () => {
   assert.equal(cleanTitle("a\u0000b\tc"), "a b c"); assert.equal(cleanTitle(null), ""); assert.equal(cleanTitle("y".repeat(90)).length, 80);
 });
-await t("info/limit messages say Driv3", async () => {
-  fresh(); const r = await call("GET", "/info/" + UID); assert.match((await r.json()).error, /Driv3/);
+await t("info/limit messages say Trac3", async () => {
+  fresh(); const r = await call("GET", "/info/" + UID); assert.match((await r.json()).error, /Trac3/);
 });
 const enc = x => new TextEncoder().encode(x);
 const cat = (...a) => { const n = a.reduce((s, x) => s + x.length, 0), o = new Uint8Array(n); let i = 0; for (const x of a) { o.set(x, i); i += x.length; } return o; };

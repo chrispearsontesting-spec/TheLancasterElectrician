@@ -10,7 +10,7 @@
   function cap(s){ s = String(s || ""); return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ""; }
   function fileUrl(n){ return API + "/share/" + encodeURIComponent(id) + "/file/" + n; }
   function state(ico, title, msg){
-    document.title = title + " · Driv3";
+    document.title = title + " · Trac3";
     app.innerHTML = '<div class="state"><div class="ico">' + ico + '</div><h1>' + esc(title) + '</h1><p class="sub">' + esc(msg) + '</p>' +
       '<p class="sub">Ask the seller for a new link if you still need the car\'s history.</p><p class="sub" style="margin-top:20px">You can still check the official MOT history at <a style="color:#3dd68c" href="https://www.gov.uk/check-mot-history" rel="noopener">gov.uk/check-mot-history</a>.</p></div>';
   }
@@ -44,10 +44,10 @@
     var r = data.report || {}, car = r.car || {}, files = {};
     (data.files || []).forEach(function(f){ files[f.n] = f; });
     var title = [car.year, car.make, car.model].filter(Boolean).join(" ") || car.name || "Vehicle history";
-    document.title = title + " · Driv3 report";
+    document.title = title + " · Trac3 report";
     var h = '<h1>' + esc(title) + '</h1><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' + plateHtml(car.plate) +
       (car.name && car.name !== title ? '<span class="sub">' + esc(car.name) + '</span>' : "") + '</div>' +
-      '<p class="sub" id="sharedLine">Shared via Driv3 on ' + d(data.created) + ' · link expires ' + d(data.expires) + '</p>';
+      '<p class="sub" id="sharedLine">Shared via Trac3 on ' + d(data.created) + ' · link expires ' + d(data.expires) + '</p>';
     var facts = [["Make", car.make], ["Model", car.model], ["Year", car.year], ["Fuel", cap(car.fuel)], ["Engine", car.engine ? miles(car.engine) + " cc" : ""], ["Colour", cap(car.colour)]].filter(function(x){ return x[1]; });
     if (facts.length) h += '<div class="facts">' + facts.map(function(x){ return '<div class="fact"><div class="k">' + x[0] + '</div><div class="v">' + esc(x[1]) + '</div></div>'; }).join("") + '</div>';
     if (r.mot) h += '<div class="card" id="motCard"><h2>MOT history <span class="badge copy" id="motBadge">Checking DVSA…</span></h2><p class="muted" id="motSrc"></p><div id="motRows">' + motRows(r.mot.tests || []) + '</div></div>';
@@ -57,7 +57,7 @@
         r.service.history.map(function(x){ return '<div class="job"><b>' + esc(x.date) + '</b><p class="txt">' + esc(x.note) + '</p>' + (x.file != null ? filesHtml([x.file], files) : "") + '</div>'; }).join("") + '</div>';
     }
     if (r.jobs && r.jobs.length){
-      h += '<div class="card" id="workCard"><h2>Mechanic work</h2><p class="muted">Photos and notes sent by the garage to the owner\'s Driv3 app.</p>' +
+      h += '<div class="card" id="workCard"><h2>Mechanic work</h2><p class="muted">Photos and notes sent by the garage to the owner\'s Trac3 app.</p>' +
         r.jobs.map(function(j){ return '<div class="job"><b>' + d(j.date) + '</b>' + ((j.garage || j.mileage) ? '<p class="muted">' + esc([j.garage, j.mileage ? miles(j.mileage) + " miles" : ""].filter(Boolean).join(" · ")) + '</p>' : "") +
           (j.note ? '<p class="txt">' + esc(j.note) + '</p>' : "") + filesHtml(j.files, files) + '</div>'; }).join("") + '</div>';
     }
@@ -66,7 +66,7 @@
     }
     if (r.note) h += '<div class="card" id="noteCard"><h2>From the seller</h2><p class="note">' + esc(r.note) + '</p></div>';
     h += '<button class="btn noprint" type="button" id="print">Save as PDF / print</button>' +
-      '<p class="foot">This report was put together by the seller in the Driv3 app. Service records, photos and notes are supplied by the seller; MOT history marked "Live from DVSA" comes straight from the government\'s MOT service. Always check the car and its paperwork in person.</p>';
+      '<p class="foot">This report was put together by the seller in the Trac3 app. Service records, photos and notes are supplied by the seller; MOT history marked "Live from DVSA" comes straight from the government\'s MOT service. Always check the car and its paperwork in person.</p>';
     app.innerHTML = h;
     document.getElementById("print").onclick = function(){ window.print(); };
     app.addEventListener("click", function(e){
@@ -103,7 +103,7 @@
     if (x.status === 200 && x.j.report) return render(x.j);
     var s = x.j && x.j.state;
     if (s === "revoked") state("🔒", "This report has been withdrawn", "The seller has turned this link off, so its photos and records are no longer available.");
-    else if (s === "expired") state("⏳", "This report has expired", "Driv3 report links last 30 days" + (x.j.expires ? " and this one ended on " + d(x.j.expires) : "") + ".");
+    else if (s === "expired") state("⏳", "This report has expired", "Trac3 report links last 30 days" + (x.j.expires ? " and this one ended on " + d(x.j.expires) : "") + ".");
     else if (x.status === 429) state("⌛", "Busy right now", "Too many requests. Please try again in a minute.");
     else state("🔗", "Report not found", "This link doesn't exist or has been removed.");
   }).catch(function(){ state("📶", "Couldn't load the report", "Check your connection and try again."); });

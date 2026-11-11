@@ -63,7 +63,7 @@ await t("wrong passphrase, tampered file and non-backup fail cleanly", async () 
   await assert.rejects(B.decrypt(file, "wrong pass phrase"), e => e.code === "badpass" && /Wrong passphrase/.test(e.message));
   const bad = file.slice(); bad[bad.length - 5] ^= 1; await assert.rejects(B.decrypt(bad, "right pass phrase"), e => e.code === "badpass");
   const hdr = file.slice(); hdr[40] ^= 1; await assert.rejects(B.decrypt(hdr, "right pass phrase"));
-  await assert.rejects(B.decrypt(new TextEncoder().encode("hello world, not a backup"), "x"), /isn't a Driv3 backup/);
+  await assert.rejects(B.decrypt(new TextEncoder().encode("hello world, not a backup"), "x"), /isn't a Trac3 backup/);
 });
 await t("summary counts cars and files", async () => {
   const s = B.summarize(snap()); assert.equal(s.cars, 2); assert.equal(s.files, 4);

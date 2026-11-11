@@ -11,9 +11,9 @@
   function empty(title,msg){
     app.innerHTML=""; var d=el("div","empty"); d.appendChild(el("div","",String.fromCodePoint(0x1F3C1)));
     d.appendChild(el("h1","",title)); d.appendChild(el("p","",msg)); app.appendChild(d); app.appendChild(footer());
-    document.title="Car showcase · Driv3";
+    document.title="Car showcase · Trac3";
   }
-  function footer(){ var f=el("div","foot"); f.appendChild(document.createTextNode("Made with ")); var a=el("a"); a.href="./home.html"; a.setAttribute("aria-label","Driv3"); var im=el("img","footLogo"); im.src="./driv3-wordmark.svg"; im.alt="Driv3"; a.appendChild(im); f.appendChild(a); return f; }
+  function footer(){ var f=el("div","foot"); f.appendChild(document.createTextNode("Made with ")); var a=el("a"); a.href="./home.html"; a.setAttribute("aria-label","Trac3"); var im=el("img","footLogo"); im.src="./trac3-wordmark.svg"; im.alt="Trac3"; a.appendChild(im); f.appendChild(a); return f; }
   function fmtPlate(p){ p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,""); return p.length>=7?p.slice(0,4)+" "+p.slice(4):p; }
   function plateEl(txt){ var p=el("span","plate"); p.appendChild(el("span","uk","UK")); p.appendChild(el("span","reg",fmtPlate(txt))); p.setAttribute("aria-label","Number plate "+fmtPlate(txt)); return p; }
   if(!sid){ empty("Showcase not found","This link looks cut off. Ask the owner to send it again."); return; }
@@ -37,7 +37,7 @@
     var b=c.basics||{}, s=c.stats||{};
     var make=str(b.make,30), model=str(b.model,40), year=numv(b.year), plate=str(b.plate,8).replace(/[^A-Z0-9]/g,"");
     var name=str(c.title,40)||[make,model].filter(Boolean).join(" ")||"My car";
-    document.title=name+" · Driv3";
+    document.title=name+" · Trac3";
     var gal=(Array.isArray(c.gallery)?c.gallery:[]).slice(0,12).map(function(g){ return {src:imgSrc(g),cap:str(g&&g.cap,80)}; }).filter(function(g){return g.src});
     var hi=typeof c.hero==="number"&&c.hero>=0&&c.hero<gal.length?c.hero:0;
 
@@ -135,7 +135,7 @@
     bV.appendChild(document.createTextNode("Videos")); bV.appendChild(el("span","n",vids.length||""));
     tabs.setAttribute("role","tablist"); tabs.appendChild(bP); tabs.appendChild(bV); meta.appendChild(cap); meta.appendChild(pos);
     var stageWrap=el("div","stageWrap"); stageWrap.appendChild(stage);
-    var logo=el("img","gBrand"); logo.src="./driv3-wordmark.svg"; logo.alt="Driv3"; stageWrap.appendChild(logo);
+    var logo=el("img","gBrand"); logo.src="./trac3-wordmark.svg"; logo.alt="Trac3"; stageWrap.appendChild(logo);
     if(plate) stageWrap.appendChild(plateEl(plate));
     frameEl.appendChild(stageWrap); frameEl.appendChild(meta); frameEl.appendChild(strip); wrap.appendChild(tabs); wrap.appendChild(frameEl);
     app.insertBefore(wrap,before);

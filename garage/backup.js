@@ -62,11 +62,11 @@
     return out;
   }
   function readHeader(u8){
-    if(u8.length<16||dec.decode(u8.subarray(0,8))!==MAGIC) throw new Error("This isn't a Driv3 backup file.");
+    if(u8.length<16||dec.decode(u8.subarray(0,8))!==MAGIC) throw new Error("This isn't a Trac3 backup file.");
     var n=new DataView(u8.buffer,u8.byteOffset,u8.byteLength).getUint32(8);
     if(n>65536||12+n>u8.length) throw new Error("This backup file is damaged.");
     var hj=u8.subarray(12,12+n), h; try{ h=JSON.parse(dec.decode(hj)); }catch(e){ throw new Error("This backup file is damaged."); }
-    if(h.v!==1) throw new Error("This backup was made by a newer Driv3. Update the app first.");
+    if(h.v!==1) throw new Error("This backup was made by a newer Trac3. Update the app first.");
     return {h:h,hj:hj,ct:u8.subarray(12+n)};
   }
   async function decrypt(u8,pass){
@@ -119,7 +119,7 @@
     return {ls:ls,dbs:dbs};
   }
   function delDb(name){ return new Promise(function(res,rej){ var r=indexedDB.deleteDatabase(name); r.onsuccess=function(){res()}; r.onerror=function(){rej(r.error)};
-    r.onblocked=function(){ rej(new Error("Close Driv3 fully, reopen it, then try again.")); }; }); }
+    r.onblocked=function(){ rej(new Error("Close Trac3 fully, reopen it, then try again.")); }; }); }
   async function writeDb(d){
     await delDb(d.name);
     var db=await new Promise(function(res,rej){ var r=indexedDB.open(d.name,d.version||1);

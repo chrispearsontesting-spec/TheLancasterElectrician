@@ -17,7 +17,7 @@
   function loadShares(){ try { var a = JSON.parse(localStorage.getItem(LS_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
   function saveShares(a){ localStorage.setItem(LS_KEY, JSON.stringify(a)); }
   function reportUrl(id){ var u = new URL("report.html", location.href); u.search = ""; u.hash = ""; u.searchParams.set("r", id); return u.toString(); }
-  function waUrl(s){ return "https://wa.me/?text=" + encodeURIComponent((s.car ? s.car + " " : "") + "history report (Driv3): " + reportUrl(s.id)); }
+  function waUrl(s){ return "https://wa.me/?text=" + encodeURIComponent((s.car ? s.car + " " : "") + "history report (Trac3): " + reportUrl(s.id)); }
   async function copy(t, btn){
     try { await navigator.clipboard.writeText(t); } catch(e){ var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
     if (btn){ var o = btn.textContent; btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = o; }, 1400); }

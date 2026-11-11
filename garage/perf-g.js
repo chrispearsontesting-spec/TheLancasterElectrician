@@ -29,7 +29,7 @@
   G.draw=function(cv, run){
     var W=720,H=1110; cv.width=W; cv.height=H; var x=cv.getContext("2d"), s=run.samples||[], st=run.stats||G.stats(s);
     x.fillStyle="#0b0c0e"; x.fillRect(0,0,W,H);
-    x.fillStyle="#f2f2f2"; x.font="700 34px -apple-system,Segoe UI,Roboto,sans-serif"; x.fillText("Driv3 · "+(run.label||"Run"),28,52);
+    x.fillStyle="#f2f2f2"; x.font="700 34px -apple-system,Segoe UI,Roboto,sans-serif"; x.fillText("Trac3 · "+(run.label||"Run"),28,52);
     x.fillStyle="#9a9aa0"; x.font="500 22px -apple-system,Segoe UI,Roboto,sans-serif"; x.fillText((run.time?run.time+"s · ":"")+new Date(run.when||Date.now()).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}),28,86);
     var tiles=[["Max accel",st.maxAcc,"#3dd68c"],["Max brake",st.maxBrk,"#ff6b6b"],["Max lateral",st.maxLat,"#73BDE0"],["Average",st.avg,"#f5c518"]];
     tiles.forEach(function(t,i){ var tx=28+i*168; x.fillStyle="#141416"; rr(x,tx,110,156,96,14); x.fill(); x.fillStyle=t[2]; x.font="800 36px -apple-system,Segoe UI,Roboto,sans-serif"; x.fillText(t[1].toFixed(2)+" G",tx+14,160); x.fillStyle="#9a9aa0"; x.font="500 19px -apple-system,Segoe UI,Roboto,sans-serif"; x.fillText(t[0],tx+14,190); });

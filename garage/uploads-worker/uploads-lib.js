@@ -283,7 +283,7 @@ export async function handle(req, env) {
     // Mechanic page: is this link live?
     if ((route === "info" || route === "resolve") && req.method === "GET" && parts.length === 2) {
       const reg = await getReg(env, id);
-      if (!reg) return json({ error: "This upload link is not active yet. Ask the owner to open Mechanic uploads in Driv3." }, 404, h);
+      if (!reg) return json({ error: "This upload link is not active yet. Ask the owner to open Mechanic uploads in Trac3." }, 404, h);
       if (reg.retired) return json({ error: RETIRED_MSG, state: "retired" }, 410, h);
       if (reg.mode === "show") return json({ ok: true, mode: "show", showId: reg.show || null }, 200, h);
       const lock = reg.ch ? await getLock(env, id) : null;
@@ -309,7 +309,7 @@ export async function handle(req, env) {
       if (len > LIMITS.maxJobBytes + 1024 * 1024) return json({ error: "Too big: 50 MB per upload max" }, 413, h);
       if (!/^multipart\/form-data/i.test(req.headers.get("Content-Type") || "")) return json({ error: "Expected multipart/form-data" }, 400, h);
       const pending = await listJobMetas(env, id);
-      if (pending.length >= LIMITS.maxPendingJobs) return json({ error: "The owner has too many uploads waiting. Ask them to open Driv3 first." }, 429, h);
+      if (pending.length >= LIMITS.maxPendingJobs) return json({ error: "The owner has too many uploads waiting. Ask them to open Trac3 first." }, 429, h);
       let fd; try { fd = await req.formData(); } catch (e) { return json({ error: "Could not read upload" }, 400, h); }
       const files = fd.getAll("file").filter(f => f && typeof f === "object" && typeof f.arrayBuffer === "function");
       const note = cleanText(fd.get("note"), LIMITS.maxNote);

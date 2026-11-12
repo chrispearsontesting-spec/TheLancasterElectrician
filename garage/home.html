@@ -198,6 +198,26 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 .remBox label{display:block;color:#8b8b8b;font-size:12px;margin:10px 0 4px}.remBox select,.remBox input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
 .remHead{display:flex;justify-content:space-between;align-items:center}.remHead label.tg{margin:0}
 .tg{position:relative;width:46px;height:26px;display:inline-block}.tg input{opacity:0;width:0;height:0}.tg span{position:absolute;inset:0;background:#3a3a3e;border-radius:13px;transition:.2s}.tg span:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.tg input:checked+span{background:#22c55e}.tg input:checked+span:before{transform:translateX(20px)}
+
+#taxSheet .panel{max-width:440px}
+#taxSheet h2{margin:2px 0 8px}
+#taxSheet .taxLead{color:#a8a8a8;font-size:14px;line-height:1.45;margin:0 0 14px}
+#taxSheet .taxHelp{color:#8b8b8b;font-size:12.5px;line-height:1.45;margin:12px 0 0}
+#taxSheet .taxHelp a,#taxTypeIn,#taxTypeInFail,#taxTypeAgain,#taxRetry{color:#7dd3fc;text-decoration:none}
+#taxTypeIn,#taxTypeInFail,#taxTypeAgain,#taxRetry{display:inline-block;background:none;border:0;padding:8px 0;font:inherit;font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;color:#7dd3fc}
+#taxScan,#taxCopy{margin-top:0 !important;min-height:52px !important;background:#7dd3fc !important;background-image:none !important;color:#0b0c0e !important;border:0 !important;font-weight:700 !important;box-shadow:none !important}
+#taxScan .ico,#taxCopy .ico{color:#0b0c0e !important}
+#taxGoGov,#taxGoGov2,#taxRetry,#taxBack{background-image:none !important}
+#taxRefType{display:block;color:#8b8b8b;font-size:13px;text-align:center;margin:0 0 8px;min-height:1.2em}
+#taxRef{font-size:26px;font-weight:700;letter-spacing:.08em;text-align:center;padding:16px 12px;border-radius:14px}
+#taxRememberRow{display:flex;align-items:center;gap:8px;margin:12px 0 4px;color:#cfd2d6;font-size:14px}
+#taxRememberRow[hidden]{display:none}
+#taxRemember{width:20px;height:20px;margin:0;accent-color:#7dd3fc;flex:0 0 20px}
+#taxBusy{text-align:center;padding:18px 8px}
+#taxBusyMsg{color:#cfd2d6;font-size:15px;line-height:1.45}
+#taxToast{position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;background:#16120e;color:#f3efe6;border:1px solid #6b7280;border-radius:14px;padding:12px 14px;font-weight:700;text-align:center;display:none}
+#taxToast.on{display:block}
+#taxSheet .taxTypeWrap{text-align:center;margin:8px 0 14px}
 </style>
 </head>
 <body>
@@ -311,6 +331,39 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <button class="btn" type="button" id="btnClose">Back</button>
 </div></div>
 <div class="sheet" id="contact"><div class="panel"><h2 id="cTitle">Book</h2><p id="cBody"></p><div id="cLinks"></div><button class="btn" type="button" id="btnCClose">Back</button></div></div>
+<div class="sheet" id="taxSheet" data-state="closed" role="dialog" aria-modal="true" aria-labelledby="taxTitle">
+<div class="panel">
+<h2 id="taxTitle">Renew tax</h2>
+<div id="taxStart">
+<p class="taxLead">Scan your reminder letter or V5C logbook to get the number, then paste it on GOV.UK.</p>
+<input id="taxScanPick" type="file" accept="image/*" capture="environment" hidden/>
+<button class="btn wide" type="button" id="taxScan" data-ico="cam">Scan letter or logbook</button>
+<p class="taxTypeWrap"><button type="button" id="taxTypeIn">Type it in</button></p>
+<button class="btn" type="button" id="taxGoGov">Go to GOV.UK</button>
+<p class="taxHelp">No letter? Use the 11-digit number on your V5C logbook.</p>
+<p class="taxHelp">If you have neither, you can renew at a Post Office — see <a href="https://www.gov.uk/vehicle-tax" target="_blank" rel="noopener">GOV.UK vehicle tax</a> — or <a href="https://www.gov.uk/vehicle-log-book" target="_blank" rel="noopener">apply for a new V5C</a>.</p>
+</div>
+<div id="taxBusy" hidden>
+<p class="taxLead" id="taxBusyMsg">Reading the photo… this stays on your phone.</p>
+</div>
+<div id="taxResult" hidden>
+<p class="taxLead" id="taxRefType"></p>
+<label class="offscreen" for="taxRef" style="position:absolute;left:-9999px">Tax reference number</label>
+<input id="taxRef" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="23" placeholder="Reference number"/>
+<label class="tick" id="taxRememberRow" hidden><input type="checkbox" id="taxRemember"/> Remember for this car</label>
+<button class="btn wide" type="button" id="taxCopy">Copy &amp; open GOV.UK</button>
+<p class="taxTypeWrap"><button type="button" id="taxTypeAgain">Type a different number</button></p>
+</div>
+<div id="taxFail" hidden>
+<p class="taxLead">Could not read a reference number. Try a flatter, brighter photo, or type the number in.</p>
+<p class="taxTypeWrap"><button type="button" id="taxRetry">Try another photo</button></p>
+<p class="taxTypeWrap"><button type="button" id="taxTypeInFail">Type it in</button></p>
+<button class="btn" type="button" id="taxGoGov2">Go to GOV.UK</button>
+</div>
+<button class="btn" type="button" id="taxBack">Back</button>
+</div>
+</div>
+
 <div id="photoPos" role="dialog" aria-modal="true" aria-label="Position photo" hidden>
 <div class="photoPosStage"><div id="photoPosFrame"><img id="photoPosImg" alt="Car photo"/></div></div>
 <p class="photoPosHint">Pinch to zoom, drag to move</p>
@@ -331,7 +384,8 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./reminders-core.js?v=5"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./icons.js?v=33"></script>
-<script src="./home-app.js?v=108"></script>
+<script src="./home-app.js?v=109"></script>
+<script src="./tax-renew.js?v=1"></script>
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>
 <script src="./home-insure.js?v=3"></script>

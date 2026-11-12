@@ -138,6 +138,7 @@ function remindHash(){
 window.addEventListener("hashchange",remindHash);
 function btns(list){
   return "<div class='acts'>"+list.map(function(b){
+    if(b.taxRenew) return "<button class='btn' type='button' data-iconed='1' data-tax-renew='1'>"+b.lab+"</button>";
     if(b.job) return "<button class='btn' type='button' data-iconed='1' data-job='"+b.job+"'>"+b.lab+"</button>";
     return "<a class='btn' href='"+b.href+"' data-iconed='1'"+(b.ext?" target='_blank' rel='noopener'":"")+">"+b.lab+"</a>";
   }).join("")+"</div>";
@@ -221,7 +222,7 @@ function paint(){
   var bd=beltDue(c), tl=tyreLeft(c);
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
-    row("Tax",c.tax,"",[{lab:"Renew",href:"https://www.gov.uk/vehicle-tax"},{lab:"Check tax",href:"tax.html?plate="+encodeURIComponent(String(c.plate||"").replace(/\s/g,""))}])+
+    row("Tax",c.tax,"",[{lab:"Renew",taxRenew:1},{lab:"Check tax",href:"tax.html?plate="+encodeURIComponent(String(c.plate||"").replace(/\s/g,""))}])+
     row("Insurance",c.ins,c.insName?String(c.insName).replace(/[<>&"']/g,""):"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+

@@ -55,7 +55,7 @@
     box.querySelectorAll(".clItem").forEach(function(b){ var on=!q||b.getAttribute("data-q").indexOf(q)>=0; b.style.display=on?"":"none"; if(on) n++; });
     var none=box.querySelector(".clNone"); if(q&&!n){ if(!none){ none=document.createElement("p"); none.className="muted clNone"; box.appendChild(none); } none.textContent="No matches for “"+q+"”."; } else if(none) none.remove(); }
   function setOpen(key){
-    G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[0]+"Menu"), on=g[1]===key; m.classList.toggle("hide",!on); b.setAttribute("aria-expanded",on?"true":"false"); if(on) fill(g[1]); });
+    G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[0]+"Menu"), on=g[1]===key; m.classList.toggle("hide",!on); b.setAttribute("aria-expanded",on?"true":"false"); var gEl=b.closest(".ddGroup"); if(gEl) gEl.classList.toggle("is-open",on); if(on) fill(g[1]); });
     try{ sessionStorage.setItem("gt.calOpen",key||""); }catch(e){}
   }
   G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[0]+"Menu"); if(!b) return;

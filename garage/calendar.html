@@ -91,12 +91,16 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:#8b8b8b;margin:8px 2px 0}.legend span{display:inline-flex;align-items:center;gap:5px}
 
 #calLists{margin-top:18px}
-.ddb{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:16px 18px;border-radius:18px;background:#1c1c1e;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit;font-size:17px;font-weight:600;text-align:left}
+.ddb{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:16px 18px;border-radius:18px;background:#1c1c1e;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit;font-size:17px;font-weight:600;text-align:left;transition:border-radius .18s ease-out}
 .ddb .ddi{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;color:#7dd3fc;flex:0 0 22px}.ddb .ddi .ico,.ddb .ddi svg,.clIco .ico,.clIco svg{width:20px;height:20px;display:block;fill:currentColor}.ddb .chev{margin-left:auto;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;opacity:.75;transition:transform .2s ease;flex:0 0 20px}.ddb .chev .ico,.ddb .chev svg{width:20px;height:20px;display:block}
 .ddb[aria-expanded="true"] .chev{transform:rotate(180deg)}
 .ddMenu{background:#141416;border:1px solid #2a2a2e;border-radius:18px;margin-top:8px;padding:10px;animation:ddIn .18s ease-out}
 .ddMenu.hide{display:none}
-@keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes ddIn{from{opacity:0}to{opacity:1}}
+.ddGroup{display:block}
+#calLists .ddGroup.is-open{margin-top:10px;border-radius:18px;overflow:hidden;border:1px solid #2a2a2e;background:#1c1c1e}
+#calLists .ddGroup.is-open .ddb{margin-top:0;border:0;border-radius:18px 18px 0 0;background:transparent}
+#calLists .ddGroup.is-open .ddMenu{margin-top:0;border:0;border-radius:0 0 18px 18px;background:transparent}
 .clQ{margin:0 0 6px;padding:10px 12px;font-size:15px;-webkit-appearance:none}
 .clHead{font-size:13px;color:#8b8b8b;margin:12px 4px 4px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.clHead .clTot{color:#3dd68c;font-weight:700}
 .clItem{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;border-top:1px solid #2a2a2e;color:#f2f2f2;padding:11px 4px;font:inherit;text-align:left}
@@ -138,12 +142,18 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 <details class="legMore"><summary>What the dots mean</summary><p class="legend" aria-label="Dot colours"><span><i class="cdot" style="background:var(--c-due)"></i>Due</span><span><i class="cdot" style="background:var(--c-over)"></i>Overdue</span><span><i class="cdot" style="background:var(--c-done)"></i>Work done</span><span><i class="cdot" style="background:var(--c-jour)"></i>Journeys</span><span><i class="cdot" style="background:var(--c-media)"></i>Photos/video</span></p></details>
 <div id="list"></div>
 <section id="calLists">
+<div class="ddGroup">
 <button class="ddb" type="button" id="clRecent" aria-expanded="false" aria-controls="clRecentMenu"><span class="ddi" data-ico="schedule"></span><span class="lab">Recent</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="ddMenu hide" id="clRecentMenu"><input type="search" class="clQ" id="cl_recent_q" placeholder="Search recent" aria-label="Search recent"/><div id="cl_recent_list"></div></div>
+</div>
+<div class="ddGroup">
 <button class="ddb" type="button" id="clMaint" aria-expanded="false" aria-controls="clMaintMenu"><span class="ddi" data-ico="wrench"></span><span class="lab">Maintenance</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="ddMenu hide" id="clMaintMenu"><input type="search" class="clQ" id="cl_maint_q" placeholder="Search maintenance" aria-label="Search maintenance"/><div id="cl_maint_list"></div></div>
+</div>
+<div class="ddGroup">
 <button class="ddb" type="button" id="clJourn" aria-expanded="false" aria-controls="clJournMenu"><span class="ddi" data-ico="pin"></span><span class="lab">Journeys</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="ddMenu hide" id="clJournMenu"><input type="search" class="clQ" id="cl_journ_q" placeholder="Search journeys" aria-label="Search journeys"/><div id="cl_journ_list"></div><details class="clRoutes" id="routes"><summary>Saved routes <span class="muted" id="rCount"></span></summary><p class="muted">Saved from Route costs. Tap one for the breakdown.</p><div id="rList"></div><a class="btn wide" href="route.html">Check a route cost</a></details></div>
+</div>
 </section>
 <a class="btn wide" href="drive.html">Let’s drive</a>
 <script src="./trip-engine.js"></script>
@@ -360,7 +370,7 @@ document.getElementById("next").onclick=function(){view.setMonth(view.getMonth()
 <script src="./perf-g.js?v=2"></script>
 <script src="./cal-media.js?v=3"></script>
 <script src="./icons.js?v=33"></script>
-<script src="./cal-lists.js?v=5"></script>
+<script src="./cal-lists.js?v=6"></script>
 <script src="./receipt-scan.js?v=2"></script>
 </body>
 </html>

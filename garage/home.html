@@ -52,7 +52,12 @@ body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:
 .btn.dd .chev{margin-left:auto;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;opacity:.75;transition:transform .2s ease;flex:0 0 20px}.btn.dd .chev .ico,.btn.dd .chev svg{width:20px;height:20px;display:block}
 .btn.dd[aria-expanded="true"] .chev{transform:rotate(180deg)}
 #dues:not(.hide),.ddMenu:not(.hide){animation:ddIn .18s ease-out}
-@keyframes ddIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes ddIn{from{opacity:0}to{opacity:1}}
+.ddGroup{display:block}
+#car .btn.dd.wide{transition:border-radius .18s ease-out}
+#car .ddGroup.is-open{margin-top:10px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);background-color:#161618;background-image:linear-gradient(rgba(22,22,24,0.65), rgba(22,22,24,0.65)),repeating-linear-gradient(45deg, #1a1a1c 0px, #1a1a1c 1px, #2a2a2e 1px, #2a2a2e 2px, #1a1a1c 2px, #1a1a1c 3px, #222226 3px, #222226 4px),repeating-linear-gradient(-45deg, #1a1a1c 0px, #1a1a1c 1px, #2a2a2e 1px, #2a2a2e 2px, #1a1a1c 2px, #1a1a1c 3px, #222226 3px, #222226 4px);background-size:100% 100%, 6px 6px, 6px 6px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06), 0 1px 3px rgba(0,0,0,0.35)}
+#car .ddGroup.is-open .btn.dd.wide{margin-top:0 !important;border:0 !important;border-radius:18px 18px 0 0 !important;box-shadow:none !important;background:transparent !important;background-image:none !important}
+#car .ddGroup.is-open .card,#car .ddGroup.is-open .ddMenu,#car .ddGroup.is-open #dues{margin:0 !important;border:0 !important;border-top:0 !important;border-radius:0 0 18px 18px !important;background:transparent !important;background-image:none !important;box-shadow:none !important}
 .ddMenu a{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#f2f2f2;text-decoration:none;font-size:16px;font-weight:600;border-top:1px solid #2a2a2e}
 .ddMenu a:first-child{border-top:0}
 .ddMenu a::after{content:"\203A";color:#8b8b8b;font-size:20px}
@@ -218,24 +223,32 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 </div>
 </div><p class="dots" id="dots"></p></div>
 <section class="tabp on" id="car">
+<div class="ddGroup">
 <button class="btn wide dd" type="button" id="datesToggle" data-ico="cal" aria-expanded="false" aria-controls="dues"><span class="lab">Reminders</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide" id="dues"></div>
+</div>
+<div class="ddGroup">
 <button class="btn wide dd" type="button" id="driveToggle" data-ico="wheel" aria-expanded="false" aria-controls="driveMenu"><span class="lab">Drive</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide ddMenu" id="driveMenu">
 <a href="drive.html?v=3">Record journey</a>
 <a href="performance.html?v=3">Performance</a>
 <a href="route.html">Route costs</a>
 </div>
+</div>
+<div class="ddGroup">
 <button class="btn wide dd" type="button" id="histToggle" data-ico="cal" aria-expanded="false" aria-controls="histMenu"><span class="lab">History</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide ddMenu" id="histMenu">
-<a href="calendar.html?v=6">Drive diary</a>
+<a href="calendar.html?v=7">Drive diary</a>
 <a href="mechanic.html?v=17">Mechanic QR sticker</a>
 <a href="share.html">Share for sale</a>
 </div>
+</div>
+<div class="ddGroup">
 <button class="btn wide dd" type="button" id="finToggle" data-ico="gbp" aria-expanded="false" aria-controls="finMenu"><span class="lab">Financial</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide ddMenu" id="finMenu">
 <a href="service.html?v=13">Maintenance planner</a>
 <a href="buy.html">Buying guide</a>
+</div>
 </div>
 <a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase <span class="chip" id="showChip" hidden></span></a>
 </section>
@@ -318,7 +331,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./reminders-core.js?v=5"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./icons.js?v=33"></script>
-<script src="./home-app.js?v=107"></script>
+<script src="./home-app.js?v=108"></script>
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>
 <script src="./home-insure.js?v=3"></script>
@@ -329,7 +342,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
   // Group buttons open inline dropdowns, like Reminders. One open at a time; remembered for this session.
   var G=[["datesToggle","dues","dates"],["driveToggle","driveMenu","drive"],["histToggle","histMenu","hist"],["finToggle","finMenu","fin"]];
   function setOpen(key){
-    G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[1]); if(!b||!m) return; var on=g[2]===key; m.classList.toggle("hide",!on); b.setAttribute("aria-expanded",on?"true":"false"); });
+    G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[1]); if(!b||!m) return; var on=g[2]===key; m.classList.toggle("hide",!on); b.setAttribute("aria-expanded",on?"true":"false"); var gEl=b.closest(".ddGroup"); if(gEl) gEl.classList.toggle("is-open",on); });
     try{ sessionStorage.setItem("gt.homeOpen",key||""); sessionStorage.setItem("gt.datesOpen",key==="dates"?"1":"0"); }catch(e){}
   }
   window.driv3OpenGroup=function(key){ setOpen(key); var g=G.filter(function(x){return x[2]===key})[0]; if(g){ var b=document.getElementById(g[0]); if(b) b.scrollIntoView({block:"start"}); } };

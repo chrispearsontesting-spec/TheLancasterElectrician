@@ -103,7 +103,7 @@ function openBook(kind){
 function remindBanner(){
   if(!window.D3Rem) return;
   var box=document.getElementById("remBanner"), dues=document.getElementById("dues");
-  if(!box){box=document.createElement("div");box.id="remBanner";var dt=document.getElementById("datesToggle")||dues;dt.parentNode.insertBefore(box,dt);}
+  if(!box){box=document.createElement("div");box.id="remBanner";var dt=document.getElementById("datesToggle")||dues;var anchor=(dt&&dt.closest&&dt.closest(".ddGroup"))||dt;anchor.parentNode.insertBefore(box,anchor);}
   var st=state(), all=D3Rem.active(st,D3Rem.load(),null,true), cur=st.cars[st.i]?st.i:0;
   var act=all.filter(function(a){return a.carIndex===cur}), oth=all.filter(function(a){return a.carIndex!==cur});
   var othHtml=oth.length?"<button type='button' class='remOther' style='display:block;width:100%;background:none;border:0;text-align:left;color:#ffd166;font:inherit;font-size:13px;padding:6px 4px;margin:2px 0' data-rgo='"+oth[0].type+"' data-rcar='"+oth[0].carIndex+"'>Also due on another car: "+oth.map(function(a){return a.label+" \u00b7 "+a.plate}).join(", ")+" \u203a</button>":"";

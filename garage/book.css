@@ -3,3 +3,13 @@
 .acts .btn{min-height:52px!important;padding:14px!important;font-size:16px!important}#emailSearch{margin-right:16px}
 .found{color:#a8ccff;font-size:12px;margin:6px 0 0}
 .mic{padding:6px 14px 6px 6px;gap:10px;border-radius:999px}.micIco{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#2a2a30;color:#f2f2f2;flex:none}.micIco svg{width:22px;height:22px}.mic[aria-pressed=true]{border-color:#2f6fd6;color:#f2f2f2}.mic[aria-pressed=true] .micIco{background:#2f6fd6;color:#fff;animation:micPulse 1.4s ease-out infinite}@keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(47,111,214,.55)}100%{box-shadow:0 0 0 12px rgba(47,111,214,0)}}@media (prefers-reduced-motion:reduce){.mic[aria-pressed=true] .micIco{animation:none}}
+
+.voiceWrap{position:relative}
+.voiceWrap textarea{display:block;width:100%}
+.voiceLive{position:absolute;inset:0;padding:12px;font:inherit;font-size:16px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto;pointer-events:none;color:#f2f2f2;box-sizing:border-box}
+.voiceLive .interim{color:#8b8b8b}
+.voiceWrap.is-listening textarea{color:transparent;caret-color:#7dd3fc}
+.mic[aria-pressed=true]{border-color:#7dd3fc !important;color:#f2f2f2 !important}
+.mic[aria-pressed=true] .micIco{background:#7dd3fc !important;color:#0b0c0e !important;animation:micPulse 1.4s ease-out infinite}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(125,211,252,.55)}100%{box-shadow:0 0 0 12px rgba(125,211,252,0)}}
+@media (prefers-reduced-motion:reduce){.mic[aria-pressed=true] .micIco{animation:none}}

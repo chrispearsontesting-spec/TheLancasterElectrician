@@ -62,20 +62,12 @@
       cycleUI();message("Email opened. Press Send there, then wait for your garage to confirm. Didn’t open? Check you have an email app.");
     }).catch(function(err){message("Could not open your email app. Check one is set up and try again. "+(err.message||""),true)}).finally(function(){el("send").disabled=false});
   };
-  var Speech=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,listening=false,failed=false;
-  function voiceHint(t){el("voiceHint").textContent=t}
-  if(!Speech){el("mic").disabled=true;voiceHint("Use the microphone on your keyboard to speak, or type your comments. This phone does not support the separate mic button.")}
-  else el("mic").onclick=function(){
-    if(listening){rec.stop();return}
-    try{rec=new Speech();rec.lang="en-GB";rec.interimResults=false;rec.continuous=false;failed=false;
-      rec.onstart=function(){listening=true;el("mic").setAttribute("aria-pressed","true");el("micText").textContent="Stop listening";voiceHint("Listening… tap again to finish. Voice typing may use your phone’s speech service.")};
-      rec.onresult=function(e){var said="";for(var i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)said+=e.results[i][0].transcript+" ";if(said.trim()){var box=el("comments");box.value=(box.value+(box.value.trim()?" ":"")+said.trim()).slice(0,4000);preview();keepDraft()}};
-      rec.onerror=function(){failed=true;voiceHint("Could not use voice typing. Type instead, or use the microphone on your keyboard.")};
-      rec.onend=function(){listening=false;el("mic").setAttribute("aria-pressed","false");el("micText").textContent="Speak your comments";if(!failed)voiceHint("Check your comments before sending. You can also use the microphone on your keyboard.")};
-      rec.start();
-    }catch(e){voiceHint("Voice typing is unavailable. Type instead, or use the microphone on your keyboard.")}
-  };
-  document.addEventListener("visibilitychange",function(){if(document.hidden&&rec&&listening)rec.stop()});
+  if(window.D3BookVoice) D3BookVoice.attach({
+    mic:el("mic"), micText:el("micText"), hint:el("voiceHint"),
+    box:el("comments"), live:el("commentsLive"), wrap:el("commentsWrap"),
+    max:4000, onCommit:function(){ preview(); keepDraft(); }
+  });
+  else { el("mic").disabled=true; el("voiceHint").textContent="Use the microphone on your keyboard to speak, or type your comments. This phone does not support the separate mic button."; }
   preview();cycleUI();
   if(q.get("call")==="1"&&tel){message("Opening your phone. If it does not open, tap Call garage.");external("tel:"+tel).catch(function(){message("Tap Call garage to open your phone.")})}
 })();

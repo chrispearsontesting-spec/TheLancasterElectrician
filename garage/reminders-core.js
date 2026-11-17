@@ -114,16 +114,15 @@
     var pl=plate(c.plate),model=[c.make,c.model].filter(Boolean).join(" ")||c.name||c.nick||"car";
     var due=dueOf(c,type),job={mot:"an MOT",service:"a full service",belt:"a timing belt change",tyres:"a tyre check"}[type]||"a service";
     var subj={mot:"MOT",service:"Full service",belt:"Timing belt change",tyres:"Tyre check"}[type]||"Booking";
-    var when=day(o.preferredDate)?" on "+niceDate(o.preferredDate):"",fuel=type==="service"&&c.fuel?String(c.fuel).trim().toLowerCase():"",tag=[pl,fuel].filter(Boolean).join(", "),car2="my "+model+(tag?" ("+tag+")":"");
-    var lines=["Hi "+(String(c.motName||"").trim()||"there")+",","","Could I book "+car2+" in for "+job+when+"?"],info=[];
+    var when=day(o.preferredDate)?" on "+niceDate(o.preferredDate):"";
+    var lines=["Hi "+(String(c.motName||"").trim()||"there")+",","","Could I book my "+model+" ("+pl+") in for "+job+when+"?"];
     function d(v){return day(v)?niceDate(v):""}
-    if(type==="mot"&&d(due))info.push("The current MOT runs out on "+d(due)+".");
-    if(type==="service"){var last=d(c.lastService||o.lastService);if(d(due))info.push("It's due on "+d(due)+(last?" and the last one was on "+last:"")+".");else if(last)info.push("The last one was on "+last+".");}
-    if(type==="belt"){var was=d(c.beltDate);if(was)info.push("The belt was last changed on "+was+(d(due)?", so it's due by "+d(due):"")+".");else if(d(due))info.push("It's due by "+d(due)+".")}
-    if(type==="tyres"){var fit=d(c.tyreDate),sz=String(c.tyreSize||"").trim();if(fit||sz)info.push("The tyres"+(sz?" ("+sz+")":"")+(fit?" were fitted on "+fit:"")+(fit?".":" need a look."));if(d(due))info.push("I reckon they're due a check around "+d(due)+".")}
-    if(info.length)lines.push(info.join(" "));
-    if(String(o.comments||"").trim())lines.push("","While it's in, could you also look at this?",String(o.comments).trim().slice(0,4000));
-    lines.push("",(when?"Let me know if that day works":"Let me know when you can fit it in")+", and roughly what it'll cost.","","Thanks!");
+    if(type==="mot"&&d(due))lines.push("MOT expires "+d(due)+".");
+    if(type==="service"&&d(due))lines.push("Due "+d(due)+".");
+    if(type==="belt"&&d(due))lines.push("Due by "+d(due)+".");
+    if(type==="tyres"&&d(due))lines.push("Due a check around "+d(due)+".");
+    if(String(o.comments||"").trim())lines.push("","Also: "+String(o.comments).trim().slice(0,4000));
+    lines.push("","Please let me know availability and roughly what it will cost.","","Thanks!");
     var subject=subj+(pl?" for "+pl:""),to=String(c.motEmail||"").trim(),body=lines.join("\n");
     return {to:to,subject:subject,body:body,href:/^[^@\s?&#]+@[^@\s?&#]+\.[^@\s?&#]+$/.test(to)?"mailto:"+encodeURIComponent(to).replace(/%40/g,"@")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body):""};
   }

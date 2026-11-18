@@ -82,14 +82,20 @@ document.getElementById("iSave").onclick=function(){
 document.getElementById("chg").onclick=function(e){e.preventDefault();paint();document.getElementById("setup").classList.add("on");document.getElementById("iName").focus()};
 document.getElementById("mine").addEventListener("contextmenu",function(e){e.preventDefault();document.getElementById("setup").classList.toggle("on")});
 document.getElementById("cmp").onclick=function(){
-  var v=vrn(),base="https://www.gocompare.com/journeys/car/vehicle";
-  var u=v?base+"?registration="+v+"&vrn="+v+"&reg="+v+"&registrationNumber="+v:base;
-  try{if(v&&navigator.clipboard)navigator.clipboard.writeText(v).catch(function(){})}catch(x){}
-  if(v)document.getElementById("msg").textContent=v+" copied — paste it on GoCompare if the box is empty";
-  window.open(u,"_blank","noopener");
+  if(window.d3CopyPlateAndOpen){ d3CopyPlateAndOpen(); return; }
+  var v=vrn();
+  var text=v&&v.length>4?v.slice(0,-3)+" "+v.slice(-3):v;
+  var base="https://www.gocompare.com/journeys/car/vehicle";
+  function go(){
+    if(text) document.getElementById("msg").textContent="Plate copied — paste it in";
+    window.open(base,"_blank","noopener");
+  }
+  if(text&&navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(go).catch(go);
+  else go();
 };
 paint();
 </script>
-<script src="./icons.js?v=33"></script>
+<script src="./home-insure.js?v=4"></script>
+<script src="./icons.js?v=34"></script>
 </body>
 </html>

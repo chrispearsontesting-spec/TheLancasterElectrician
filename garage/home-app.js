@@ -140,6 +140,7 @@ function btns(list){
   return "<div class='acts'>"+list.map(function(b){
     if(b.taxRenew) return "<button class='btn' type='button' data-iconed='1' data-tax-renew='1'>"+b.lab+"</button>";
     if(b.job) return "<button class='btn' type='button' data-iconed='1' data-job='"+b.job+"'>"+b.lab+"</button>";
+    if(b.copyPlate) return "<a class='btn' href='"+b.href+"' data-iconed='1' data-copy-plate='"+(b.href||"")+"' target='_blank' rel='noopener'>"+b.lab+"</a>";
     return "<a class='btn' href='"+b.href+"' data-iconed='1'"+(b.ext?" target='_blank' rel='noopener'":"")+">"+b.lab+"</a>";
   }).join("")+"</div>";
 }
@@ -223,10 +224,10 @@ function paint(){
   document.getElementById("dues").innerHTML=
     row("MOT",c.mot,"",[{lab:"View history",href:motUrl},{lab:"Book MOT",job:"mot"}])+
     row("Tax",c.tax,"",[{lab:"Renew",taxRenew:1},{lab:"Check tax",href:"tax.html?plate="+encodeURIComponent(String(c.plate||"").replace(/\s/g,""))}])+
-    row("Insurance",c.ins,c.insName?String(c.insName).replace(/[<>&"']/g,""):"",[{lab:"Policy",href:"insurance.html?v=19"},{lab:"Renew",href:"renew.html?v=13"}])+
+    row("Insurance",c.ins,c.insName?String(c.insName).replace(/[<>&"']/g,""):"",[{lab:"Policy",href:"insurance.html?v=20"},{lab:"Renew",href:"renew.html?v=14"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=0?" cOver":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=0?"<span class='mark bad'>\u2715</span>":(tl<=15?"<span class='mark soon'>!</span>":"<span class='mark ok'>\u2713</span>")))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+"<span class='dtxt'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"</span><span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1}])+"</div>";
+    "<div class='item"+(tl!=null&&tl<=0?" cOver":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=0?"<span class='mark bad'>\u2715</span>":(tl<=15?"<span class='mark soon'>!</span>":"<span class='mark ok'>\u2713</span>")))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+"<span class='dtxt'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"</span><span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1,copyPlate:1}])+"</div>";
   try{remindBanner()}catch(e){}
 }
 function heroFrameSize(){

@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=80"/>
-<link rel="stylesheet" href="./wallet.css?v=1"/>
+<link rel="stylesheet" href="./wallet.css?v=2"/>
 </head>
 <body data-view="locked">
 <main class="page" id="page-locked">
@@ -25,7 +25,7 @@
     <button class="btn" type="button" id="unlockBtn">Unlock with fingerprint</button>
     <p class="needPin" id="needPin" hidden>Set a PIN in <a href="security.html">App lock &amp; backup</a> to protect your Wallet, or use this phone's screen lock if it's offered.</p>
   </div>
-  <div class="foot"><a class="btn" href="home.html" id="lockBack">Back</a></div>
+  <div class="foot"><a class="btn backBtn" href="home.html" id="lockBack" data-ico="back">Back</a></div>
 </main>
 
 <main class="page" id="page-open">
@@ -40,7 +40,7 @@
     <h2>Cards</h2>
     <div class="grid" id="cardGrid"></div>
   </section>
-  <div class="foot"><a class="btn" href="home.html" id="openBack">Back</a></div>
+  <div class="foot"><a class="btn backBtn" href="home.html" id="openBack" data-ico="back">Back</a></div>
 </main>
 
 <main class="page" id="page-scan">
@@ -82,7 +82,7 @@
     <a class="retake del" href="#" id="savedDelete">Delete</a>
     </p>
     <a class="btn" href="#" id="savedCall" hidden>Call</a>
-    <button class="btn" type="button" id="savedBack">Back</button>
+    <button class="btn backBtn" type="button" id="savedBack" data-ico="back">Back</button>
   </div>
 </main>
 
@@ -106,7 +106,7 @@
     <button class="btn wide" type="button" id="addPhoto" data-ico="cam">Take or choose a photo</button>
     <p class="hint" id="addHint"></p>
     <button class="btn wide" type="button" id="addSave" data-ico="save">Save</button>
-    <button class="btn" type="button" id="addCancel">Back</button>
+    <button class="btn backBtn" type="button" id="addCancel" data-ico="back">Back</button>
   </div>
 </div>
 

@@ -35,7 +35,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   min-height:100vh;
   min-height:100dvh;
   flex-direction:column;
-  padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px));
+  padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(28px + env(safe-area-inset-bottom,0px));
 }
 body[data-view="locked"] #page-locked,
 body[data-view="open"] #page-open,
@@ -331,7 +331,7 @@ body[data-view="saved"] #page-saved{display:flex}
 }
 #page-saved .dock{
   flex:0 0 auto;
-  padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));
+  padding:16px 14px calc(28px + env(safe-area-inset-bottom,0px));
   background:#0b0c0e;
   border-top:1px solid #2a2a2e;
 }
@@ -450,3 +450,6 @@ html body a.btn[hidden],html body button.btn[hidden],html body .retake[hidden]{d
 #page-saved .links{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 22px;margin:0 0 6px}
 #page-saved .links .retake{margin:0}
 #page-saved .links .retake.del{color:#ff8a80}
+
+/* Standard full-width bottom Back (same as the other pages) */
+.backBtn{display:flex !important;align-items:center;justify-content:center;gap:8px;width:100% !important;box-sizing:border-box;min-height:52px !important;border-radius:18px !important;margin-top:10px !important}

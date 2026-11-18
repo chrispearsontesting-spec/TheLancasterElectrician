@@ -270,6 +270,7 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 <a href="buy.html">Buying guide</a>
 </div>
 </div>
+<a class="btn wide" href="wallet.html" data-ico="wallet">Wallet</a>
 <a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase <span class="chip" id="showChip" hidden></span></a>
 </section>
 <div class="sheet" id="settings"><div class="panel">
@@ -338,6 +339,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <p class="taxLead">Scan your reminder letter or V5C logbook to get the number, then paste it on GOV.UK.</p>
 <input id="taxScanPick" type="file" accept="image/*" capture="environment" hidden/>
 <button class="btn wide" type="button" id="taxScan" data-ico="cam">Scan letter or logbook</button>
+<button class="btn wide" type="button" id="taxUseWallet" hidden>Use logbook number from Wallet</button>
 <p class="taxTypeWrap"><button type="button" id="taxTypeIn">Type it in</button></p>
 <button class="btn" type="button" id="taxGoGov">Go to GOV.UK</button>
 <p class="taxHelp">No letter? Use the 11-digit number on your V5C logbook.</p>
@@ -350,7 +352,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <p class="taxLead" id="taxRefType"></p>
 <label class="offscreen" for="taxRef" style="position:absolute;left:-9999px">Tax reference number</label>
 <input id="taxRef" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="23" placeholder="Reference number"/>
-<label class="tick" id="taxRememberRow" hidden><input type="checkbox" id="taxRemember"/> Remember for this car</label>
+<p class="taxTypeWrap" id="taxSaveWalletRow" hidden><button type="button" id="taxSaveWallet">Save logbook number to Wallet</button></p>
 <button class="btn wide" type="button" id="taxCopy">Copy &amp; open GOV.UK</button>
 <p class="taxTypeWrap"><button type="button" id="taxTypeAgain">Type a different number</button></p>
 </div>
@@ -381,14 +383,16 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="mot-client.js"></script>
 <script src="./tax-lookup.js?v=1"></script>
 <script src="plate-fill.js?v=2"></script>
-<script src="./reminders-core.js?v=5"></script>
+<script src="./reminders-core.js?v=6"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./icons.js?v=33"></script>
-<script src="./home-app.js?v=109"></script>
-<script src="./tax-renew.js?v=1"></script>
+<script src="./icons.js?v=34"></script>
+<script src="./home-app.js?v=111"></script>
+<script src="./wallet-store.js?v=1"></script>
+<script src="./wallet-lock.js?v=1"></script>
+<script src="./tax-renew.js?v=2"></script>
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>
-<script src="./home-insure.js?v=3"></script>
+<script src="./home-insure.js?v=4"></script>
 <script src="./home-tabs.js?v=6"></script>
 <script src="./reminders-web.js?v=2"></script>
 <script>

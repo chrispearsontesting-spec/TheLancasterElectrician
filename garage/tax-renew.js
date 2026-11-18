@@ -188,14 +188,13 @@
     document.body.removeChild(a);
   }
   function applyRef(ref, typed){
-    var box=el("taxRef"), typ=el("taxRefType"), rem=el("taxRememberRow"), chk=el("taxRemember");
+    var box=el("taxRef"), typ=el("taxRefType"), saveRow=el("taxSaveWalletRow");
     if(!box) return;
     var type=ref&&ref.type||classify(box.value);
     var digits=ref?ref.digits:digitsOnly(box.value);
     if(ref&&!typed) box.value=ref.formatted||formatRef(type,digits);
     if(typ) typ.textContent=labelFor(type)||(digits?"That doesn't look like a 16- or 11-digit reference yet.":"");
-    if(rem) rem.hidden=type!=="v5c";
-    if(chk&&type!=="v5c") chk.checked=false;
+    if(saveRow) saveRow.hidden=type!=="v5c";
     box.setAttribute("data-type",type||"");
   }
   function openSheet(){
@@ -203,21 +202,12 @@
     sheet.className="sheet on";
     sheet.setAttribute("data-state","start");
     show("start");
-    var box=el("taxRef"), typ=el("taxRefType"), chk=el("taxRemember"), rem=el("taxRememberRow"), busy=el("taxBusyMsg");
+    var box=el("taxRef"), typ=el("taxRefType"), saveRow=el("taxSaveWalletRow"), busy=el("taxBusyMsg");
     if(box) box.value="";
     if(typ) typ.textContent="";
-    if(chk) chk.checked=false;
-    if(rem) rem.hidden=true;
+    if(saveRow) saveRow.hidden=true;
     if(busy) busy.textContent="Reading the photo… this stays on your phone.";
-    var saved=currentCar();
-    if(saved&&saved.v5cRef&&digitsOnly(saved.v5cRef).length===11){
-      applyRef({type:"v5c",digits:digitsOnly(saved.v5cRef),formatted:formatRef("v5c",saved.v5cRef)});
-      // Stay on the start view; a remembered number is available if they type or we could mention it.
-      // Pre-fill only after they choose Type it in, unless we go straight to result.
-      // Show result with the saved logbook number so they can copy without scanning again.
-      applyRef({type:"v5c",digits:digitsOnly(saved.v5cRef),formatted:formatRef("v5c",saved.v5cRef)});
-      show("result");
-    }
+    refreshWalletBtn();
     var pick=el("taxScanPick"); if(pick) pick.value="";
     var back=el("taxBack"); if(back) back.focus();
   }
@@ -253,14 +243,54 @@
     var type=classify(digits);
     if(!type){ toast("Enter a 16-digit reminder number or an 11-digit logbook number."); return; }
     var text=formatRef(type,digits);
-    var chk=el("taxRemember");
-    if(type==="v5c"&&chk&&chk.checked){
-      saveCar(function(c){ c.v5cRef=digits; });
-    }
     function go(){ toast("Number copied — paste it on GOV.UK"); openGov(); }
     if(root.navigator&&root.navigator.clipboard&&root.navigator.clipboard.writeText){
       root.navigator.clipboard.writeText(text).then(go).catch(function(){ fallbackCopy(text); go(); });
     }else{ fallbackCopy(text); go(); }
+  }
+
+
+  async function walletV5c(){
+    if(!root.D3WalletStore) return "";
+    try{
+      var rec=await D3WalletStore.load(currentCar());
+      return D3WalletStore.v5cNumber(rec)||"";
+    }catch(e){ return ""; }
+  }
+  async function refreshWalletBtn(){
+    var btn=el("taxUseWallet"); if(!btn) return;
+    var n=await walletV5c();
+    btn.hidden=!n;
+  }
+  async function useWalletV5c(){
+    var n=await walletV5c();
+    if(!n){ toast("No logbook number is saved in the Wallet yet."); return; }
+    var ok=true;
+    if(root.D3WalletLock&&!D3WalletLock.unlocked()){
+      try{ ok=await D3WalletLock.unlock(); }catch(e){ ok=false; }
+    }
+    if(!ok){ toast("Unlock the Wallet to use the logbook number."); return; }
+    if(root.D3WalletLock) D3WalletLock.lock();
+    var text=formatRef("v5c",n);
+    function go(){ toast("Number copied — paste it on GOV.UK"); openGov(); }
+    if(root.navigator&&root.navigator.clipboard&&root.navigator.clipboard.writeText){
+      root.navigator.clipboard.writeText(text).then(go).catch(function(){ fallbackCopy(text); go(); });
+    }else{ fallbackCopy(text); go(); }
+  }
+  async function saveV5cToWallet(){
+    var box=el("taxRef"); if(!box) return;
+    var digits=digitsOnly(box.value);
+    if(classify(digits)!=="v5c"){ toast("Enter an 11-digit logbook number first."); return; }
+    if(!root.D3WalletStore){ toast("Wallet isn't available."); return; }
+    var c=currentCar();
+    var rec=await D3WalletStore.load(c);
+    var existing=D3WalletStore.firstIn(rec,"v5c");
+    var doc=existing||{id:D3WalletStore.newId(),slot:"v5c",title:"V5C logbook",at:Date.now()};
+    doc.number=digits;
+    await D3WalletStore.putDoc(c,doc);
+    var btn=el("taxSaveWallet"); if(btn) btn.textContent="Saved to Wallet";
+    refreshWalletBtn();
+    toast("Saved to Wallet");
   }
 
   function attach(){
@@ -281,6 +311,8 @@
     var gov=el("taxGoGov"), gov2=el("taxGoGov2");
     if(gov) gov.onclick=function(){ openGov(); };
     if(gov2) gov2.onclick=function(){ openGov(); };
+    var useW=el("taxUseWallet"); if(useW) useW.onclick=function(){ useWalletV5c(); };
+    var saveW=el("taxSaveWallet"); if(saveW) saveW.onclick=function(){ saveV5cToWallet(); };
     var copy=el("taxCopy"); if(copy) copy.onclick=copyAndOpen;
     var back=el("taxBack"); if(back) back.onclick=closeSheet;
     var box=el("taxRef");

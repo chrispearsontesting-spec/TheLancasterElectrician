@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<script src="./app-lock.js?v=1"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>Wallet · Trac3</title>
+<meta name="description" content="Keep this car's documents and cards in a locked wallet on your phone."/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="icon" href="./favicon.ico?v=4" sizes="any"/>
+<link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
+<script src="./sw-reg.js?v=1" defer></script>
+<link rel="stylesheet" href="./ui.css?v=79"/>
+<link rel="stylesheet" href="./wallet.css?v=1"/>
+</head>
+<body data-view="locked">
+<main class="page" id="page-locked">
+  <div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"></div>
+  <h1 class="pageTitle">Wallet</h1>
+  <p class="carName" id="lockCar"> </p>
+  <div class="lockWrap">
+    <div class="lockMark"><span class="ico lg" data-ico="lock" aria-hidden="true"></span></div>
+    <button class="btn" type="button" id="unlockBtn">Unlock with fingerprint</button>
+    <p class="needPin" id="needPin" hidden>Set a PIN in <a href="security.html">App lock &amp; backup</a> to protect your Wallet, or use this phone's screen lock if it's offered.</p>
+  </div>
+  <div class="foot"><a class="btn" href="home.html" id="lockBack">Back</a></div>
+</main>
+
+<main class="page" id="page-open">
+  <div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"></div>
+  <h1 class="pageTitle">Wallet</h1>
+  <p class="carName" id="openCar"> </p>
+  <section class="sec">
+    <h2>Car documents</h2>
+    <div class="grid" id="docGrid"></div>
+  </section>
+  <section class="sec">
+    <h2>Cards</h2>
+    <div class="grid" id="cardGrid"></div>
+  </section>
+  <div class="foot"><a class="btn" href="home.html" id="openBack">Back</a></div>
+</main>
+
+<main class="page" id="page-scan">
+  <div class="cam">
+    <video id="camVideo" autoplay playsinline muted></video>
+    <div class="camDesk"></div>
+    <button class="camClose" type="button" id="camClose" aria-label="Close"><span class="ico" data-ico="back"></span></button>
+    <p class="camHint" id="camHint">Line up the document — number in the box</p>
+    <div class="guide v5c" id="camGuide">
+      <div class="frame"></div>
+      <div class="win" id="camWin"></div>
+    </div>
+    <div class="camBar"><button class="shutter" type="button" id="camShutter" aria-label="Capture"></button></div>
+    <button class="camFile" type="button" id="camFile">Choose a photo</button>
+    <div class="camBusy" id="camBusy" hidden>Reading the number…</div>
+  </div>
+</main>
+
+<main class="page" id="page-saved">
+  <div class="shot"><div class="pic" id="savedPic"></div></div>
+  <div class="dock">
+    <p class="kind" id="savedKind">Document</p>
+    <p class="big" id="savedNum"></p>
+    <p class="savedSub" id="savedSub" hidden></p>
+    <div class="barcodeBox" id="savedBarcode" hidden><canvas id="savedBarCv" width="400" height="120"></canvas><p id="savedBarLabel"></p></div>
+    <div class="btnRow">
+      <button class="btn" type="button" id="savedCopy" data-ico="doc">Copy</button>
+      <button class="btn" type="button" id="savedShare">Share</button>
+    </div>
+    <div class="pager" id="savedPager" hidden>
+      <button type="button" id="savedPrev" aria-label="Previous" data-iconed="1"><svg viewBox="0 -960 960 960" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/></svg></button>
+      <span id="savedPos"></span>
+      <button type="button" id="savedNext" aria-label="Next" data-iconed="1"><svg viewBox="0 -960 960 960" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/></svg></button>
+    </div>
+    <p class="links">
+    <a class="retake" href="#" id="savedEdit" hidden>Reset after a claim</a>
+    <a class="retake" href="#" id="savedAddMore" hidden>Add another</a>
+    <a class="retake" href="#" id="savedRetake">Retake</a>
+    <a class="retake del" href="#" id="savedDelete">Delete</a>
+    </p>
+    <a class="btn" href="#" id="savedCall" hidden>Call</a>
+    <button class="btn" type="button" id="savedBack">Back</button>
+  </div>
+</main>
+
+<div class="wSheet" id="addSheet">
+  <div class="panel">
+    <h2 id="addTitle">Add</h2>
+    <label for="addName">Name</label>
+    <input id="addName" type="text" maxlength="40" placeholder="e.g. RAC card"/>
+    <label for="addNumber">Number (optional)</label>
+    <input id="addNumber" type="text" maxlength="40" inputmode="text" autocomplete="off"/>
+    <label for="addPhone" id="addPhoneLab" hidden>Phone</label>
+    <input id="addPhone" type="tel" maxlength="20" hidden/>
+    <div id="addNcbWrap" hidden>
+      <label for="addNcbYears">Years of no claims</label>
+      <input id="addNcbYears" type="number" min="0" max="70" inputmode="numeric" placeholder="e.g. 5"/>
+      <label for="addNcbAt">Counting from</label>
+      <input id="addNcbAt" type="date"/>
+      <p class="hint" id="addNcbHint"></p>
+    </div>
+    <input id="addPick" type="file" accept="image/*,application/pdf" hidden/>
+    <button class="btn wide" type="button" id="addPhoto" data-ico="cam">Take or choose a photo</button>
+    <p class="hint" id="addHint"></p>
+    <button class="btn wide" type="button" id="addSave" data-ico="save">Save</button>
+    <button class="btn" type="button" id="addCancel">Back</button>
+  </div>
+</div>
+
+<input id="scanPick" type="file" accept="image/*" capture="environment" hidden/>
+<div id="walletToast" role="status"></div>
+
+<script src="./icons.js?v=34"></script>
+<script src="./doc-view.js?v=1"></script>
+<script src="./wallet-store.js?v=1"></script>
+<script src="./wallet-lock.js?v=1"></script>
+<script src="./wallet-barcode.js?v=1"></script>
+<script src="./tax-renew.js?v=2"></script>
+<script src="./wallet-ocr.js?v=1"></script>
+<script src="./wallet.js?v=1"></script>
+</body>
+</html>

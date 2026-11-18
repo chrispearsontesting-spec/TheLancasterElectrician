@@ -1,0 +1,12 @@
+var assert=require("assert");
+var O=require("./wallet-ocr.js");
+assert.equal(O.extract("v5c","Document reference 8472 9103 615"), "84729103615");
+assert.equal(O.extract("licence","5. WALSH801015J99XX"), "WALSH801015J99XX");
+assert.equal(O.extract("fuel","Card 6275 9240 1001 8834"), "6275924010018834");
+assert.equal(O.extract("insurance","Policy POL-204918 expiring"), "POL-204918");
+assert.equal(O.extract("licence","MORGA 753116 SM9IJ 35"), "MORGA753116SM9IJ");
+assert.equal(O.extract("licence","LEE99801015J99XX"), "LEE99801015J99XX");
+assert.ok(!O.extract("v5c","call 07123 456789"), "should ignore mobiles");
+assert.equal(O.extract("licence","MORGA753116SM91J"), "MORGA753116SM9IJ");
+assert.equal(O.extract("licence","M0RGA7S3116SM9IJ"), "MORGA753116SM9IJ");
+console.log("wallet-ocr extract tests ok");

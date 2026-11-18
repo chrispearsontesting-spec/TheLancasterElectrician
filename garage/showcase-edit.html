@@ -211,7 +211,8 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
 <script src="./uploads-client.js?v=5"></script>
 <script src="./show-parse.js?v=2"></script>
 <script src="./show-client.js?v=3"></script>
-<script src="./icons.js?v=33"></script>
+<script src="./icons.js?v=35"></script>
+<script src="./photo-pos.js?v=1"></script>
 <script>
 (function(){
   var U=window.DipUploads, S=window.Driv3Show, P=window.Driv3Parse;
@@ -303,6 +304,22 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
       if(p.m){ var r=await S.getMedia(p.m); if(!r) throw new Error("photo missing");
         var bmp=await createImageBitmap(r.blob), sc=Math.min(1,1200/Math.max(bmp.width,bmp.height)), cv=document.createElement("canvas");
         cv.width=Math.round(bmp.width*sc); cv.height=Math.round(bmp.height*sc); cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height); val=cv.toDataURL("image/jpeg",0.72); }
+      /* Position it in the home photo frame first (same positioner as home). */
+      if(window.D3PhotoPos){
+        var fr=null; try{ fr=JSON.parse(localStorage.getItem("d3.heroFrame")||"null"); }catch(e){}
+        if(!fr||!fr.w||!fr.h) fr={w:Math.min(440,window.innerWidth||360)-24,h:150};
+        await D3PhotoPos.open({src:val, frame:fr, radius:"18px 18px 0 0",
+          onSet:function(res){
+            var s=U.garage(), c=s.cars[idx];
+            c.photo=res.photo; c.photoFull=val; c.photoPos=res.transform;
+            try{ localStorage.setItem("gt.garage",JSON.stringify(s)); }
+            catch(e){ delete c.photoFull; delete c.photoPos; try{ localStorage.setItem("gt.garage",JSON.stringify(s)); }catch(e2){ say("phStatus","Couldn't set the home photo: storage full?","bad"); return; } }
+            say("phStatus","Done. The home screen now shows this photo.","good");
+          },
+          onCancel:function(){ say("phStatus",""); }
+        });
+        return;
+      }
       var s=U.garage(); s.cars[idx].photo=val; localStorage.setItem("gt.garage",JSON.stringify(s));
       say("phStatus","Done. The home screen now shows this photo.","good");
     }catch(e){ say("phStatus","Couldn't set the home photo: "+(e.message||"storage full?"),"bad"); }

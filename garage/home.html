@@ -89,17 +89,6 @@ details.fGroup:not([open]){padding-bottom:6px}
 .fRow input[type=number]{-moz-appearance:textfield;appearance:textfield}
 .fRow input[type=number]::-webkit-outer-spin-button,
 .fRow input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-#photoPos{display:none;position:fixed;inset:0;z-index:40;background:#0b0c0e;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
-#photoPos.on{display:flex}#photoPos[hidden]{display:none !important}#photoPos.on{display:flex !important}
-.photoPosStage{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
-#photoPosFrame{position:relative;overflow:hidden;border-radius:18px;background:#1c1c1e;border:1px solid rgba(255,255,255,.14);touch-action:none;cursor:grab;flex-shrink:0;box-shadow:0 8px 28px rgba(0,0,0,.45)}
-#photoPosFrame:active{cursor:grabbing}
-#photoPosImg{position:absolute;left:50%;top:50%;max-width:none;transform-origin:center center;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none;display:block}
-.photoPosHint{color:#8b8b8b;font-size:13px;margin:14px 0 10px;text-align:center;line-height:1.35}
-.photoPosBar{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;width:100%;max-width:440px;align-items:center}
-#photoPosSet{margin:0 !important;min-height:48px !important;padding:12px 16px !important;background:#7dd3fc !important;background-image:none !important;color:#0b0c0e !important;border:0 !important;border-radius:14px !important;font-weight:700 !important;box-shadow:none !important}
-#photoPosCancel,#photoPosChange{margin:0 !important;min-height:48px !important;padding:12px 12px !important;border-radius:14px !important;background-image:none !important;background:#161618 !important}
-#photoPosChange{width:auto !important;min-width:0;padding:12px 14px !important;color:#7dd3fc !important;justify-self:center}
 
 .suggest{position:relative}
 .suggest-list{position:absolute;left:0;right:0;top:100%;z-index:30;background:#171a20;border:1px solid #2a2a2e;border-radius:12px;margin-top:4px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.45);max-height:280px;overflow-y:auto}
@@ -366,16 +355,6 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 </div>
 </div>
 
-<div id="photoPos" role="dialog" aria-modal="true" aria-label="Position photo" hidden>
-<div class="photoPosStage"><div id="photoPosFrame"><img id="photoPosImg" alt="Car photo"/></div></div>
-<p class="photoPosHint">Pinch to zoom, drag to move</p>
-<div class="photoPosBar">
-<button class="btn" type="button" id="photoPosCancel">Cancel</button>
-<button class="btn" type="button" id="photoPosChange">Change photo</button>
-<button class="btn" type="button" id="photoPosSet">Set</button>
-</div>
-</div>
-
 <script src="ncap.js"></script>
 <script src="ncap-url.js"></script>
 <script src="mot-config.js"></script>
@@ -385,8 +364,9 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="plate-fill.js?v=2"></script>
 <script src="./reminders-core.js?v=6"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./icons.js?v=34"></script>
-<script src="./home-app.js?v=111"></script>
+<script src="./icons.js?v=35"></script>
+<script src="./photo-pos.js?v=1"></script>
+<script src="./home-app.js?v=112"></script>
 <script src="./wallet-store.js?v=1"></script>
 <script src="./wallet-lock.js?v=1"></script>
 <script src="./tax-renew.js?v=2"></script>

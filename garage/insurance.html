@@ -76,7 +76,7 @@ label.btn,#renew{display:flex !important;justify-content:center !important;align
   <p class="left" id="pdfName"></p>
   <div id="list"></div>
 </div>
-<a class="btn" id="renew" data-iconed="1" href="renew.html?v=13">Renew</a>
+<a class="btn" id="renew" data-iconed="1" href="renew.html?v=14">Renew</a>
 <a class="btn backBtn" href="home.html">Back</a>
 </div>
 <style>
@@ -93,6 +93,9 @@ label.btn,#renew{display:flex !important;justify-content:center !important;align
 .rnS input{width:100%;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:16px}
 .rnB{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.rnB .btn{justify-content:center !important}.rnB .pri{background:#f2f2f2 !important;color:#0b0c0e !important}
 </style>
+<script src="./doc-view.js?v=1"></script>
+<script src="./wallet-store.js?v=1"></script>
+<script src="./wallet-lock.js?v=1"></script>
 <script>
 function state(){
   try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null");if(s&&s.cars&&s.cars.length)return s}catch(e){}
@@ -163,20 +166,13 @@ async function renameDoc(d){
   }
   show();
 }
-function esc(t){return String(t||"").replace(/[&<>"]/g,function(c){return {"&":"&","<":"<",">":">",'"':"""}[c]})}
-function openBlob(blob){
-  var url=URL.createObjectURL(blob);
-  var w=window.open(url,"_blank","noopener");
-  if(!w){
-    var a=document.createElement("a");
-    a.href=url;
-    a.target="_blank";
-    a.rel="noopener";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-  setTimeout(function(){URL.revokeObjectURL(url)},60000);
+function esc(t){return String(t||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function viewHere(d,blob,err){
+  if(!window.D3DocView){ alert("Cannot open this document in this browser."); return; }
+  D3DocView.open({blob:blob,name:d.name,type:d.type||(blob&&blob.type),title:d.title||d.name}).catch(function(e){
+    alert((e&&e.message)||"That document could not be opened.");
+  });
 }
 async function show(){
   var arr=await docs(),list=document.getElementById("list");
@@ -189,8 +185,15 @@ async function show(){
     var pen=(window.dipstickIconHtml&&window.dipstickIconHtml("edit","pen ico"))||"<i class='pen' aria-hidden='true'></i>";
     row.innerHTML="<div class='t'><b class='nm' role='button' tabindex='0' title='Tap to rename'>"+esc(d.title||d.name)+" "+pen+"</b><span>"+esc(d.name)+(d.at?" · "+new Date(d.at).toLocaleDateString("en-GB"):"")+"</span></div>";
     row.querySelector(".nm").onclick=function(e){e.stopPropagation();renameDoc(d)};
-    row.querySelector(".t span").onclick=function(){openBlob(blob)};
-    var v=document.createElement("button");v.type="button";v.textContent="View";v.onclick=function(){openBlob(blob)};
+    var v=document.createElement("button");v.type="button";v.textContent="View";
+    v.onclick=function(){
+      if(window.D3Wallet && D3Wallet.openInsuranceDoc){
+        D3Wallet.openInsuranceDoc(d).catch(function(err){ viewHere(d,blob,err); });
+        return;
+      }
+      viewHere(d,blob);
+    };
+    row.querySelector(".t span").onclick=function(){v.click()};
     var x=document.createElement("button");x.type="button";x.className="del";x.textContent="Delete";
     x.onclick=async function(){
       if(!confirm("Delete "+(d.title||d.name)+"?"))return;
@@ -215,9 +218,12 @@ pick.addEventListener("change", async function(){
     for(var i=0;i<fs.length;i++){
       var f=fs[i],type=f.type||(/\.pdf$/i.test(f.name)?"application/pdf":"application/octet-stream");
       var blob=new Blob([await f.arrayBuffer()],{type:type});
-      a.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:title?(fs.length>1?title+" ("+(i+1)+")":title):"",name:f.name||"document",type:type,blob:blob,at:Date.now()});
+      var id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      a.push({id:id,title:title?(fs.length>1?title+" ("+(i+1)+")":title):"",name:f.name||"document",type:type,blob:blob,at:Date.now()});
     }
     await put(listKey(),a);
+    /* The Wallet's Insurance slot links to these files (no second copy). */
+    if(window.D3WalletStore){ try{ await D3WalletStore.load(car()); }catch(e){} }
     document.getElementById("docTitle").value="";pick.value="";
     show();
   }catch(e){
@@ -226,6 +232,6 @@ pick.addEventListener("change", async function(){
 });
 show();
 </script>
-<script src="./icons.js?v=33"></script>
+<script src="./icons.js?v=34"></script>
 </body>
 </html>

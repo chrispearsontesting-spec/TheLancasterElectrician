@@ -1,14 +1,19 @@
-/* Trac3 launch splash: James May option 06 sequential outline → fill (5.50s).
-   Traced wordmark (not a font) + EVERYTHING AUTO in Geist Mono, #7dd3fc, no full stop.
+/* Trac3 launch splash: clean fade-in of the final wordmark (variant C 'a', even spacing) + EVERYTHING AUTO.
    Shown only on a cold launch from the home-screen / app icon:
      - installed PWA: manifest start_url carries ?launch=1, or display-mode standalone with no in-app referrer;
      - Capacitor Android app: first page of the app process.
    Never on reloads, back/forward, in-app navigation (sessionStorage "t3.splash"), deep links (#...) or public pages
    (only home.html includes this file). Tap skips; reduced motion shows a short static lock-up; a safety timer always
    removes it. The app loads underneath at the same time.
-   Timeline (s): 0.12-1.00 logo outline draws | 0.96-1.24 logo fills | 1.42-2.32 tagline outline draws (#7dd3fc) |
-   2.24-2.58 tagline fills | hold to 5.10 | 5.10-5.35 lock-up fades to #0b0c0e | 5.35-5.50 overlay clears to the app.
-   Logo paths are the approved traced master (logo/trac3-wordmark.svg). Logo is 880px / 81.5% of the 1080 canvas. */
+   Why it is built this way: the old outline-draw + cross-fade was driven by a per-frame JS loop that rewrote ~50
+   SVG attributes while the app was booting, so on a phone it stuttered and the thin outline / half-opaque fill showed as
+   grey halos and stray lines between the letters. Now: static vector layers (no stroke paths, no filters, no blur,
+   no masks), animated with the Web Animations API on opacity + a tiny translateY only, so the compositor does the work
+   off the main thread. The overlay is solid #0b0c0e from the first paint and the glyphs are never scaled, so they stay
+   pixel-sharp at any screen density. Will-change is dropped when the fade finishes so the final frame re-rasterises crisp.
+   Timeline (s): 0.15-0.95 logo fades in (ease-out) | 0.80-1.50 tagline fades in | hold to 2.80 |
+   2.80-3.10 lock-up fades to the app | 3.10 overlay removed.
+   Logo paths are the approved traced master (garage/trac3-wordmark.svg, variant C 'a'). Logo is 880px / 81.5% of the 1080 canvas. */
 (function(){
   "use strict";
   var W = window, D = document, BG = "#0b0c0e", TAGC = "#7dd3fc", KEY = "t3.splash";
@@ -66,128 +71,104 @@
   var FILLS =
     '<g id="t3s-rest"><path d="M28.41 0.00H228.00L199.59 42.40H137.75V205.20H90.25V42.40H0.00L28.41 0.00Z" fill="#ffffff" fill-rule="evenodd"/><g transform="translate(-25.90 0)"><path d="M271.90 205.20V106.40C271.90 59.60 304.30 34.40 343.90 34.40H417.40L386.91 79.90H357.40C334.60 79.90 319.40 93.20 319.40 108.40V205.20Z" fill="#ffffff" fill-rule="evenodd"/></g><g transform="translate(413.50 0)"><path d="M162.00 34.40 H75.67 C28.37 34.40 4.00 63.43 4.00 119.80 C4.00 176.17 28.37 205.20 75.67 205.20 H183.50 C184.88 205.20 186.00 204.08 186.00 202.70 V189.70 C186.00 188.32 184.88 187.20 183.50 187.20 H174.00 V46.40 C174.00 39.77 168.63 34.40 162.00 34.40 Z M126.50 93.69 V159.91 C126.50 165.43 122.02 169.91 116.50 169.91 H90.91 C49.40 169.91 36.29 157.88 36.29 119.80 C36.29 81.72 49.40 69.69 90.91 69.69 H102.50 C115.75 69.69 126.50 80.44 126.50 93.69 Z" fill="#ffffff" fill-rule="evenodd"/></g><g transform="translate(633.50 0)"><path d="M85.40 34.40H96.60C152.96 34.40 182.00 63.44 182.00 119.80V119.80C182.00 176.16 152.96 205.20 96.60 205.20H85.40C29.04 205.20 0.00 176.16 0.00 119.80V119.80C0.00 63.44 29.04 34.40 85.40 34.40ZM85.40 76.80H96.60C129.28 76.80 139.60 87.12 139.60 119.80V119.80C139.60 152.48 129.28 162.80 96.60 162.80H85.40C52.72 162.80 42.40 152.48 42.40 119.80V119.80C42.40 87.12 52.72 76.80 85.40 76.80ZM172.50 72.83C178.81 85.44 182.00 101.12 182.00 119.80C182.00 138.48 178.81 154.16 172.50 166.77L123.75 158.23C135.37 152.48 139.60 140.72 139.60 119.80C139.60 98.88 135.37 87.12 123.75 81.37Z" fill="#ffffff" fill-rule="evenodd"/></g></g>' +
     '<g id="t3s-plate"><g transform="translate(88.00 0)"><path d="M790,-20 H982 Q1004,-20 1004,2 V203 Q1004,225 982,225 H748 Q738,225 741,215 Z" fill="#0061B0"/><path d="M813.50 0.00H923.40C953.50 0.00 977.90 24.40 977.90 54.50V68.20C977.90 90.00 957.60 100.90 951.60 100.90C957.60 100.90 981.20 112.12 981.20 134.56V149.10C981.20 180.08 956.08 205.20 925.10 205.20H758.10L786.51 162.80H917.00C926.22 162.80 933.70 155.32 933.70 146.10V140.53C933.70 131.30 926.22 123.83 917.00 123.83H810.64L838.20 82.70H913.70C922.92 82.70 930.40 75.22 930.40 66.00V59.10C930.40 49.88 922.92 42.40 913.70 42.40H785.09Z" fill="#ffffff" fill-rule="evenodd"/></g></g>';
-  var STROKES =
-    '<path d="M28.41 0.00H228.00L199.59 42.40H137.75V205.20H90.25V42.40H0.00L28.41 0.00Z" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>' +
-    '<g transform="translate(-25.90 0)"><path d="M271.90 205.20V106.40C271.90 59.60 304.30 34.40 343.90 34.40H417.40L386.91 79.90H357.40C334.60 79.90 319.40 93.20 319.40 108.40V205.20Z" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></g>' +
-    '<g transform="translate(413.50 0)"><path d="M162.00 34.40 H75.67 C28.37 34.40 4.00 63.43 4.00 119.80 C4.00 176.17 28.37 205.20 75.67 205.20 H183.50 C184.88 205.20 186.00 204.08 186.00 202.70 V189.70 C186.00 188.32 184.88 187.20 183.50 187.20 H174.00 V46.40 C174.00 39.77 168.63 34.40 162.00 34.40 Z M126.50 93.69 V159.91 C126.50 165.43 122.02 169.91 116.50 169.91 H90.91 C49.40 169.91 36.29 157.88 36.29 119.80 C36.29 81.72 49.40 69.69 90.91 69.69 H102.50 C115.75 69.69 126.50 80.44 126.50 93.69 Z" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></g>' +
-    '<g transform="translate(633.50 0)"><path d="M85.40 34.40H96.60C152.96 34.40 182.00 63.44 182.00 119.80V119.80C182.00 176.16 152.96 205.20 96.60 205.20H85.40C29.04 205.20 0.00 176.16 0.00 119.80V119.80C0.00 63.44 29.04 34.40 85.40 34.40ZM85.40 76.80H96.60C129.28 76.80 139.60 87.12 139.60 119.80V119.80C139.60 152.48 129.28 162.80 96.60 162.80H85.40C52.72 162.80 42.40 152.48 42.40 119.80V119.80C42.40 87.12 52.72 76.80 85.40 76.80ZM172.50 72.83C178.81 85.44 182.00 101.12 182.00 119.80C182.00 138.48 178.81 154.16 172.50 166.77L123.75 158.23C135.37 152.48 139.60 140.72 139.60 119.80C139.60 98.88 135.37 87.12 123.75 81.37Z" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></g>' +
-    '<g transform="translate(88.00 0)"><path d="M790,-20 H982 Q1004,-20 1004,2 V203 Q1004,225 982,225 H748 Q738,225 741,215 Z" fill="none" stroke="#7dd3fc" stroke-width="2.4" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/><path d="M813.50 0.00H923.40C953.50 0.00 977.90 24.40 977.90 54.50V68.20C977.90 90.00 957.60 100.90 951.60 100.90C957.60 100.90 981.20 112.12 981.20 134.56V149.10C981.20 180.08 956.08 205.20 925.10 205.20H758.10L786.51 162.80H917.00C926.22 162.80 933.70 155.32 933.70 146.10V140.53C933.70 131.30 926.22 123.83 917.00 123.83H810.64L838.20 82.70H913.70C922.92 82.70 930.40 75.22 930.40 66.00V59.10C930.40 49.88 922.92 42.40 913.70 42.40H785.09Z" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></g>';
+
+  var LOGO_IN = [0.15, 0.95], TAG_IN = [0.80, 1.50], OUT_AT = [2.80, 3.10], END = 3.10;
+  var EASE = "cubic-bezier(0.22,0.61,0.36,1)";
+  var reduce = false; try{ reduce = W.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+
+  var css = D.createElement("style");
+  css.id = "t3-splash-css";
+  css.textContent = "#t3-splash{position:fixed;inset:0;z-index:2147483600;background:" + BG + ";margin:0;padding:0;touch-action:none;" +
+    "-webkit-tap-highlight-color:transparent;contain:strict;overflow:hidden}" +
+    "#t3-splash svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block;opacity:0;" +
+    "shape-rendering:geometricPrecision;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;" +
+    "backface-visibility:hidden;will-change:opacity,transform}" +
+    "#t3-splash.t3-static svg{opacity:1}";
+  (D.head || D.documentElement).appendChild(css);
 
   var el = D.createElement("div");
   el.id = "t3-splash";
   el.setAttribute("role", "img");
   el.setAttribute("aria-label", "Trac3. Everything Auto");
-  el.style.cssText = "position:fixed;inset:0;z-index:2147483600;background:" + BG + ";margin:0;padding:0;touch-action:none;-webkit-tap-highlight-color:transparent;contain:strict";
-  el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:100%" aria-hidden="true">' +
-    '<g id="t3s-root">' +
-    '<g id="t3s-logo" opacity="0" transform="' + BASE + '">' + FILLS + '</g>' +
-    '<g id="t3s-out" opacity="0" transform="' + BASE + '">' + STROKES + '</g>' +
-    '<g id="t3s-tagS" opacity="1" fill="none" stroke="' + TAGC + '" stroke-width="1.35" stroke-linejoin="round" stroke-linecap="round" font-family="Geist Mono" font-size="33" font-weight="400"></g>' +
-    '<g id="t3s-tagF" opacity="1" fill="' + TAGC + '" font-family="Geist Mono" font-size="33" font-weight="400"></g>' +
-    '</g></svg>';
+  var SVGO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">';
+  el.innerHTML = SVGO + '<g transform="' + BASE + '">' + FILLS + '</g></svg>' +
+    SVGO + '<g id="t3s-tag" fill="' + TAGC + '" font-family="Geist Mono" font-size="33" font-weight="400"></g></svg>';
   (D.body || D.documentElement).appendChild(el);
   hideNative();
 
-  function $(id){ return D.getElementById(id); }
-  var root = $("t3s-root"), logo = $("t3s-logo"), out = $("t3s-out"), tS = $("t3s-tagS"), tF = $("t3s-tagF");
-  var outP = out.querySelectorAll("path");
-  var chars = [], outlineChars = [];
-  for(var i = 0; i < TEXT.length; i++){
-    var ch = TEXT[i];
-    var te = D.createElementNS(NS, "text");
-    te.setAttribute("xml:space", "preserve");
-    te.textContent = ch === " " ? "\u00a0" : ch;
-    tF.appendChild(te);
-    chars.push(te);
-    var oe = D.createElementNS(NS, "text");
-    oe.setAttribute("xml:space", "preserve");
-    oe.textContent = ch === " " ? "\u00a0" : ch;
-    tS.appendChild(oe);
-    outlineChars.push(oe);
-  }
-  var advance = 19.8, dashLens = outlineChars.map(function(){ return 140; }), fontReady = false;
-
-  function seg(t, a, b){ return Math.max(0, Math.min(1, (t - a) / (b - a))); }
-  function smooth(x){ return x * x * (3 - 2 * x); }
-  function op(n, v){ n.setAttribute("opacity", v.toFixed(4)); }
-  function dash(list, v){ for(var j = 0; j < list.length; j++) list[j].setAttribute("stroke-dashoffset", v.toFixed(4)); }
-
+  var logoSvg = el.firstChild, tagSvg = el.lastChild, tagG = tagSvg.firstChild;
+  var advance = 19.8;
   function measureFont(){
     try{
-      var canvas = D.createElement("canvas"), ctx = canvas.getContext("2d");
+      var ctx = D.createElement("canvas").getContext("2d");
       ctx.font = '400 33px "Geist Mono"';
       advance = ctx.measureText("M").width || 19.8;
-      dashLens = outlineChars.map(function(node){
-        var w = Math.max(advance * 0.35, (node.getComputedTextLength && node.getComputedTextLength()) || advance);
-        return Math.max(110, w * 3.4);
-      });
-      fontReady = true;
-    }catch(e){ fontReady = true; }
+    }catch(e){}
   }
-
-  function placeTagRow(amount){
+  function placeTag(){
+    while(tagG.firstChild) tagG.removeChild(tagG.firstChild);
     var gap = 33 * 0.22, width = advance * TEXT.length + gap * (TEXT.length - 1), x0 = 540 - width / 2, y = 1075;
-    for(var k = 0; k < chars.length; k++){
-      var x = (x0 + k * (advance + gap)).toFixed(3);
-      chars[k].setAttribute("x", x); chars[k].setAttribute("y", y);
-      op(chars[k], amount);
-      outlineChars[k].setAttribute("x", x); outlineChars[k].setAttribute("y", y);
+    for(var k = 0; k < TEXT.length; k++){
+      if(TEXT[k] === " ") continue;
+      var te = D.createElementNS(NS, "text");
+      te.setAttribute("x", (x0 + k * (advance + gap)).toFixed(3)); te.setAttribute("y", y);
+      te.textContent = TEXT[k];
+      tagG.appendChild(te);
     }
   }
 
-  function drawTagOutlineFill(t, drawStart, drawEnd, fillStart, fillEnd){
-    var q = smooth(seg(t, drawStart, drawEnd));
-    var outlineVis = (t >= drawStart ? 1 : 0) * (1 - smooth(seg(t, fillStart, fillEnd)));
-    var fillAmt = smooth(seg(t, fillStart, fillEnd));
-    placeTagRow(fillAmt);
-    for(var k = 0; k < chars.length; k++){
-      var len = dashLens[k];
-      op(outlineChars[k], outlineVis);
-      outlineChars[k].setAttribute("stroke-dasharray", String(len));
-      outlineChars[k].setAttribute("stroke-dashoffset", ((1 - q) * len).toFixed(3));
-      if(TEXT[k] === " "){
-        op(outlineChars[k], 0);
-        op(chars[k], fillAmt);
-      }
-    }
-  }
-
-  function renderAt(t){
-    t = Math.max(0, Math.min(5.5, t));
-    var logoDraw = smooth(seg(t, 0.12, 1.00));
-    op(out, (t >= 0.12 ? 1 : 0) * (1 - smooth(seg(t, 0.96, 1.24))));
-    dash(outP, 1 - logoDraw);
-    op(logo, smooth(seg(t, 0.96, 1.24)));
-    if(t < 1.38){
-      placeTagRow(0);
-      for(var k = 0; k < outlineChars.length; k++) op(outlineChars[k], 0);
-    }else{
-      drawTagOutlineFill(t, 1.42, 2.32, 2.24, 2.58);
-    }
-    op(root, 1 - smooth(seg(t, 5.10, 5.35)));
-    el.style.opacity = String(1 - smooth(seg(t, 5.35, 5.50)));
-  }
-
-  var done = false, raf = 0, t0 = 0, END = 5.5;
+  var done = false, anims = [], safety = 0;
   function finish(){
     if(done) return; done = true;
-    cancelAnimationFrame(raf); clearTimeout(safety);
+    clearTimeout(safety);
+    try{ anims.forEach(function(a){ a.cancel(); }); }catch(e){}
     try{ el.remove(); }catch(e){ if(el.parentNode) el.parentNode.removeChild(el); }
+    try{ css.remove(); }catch(e){}
     try{ D.dispatchEvent(new CustomEvent("trac3:splashdone")); }catch(e){}
   }
   function skip(e){
     if(done) return; if(e && e.cancelable) e.preventDefault();
-    cancelAnimationFrame(raf); el.style.transition = "opacity .18s linear"; el.style.opacity = "0";
+    try{ anims.forEach(function(a){ a.cancel(); }); }catch(e2){}
+    logoSvg.style.opacity = tagSvg.style.opacity = "1";
+    el.style.transition = "opacity .18s linear"; el.style.opacity = "0";
     setTimeout(finish, 200);
   }
-  var reduce = false; try{ reduce = W.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
-  var safety = setTimeout(finish, reduce ? 2500 : 7500);
+  safety = setTimeout(finish, reduce ? 2500 : 6000);
   el.addEventListener("pointerdown", skip); el.addEventListener("click", skip);
   D.addEventListener("keydown", function k(){ D.removeEventListener("keydown", k); skip(); });
 
+  function ms(s){ return Math.round(s * 1000); }
+  function build(){
+    var T = ms(END);
+    function fade(node, a, b, dy){
+      var fromO = 0, d = ms(b - a), startF = a / END, endF = b / END;
+      var kf = [
+        {offset: 0, opacity: 0, transform: "translate3d(0," + dy + "px,0)"},
+        {offset: startF, opacity: 0, transform: "translate3d(0," + dy + "px,0)", easing: EASE},
+        {offset: endF, opacity: 1, transform: "translate3d(0,0,0)"},
+        {offset: 1, opacity: 1, transform: "translate3d(0,0,0)"}
+      ];
+      return node.animate(kf, {duration: T, fill: "both", easing: "linear"});
+    }
+    anims.push(fade(logoSvg, LOGO_IN[0], LOGO_IN[1], 10));
+    anims.push(fade(tagSvg, TAG_IN[0], TAG_IN[1], 6));
+    var o = el.animate([
+      {offset: 0, opacity: 1}, {offset: OUT_AT[0] / END, opacity: 1, easing: "ease-in-out"},
+      {offset: OUT_AT[1] / END, opacity: 0}, {offset: 1, opacity: 0}
+    ], {duration: T, fill: "both", easing: "linear"});
+    anims.push(o);
+    return o;
+  }
+
+  function renderAt(t){
+    t = Math.max(0, Math.min(END, t));
+    if(!anims.length) build();
+    anims.forEach(function(a){ a.pause(); a.currentTime = ms(t); });
+  }
+
   var fontP = Promise.resolve();
   try{
-    fontP = (D.fonts && D.fonts.load) ? D.fonts.load('400 33px "Geist Mono"').then(function(){ measureFont(); }, function(){ measureFont(); }) : Promise.resolve().then(measureFont);
+    fontP = (D.fonts && D.fonts.load) ? D.fonts.load('400 33px "Geist Mono"').then(measureFont, measureFont) : Promise.resolve().then(measureFont);
   }catch(e){ fontP = Promise.resolve().then(measureFont); }
 
   W.Trac3Splash = {renderAt: renderAt, el: el, ready: fontP};
@@ -195,16 +176,14 @@
   fontP.then(function(){
     if(done) return;
     try{
-      if(reduce){ renderAt(3.0); setTimeout(skip, 900); return; }
+      placeTag();
+      if(reduce || !el.animate){ el.classList.add("t3-static"); setTimeout(skip, reduce ? 900 : 1800); return; }
       if(/[?&]splashpause=1/.test(location.search)){ renderAt(0); return; }
-      renderAt(0);
-      raf = requestAnimationFrame(function tick(now){
-        if(done) return;
-        if(!t0) t0 = now;
-        var t = (now - t0) / 1000;
-        if(t >= END){ finish(); return; }
-        renderAt(t); raf = requestAnimationFrame(tick);
-      });
+      var last = build();
+      last.onfinish = function(){ finish(); };
+      // drop the layer hints once everything has settled so the final frame is rasterised crisp at device resolution
+      anims[0].onfinish = anims[1].onfinish = function(){};
+      setTimeout(function(){ if(!done){ logoSvg.style.willChange = "auto"; } }, ms(TAG_IN[1]) + 60);
     }catch(e){ finish(); }
   });
 })();

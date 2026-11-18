@@ -96,7 +96,7 @@
   var head=document.createElement("div");
   head.innerHTML=
     '<div class="vsw" id="vsw" role="tablist" aria-label="Showcase view"><button type="button" role="tab" id="vMine">My car</button><button type="button" role="tab" id="vShow">Show view<span class="pb">Public</span></button></div>'+
-    '<div class="privBan" id="privBan">🔒 <span>Private — only you see this on your phone.</span></div>'+
+    '<div class="privBan" id="privBan">'+(window.dipstickIconHtml?dipstickIconHtml("lock","ico"):"")+'<span>Private — only you see this on your phone.</span></div>'+
     '<div class="pubBan vhide" id="pubBan">👁 <span id="pubBanTxt">What people see if they scan your sticker in Show mode, or open your link.</span></div>'+
     '<div class="gal"><div class="tabs" role="tablist"><button type="button" id="gPh" class="on">Photos<span class="n" id="nPh"></span></button><button type="button" id="gVi">Videos<span class="n" id="nVi"></span></button></div>'+
     '<div class="gframe l" id="gframe"><div class="stageWrap" id="stageWrap"><div class="stage" id="stage" aria-live="polite"></div><img class="gBrand hide" src="./trac3-wordmark.svg" alt="Trac3" id="gBrand"/><div class="gPlate hide" id="gPlate" aria-hidden="true"><span class="uk">UK</span><span class="reg" id="gPlateReg"></span></div></div><div class="gmeta"><b id="gCap"></b><span id="gPos"></span></div><div class="gctl" id="gCtl"></div><div class="gsay" id="gSay" aria-live="polite"></div><div class="strip" id="strip"></div></div></div>'+
@@ -208,13 +208,14 @@
 
   // ---------- My car summary ----------
   function due(dt){ if(!dt) return null; var t=new Date(dt+"T12:00:00"); if(isNaN(t)) return null; var days=Math.round((t-Date.now())/86400000);
-    return {days:days,cls:days<0?"bad":days<=30?"amb":"ok",txt:days<0?"Overdue":days===0?"Due today":days<=60?days+" days":t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}),sub:days<0?"Was due "+t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}):"Due "+t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}; }
+    return {days:days,cls:days<0?"bad":days<=30?"amb":"ok",txt:days<0?"Overdue":days===0?"Due today":days<=60?days+" days":t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}),sub:days<0?"Was due "+t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}):(days>60?"In "+days+" days":"Due "+t.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}))}; }
   function paintMine(){
     var d=S.getDraft(idx), b=d.basics||{};
     var work=diy.reduce(function(s,w){ return s+(window.D3Diy?D3Diy.cost(w):0); },0);
     var trips=rd("gt.driveLog",[]).filter(function(t){ return t&&owns(t.plate); }), tripCost=trips.reduce(function(s,t){return s+(+t.cost||0)},0), tripMiles=trips.reduce(function(s,t){return s+(+t.miles||0)},0);
     var mot=due(car.mot), tax=due(car.tax), M=MEDIA.mine;
-    var title=[b.year,b.make,b.model].filter(Boolean).join(" ");
+    function tc(x){ x=String(x||""); return /^[A-Z0-9 \-]+$/.test(x)&&x.length>3?x.toLowerCase().replace(/\b[a-z]/g,function(m){return m.toUpperCase()}):x; }
+    var title=[b.year,tc(b.make),b.model].filter(Boolean).join(" ");
     var chips=[car.plate&&String(car.plate).toUpperCase(),b.variant,b.colour||car.colour,car.engine,car.fuel,car.miles&&(Number(car.miles).toLocaleString("en-GB")+" miles a year")].filter(Boolean);
     function tile(k,v,s,cls,href,w){ return '<'+(href?'a href="'+href+'"':'div')+' class="tile'+(w?" w":"")+'"><div class="k">'+k+'</div><div class="v'+(cls?" "+cls:"")+'">'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</'+(href?'a':'div')+'>'; }
     $("mineBox").innerHTML='<div class="tiles">'+

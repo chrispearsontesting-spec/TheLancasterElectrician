@@ -26,8 +26,8 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=79"/>
-<link rel="stylesheet" href="./tool-bar.css?v=2"/>
+<link rel="stylesheet" href="./ui.css?v=80"/>
+<link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:440px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
@@ -65,11 +65,11 @@ label.btn,#renew{display:flex !important;justify-content:center !important;align
 </head>
 <body>
 <h1>Insurance</h1>
-<div class="card"><p class="note">Renewal date</p><p class="when" id="exp">—</p><p class="left" id="expLeft"></p><p class="left">Change this date in Reminders on the home page.</p></div>
+<div class="card"><p class="note">Renewal date</p><p class="when" id="exp">—</p><p class="left" id="expLeft"></p></div>
 <div class="stack">
 <div class="card" style="margin:0">
   <p class="when" style="font-size:17px">Insurance documents</p>
-  <p class="note" style="margin-top:4px">Certificate, policy schedule, no claims discount proof and more. PDFs or photos.</p>
+  <p class="note" style="margin-top:4px">PDFs or photos.</p>
   <input id="docTitle" placeholder="Title (optional), e.g. No claims discount" style="width:100%;margin-top:12px;background:#0f0f11;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:12px;font-size:15px"/>
   <label class="btn" for="pick" id="up" data-iconed="1">Upload insurance documents</label>
   <input id="pick" type="file" multiple accept=".pdf,application/pdf,image/*"/>
@@ -232,6 +232,6 @@ pick.addEventListener("change", async function(){
 });
 show();
 </script>
-<script src="./icons.js?v=34"></script>
+<script src="./icons.js?v=35"></script>
 </body>
 </html>

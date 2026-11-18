@@ -26,8 +26,8 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=79"/>
-<link rel="stylesheet" href="./tool-bar.css?v=2"/>
+<link rel="stylesheet" href="./ui.css?v=80"/>
+<link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <link rel="stylesheet" href="./showcase-view.css?v=4"/>
 <style>
 *{box-sizing:border-box}
@@ -91,6 +91,7 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
 .moreLink{margin-top:10px;border-top:1px solid #2a2a2e;padding-top:2px}
 .moreLink>summary{cursor:pointer;color:#a0a0a0;font-size:13.5px;padding:10px 0;list-style:none}
 .moreLink>summary::-webkit-details-marker{display:none}
+.tools button svg,button.x svg{width:18px;height:18px;fill:currentColor;display:block;margin:auto}
 </style>
 </head>
 <body>
@@ -147,11 +148,11 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
 
 <div class="card">
   <h2>Photos</h2>
-  <p class="note">Up to 12. Tap ★ for the main photo. Location data is stripped before they leave your phone.</p>
+  <p class="note">Up to 12. Star one as the main photo. Location data is removed.</p>
   <div class="photos" id="photos"></div>
   <input type="file" id="pick" accept="image/*" multiple class="hide"/>
   <button class="add" type="button" id="addPhotos">+ Add photos</button>
-  <div class="row2h"><button class="btn small" type="button" id="useHome">Use my home photo</button><button class="btn small" type="button" id="toHome">Make ★ my home photo</button></div>
+  <div class="row2h"><button class="btn small" type="button" id="useHome">Use my home photo</button><button class="btn small" type="button" id="toHome">Main photo to home</button></div>
   <details class="moreLink" id="extPhoto">
   <summary>Link a photo from the web</summary>
   <label class="f" for="extUrl">Photo URL (https)</label>
@@ -180,7 +181,7 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
 
 <details class="card moreCard" id="socCard">
   <summary>Photos from socials</summary>
-  <p class="note">Up to 12 public Instagram or Facebook links. Shown as embeds; Trac3 doesn't copy them.</p>
+  <p class="note">Up to 12 public Instagram or Facebook links.</p>
   <div id="socials"></div>
   <button class="add" type="button" id="addSoc">+ Add an Instagram or Facebook link</button>
 </details>
@@ -195,7 +196,7 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
 
 <details class="card moreCard" id="clipCard">
   <summary>Clips</summary>
-  <p class="note">Up to 2 short clips (20 MB each). For longer videos, add a YouTube link above.</p>
+  <p class="note">Up to 2 clips, 20 MB each.</p>
   <div id="clips"></div>
   <input type="file" id="pickClip" accept="video/mp4,video/webm" class="hide"/>
   <div class="row2"><button class="add" type="button" id="addClipFile">+ From phone</button><button class="add" type="button" id="addClipApp">+ From Trac3 clips</button></div>
@@ -263,11 +264,11 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
       if(p.off){ var hn=document.createElement("div"); hn.className="ext"; hn.textContent="Not shared: tick it in My car to show it."; right.appendChild(hn); el.style.opacity=".55"; }
       if(p.url){ var ex=document.createElement("div"); ex.className="ext"; ex.textContent="Linked: "+p.url; right.appendChild(ex); }
       var tools=document.createElement("div"); tools.className="tools";
-      function b(t,lab,f,cls){ var x=document.createElement("button"); x.type="button"; x.textContent=t; x.setAttribute("aria-label",lab); if(cls) x.className=cls; x.onclick=f; tools.appendChild(x); }
-      b("★","Main photo",function(){ d.hero=i; S.saveDraft(idx,d); paintPhotos(); },i===d.hero?"on":"");
-      b("↑","Move up",function(){ if(i>0){ move(i,i-1); } });
-      b("↓","Move down",function(){ if(i<d.gallery.length-1){ move(i,i+1); } });
-      b("✕","Remove photo",async function(){ var gone=d.gallery.splice(i,1)[0]; if(d.hero===i) d.hero=0; else if(d.hero>i) d.hero--; S.saveDraft(idx,d); if(gone.m) await S.delMedia(gone.m); paintPhotos(); },"x");
+      function b(t,lab,f,cls){ var x=document.createElement("button"); x.type="button"; var sv=window.dipstickIcon&&dipstickIcon(t); if(sv) x.innerHTML=sv; else x.textContent=t; x.setAttribute("aria-label",lab); if(cls) x.className=cls; x.onclick=f; tools.appendChild(x); }
+      b("star","Main photo",function(){ d.hero=i; S.saveDraft(idx,d); paintPhotos(); },i===d.hero?"on":"");
+      b("up","Move up",function(){ if(i>0){ move(i,i-1); } });
+      b("down","Move down",function(){ if(i<d.gallery.length-1){ move(i,i+1); } });
+      b("close","Remove photo",async function(){ var gone=d.gallery.splice(i,1)[0]; if(d.hero===i) d.hero=0; else if(d.hero>i) d.hero--; S.saveDraft(idx,d); if(gone.m) await S.delMedia(gone.m); paintPhotos(); },"x");
       right.appendChild(tools); el.appendChild(im); el.appendChild(right); box.appendChild(el);
     })(i); }
     $("addPhotos").disabled=d.gallery.length>=12;
@@ -346,7 +347,7 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
         if(fi===0){ hd.appendChild(inp);
           if(order){ [["↑",-1,"Move up"],["↓",1,"Move down"]].forEach(function(a){ var mv=document.createElement("button"); mv.type="button"; mv.className="x mv"; mv.textContent=a[0]; mv.setAttribute("aria-label",a[2]);
             mv.onclick=function(){ var j=i+a[1]; if(j<0||j>=arr.length) return; var t=arr[i]; arr[i]=arr[j]; arr[j]=t; S.saveDraft(idx,d); paintAll(); }; hd.appendChild(mv); }); }
-          var x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="✕"; x.setAttribute("aria-label","Remove"); x.onclick=function(){ arr.splice(i,1); S.saveDraft(idx,d); paintAll(); }; hd.appendChild(x); el.appendChild(hd); el.appendChild(err); }
+          var x=document.createElement("button"); x.type="button"; x.className="x"; if(window.dipstickIcon) x.innerHTML=dipstickIcon("close"); else x.textContent="✕"; x.setAttribute("aria-label","Remove"); x.onclick=function(){ arr.splice(i,1); S.saveDraft(idx,d); paintAll(); }; hd.appendChild(x); el.appendChild(hd); el.appendChild(err); }
         else { el.appendChild(inp); el.appendChild(err); }
       });
       box.appendChild(el);
@@ -370,7 +371,7 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
       var c=d.clips[i], el=document.createElement("div"); el.className="item";
       var hd=document.createElement("div"); hd.className="hd";
       var cap=document.createElement("input"); cap.className="in"; cap.maxLength=80; cap.placeholder="Clip caption"; cap.value=c.cap||""; cap.oninput=function(){ c.cap=cap.value; S.saveDraft(idx,d); };
-      var x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="✕"; x.setAttribute("aria-label","Remove clip");
+      var x=document.createElement("button"); x.type="button"; x.className="x"; if(window.dipstickIcon) x.innerHTML=dipstickIcon("close"); else x.textContent="✕"; x.setAttribute("aria-label","Remove clip");
       x.onclick=async function(){ d.clips.splice(i,1); S.saveDraft(idx,d); await S.delMedia(c.m); paintClips(); };
       hd.appendChild(cap); hd.appendChild(x); el.appendChild(hd);
       var m=document.createElement("div"); m.className="note"; m.textContent=c.size?mb(c.size):""; el.appendChild(m);
@@ -477,6 +478,6 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
 <script src="./car-scope.js?v=1"></script>
 <script src="./diy-work.js?v=3"></script>
 <script src="./perf-g.js?v=2"></script>
-<script src="./showcase-view.js?v=4"></script>
+<script src="./showcase-view.js?v=5"></script>
 </body>
 </html>

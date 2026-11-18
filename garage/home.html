@@ -5,7 +5,7 @@
 <script src="./app-lock.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
-<link rel="stylesheet" href="./ui.css?v=79"/>
+<link rel="stylesheet" href="./ui.css?v=80"/>
 <title>Trac3</title>
 <meta name="description" content="MOT, tax and insurance reminders, service cost estimates, receipts, route costs and a share-for-sale report. Free, and your data stays on your phone."/>
 <meta property="og:type" content="website"/>
@@ -113,7 +113,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 .found{background:#1c1c1e;border:1px solid #2a2a2e;border-radius:12px;padding:12px;margin:10px 0;font-size:14px;line-height:1.5}
 .found b{color:#fff}
 .found .muted{color:#8b8b8b;font-size:13px}
-.mark{margin-left:8px;font-weight:800}
+.mark{margin-left:8px;font-weight:800;display:inline-flex;vertical-align:-3px}.mark svg{width:18px;height:18px;fill:currentColor}.dchip .pen svg{width:14px;height:14px;fill:currentColor}
 .mark.ok{color:#3dd68c}
 .mark.bad{color:#ff2a2a;animation:flashRed .55s ease-in-out infinite}
 .cFlash .when,.cFlash .left{color:#ef4444;animation:flashRed .85s ease-in-out infinite}
@@ -186,7 +186,7 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 .remBox{margin-top:14px;padding:12px;border:1px solid #2a2a2e;border-radius:14px;background:#111113}
 .remBox label{display:block;color:#8b8b8b;font-size:12px;margin:10px 0 4px}.remBox select,.remBox input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f2;border-radius:12px;padding:10px;font-size:16px}
 .remHead{display:flex;justify-content:space-between;align-items:center}.remHead label.tg{margin:0}
-.tg{position:relative;width:46px;height:26px;display:inline-block}.tg input{opacity:0;width:0;height:0}.tg span{position:absolute;inset:0;background:#3a3a3e;border-radius:13px;transition:.2s}.tg span:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.tg input:checked+span{background:#22c55e}.tg input:checked+span:before{transform:translateX(20px)}
+.tg{position:relative;width:46px;height:26px;display:inline-block}.tg input{opacity:0;width:0;height:0}.tg span{position:absolute;inset:0;background:#3a3a3e;border-radius:13px;transition:.2s}.tg span:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.tg input:checked+span{background:#7dd3fc}.tg input:checked+span:before{transform:translateX(20px);background:#0b0c0e}
 
 #taxSheet .panel{max-width:440px}
 #taxSheet h2{margin:2px 0 8px}
@@ -214,7 +214,7 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <input id="plateCam" type="file" accept="image/*" capture="environment" hidden/>
 <div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"/><button type="button" id="gear" aria-label="Settings" title="Settings" data-ico="settings"></button></div>
-<section id="emptyCar"><h2>Add your car</h2><p>Enter your number plate and Trac3 will fill in the details, MOT and tax dates for you.</p>
+<section id="emptyCar"><h2>Add your car</h2><p>Enter your plate. Trac3 fills in the details, MOT and tax dates.</p>
 <form id="emptyForm" action="#">
 <div class="plateEntry"><div class="ukPlate"><span class="ukStrip">UK</span><input id="emptyPlate" type="text" inputmode="text" enterkeyhint="search" placeholder="AB12 CDE" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Number plate"/></div></div>
 <button class="btn wide" type="submit" id="emptyGo" data-ico="search">Add car</button>

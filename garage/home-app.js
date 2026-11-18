@@ -87,7 +87,7 @@ function openBook(kind){
     "<input id='gEmail' type='email' placeholder='Garage email' value='"+String(c.motEmail||"").replace(/'/g,"&#39;")+"'/>"+
     "<input id='gPhone' type='tel' placeholder='Phone (optional)' value='"+String(c.motPhone||"").replace(/'/g,"&#39;")+"'/>"+
     "<button class='btn wide' type='button' id='gSave'>Save garage</button></div>";
-  if(c.motEmail) html+="<button class='btn wide' type='button' id='gEdit' style='background:transparent;color:#8b8b8b;text-decoration:underline;min-height:0'>Change my garage</button>";
+  if(c.motEmail) html+="<button class='btn wide' type='button' id='gEdit' data-ico='edit'>Change my garage</button>";
   document.getElementById("cLinks").innerHTML=html+form;
   var ge=document.getElementById("gEdit");
   if(ge) ge.onclick=function(){document.getElementById("gForm").style.display="";ge.style.display="none"};
@@ -144,17 +144,18 @@ function btns(list){
     return "<a class='btn' href='"+b.href+"' data-iconed='1'"+(b.ext?" target='_blank' rel='noopener'":"")+">"+b.lab+"</a>";
   }).join("")+"</div>";
 }
+function IC(k){ return window.dipstickIcon?dipstickIcon(k):""; }
 function mark(iso){
   var d=daysLeft(iso);
   if(d==null) return "";
-  if(d<0) return "<span class='mark bad'>\u2715</span>";
-  if(d<=31) return "<span class='mark soon'>!</span>";
-  return "<span class='mark ok'>\u2713</span>";
+  if(d<0) return "<span class='mark bad'>"+IC("close")+"</span>";
+  if(d<=31) return "<span class='mark soon'>"+IC("excl")+"</span>";
+  return "<span class='mark ok'>"+IC("done")+"</span>";
 }
 function row(title,iso,extra,buttons){
   var key = title.toLowerCase().replace(/\s+/g,"");
   var niceName = {"mot":"MOT","tax":"Tax","insurance":"Insurance","fullservice":"Full service","timingbelt":"Timing belt"}[key] || title;
-  return "<div class='item"+tone(iso)+"' data-key='"+key+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'><button type='button' class='dchip' data-date='"+key+"' data-name='"+niceName+"' aria-label='Change "+niceName+" date and reminder'>"+"<span class='dtxt'>"+(iso?nice(iso):"Add date")+"</span><span class='pen' aria-hidden='true'>\u270e</span></button></p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
+  return "<div class='item"+tone(iso)+"' data-key='"+key+"'><div><h3>"+title+mark(iso)+"</h3><p class='when'><button type='button' class='dchip' data-date='"+key+"' data-name='"+niceName+"' aria-label='Change "+niceName+" date and reminder'>"+"<span class='dtxt'>"+(iso?nice(iso):"Add date")+"</span><span class='pen' aria-hidden='true'>"+IC("edit")+"</span></button></p><p class='left'>"+leftTxt(iso)+(extra?" \u00b7 "+extra:"")+"</p></div>"+btns(buttons)+"</div>";
 }
 
 function carLogoHtml(name){
@@ -227,7 +228,7 @@ function paint(){
     row("Insurance",c.ins,c.insName?String(c.insName).replace(/[<>&"']/g,""):"",[{lab:"Policy",href:"insurance.html?v=20"},{lab:"Renew",href:"renew.html?v=14"}])+
     row("Full service",c.oil,"",[{lab:"Book service",job:"service"}])+
     row("Timing belt",bd,bd?("fitted "+nice(c.beltDate)+", every "+(c.beltYears||5)+" yrs"):"",[{lab:"Book change",job:"belt"}])+
-    "<div class='item"+(tl!=null&&tl<=0?" cOver":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=0?"<span class='mark bad'>\u2715</span>":(tl<=15?"<span class='mark soon'>!</span>":"<span class='mark ok'>\u2713</span>")))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+"<span class='dtxt'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"</span><span class='pen' aria-hidden='true'>\u270e</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1,copyPlate:1}])+"</div>";
+    "<div class='item"+(tl!=null&&tl<=0?" cOver":(tl!=null&&tl<=30?" cAmber":""))+"' data-key='tyres'><div><h3>Tyres"+(tl==null?"":(tl<=0?"<span class='mark bad'>"+IC("close")+"</span>":(tl<=15?"<span class='mark soon'>"+IC("excl")+"</span>":"<span class='mark ok'>"+IC("done")+"</span>")))+"</h3><p class='when'>"+(tl==null?"Set in Edit":(tl+"% tread life left"))+"</p><p class='left'><button type='button' class='dchip' data-date='tyres' data-name='Tyres' aria-label='Change tyre fitted date'>"+"<span class='dtxt'>"+(c.tyreDate?("Fitted "+nice(c.tyreDate)):"Add fitted date")+"</span><span class='pen' aria-hidden='true'>"+IC("edit")+"</span></button></p></div>"+btns([{lab:"Book change",job:"tyre"},{lab:"Compare tyres",href:"https://www.thetirelab.com/",ext:1,copyPlate:1}])+"</div>";
   try{remindBanner()}catch(e){}
 }
 function heroFrameSize(){
@@ -521,8 +522,8 @@ if(dues) dues.addEventListener("click",function(e){
     sheet.style.zIndex="30";
     var isBelt = key==="timingbelt";
     var lab = isBelt ? "Date the belt was fitted" : (key==="tyres" ? "Date the tyres were fitted" : "New expiry date");
-    var note = isBelt ? '<p class="left" style="margin-top:8px">Next change is worked out as fitted date + '+(c.beltYears||5)+' years (change the years in Edit).</p>' : '';
-    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>'+lab+'</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/>'+note+remHtml+'<div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="dateCancel" style="flex:1">Cancel</button><button class="btn" id="dateOk" style="flex:1;background:#14532d;color:#fff">Save</button></div></div>';
+    var note = isBelt ? '<p class="left" style="margin-top:8px">Next change: fitted date + '+(c.beltYears||5)+' years (set in Edit).</p>' : '';
+    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>'+lab+'</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/>'+note+remHtml+'<div style="margin-top:14px"><button class="btn" id="dateOk" data-ico="save" style="background:#7dd3fc !important;background-image:none !important;color:#0b0c0e !important">Save</button><button class="btn" id="dateCancel" data-ico="back">Back</button></div></div>';
     document.body.appendChild(sheet);
     if(rt){ sheet.querySelector("#remOn").onchange=function(){ sheet.querySelector("#remOpts").style.opacity=this.checked?"":".45"; };
       sheet.querySelector("#remLead").onchange=function(){ sheet.querySelector("#remCust").style.display=this.value==="c"?"":"none"; }; }

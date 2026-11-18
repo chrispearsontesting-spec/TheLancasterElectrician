@@ -173,7 +173,7 @@
     cheapest = null;
     others = [];
     $("cfPrice").textContent = "—";
-    $("cfMeta").textContent = "Prices for " + fuelLabel() + " near you.";
+    $("cfMeta").textContent = "Not searched yet.";
     $("cfGo").setAttribute("aria-disabled", "true");
     $("cfGo").removeAttribute("href");
     $("cfMapBtn").disabled = true;
@@ -521,7 +521,7 @@
     root.innerHTML =
       "<p class='cf-kicker'>Cheapest " + fuelLabel() + " nearby</p>" +
       "<p class='cf-price' id='cfPrice'>—</p>" +
-      "<p class='cf-meta' id='cfMeta'>Prices for " + fuelLabel() + " near you.</p>" +
+      "<p class='cf-meta' id='cfMeta'>Not searched yet.</p>" +
       "<div class='cf-chips' role='group' aria-label='Search radius'>" +
         [3, 5, 10, 20].map(function (n) {
           return "<button type='button' class='cf-chip' data-miles='" + n + "' aria-pressed='" + (n === state.miles) + "'>" + n + " miles</button>";

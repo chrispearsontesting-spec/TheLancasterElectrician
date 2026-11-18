@@ -50,7 +50,7 @@ function markFuel(){
     window.CYCLE="custom";
     if(lab) lab.textContent=electric?"Miles per kWh":"Miles per gallon";
     if(box){ box.hidden=false; if(!+box.value) box.value=electric?"3.5":"40"; box.placeholder=electric?"e.g. 3.5":"e.g. 40"; }
-    if(note) note.textContent="Not in the UK table. Type the figure for this car.";
+    if(note) note.textContent="Not listed. Type this car's figure.";
   }else{
     if(cycles) cycles.className="cycles";
     markCycles();

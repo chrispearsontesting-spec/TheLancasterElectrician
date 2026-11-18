@@ -26,7 +26,8 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./tool-bar.css?v=2"/>
+<script src="./icons.js?v=35" defer></script>
+<link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden}
@@ -46,6 +47,7 @@ select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,25
 @keyframes fl{50%{background:#7a4b00}}
 #bigStart{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7;background:#1a7f3a;color:#fff;border:0;border-radius:20px;padding:18px 28px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 #bigStart.hide{display:none}
+#bigStart{gap:10px;align-items:center}#bigStart .ico{color:#fff}
 .light{width:42px;height:42px;border-radius:50%;background:#333;border:2px solid #555;box-shadow:inset 0 0 8px #000}
 .light.on{background:#e10600;box-shadow:0 0 12px #e10600}
 #cancel{display:none}
@@ -83,10 +85,10 @@ canvas#chart{width:100%;height:auto;background:#0b0c0e;border-radius:12px;displa
 <div id="lights" style="display:none;position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:8;gap:28px">
   <span class="light"></span><span class="light"></span><span class="light"></span>
 </div>
-<div id="go" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9;font-size:48px;font-weight:800;color:#fff;text-shadow:0 2px 8px #000">🏁 GO</div>
+<div id="go" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9;font-size:48px;font-weight:800;color:#fff;text-shadow:0 2px 8px #000">GO</div>
 <div id="react" style="position:fixed;top:22%;left:50%;transform:translateX(-50%);z-index:8;font-size:18px;font-weight:700;color:#fff;text-shadow:0 1px 4px #000;display:none"></div>
 <div id="listening" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:13px;color:#73BDE0;display:none;align-items:center;gap:8px"><span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:#2f6fd6;color:#fff;align-items:center;justify-content:center"><svg class="ico" viewBox="0 -960 960 960" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/></svg></span><span id="listenTxt">Listening for “start run”</span></div>
-<button id="bigStart" type="button">🏁 Start run</button>
+<button id="bigStart" type="button" data-ico="flag">Start run</button>
 <div class="gpk" id="gPeak">Peak accel 0.00 · brake 0.00 · corner 0.00 G</div>
 <a class="btn backBtn fixed" href="home.html#drive">Back</a>
 <div class="overlay">

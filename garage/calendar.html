@@ -26,7 +26,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=79"/>
+<link rel="stylesheet" href="./ui.css?v=80"/>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
@@ -130,12 +130,12 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 <body>
 <a class="hback" href="home.html#hist" style="display:inline-block;color:#a8ccff;text-decoration:none;font-size:13px;padding:4px 0 8px">‹ Home</a>
 <h1>Drive diary</h1>
-<p class="muted">Tap a day to see work, uploads and journeys, or to add work you did.</p>
+<p class="muted">Tap a day to see or add work.</p>
 <p class="muted" id="mechStatus" style="display:none"></p>
 <div class="nav">
-  <button class="btn" type="button" id="prev">Prev</button>
+  <button class="btn" type="button" id="prev" data-ico="prev" aria-label="Previous month"></button>
   <b id="label"></b>
-  <button class="btn" type="button" id="next">Next</button>
+  <button class="btn" type="button" id="next" data-ico="next" aria-label="Next month"></button>
 </div>
 <div class="grid" id="dows"></div>
 <div class="grid" id="grid"></div>
@@ -202,13 +202,13 @@ function render(sel){
   var rItems=sel&&rmap[sel]?rmap[sel]:[];
   var remItems=sel&&remMap[sel]?remMap[sel]:[];
   var wItems=sel&&wmap[sel]?wmap[sel]:[];
-  var wHtml=sel?"<p class='muted' style='margin-top:12px'>"+D3Rem.niceDate(sel)+"</p>"+wItems.map(diyCard).join("")+"<button class='btn addw' type='button' data-addw='"+sel+"'>+ Add work</button>":"";
+  var wHtml=sel?"<p class='muted' style='margin-top:12px'>"+D3Rem.niceDate(sel)+"</p>"+wItems.map(diyCard).join("")+"<button class='btn addw' type='button' data-addw='"+sel+"' data-ico='add'>Add work</button>":"";
   setTimeout(function(){fillThumbs(box)},0);
   if(!items.length&&!rItems.length&&!remItems.length){box.innerHTML=wHtml+(wItems.length?"":"<p class='muted'>Nothing else on this day.</p>")+upNext();return}
   box.innerHTML=wHtml+remItems.map(remCard).join("")+items.map(function(t){
     var tm=new Date(t.when).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
     var end=t.end?new Date(t.end).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
-    var ico = t.type==="run" ? "🏁 " : "📍 ";
+    var ico = (window.dipstickIconHtml?dipstickIconHtml(t.type==="run"?"flag":"pin","ico"):"");
     return "<div class='card' data-id='"+t.id+"'><b class='title'>"+ico+(t.from||"Start")+" → "+(t.to||"Finish")+"</b><p class='muted'>"+tm+(end?" – "+end:"")+(t.type==="run"&&t.time?" · "+t.time:"")+"</p><div class='kv'><span>Miles</span><b>"+(+t.miles||0).toFixed(2)+"</b></div><div class='kv'><span>Cost</span><b>£"+(+t.cost||0).toFixed(2)+"</b></div><div class='kv'><span>MPG</span><b>"+(t.mpg||"-")+"</b></div><div class='row'><button class='btn' type='button' data-edit='"+t.id+"'>✎ Edit</button></div><div class='edit hide' id='ed-"+t.id+"'><label>Miles per gallon for this trip</label><input type='number' step='0.1' value='"+(t.mpg||"")+"' data-mpg='"+t.id+"'/><div class='row'><button class='btn' type='button' data-save='"+t.id+"'>Save mpg</button><button class='btn' type='button' data-del='"+t.id+"'>Delete journey</button></div></div></div>";
   }).join("")+rItems.map(function(t){ return "<div class='card route'><b class='title'>🗺 "+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><p class='muted'>Saved route · "+(+t.miles||0).toFixed(1)+" mi · one way "+moneyTxt(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp)+"</p></div>"; }).join("");
 }
@@ -307,8 +307,8 @@ function diyCard(w){
   return "<div class='card diy'><b class='title'>🔧 "+escR(w.title||"Work done")+"</b><p class='muted'>DIY work"+(ph.length?" · "+ph.length+" photo"+(ph.length>1?"s":""):"")+(inv.length?" · "+inv.length+" invoice"+(inv.length>1?"s":""):"")+"</p>"+
     (w.desc?"<p style='margin:6px 0 0;font-size:14px;white-space:pre-wrap'>"+escR(w.desc)+"</p>":"")+
     "<div class='ph'>"+ph.map(function(f){return "<img alt='' data-blob='"+f.id+"'/>"}).join("")+"</div>"+
-    inv.map(function(f){return "<a class='inv' target='_blank' rel='noopener' data-blob='"+f.id+"' data-type='"+escR(f.type)+"'>🧾 "+escR(f.title||f.name)+(f.price?" · £"+escR(f.price):"")+"</a>"}).join("")+
-    "<div class='row'><button class='btn' type='button' data-openw='"+w.id+"'>✎ Open / edit</button></div></div>";
+    inv.map(function(f){return "<a class='inv' target='_blank' rel='noopener' data-blob='"+f.id+"' data-type='"+escR(f.type)+"'>"+(window.dipstickIconHtml?dipstickIconHtml("doc","ico"):"")+""+escR(f.title||f.name)+(f.price?" · £"+escR(f.price):"")+"</a>"}).join("")+
+    "<div class='row'><button class='btn' type='button' data-openw='"+w.id+"' data-ico='edit'>Open / edit</button></div></div>";
 }
 var diyUrls=[];
 function fillThumbs(root){
@@ -325,8 +325,8 @@ function openWork(id,date){
     "<label>Date</label><input type='date' id='wDate' value='"+escR(w.date)+"'/>"+
     "<label>What did you do?</label><input id='wTitle' maxlength='80' placeholder='e.g. Full service, oil + filters' value='"+escR(w.title)+"'/>"+
     "<label>Description</label><textarea id='wDesc' placeholder='Parts used, mileage, notes…'>"+escR(w.desc)+"</textarea>"+
-    "<label>Photos</label><div class='pick'><label>📷 Camera<input type='file' accept='image/*' capture='environment' id='wCam'/></label><label>🖼 Gallery<input type='file' accept='image/*' multiple id='wGal'/></label></div>"+
-    "<label>Invoices / receipts</label><div class='pick'><label>🧾 Add PDF or photo<input type='file' accept='application/pdf,image/*' multiple id='wInv'/></label></div>"+
+    "<label>Photos</label><div class='pick'><label>"+(window.dipstickIconHtml?dipstickIconHtml("cam","ico"):"")+"Camera<input type='file' accept='image/*' capture='environment' id='wCam'/></label><label>"+(window.dipstickIconHtml?dipstickIconHtml("photo","ico"):"")+"Gallery<input type='file' accept='image/*' multiple id='wGal'/></label></div>"+
+    "<label>Invoices / receipts</label><div class='pick'><label>"+(window.dipstickIconHtml?dipstickIconHtml("doc","ico"):"")+"Add PDF or photo<input type='file' accept='application/pdf,image/*' multiple id='wInv'/></label></div>"+
     "<div id='wFiles'></div>"+
     "<div class='row'><button class='btn' type='button' id='wCancel'>Cancel</button><button class='btn' type='button' id='wSave' style='background:#14532d;color:#fff'>Save</button></div>"+
     (id?"<button class='btn' type='button' id='wDel' style='display:block;width:100%;margin-top:10px;background:#3a1414;color:#fca5a5'>Delete this work</button>":"")+"</div>";
@@ -337,7 +337,7 @@ function openWork(id,date){
     w.files.forEach(function(f){ if(removed.indexOf(f.id)<0) rows.push({old:f}); });
     pending.forEach(function(p){ rows.push({p:p}); });
     box.innerHTML=rows.map(function(r,i){ var f=r.old||r.p, inv=f.kind!=="photo";
-      return "<div class='fl'>"+(inv?"<span style='font-size:26px'>🧾</span>":"<img alt='' data-i='"+i+"'/>")+"<div class='fi'>"+escR(f.name)+
+      return "<div class='fl'>"+(inv?""+(window.dipstickIconHtml?dipstickIconHtml("doc","ico"):"")+"":"<img alt='' data-i='"+i+"'/>")+"<div class='fi'>"+escR(f.name)+
         (inv?"<input placeholder='Title (optional)' data-t='"+i+"' value='"+escR(f.title||"")+"'/><input placeholder='Price £ (optional)' inputmode='decimal' data-pr='"+i+"' value='"+escR(f.price||"")+"'/>":"")+
         "</div><button class='x' type='button' data-rm='"+i+"'>Remove</button></div>"; }).join("");
     rows.forEach(function(r,i){ var im=box.querySelector("img[data-i='"+i+"']"); if(!im) return;
@@ -370,7 +370,7 @@ document.getElementById("next").onclick=function(){view.setMonth(view.getMonth()
 <script src="./uploads-client.js?v=5"></script>
 <script src="./perf-g.js?v=2"></script>
 <script src="./cal-media.js?v=3"></script>
-<script src="./icons.js?v=33"></script>
+<script src="./icons.js?v=35"></script>
 <script src="./cal-lists.js?v=6"></script>
 <script src="./receipt-scan.js?v=2"></script>
 </body>

@@ -26,7 +26,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=79"/>
+<link rel="stylesheet" href="./ui.css?v=80"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -61,11 +61,11 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 <a class="hback" href="home.html" style="display:inline-block;color:#a8ccff;text-decoration:none;font-size:13px;padding:4px 0 8px">‹ Home</a>
 <img class="aboutLockup" src="./about-lockup.png" alt="Trac3. Everything Auto" width="240" height="91" style="display:block;width:min(240px,70%);height:auto;margin:0 0 10px"/>
 <h1>App lock &amp; backup</h1>
-<p class="lead">Lock the app with a PIN, and keep a backup file somewhere safe. Your data stays on this phone.</p>
+<p class="lead">PIN lock and backups. Your data stays on this phone.</p>
 
 <div class="card" id="lockCard">
   <h2>App lock <span class="pill" id="lockPill">Off</span></h2>
-  <p class="note">Asks for a PIN when Trac3 opens and after 5 minutes away. It stops others browsing your cars, but doesn't encrypt your data.</p>
+  <p class="note">Asks for a PIN on open and after 5 minutes away. Doesn’t encrypt your data.</p>
   <div id="lockOff">
     <label class="l" for="pin1">New PIN (4 to 6 digits)</label><input class="in pin" id="pin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
     <label class="l" for="pin2">Type it again</label><input class="in pin" id="pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
@@ -80,14 +80,14 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
     <div class="row2"><button class="btn" type="button" id="pinChg">Change PIN</button><button class="btn danger" type="button" id="pinOff">Turn off</button></div>
     <button class="btn" type="button" id="lockNow">Lock now</button>
   </div>
-  <p class="note">Forgot the PIN? You'd have to clear Trac3's data (Settings › Apps › Trac3 › Storage › Clear data), which deletes your cars. Keep a backup.</p>
+  <p class="note">Forgot the PIN? Only clearing Trac3’s data resets it, which deletes your cars. Keep a backup.</p>
   <div class="status" id="lockStatus"></div>
 </div>
 
 <div class="card" id="bkCard">
   <h2>Make a backup</h2>
   <p class="note" id="lastBk">You haven't made a backup on this phone yet.</p>
-  <p class="note">One locked file with your cars, reminders, history, photos and links.</p>
+  <p class="note">One locked file with everything.</p>
   <label class="l" for="bp1">Passphrase</label><input class="in" id="bp1" type="password" autocomplete="new-password" placeholder="e.g. four random words"/>
   <div class="meter"><i id="meter"></i></div><p class="note" id="strength"></p>
   <label class="l" for="bp2">Type it again</label><input class="in" id="bp2" type="password" autocomplete="new-password"/>
@@ -103,7 +103,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 
 <div class="card" id="exCard">
   <h2>Full data export</h2>
-  <p class="note">A readable copy of every car, reminder, journey, cost, photo and setting on this phone. Anyone with the file can open it. For a locked copy, use the backup above.</p>
+  <p class="note">A readable copy of everything. Not locked: anyone with the file can open it.</p>
   <button class="btn green" type="button" id="mkEx">Download all data</button>
   <button class="btn" type="button" id="mkCsv">Download costs as CSV</button>
   <div id="exReady" class="hide">
@@ -116,7 +116,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 
 <div class="card" id="rsCard">
   <h2>Restore a backup</h2>
-  <p class="note">Use this on a new phone, or after clearing Trac3's data. Locked .driv3 backups and .json exports both work.</p>
+  <p class="note">Works with .driv3 backups and .json exports.</p>
   <label class="file" id="fileLab">Choose a .driv3 or .json file<input type="file" id="rsFile" accept=".driv3,.json,application/json,application/octet-stream"/></label>
   <label class="l" for="rp">Passphrase</label><input class="in" id="rp" type="password" autocomplete="off"/>
   <button class="btn" type="button" id="openBk">Open backup</button>
@@ -289,6 +289,6 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
   };
 })();
 </script>
-<script src="./icons.js?v=33"></script>
+<script src="./icons.js?v=35"></script>
 </body>
 </html>

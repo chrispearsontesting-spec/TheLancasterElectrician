@@ -26,13 +26,14 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=79"/>
-<link rel="stylesheet" href="./tool-bar.css?v=2"/>
+<link rel="stylesheet" href="./ui.css?v=80"/>
+<link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{margin:0 auto;max-width:440px;padding:calc(16px + env(safe-area-inset-top)) 16px 28px}
 h1{font-size:26px;margin:8px 0 6px;font-weight:650}
+#modeTxt:empty{display:none}
 .lead{font-size:14px;color:#8b8b8b;margin:0 0 14px;line-height:1.45}
 .card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;margin-bottom:12px;padding:14px}
 .card h2{font-size:17px;margin:0 0 6px}
@@ -116,15 +117,15 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 </head>
 <body>
 <h1>Mechanic uploads</h1>
-<p class="lead">Your mechanic scans this code (or opens the link) and sends photos, invoices and notes. They land here and are saved on this phone, then wiped from the cloud.</p>
+<p class="lead">Your mechanic scans this code to send photos, invoices and notes. They’re saved on this phone, then wiped from the cloud.</p>
 
 <div class="card">
   <div class="seg" role="group" aria-label="What the QR shows"><button type="button" id="modeMech" aria-pressed="true">Mechanic mode</button><button type="button" id="modeShow" aria-pressed="false">Show mode</button></div>
-  <p class="note" id="modeTxt" style="margin-top:0">The QR lets your mechanic send work photos and invoices.</p>
+  <p class="note" id="modeTxt" style="margin-top:0"></p>
   <div class="carRow" id="carRow"></div>
   <div class="qrBox">
     <canvas id="qr" width="10" height="10" aria-hidden="true"></canvas>
-    <div class="stTop"><span class="stIco" aria-hidden="true" data-ico="qr"></span><div><b>Your car's QR sticker</b><div class="cap" id="qrCap">Your Trac3 sticker</div></div></div>
+    <div class="stTop"><span class="stIco" aria-hidden="true" data-ico="qr"></span><div><b>Your car's QR sticker</b><div class="cap" id="qrCap">Mechanics scan it to send work.</div></div></div>
     <button class="btn viewQr" type="button" id="viewQr" aria-haspopup="dialog" aria-controls="qrView">View QR code</button>
     <button class="btn order" type="button" id="orderSt"><span>Order a printed sticker</span><small>Tough engine-bay sticker, posted to you</small></button>
   </div>
@@ -181,7 +182,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 
 <div class="card">
   <h2>Received work</h2>
-  <p class="note">These also appear on their day in your <a href="calendar.html?v=7" style="color:#7dd3fc">Drive diary</a>, which collects new ones each time you open it.</p>
+  <p class="note">Also shown in your <a href="calendar.html?v=7" style="color:#7dd3fc">Drive diary</a>.</p>
   <button class="btn" type="button" id="check" data-ico="check">Check for uploads</button>
   <div class="status" id="checkStatus"></div>
   <div id="jobs"></div>
@@ -204,7 +205,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 <script src="./qrcode.js"></script>
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=5"></script>
-<script src="./icons.js?v=33"></script>
+<script src="./icons.js?v=35"></script>
 <script src="./sticker/sticker.js?v=14"></script>
 <script>
 (function(){
@@ -221,7 +222,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
   var plate=U.cleanPlate(car.plate);
   function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
   $("carRow").innerHTML=(plate?'<span class="plate"><span class="uk">UK</span><span class="reg">'+esc(plate)+'</span></span>':'')+'<b>'+esc(U.niceName(car))+'</b>';
-  $("qrCap").textContent="Your Trac3 sticker. Mechanics scan it to send photos & invoices.";
+  $("qrCap").textContent="Mechanics scan it to send work.";
   $("linkTxt").textContent=url;
 
   // Sticker: James May's v14 frame with this car's real link drawn on in the browser (the link changes with "New link").
@@ -358,8 +359,8 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
     $("pausedBanner").classList.toggle("hide",!p||sm);
     $("showBanner").classList.toggle("hide",!sm);
     $("modeMech").setAttribute("aria-pressed",String(!sm)); $("modeShow").setAttribute("aria-pressed",String(sm));
-    $("modeTxt").textContent=sm?"The QR shows your car's showcase. Nothing else from Trac3 is shared.":"The QR lets your mechanic send work photos and invoices.";
-    $("qrCap").textContent=sm?"Your Trac3 sticker. Anyone who scans it sees your showcase.":"Your Trac3 sticker. Mechanics scan it to send photos & invoices.";
+    $("modeTxt").textContent="";
+    $("qrCap").textContent=sm?"Anyone who scans it sees your showcase.":"Mechanics scan it to send work.";
     $("pauseRow").classList.toggle("hide",sm); $("codeRow").classList.toggle("hide",sm); $("mechOnly").classList.toggle("hide",!sm);
     $("showTxt").textContent=car.showId&&car.showPublished?"Your showcase is published. Edit it any time.":"Make a show card with photos, stats and mods. Show mode points this same QR at it.";
     var code=car.upCode||"", unknown=!code&&car.srvCode;

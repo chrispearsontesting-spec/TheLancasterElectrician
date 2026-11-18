@@ -38,6 +38,10 @@
     prev:svg('M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z'),
     next:svg('M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z'),
     lock:svg('M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm296.5-143.5Q560-327 560-360t-23.5-56.5Q513-440 480-440t-56.5 23.5Q400-393 400-360t23.5 56.5Q447-280 480-280t56.5-23.5ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z'),
+    done:svg('M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z'),
+    excl:svg('M480-200q-33 0-56.5-23.5T400-280q0-33 23.5-56.5T480-360q33 0 56.5 23.5T560-280q0 33-23.5 56.5T480-200Zm-80-240v-360h160v360H400Z'),
+    up:svg('M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z'),
+    down:svg('M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z'),
     close:svg('m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z'),
     copy:svg('M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h400v80H200Z'),
     share:svg('M680-80q-50 0-85-35t-35-85q0-6 3-28L282-392q-16 15-37 23.5t-45 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q24 0 45 8.5t37 23.5l281-164q-2-7-2.5-13.5T560-760q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-24 0-45-8.5T598-679L317-515q2 7 2.5 13.5t.5 13.5q0 7-.5 13.5T317-461l281 164q16-15 37-23.5t45-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Z'),
@@ -118,7 +122,31 @@
   window.dipstickIconSvg=S;
   window.dipstickIcon=function(key){ var k=resolve(key); return (k&&S[k])||""; };
   window.dipstickIconHtml=iconHtml;
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){run();});
-  else run();
+  /* Short pages: sit the bottom Back button at the bottom of the screen
+     (only when the page doesn't scroll; long pages keep it after the content). */
+  var pinning=false;
+  function pinBack(){
+    if(pinning) return; pinning=true;
+    try{
+      var all=document.querySelectorAll("a.backBtn:not(.fixed)"), b=all[all.length-1];
+      if(!b){ return; }
+      b.style.removeProperty("margin-top");
+      if(!b.offsetParent) return;
+      var vh=window.innerHeight, de=document.documentElement;
+      if(de.scrollHeight>vh+1) return;
+      var base=parseFloat(getComputedStyle(b).marginTop)||0;
+      var gap=vh-16-b.getBoundingClientRect().bottom-(window.scrollY||0);
+      if(gap>1) b.style.setProperty("margin-top",(base+gap)+"px","important");
+    }finally{ pinning=false; }
+  }
+  function startPin(){
+    pinBack();
+    window.addEventListener("resize",pinBack);
+    window.addEventListener("load",pinBack);
+    if(window.ResizeObserver){ var t=0; new ResizeObserver(function(){ clearTimeout(t); t=setTimeout(pinBack,30); }).observe(document.body); }
+  }
+  window.dipstickPinBack=pinBack;
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){run();startPin();});
+  else { run(); startPin(); }
   document.addEventListener("click",function(){ setTimeout(run,30); });
 })();

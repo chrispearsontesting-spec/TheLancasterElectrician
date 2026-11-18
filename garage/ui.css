@@ -112,3 +112,6 @@ input,select{
   margin-top:10px !important;
 }
 .accBtn .chev{font-size:18px}
+
+/* Round 6: one input height across pages */
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not(.sw),select{min-height:48px;box-sizing:border-box}

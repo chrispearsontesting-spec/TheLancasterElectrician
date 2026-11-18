@@ -108,21 +108,24 @@
     });
     return out.sort(function(a,b){return a.fireAt-b.fireAt});
   }
-  /* Friendly booking email (no mileage). Returns {to,subject,body,href} (href "" when no garage email). */
+  /* Friendly booking email. Short: greeting, the ask, cost/time, thanks. No dates or job facts. */
+  function titleCar(s){
+    return String(s||"").trim().split(/\s+/).map(function(w){
+      if(/^[A-Z]{4,}$/.test(w)) return w.charAt(0)+w.slice(1).toLowerCase();
+      return w;
+    }).join(" ");
+  }
   function email(car,type,opts){
     var c=car||{},o=opts||{};type=type==="tyre"?"tyres":type;
-    var pl=plate(c.plate),model=[c.make,c.model].filter(Boolean).join(" ")||c.name||c.nick||"car";
-    var due=dueOf(c,type),job={mot:"an MOT",service:"a full service",belt:"a timing belt change",tyres:"a tyre check"}[type]||"a service";
+    var pl=plate(c.plate);
+    var model=titleCar([c.make,c.model].filter(Boolean).join(" ")||c.name||c.nick||"car");
+    var job={mot:"an MOT",service:"a full service",belt:"a timing belt change",tyres:"a tyre check"}[type]||"a service";
     var subj={mot:"MOT",service:"Full service",belt:"Timing belt change",tyres:"Tyre check"}[type]||"Booking";
+    /* Only the day the user picked on the booking page is mentioned, never fitted/due dates. */
     var when=day(o.preferredDate)?" on "+niceDate(o.preferredDate):"";
-    var lines=["Hi "+(String(c.motName||"").trim()||"there")+",","","Could I book my "+model+" ("+pl+") in for "+job+when+"?"];
-    function d(v){return day(v)?niceDate(v):""}
-    if(type==="mot"&&d(due))lines.push("MOT expires "+d(due)+".");
-    if(type==="service"&&d(due))lines.push("Due "+d(due)+".");
-    if(type==="belt"&&d(due))lines.push("Due by "+d(due)+".");
-    if(type==="tyres"&&d(due))lines.push("Due a check around "+d(due)+".");
-    if(String(o.comments||"").trim())lines.push("","Also: "+String(o.comments).trim().slice(0,4000));
-    lines.push("","Please let me know availability and roughly what it will cost.","","Thanks!");
+    var lines=["Hi "+(String(c.motName||"").trim()||"there")+",","","Could I book my "+model+(pl?" ("+pl+")":"")+" in for "+job+when+"?"];
+    if(String(o.comments||"").trim()) lines.push("",String(o.comments).trim().slice(0,4000));
+    lines.push("",(when?"Let me know if that day works":"Let me know when you can fit it in")+", and roughly what it'll cost.","","Thanks!");
     var subject=subj+(pl?" for "+pl:""),to=String(c.motEmail||"").trim(),body=lines.join("\n");
     return {to:to,subject:subject,body:body,href:/^[^@\s?&#]+@[^@\s?&#]+\.[^@\s?&#]+$/.test(to)?"mailto:"+encodeURIComponent(to).replace(/%40/g,"@")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body):""};
   }

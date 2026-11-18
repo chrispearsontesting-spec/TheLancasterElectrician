@@ -692,3 +692,27 @@ function syncDates(){
 syncDates();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"}).catch(function(){});}
 remindHash();
+
+/* Wallet on the website: show the phone's verification sheet (WebAuthn passkey, face /
+   fingerprint / screen lock) from the tap itself, then open the Wallet already unlocked.
+   In the Android app the Wallet page shows Android's own sheet as it opens instead. */
+(function(){
+  function init(){
+  var L=window.D3WalletLock, sheet=false;
+  var a=document.querySelector('a[href="wallet.html"]');
+  if(!L||!a) return;
+  var native=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+  if(native) return;
+  L.systemSheet().then(function(v){ sheet=!!v; }).catch(function(){});
+  a.addEventListener("click",function(e){
+    if(!sheet||L.unlocked()) return;
+    e.preventDefault();
+    sessionStorage.removeItem("d3.walletNoAuto");
+    L.unlock().then(function(ok){
+      if(!ok) sessionStorage.setItem("d3.walletNoAuto","1");
+      location.href="wallet.html";
+    },function(){ sessionStorage.setItem("d3.walletNoAuto","1"); location.href="wallet.html"; });
+  });
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else setTimeout(init,0);
+})();

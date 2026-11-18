@@ -424,7 +424,8 @@
     var ok=false;
     try{ ok=await Lock.unlock(); }catch(e){ ok=false; }
     if(!ok){
-      el("needPin").hidden=false;
+      var k=(await Lock.canBio()).kind;
+      el("needPin").hidden=!(k==="none");
       return false;
     }
     rec=await Store.load(car);
@@ -462,7 +463,7 @@
     if(el("lockCar")) el("lockCar").textContent=carName(car);
     if(el("openCar")) el("openCar").textContent=carName(car);
     var info=await Lock.canBio();
-    if(el("unlockBtn")) el("unlockBtn").textContent=info.label||"Unlock with fingerprint";
+    if(el("unlockBtn")) el("unlockBtn").textContent=info.label||"Unlock";
     if(info.kind==="none") el("needPin").hidden=false;
     rec=await Store.load(car); // migrate even while locked; no photos shown
     if(Lock.unlocked()){
@@ -471,7 +472,18 @@
       if(q.get("doc")&&await openExisting(q.get("doc"))) return;
       if(q.get("open")){ var d=first(q.get("open")); if(d){ showSaved(d); return; } }
       setView("open");
-    }else setView("locked");
+    }else{
+      setView("locked");
+      /* Like Google Wallet: the phone's own verification sheet appears straight away, with this
+         locked screen behind it. After a cancel (here or on the home tap) it waits for Unlock. */
+      var skip=sessionStorage.getItem("d3.walletNoAuto")==="1";
+      sessionStorage.removeItem("d3.walletNoAuto");
+      if(!skip && (info.kind==="cap"||info.kind==="webauthn")){
+        /* If the app lock is up, let it finish first (one sheet at a time); its unlock counts. */
+        if(document.documentElement.classList.contains("d3lk")) window.addEventListener("driv3:unlock",function(){ doUnlock(); },{once:true});
+        else doUnlock();
+      }
+    }
   }
 
   function onGridClick(e){

@@ -106,13 +106,29 @@
       '<button type="button" class="lnk" id="d3back">Back to PIN</button>';
   }
   function pad(){ var p=el.parentNode; if(p) p.removeChild(el); el=null; build(); show(); }
-  async function bio(){ if(!provider) return; try{ if(await provider.unlock()) unlock(); else msg("Not recognised. Use your PIN."); }catch(e){ msg("Use your PIN."); } }
+  var bioBusy=false;
+  async function bio(){ if(!provider||bioBusy) return; bioBusy=true;
+    try{ if(await provider.unlock()){ try{ ss.setItem("d3.bioAt",String(Date.now())); }catch(e){} unlock(); } else msg("Use your PIN or try again."); }catch(e){ msg("Use your PIN or try again."); }
+    bioBusy=false; }
+  /* Android app: the phone's own verification sheet (face / fingerprint, phone PIN as fallback). */
+  function nativeProvider(){
+    try{
+      var C=root.Capacitor; if(!C||!C.Plugins||!(C.isNativePlatform&&C.isNativePlatform())) return null;
+      var P=C.Plugins.Driv3Biometric; if(!P) return null;
+      return {name:"face or fingerprint",
+        available:function(){ return P.isAvailable().then(function(r){ return !!(r&&r.isAvailable); }).catch(function(){ return false; }); },
+        unlock:function(){ return P.verifyIdentity({title:"Unlock Trac3",subtitle:"Trac3"}).then(function(){ return true; },function(){ return false; }); }};
+    }catch(e){ return null; }
+  }
   function show(){
     addStyle(); build(); doc.documentElement.classList.add("d3lk");
     if(!el.parentNode){ if(doc.body) doc.body.appendChild(el); else doc.addEventListener("DOMContentLoaded",function(){ if(doc.documentElement.classList.contains("d3lk")) doc.body.appendChild(el); }); }
     entry=""; dots(); tick();
     var b=(el&&el.querySelector("#d3bio"));
-    if(provider&&b){ Promise.resolve(provider.available()).then(function(ok){ if(ok){ b.style.display=""; b.textContent="Use "+(provider.name||"fingerprint"); } }).catch(function(){}); }
+    if(!provider) provider=nativeProvider();
+    if(provider&&b){ Promise.resolve(provider.available()).then(function(ok){ if(ok){ b.style.display=""; b.textContent="Use "+(provider.name||"fingerprint");
+      /* Show the system sheet straight away; the PIN pad stays behind it as the fallback. */
+      if(doc.visibilityState!=="hidden") bio(); } }).catch(function(){}); }
   }
   function lockNow(){ ss.removeItem("d3.unlock"); if(isOn()) show(); }
   function guard(){ if(!isOn()) return; if(unlocked()) ss.removeItem("d3.hiddenAt"); else show(); }

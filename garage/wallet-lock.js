@@ -30,7 +30,8 @@
     try{
       if(typeof p.isAvailable==="function"){
         var r=await p.isAvailable();
-        return !!(r&&(r.isAvailable||r.available||r.has===true||r));
+        if(r&&typeof r==="object") return !!(r.isAvailable||r.available||r.has===true);
+        return !!r;
       }
       if(typeof p.checkBiometry==="function"){
         var b=await p.checkBiometry();
@@ -43,7 +44,8 @@
     var p=capPlugin(); if(!p) return false;
     try{
       if(typeof p.verifyIdentity==="function"){
-        await p.verifyIdentity({reason:"Unlock your Trac3 Wallet",title:"Unlock Wallet",subtitle:"Confirm it's you",description:"Use your fingerprint or screen lock"});
+        /* Android's own BiometricPrompt: face or fingerprint, phone PIN/pattern/password as fallback. */
+        await p.verifyIdentity({reason:"Unlock Wallet",title:"Unlock Wallet",subtitle:"Trac3"});
         return true;
       }
       if(typeof p.authenticate==="function"){
@@ -119,25 +121,35 @@
   }
 
   async function canBio(){
-    if(await capAvailable()) return {kind:"cap",label:"Unlock with fingerprint"};
-    if(waOk() && (waStored() || await waPlatform())) return {kind:"webauthn",label:"Unlock with fingerprint"};
+    if(await capAvailable()) return {kind:"cap",label:"Unlock"};
+    if(waOk() && (waStored() || await waPlatform())) return {kind:"webauthn",label:"Unlock"};
     if(pinOn()) return {kind:"pin",label:"Unlock with PIN"};
     return {kind:"none",label:"Unlock"};
   }
+  /* A system unlock that just happened for the app lock (same sheet) counts for the wallet too. */
+  function recentBio(){ var t=+ss.getItem("d3.bioAt")||0; return t && now()-t<15000; }
 
+  /* Order: Android's own sheet (native app) > WebAuthn platform authenticator with
+     userVerification "required" (Android Chrome shows the same face/fingerprint/screen-lock
+     sheet) > the Trac3 PIN, which is only used when neither exists. Cancelling the
+     system sheet does not drop to the PIN: the locked screen offers Unlock to try again. */
   async function unlock(){
     if(unlocked()){ markUnlocked(); return true; }
+    if(recentBio()){ markUnlocked(); return true; }
     if(await capAvailable()){
       if(await capUnlock()){ markUnlocked(); return true; }
-      if(pinOn()){ var a=await pinUnlock(); if(a){ markUnlocked(); return true; } }
       return false;
     }
-    var hasStored=!!waStored();
+    /* WebAuthn: call it before any other await when we already have a passkey, so the
+       tap that opened the Wallet still counts as the user gesture. */
+    if(waOk() && waStored()){
+      if(await waUnlock()){ markUnlocked(); return true; }
+      return false;
+    }
     var platform=false;
     try{ platform=await waPlatform(); }catch(e){}
-    if(hasStored || platform){
+    if(platform){
       if(await waUnlock()){ markUnlocked(); return true; }
-      if(pinOn()){ var b=await pinUnlock(); if(b){ markUnlocked(); return true; } }
       return false;
     }
     if(pinOn()){
@@ -164,7 +176,9 @@
 
   var api={
     TTL:TTL, unlocked:unlocked, unlock:unlock, lock:lock, touch:touch,
-    canBio:canBio, capAvailable:capAvailable, waOk:waOk, pinOn:pinOn, guardPage:guardPage
+    canBio:canBio, capAvailable:capAvailable, waOk:waOk, waStored:waStored, pinOn:pinOn, guardPage:guardPage,
+    /* true when unlock() would show a system sheet (native or a WebAuthn passkey on this phone) */
+    systemSheet:async function(){ if(await capAvailable()) return true; if(waOk()&&waStored()) return true; return await waPlatform(); }
   };
   if(typeof module!=="undefined"&&module.exports) module.exports=api;
   else {

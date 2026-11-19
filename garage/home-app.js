@@ -717,49 +717,5 @@ remindHash();
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init); else setTimeout(init,0);
 })();
 
-/* One friendly backup reminder once about half of a car's details are filled in, and only
-   again if a lot more has been added and there's still no backup. gt.bkNudge = {at, score}. */
-(function(){
-  function fillScore(c){
-    if(!c) return 0;
-    var has=function(v){ return v!=null&&String(v).trim()!==""; };
-    var anyKey=function(prefix){ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k&&k.indexOf(prefix)===0&&(localStorage.getItem(k)||"").length>20) return true; } return false; };
-    var list=function(k){ try{ var v=JSON.parse(localStorage.getItem(k)||"[]"); return Array.isArray(v)?v.length:0; }catch(e){ return 0; } };
-    var items=[has(c.mot),has(c.tax),has(c.ins),has(c.oil),has(c.tyreDate)||has(c.beltDate),has(c.photo),
-      has(c.motName)||has(c.motEmail)||has(c.motTel),has(c.insName)||has(c.insWeb),has(c.miles),has(c.mpg),
-      anyKey("gt.wallet."),anyKey("gt.insDocs."),has(localStorage.getItem("gt.reminders")),list("gt.driveLog")>0,list("gt.diy")>0];
-    var n=items.filter(Boolean).length; return n/items.length;
-  }
-  function show(score){
-    if(document.getElementById("bkNudge")) return;
-    var d=document.createElement("div"); d.id="bkNudge"; d.setAttribute("role","dialog"); d.setAttribute("aria-modal","true"); d.setAttribute("aria-labelledby","bkNudgeT");
-    d.innerHTML='<style>#bkNudge{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:12px 12px calc(16px + env(safe-area-inset-bottom))}'+
-      '#bkNudge .p{width:100%;max-width:440px;background:#141416;border:1px solid #2a2a2e;border-radius:20px;padding:18px 16px 14px;color:#f2f2f2}'+
-      '#bkNudge h2{margin:6px 0 6px;font-size:19px}#bkNudge p{margin:0 0 6px;color:#b9b9b9;font-size:14px;line-height:1.45}'+
-      '#bkNudge .ic{width:44px;height:44px;border-radius:50%;background:#101a22;border:1px solid #23425a;display:flex;align-items:center;justify-content:center;color:#7dd3fc}'+
-      '#bkNudge .ic svg{width:24px;height:24px;fill:currentColor}'+
-      '#bkNudge .go{background:#7dd3fc !important;background-image:none !important;color:#0b0c0e !important;justify-content:center !important}</style>'+
-      '<div class="p"><div class="ic">'+((window.dipstickIcon&&dipstickIcon("shield"))||"")+'</div><h2 id="bkNudgeT">Nice work, your car is taking shape</h2>'+
-      '<p>Make a backup so your cars, photos and reminders are safe if you change or lose your phone. It takes a minute.</p>'+
-      '<a class="btn wide go" href="security.html#bkCard" id="bkNudgeGo">Back up now</a><button class="btn" type="button" id="bkNudgeNo">Not now</button></div>';
-    document.body.appendChild(d);
-    function done(){ try{ localStorage.setItem("gt.bkNudge",JSON.stringify({at:Date.now(),score:Math.round(score*100)/100})); }catch(e){} d.remove(); }
-    d.querySelector("#bkNudgeNo").onclick=done;
-    d.querySelector("#bkNudgeGo").addEventListener("click",done);
-    d.addEventListener("click",function(e){ if(e.target===d) done(); });
-  }
-  function check(){
-    try{
-      if(+localStorage.getItem("gt.lastBackup")) return;
-      var g=JSON.parse(localStorage.getItem("gt.garage")||"null"); if(!g||!g.cars||!g.cars.length) return;
-      if(document.querySelector(".sheet.on,#d3pp:not([hidden]),#d3lock")) return;
-      var score=Math.max.apply(null,g.cars.map(fillScore));
-      var prev=null; try{ prev=JSON.parse(localStorage.getItem("gt.bkNudge")||"null"); }catch(e){}
-      if(score<0.5) return;
-      if(prev&&score<(prev.score||0)+0.25) return;
-      show(score);
-    }catch(e){}
-  }
-  window.dipstickBackupNudge={check:check,score:fillScore};
-  setTimeout(check,1500);
-})();
+/* Backup reminder 7 days after the first car (backup-remind.js): in-app card on open. */
+(function(){ function go(){ if(window.D3BackupRemind){ D3BackupRemind.markFirstUse(); D3BackupRemind.check(); } } setTimeout(go,1200); })();

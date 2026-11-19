@@ -151,6 +151,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 
 <script src="./backup.js?v=3"></script>
 <script src="./passphrase.js?v=1"></script>
+<script src="./backup-remind.js?v=1"></script>
 <script src="./wallet-lock.js?v=3"></script>
 <script src="./export.js?v=1"></script>
 <script>
@@ -250,7 +251,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
     }catch(e){ say("bkStatus","Couldn't make the backup: "+e.message,"bad"); }
     btn.disabled=false; btn.textContent="Make backup";
   };
-  function saved(how){ localStorage.setItem("gt.lastBackup",String(Date.now())); paintLast(); say("bkStatus",how,"good"); }
+  function saved(how){ localStorage.setItem("gt.lastBackup",String(Date.now())); if(window.D3BackupRemind) D3BackupRemind.backedUp(); paintLast(); say("bkStatus",how,"good"); }
   function download(){
     var url=URL.createObjectURL(new Blob([made.bytes],{type:"application/octet-stream"})), a=document.createElement("a");
     a.href=url; a.download=made.name; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(url);a.remove()},4000);
@@ -340,7 +341,9 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
   };
   $("doRs").onclick=async function(){
     if(!opened) return; var btn=this; btn.disabled=true; say("rsStatus","Restoring…");
-    try{ await B.restore(opened.snap); opened=null; $("rp").value=""; $("rsReady").classList.add("hide");
+    try{ var made=opened.created; await B.restore(opened.snap); opened=null;
+      /* Restored from a backup: that file counts as this phone's last backup. */
+      try{ var mt=typeof made==="number"?made:Date.parse(made); localStorage.setItem("gt.lastBackup",String(Math.max(+localStorage.getItem("gt.lastBackup")||0, mt>0?mt:Date.now()))); if(window.D3BackupRemind) D3BackupRemind.backedUp(); }catch(e){} $("rp").value=""; $("rsReady").classList.add("hide");
       $("rsStatus").innerHTML='Restored. <a href="home.html" style="color:#8ab4ff">Open Trac3</a>'; $("rsStatus").className="status good"; }
     catch(e){ say("rsStatus","Restore stopped: "+e.message,"bad"); }
     btn.disabled=false;

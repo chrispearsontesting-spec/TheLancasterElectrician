@@ -151,6 +151,31 @@
     return (d&&d.title)||(s&&s.title)||"Document";
   }
 
+  /* Opened from another page (e.g. Reminders > Insurance > View): Back goes straight there. */
+  var FROM=(function(){ var f=new URLSearchParams(location.search).get("from")||""; return /^[a-z0-9-]+\.html(\?[\w=&.-]*)?$/i.test(f)?f:""; })();
+  var deepDoc=new URLSearchParams(location.search).get("doc")||"", autoOpened=false, tried={};
+  function goFrom(){
+    var ref=""; try{ ref=new URL(document.referrer).pathname; }catch(e){}
+    if(ref && ref.slice(-FROM.split("?")[0].length-1)==="/"+FROM.split("?")[0] && history.length>1) history.back();
+    else location.replace(FROM);
+  }
+  /* Insurance files with no policy number: read it from the document on the phone
+     (PDF text first, then Tesseract) and fill it in. The user can Edit it. */
+  async function autoPolicy(d){
+    if(tried[d.id]) return; tried[d.id]=1;
+    var sub=el("savedSub"); if(sub){ sub.hidden=false; sub.textContent="Looking for the policy number…"; }
+    var n="";
+    try{ n=Ocr.extractPolicy(await View.textOf(d.blob,d.name)); }catch(e){}
+    if(!n){ if(current===d&&sub){ sub.hidden=true; sub.textContent=""; } return; }
+    var doc=Object.assign({},d,{number:n,numberAuto:1});
+    try{ await Store.putDoc(car,doc); rec=await Store.load(car); }catch(e){ return; }
+    var fresh=findDoc(d.id)||doc; if(!fresh.blob) fresh.blob=d.blob;
+    if(current&&current.id===d.id){
+      showSaved(fresh);
+      if(!(View.note&&View.note("Policy number saved:",n,function(){ openAdd(fresh.slot,fresh); }))) toast("Policy number filled in from the document");
+    }
+  }
+
   function showSaved(d){
     current=d;
     setView("saved");
@@ -171,7 +196,8 @@
         if(next) bits.push("Next increase "+next.split("-").reverse().join("/"));
         sub.textContent=bits.join(" · ");
         sub.hidden=!bits.length;
-      }else{ sub.textContent=""; sub.hidden=true; }
+      }else if(d.numberAuto&&d.number){ sub.textContent="Read from the document. Tap Edit if it’s wrong."; sub.hidden=false; }
+      else{ sub.textContent=""; sub.hidden=true; }
     }
     if(!num && d.slot!=="noclaims"){
       big.hidden=false; big.textContent="Add number"; big.classList.add("addNum");
@@ -199,8 +225,9 @@
         b.type="button"; b.className="pdfTile";
         b.innerHTML='<span class="ico lg" data-ico="doc" aria-hidden="true"></span><span class="pdfName"></span><span class="pdfOpen">Tap to view</span>';
         b.querySelector(".pdfName").textContent=d.name||"document.pdf";
-        b.onclick=function(){ View.open({blob:d.blob,name:d.name,type:type,title:d.title||d.name}).catch(function(){}); };
+        b.onclick=function(){ View.open({blob:d.blob,name:d.name,type:type,title:d.title||d.name,onBack:(FROM&&deepDoc)?goFrom:null}).catch(function(){}); };
         pic.appendChild(b);
+        if(FROM&&deepDoc&&!autoOpened&&(d.id===deepDoc||d.insId===deepDoc)){ autoOpened=true; setTimeout(function(){ b.click(); },0); }
         if(window.dipstickIcons) try{ window.dipstickIcons(b); }catch(e){}
       }
     }
@@ -223,6 +250,7 @@
     var spec=DOCS.concat(CARDS).filter(function(x){ return x.slot===d.slot; })[0];
     el("savedAddMore").hidden=!(spec&&spec.multi);
     if(window.dipstickIcons) try{ dipstickIcons(el("page-saved")); }catch(e){}
+    if(d.slot==="insurance"&&!d.number&&d.blob&&View&&View.textOf&&Ocr&&Ocr.extractPolicy) autoPolicy(d);
   }
 
   function findDoc(id){ return (rec.docs||[]).find(function(d){ return d.id===id || d.insId===id; }); }
@@ -391,7 +419,7 @@
     var prev=editId?findDoc(editId):null;
     var doc=prev?Object.assign({},prev):{id:Store.newId(),slot:slot==="other"?"other":slot,at:Date.now()};
     doc.slot=slot==="other"?"other":slot;
-    doc.title=name; doc.number=number; doc.phone=phone;
+    doc.title=name; doc.number=number; doc.phone=phone; delete doc.numberAuto;
     if(slot==="noclaims"){
       var y=parseInt(el("addNcbYears").value,10);
       if(isNaN(y)||y<0) y=0;
@@ -521,7 +549,7 @@
         toast("Photo loaded — press the shutter");
       });
     };
-    el("savedBack").onclick=function(){ if(View) View.close(); setView("open"); paintOpen(); };
+    el("savedBack").onclick=function(){ if(View) View.close(); if(FROM&&deepDoc){ goFrom(); return; } setView("open"); paintOpen(); };
     el("savedCopy").onclick=function(){
       if(!current) return;
       if(current.slot==="noclaims"){ var y=Store.ncbCurrent(current,car); copyText((y===1?"1 year":y+" years")+" no claims"); return; }
@@ -598,7 +626,7 @@
   window.D3Wallet={
     openInsuranceDoc:function(d){
       var id=(d&&(d.id||d.insId))||"";
-      location.href="wallet.html?open=insurance"+(id?("&doc="+encodeURIComponent(id)):"");
+      location.href="wallet.html?open=insurance"+(id?("&doc="+encodeURIComponent(id)):"")+"&from="+encodeURIComponent((location.pathname.split("/").pop()||"home.html"));
       return Promise.resolve();
     },
     go:function(opts){

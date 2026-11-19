@@ -10,3 +10,7 @@ assert.ok(!O.extract("v5c","call 07123 456789"), "should ignore mobiles");
 assert.equal(O.extract("licence","MORGA753116SM91J"), "MORGA753116SM9IJ");
 assert.equal(O.extract("licence","M0RGA7S3116SM9IJ"), "MORGA753116SM9IJ");
 console.log("wallet-ocr extract tests ok");
+assert.equal(O.extractPolicy("Policy Number: ABC-123456/01 Start date 01/01/2026"), "ABC-123456/01");
+assert.equal(O.extractPolicy("Policy number\nPOL204918\nInsurer Hastings"), "POL204918");
+assert.equal(O.extractPolicy("Policyholder: Chris Pearson\nPostcode LA1 1AA"), "");
+console.log("extractPolicy ok");

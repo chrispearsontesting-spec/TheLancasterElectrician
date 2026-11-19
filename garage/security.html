@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./app-lock.js?v=2"></script>
+<script src="./app-lock.js?v=3"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Security &amp; backup · Trac3</title>
@@ -26,7 +26,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=80"/>
+<link rel="stylesheet" href="./ui.css?v=82"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -55,16 +55,25 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 .hide{display:none !important}
 .file{display:block;width:100%;padding:12px;border:1px dashed #3a3a40;border-radius:12px;color:#b0b0b0;font-size:14px;text-align:center}
 .file input{display:none}
+.bioRow{display:flex;gap:12px;align-items:flex-start;background:#101a22;border:1px solid #23425a;border-radius:14px;padding:12px;margin:8px 0 4px}
+.bioRow b{display:block;font-size:15px}.bioRow span#bioTxt{display:block;color:#b9c7d2;font-size:13px;margin-top:2px;line-height:1.4}
+.phraseBox{background:#0f0f11;border:1px solid #2a2a2e;border-radius:14px;padding:12px;margin:8px 0}
+.phrase{margin:0 0 4px;font:600 19px/1.4 ui-monospace,"Geist Mono",Menlo,monospace;color:#7dd3fc;word-break:break-word;text-align:center}
+.linkBtn{background:none;border:0;color:#7dd3fc;font-size:14px;font-weight:600;padding:8px 2px;margin:2px 0 4px;cursor:pointer}
+#pmBp,#pmGet{font-size:15px !important;white-space:nowrap;gap:8px !important;padding-left:10px !important;padding-right:10px !important;justify-content:center !important}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.row3 .btn{margin-top:0!important;padding:10px 6px!important;gap:6px!important;font-size:14px!important;justify-content:center!important}
 </style>
 </head>
 <body>
 <img class="aboutLockup" src="./about-lockup.png" alt="Trac3. Everything Auto" width="240" height="91" style="display:block;width:min(240px,70%);height:auto;margin:0 0 10px"/>
-<h1>App lock &amp; backup</h1>
-<p class="lead">PIN lock and backups. Your data stays on this phone.</p>
+<h1>Security &amp; backup</h1>
+<p class="lead">Lock, backups and restore. Your data stays on this phone.</p>
 
 <div class="card" id="lockCard">
   <h2>App lock <span class="pill" id="lockPill">Off</span></h2>
-  <p class="note">Asks for a PIN on open and after 5 minutes away. Doesn’t encrypt your data.</p>
+  <div class="bioRow" id="bioRow"><span class="ico" data-ico="lock" aria-hidden="true"></span><div><b>Face or fingerprint unlocks Trac3</b><span id="bioTxt">Your phone’s own face or fingerprint check opens Trac3. Your PIN is the backup.</span></div></div>
+  <button class="btn" type="button" id="bioOn" data-ico="check" hidden>Use face or fingerprint too</button>
+  <p class="note">Asks on open and after 5 minutes away. Doesn’t encrypt your data.</p>
   <div id="lockOff">
     <label class="l" for="pin1">New PIN (4 to 6 digits)</label><input class="in pin" id="pin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
     <label class="l" for="pin2">Type it again</label><input class="in pin" id="pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"/>
@@ -87,10 +96,20 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
   <h2>Make a backup</h2>
   <p class="note" id="lastBk">You haven't made a backup on this phone yet.</p>
   <p class="note">One locked file with everything.</p>
-  <label class="l" for="bp1">Passphrase</label><input class="in" id="bp1" type="password" autocomplete="new-password" placeholder="e.g. four random words"/>
+  <label class="l" for="bp1">Passphrase</label>
+  <button class="btn" type="button" id="genBp" data-ico="add">Make a random passphrase</button>
+  <div class="phraseBox" id="phraseBox" hidden>
+    <p class="phrase" id="phrase" aria-live="polite"></p>
+    <div class="row3"><button class="btn" type="button" id="regenBp">New words</button><button class="btn" type="button" id="copyBp">Copy</button><button class="btn" type="button" id="shareBp">Share</button></div>
+    <button class="btn" type="button" id="pmBp" hidden>Save to Google Password Manager</button>
+  </div>
+  <div id="ownBox">
+  <input class="in" id="bp1" type="password" autocomplete="new-password" placeholder="Or type your own"/>
   <div class="meter"><i id="meter"></i></div><p class="note" id="strength"></p>
   <label class="l" for="bp2">Type it again</label><input class="in" id="bp2" type="password" autocomplete="new-password"/>
-  <div class="warn">Write the passphrase down. If you lose it, nobody can open the backup, not even us.</div>
+  </div>
+  <button class="linkBtn" type="button" id="ownBp" hidden>Type my own instead</button>
+  <div class="warn">Save the passphrase in your password manager or write it down. Without it nobody can open the backup, not even us.</div>
   <button class="btn green" type="button" id="mkBk">Make backup</button>
   <div id="bkReady" class="hide">
     <div class="sum" id="bkSum"></div>
@@ -117,7 +136,8 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
   <h2>Restore a backup</h2>
   <p class="note">Works with .driv3 backups and .json exports.</p>
   <label class="file" id="fileLab">Choose a .driv3 or .json file<input type="file" id="rsFile" accept=".driv3,.json,application/json,application/octet-stream"/></label>
-  <label class="l" for="rp">Passphrase</label><input class="in" id="rp" type="password" autocomplete="off"/>
+  <label class="l" for="rp">Passphrase</label><input class="in" id="rp" type="password" autocomplete="current-password"/>
+  <button class="btn" type="button" id="pmGet" hidden>Fill from Google Password Manager</button>
   <button class="btn" type="button" id="openBk">Open backup</button>
   <div id="rsReady" class="hide">
     <div class="sum" id="rsSum"></div>
@@ -129,7 +149,9 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 <a class="btn backBtn" href="home.html">Back</a>
 
 
-<script src="./backup.js?v=2"></script>
+<script src="./backup.js?v=3"></script>
+<script src="./passphrase.js?v=1"></script>
+<script src="./wallet-lock.js?v=3"></script>
 <script src="./export.js?v=1"></script>
 <script>
 (function(){
@@ -142,13 +164,13 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 
   // ---- lock ----
   function paintLock(){ var on=L.isOn(); $("lockPill").textContent=on?"On":"Off"; $("lockPill").className="pill"+(on?" on":"");
-    $("lockOff").classList.toggle("hide",on); $("lockOnBox").classList.toggle("hide",!on); }
+    $("lockOff").classList.toggle("hide",on); $("lockOnBox").classList.toggle("hide",!on); if(window.__paintBio) window.__paintBio(); }
   $("pinOn").onclick=async function(){
     var a=$("pin1").value,b=$("pin2").value;
     if(!/^\d{4,6}$/.test(a)) return say("lockStatus","The PIN needs 4 to 6 digits.","bad");
     if(a!==b) return say("lockStatus","The two PINs don't match.","bad");
     this.disabled=true; say("lockStatus","Saving…");
-    try{ await L.setPin(a); $("pin1").value=$("pin2").value=""; say("lockStatus","App lock is on. You'll need your PIN next time Trac3 opens.","good"); }
+    try{ await L.setPin(a); $("pin1").value=$("pin2").value=""; say("lockStatus",(L.bioKind&&L.bioKind())?"App lock is on. Your face, fingerprint or PIN opens Trac3.":"App lock is on. You'll need your PIN next time Trac3 opens.","good"); }
     catch(e){ say("lockStatus",e.message,"bad"); }
     this.disabled=false; paintLock();
   };
@@ -168,6 +190,24 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
   $("lockNow").onclick=function(){ L.lockNow(); };
   paintLock();
 
+  // ---- face / fingerprint ----
+  var WL=window.D3WalletLock;
+  async function paintBio(){
+    var k=L.bioKind?L.bioKind():"", plat=false;
+    if(!k&&WL&&WL.platform){ try{ plat=await WL.platform(); }catch(e){} }
+    $("bioOn").hidden=!(!k&&plat);
+    $("bioTxt").textContent=k
+      ? "On. Your phone’s own face or fingerprint check opens Trac3 and the Wallet."+(L.isOn()?" Your PIN is the backup.":" Set a PIN below as a backup.")
+      : (plat?"Tap below to let your phone’s face or fingerprint check open Trac3 and the Wallet."
+             :"This browser can’t use face or fingerprint. Use a PIN, or the Trac3 Android app.");
+  }
+  $("bioOn").onclick=async function(){
+    try{ await WL.enroll(); say("lockStatus","Face or fingerprint is on.","good"); }
+    catch(e){ say("lockStatus","Face or fingerprint wasn’t set up. Try again.","bad"); }
+    window.__paintBio=paintBio; paintBio();
+  };
+  window.__paintBio=paintBio; paintBio();
+
   // ---- backup ----
   function paintLast(){ var t=+localStorage.getItem("gt.lastBackup")||0;
     if(!t){ $("lastBk").textContent="You haven't made a backup on this phone yet."; return; }
@@ -175,6 +215,25 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
     $("lastBk").textContent="Last backup: "+fmtDate(t)+(days>=30?" ("+days+" days ago, time for a new one)":days?" ("+days+" day"+(days>1?"s":"")+" ago)":" (today)")+"."; }
   paintLast();
   var COLORS=["#ff6b6b","#f5b84a","#8ab4ff","#3dd68c"];
+  // ---- random passphrase ----
+  var P=window.Driv3Phrase, phrase="";
+  function showPhrase(){ phrase=P.generate(5); $("phrase").textContent=phrase; $("phraseBox").hidden=false;
+    $("bp1").type="text"; $("bp1").value=phrase; $("bp2").value=phrase; $("bp1").oninput.call($("bp1"));
+    $("pmBp").hidden=!P.managerKind(); $("genBp").hidden=true; $("ownBox").hidden=true; $("ownBp").hidden=false; }
+  $("ownBp").onclick=function(){ phrase=""; $("phraseBox").hidden=true; $("ownBox").hidden=false; $("ownBp").hidden=true; $("genBp").hidden=false;
+    $("bp1").type="password"; $("bp1").value=""; $("bp2").value=""; $("bp1").oninput.call($("bp1")); $("bp1").focus(); };
+  $("genBp").onclick=showPhrase; $("regenBp").onclick=showPhrase;
+  $("copyBp").onclick=function(){ var t=phrase||$("bp1").value; if(!t) return;
+    (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ say("bkStatus","Passphrase copied. Paste it somewhere safe.","good"); },function(){ say("bkStatus","Couldn't copy. Write it down instead.","bad"); }); };
+  $("shareBp").onclick=function(){ var t=phrase||$("bp1").value; if(!t) return;
+    if(navigator.share) navigator.share({title:"Trac3 backup passphrase",text:t}).catch(function(){}); else $("copyBp").click(); };
+  $("pmBp").onclick=async function(){ var t=phrase||$("bp1").value; if(!t) return;
+    try{ await P.save(t); say("bkStatus","Saved to your password manager as “Trac3 backup”.","good"); }
+    catch(e){ say("bkStatus",(e&&e.message)||"Couldn't save it. Copy it instead.","bad"); } };
+  $("pmGet").hidden=!(P&&P.managerKind());
+  $("pmGet").onclick=async function(){
+    try{ var t=await P.get(); if(t){ $("rp").value=t; say("rsStatus","Passphrase filled in.","good"); } else say("rsStatus","No saved Trac3 passphrase found. Type it in.","bad"); }
+    catch(e){ say("rsStatus","Couldn't read your password manager. Type it in.","bad"); } };
   $("bp1").oninput=function(){ var s=B.strength(this.value); $("strength").textContent=s.text; $("meter").style.width=this.value?((s.score+1)*25)+"%":"0"; $("meter").style.background=COLORS[s.score]; };
   var made=null;
   $("mkBk").onclick=async function(){

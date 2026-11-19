@@ -2,10 +2,10 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./app-lock.js?v=2"></script>
+<script src="./app-lock.js?v=3"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
-<link rel="stylesheet" href="./ui.css?v=80"/>
+<link rel="stylesheet" href="./ui.css?v=82"/>
 <link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <title>MOT</title>
 <meta name="description" content="Check MOT history, advisories and the next due date for your car."/>
@@ -59,7 +59,11 @@ h1{margin:0;font-size:22px}
 .doneTog{display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;border:1px solid #2a2a2e;border-radius:12px;font-size:13px;color:#f2f2f2;cursor:pointer}
 .doneTog input{width:20px;height:20px;margin:0;accent-color:#3dd68c;cursor:pointer}
 .row.isDone .doneTog{border-color:#1e3a34;background:#11241f;color:#a7f3d0}
-.outTotal{font-size:18px;font-weight:700;margin:4px 0 0}
+.outTotal{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:2px 0 0;color:#7dd3fc;line-height:1.15}
+.totCard{background:#101a22;border:1px solid #23425a;border-radius:18px;padding:14px 16px;margin:0 0 12px}
+.totCard .totLab{margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9fc6dd}
+.totCard .totSub{margin:4px 0 0;font-size:13px;color:#cfcfcf}
+.totCard #outNote{margin:8px 0 0;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -186,7 +190,7 @@ function render(info){
     line("Service","Due every year, or 10,000 to 12,000 miles.", "\u00a3150 to \u00a3300", null, true),
     line("Timing belt","Many belts are five years or 60,000 to 100,000 miles. A chain has no set date. Ask for the invoice.", milesNow>80000||age>=5?"\u00a3400 to \u00a3900 if it is a belt":"Check the schedule", null, age>=5||milesNow>80000)
   ];
-  var totals="<div class='row' id='outRow'><b>Estimated outstanding work</b><p class='outTotal' id='outTotal'></p><p class='muted' id='outNote'></p></div>";
+  var totals="<div class='totCard' id='outRow'><p class='totLab'>Estimated total</p><p class='outTotal' id='outTotal'></p><p class='totSub'>Outstanding work, independent garage prices</p><p class='muted' id='outNote'></p></div>";
   $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+(age?"About "+age+" years on record. ":"")+"Typical life, not a quote, and only for this car.</p>";
   // Done ticks are saved per car (by plate) through D3Maint, which also moves the car's tyre/service/belt dates
   // so the Maintenance planner, reminders and Drive diary follow. A tick made before a newer MOT no longer counts.

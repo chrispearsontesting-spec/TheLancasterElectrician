@@ -114,6 +114,18 @@
     var a=alnum(t);
     return (a.length>=6&&a.length<=20)?a:"";
   }
+  /* A whole policy document (PDF text layer or a page of OCR): take the reference printed
+     after a "Policy number" style label, never just the longest code on the page. */
+  function extractPolicy(text){
+    var t=String(text||"").replace(/[\u2010-\u2015]/g,"-");
+    var re=/(?:policy|certificate|cover\s*note)\s*(?:number|no\.?|num|ref(?:erence)?|#|id)\s*[:#.\-]?\s*([A-Z0-9][A-Z0-9\/\- ]{3,30})/ig, m, best="";
+    while((m=re.exec(t))){
+      var tok=m[1].trim().split(/\s{2,}|\s(?=[A-Za-z]{3,}\b)/)[0].replace(/[\s\-\/]+$/,"").trim().toUpperCase();
+      var n=tok.replace(/[^A-Z0-9]/g,"");
+      if(n.length>=5&&n.length<=24&&/\d/.test(n)){ best=tok.replace(/\s+/g,""); break; }
+    }
+    return best;
+  }
   function extractFuel(text){
     var d=digits(text);
     if(d.length>=12&&d.length<=19) return d;
@@ -165,7 +177,7 @@
   }
 
   var api={ocrCanvas:ocrCanvas,extract:extract,extractV5c:extractV5c,extractLicence:extractLicence,
-    extractInsurance:extractInsurance,extractFuel:extractFuel,whitelist:whitelist,readRegion:readRegion};
+    extractInsurance:extractInsurance,extractPolicy:extractPolicy,extractFuel:extractFuel,whitelist:whitelist,readRegion:readRegion};
   if(typeof module!=="undefined"&&module.exports) module.exports=api;
   else root.D3WalletOcr=api;
 })(typeof window!=="undefined"?window:globalThis);

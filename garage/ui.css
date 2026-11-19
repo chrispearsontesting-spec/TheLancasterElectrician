@@ -115,3 +115,6 @@ input,select{
 
 /* Round 6: one input height across pages */
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not(.sw),select{min-height:48px;box-sizing:border-box}
+
+/* hidden always wins over .btn display rules */
+:root [hidden][hidden]{display:none !important}

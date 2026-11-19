@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./app-lock.js?v=2"></script>
+<script src="./app-lock.js?v=3"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Renew insurance</title>
@@ -26,7 +26,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=80"/>
+<link rel="stylesheet" href="./ui.css?v=82"/>
 <link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <style>
 *{box-sizing:border-box}
@@ -43,7 +43,6 @@ input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px soli
 <h1>Renew insurance</h1>
 <div class="card"><p class="note">Renewal date</p><p class="when" id="exp">—</p><p class="left" id="left"></p></div>
 <button class="btn" type="button" id="mine">My current insurer</button>
-<a href="#" id="chg" style="display:none;color:#8b8b8b;font-size:14px;text-align:center;margin:8px 0 0;text-decoration:underline">Change insurer</a>
 <div class="card" id="setup" style="margin-top:10px">
   <p class="note">Save your insurer once to open it here next time.</p>
   <input id="iName" placeholder="Insurer name, e.g. Admiral"/>
@@ -51,6 +50,7 @@ input{width:100%;margin-top:8px;background:#0f0f11;color:#f2f2f2;border:1px soli
   <button class="btn" type="button" id="iSave">Save insurer</button>
 </div>
 <button class="btn" type="button" id="cmp">Compare quotes</button>
+<button class="btn" type="button" id="chg" data-ico="edit" hidden>Change insurer</button>
 <p class="left" id="msg"></p>
 <a class="btn backBtn" href="home.html">Back</a>
 <script>
@@ -65,7 +65,7 @@ function paint(){
   document.getElementById("exp").textContent=nice(c.ins);
   document.getElementById("left").textContent=left(c.ins);
   document.getElementById("mine").textContent=c.insName?"My current insurer · "+c.insName:"My current insurer";
-  document.getElementById("chg").style.display=c.insWeb?"block":"none";document.getElementById("iName").value=c.insName||"";document.getElementById("iWeb").value=c.insWeb||"";
+  document.getElementById("chg").hidden=!c.insWeb;document.getElementById("iName").value=c.insName||"";document.getElementById("iWeb").value=c.insWeb||"";
 }
 document.getElementById("mine").onclick=function(){
   var c=car();
@@ -79,7 +79,7 @@ document.getElementById("iSave").onclick=function(){
   localStorage.setItem("gt.garage",JSON.stringify(s));
   document.getElementById("setup").classList.remove("on");document.getElementById("msg").textContent="Insurer saved.";paint();
 };
-document.getElementById("chg").onclick=function(e){e.preventDefault();paint();document.getElementById("setup").classList.add("on");document.getElementById("iName").focus()};
+document.getElementById("chg").onclick=function(e){e.preventDefault();paint();document.getElementById("setup").classList.add("on");document.getElementById("iName").focus();document.getElementById("setup").scrollIntoView({block:"center",behavior:"smooth"})};
 document.getElementById("mine").addEventListener("contextmenu",function(e){e.preventDefault();document.getElementById("setup").classList.toggle("on")});
 document.getElementById("cmp").onclick=function(){
   if(window.d3CopyPlateAndOpen){ d3CopyPlateAndOpen(); return; }

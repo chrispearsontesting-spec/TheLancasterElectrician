@@ -176,6 +176,7 @@
 
   var api={
     TTL:TTL, unlocked:unlocked, unlock:unlock, lock:lock, touch:touch,
+    enroll:function(){ return waEnroll(); }, platform:waPlatform,
     canBio:canBio, capAvailable:capAvailable, waOk:waOk, waStored:waStored, pinOn:pinOn, guardPage:guardPage,
     /* true when unlock() would show a system sheet (native or a WebAuthn passkey on this phone) */
     systemSheet:async function(){ if(await capAvailable()) return true; if(waOk()&&waStored()) return true; return await waPlatform(); }

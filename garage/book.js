@@ -14,7 +14,7 @@
   key=car.id||R.vrn(car.plate);
   var due=R.dueOf(car,type),draft=(car.garageBookingDrafts||{})[type]||{};
   if(draft.due!==due)draft={};
-  form.hidden=false;el("jobTitle").textContent=info.label;el("dot").style.background=info.color;
+  form.hidden=false;el("jobTitle").textContent="Book your "+(type==="mot"?"MOT":info.label.toLowerCase())+" (auto email)";el("dot").style.background=info.color;
   el("carTitle").textContent=(car.name||car.nick||"Car")+" · "+R.plate(car.plate);
   el("due").textContent=due?(type==="tyres"?"Estimated check / change: ":"Due: ")+R.niceDate(due):"No due date saved — you can still book.";
   if(type==="tyres")el("due").textContent+=" Estimate only; check tread and condition regularly.";
@@ -22,7 +22,7 @@
   el("comments").value=draft.comments||"";el("garageEmail").value=draft.email!=null?draft.email:car.motEmail||"";
   el("garageName").textContent=car.motName||"No garage name saved";
   el("emailSearch").href="https://www.google.com/search?q="+encodeURIComponent([car.motName||"garage",car.motPhone||"",car.motAddress||"","email"].filter(Boolean).join(" "));
-  el("editGarage").href="home.html#garage="+encodeURIComponent(key);
+  
   /* Pre-fill the garage email when none is saved: remembered contacts, then the garage website. */
   var autoEmail=car.motEmailAuto&&car.motEmail?car.motEmail:"";
   function showFound(t){el("emailFound").textContent=t||"";el("emailFound").hidden=!t}

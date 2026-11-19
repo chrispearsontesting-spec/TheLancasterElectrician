@@ -120,12 +120,29 @@
         unlock:function(){ return P.verifyIdentity({title:"Unlock Trac3",subtitle:"Trac3"}).then(function(){ return true; },function(){ return false; }); }};
     }catch(e){ return null; }
   }
+  /* Website: the same face / fingerprint / screen-lock sheet through this phone's Trac3 passkey
+     (made on the Security page or the first time the Wallet opens). Stays on the phone. */
+  function webProvider(){
+    try{
+      if(!root.PublicKeyCredential||!navigator.credentials||!root.isSecureContext) return null;
+      var st=null; try{ st=JSON.parse(ls.getItem("d3.walletPasskey")||"null"); }catch(e){}
+      if(!st||!st.id) return null;
+      return {name:"face or fingerprint",
+        available:function(){ return Promise.resolve(true); },
+        unlock:function(){
+          var id=Uint8Array.from(atob(st.id),function(c){return c.charCodeAt(0)});
+          return navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rpId:location.hostname,
+            allowCredentials:[{type:"public-key",id:id,transports:["internal"]}],userVerification:"required",timeout:60000}})
+            .then(function(c){ return !!c; },function(){ return false; });
+        }};
+    }catch(e){ return null; }
+  }
   function show(){
     addStyle(); build(); doc.documentElement.classList.add("d3lk");
     if(!el.parentNode){ if(doc.body) doc.body.appendChild(el); else doc.addEventListener("DOMContentLoaded",function(){ if(doc.documentElement.classList.contains("d3lk")) doc.body.appendChild(el); }); }
     entry=""; dots(); tick();
     var b=(el&&el.querySelector("#d3bio"));
-    if(!provider) provider=nativeProvider();
+    if(!provider) provider=nativeProvider()||webProvider();
     if(provider&&b){ Promise.resolve(provider.available()).then(function(ok){ if(ok){ b.style.display=""; b.textContent="Use "+(provider.name||"fingerprint");
       /* Show the system sheet straight away; the PIN pad stays behind it as the fallback. */
       if(doc.visibilityState!=="hidden") bio(); } }).catch(function(){}); }
@@ -143,7 +160,9 @@
     setPin:async function(pin,current){ if(isOn()&&!(await check(rec(),current))) throw new Error("The current PIN isn't right."); ls.setItem(KEY,JSON.stringify(await makeRecord(pin))); ls.removeItem(TRIES); ss.setItem("d3.unlock","1"); return true; },
     disable:async function(current){ if(isOn()&&!(await check(rec(),current))) throw new Error("The current PIN isn't right."); ls.removeItem(KEY); ls.removeItem(TRIES); return true; },
     verify:function(pin){ return check(rec(),pin); },
-    setProvider:function(p){ provider=p; }, core:core
+    setProvider:function(p){ provider=p; }, core:core,
+    /* "native" | "web" | "" : can the face/fingerprint sheet unlock Trac3 here? */
+    bioKind:function(){ return nativeProvider()?"native":(webProvider()?"web":""); }
   };
   root.Driv3Lock=api;
   if(root.Driv3LockProvider) provider=root.Driv3LockProvider;

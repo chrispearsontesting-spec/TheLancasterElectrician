@@ -2,10 +2,10 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./app-lock.js?v=2"></script>
+<script src="./app-lock.js?v=3"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
-<link rel="stylesheet" href="./ui.css?v=80"/>
+<link rel="stylesheet" href="./ui.css?v=82"/>
 <title>Trac3</title>
 <meta name="description" content="MOT, tax and insurance reminders, service cost estimates, receipts, route costs and a share-for-sale report. Free, and your data stays on your phone."/>
 <meta property="og:type" content="website"/>
@@ -148,9 +148,14 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 #dues .cOver .left{color:#ff2a2a !important;animation:flashRed .55s ease-in-out infinite}
 .secLink{display:flex;align-items:center;justify-content:center;gap:7px;margin:14px auto 4px;color:#8b8b8b !important;font-size:13.5px;text-decoration:none;padding:8px}
 .secLink i{font-style:normal;font-size:11.5px;color:#f5b84a;background:#2e2410;border:1px solid #5c4a1f;border-radius:999px;padding:1px 8px}
-.topRow{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}
+#emptyCar #emptyRestore{margin-top:10px !important}
+#emptyCar .restoreHint{margin:6px 2px 0;font-size:12.5px;color:#8b8b8b}
+.topRow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:8px;min-height:44px;margin:0 2px 8px}
+.topRow #gear{justify-self:end;grid-column:3}
+.bkPill{grid-column:2;justify-self:center;display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:650;color:#f5b84a;background:#2e2410;border:1px solid #5c4a1f;text-decoration:none;white-space:nowrap}
+.bkPill[hidden]{display:none}
 .topRow b{font-size:18px;letter-spacing:.3px}
-.topRow .brandLogo{display:block;height:20px;width:auto}
+.topRow .brandLogo{display:block;height:26px;width:auto;justify-self:start;grid-column:1}
 .aboutLockup{display:block;width:min(280px,86%);height:auto;margin:2px auto 16px}
 #gear{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:#1c1c1e;color:#7dd3fc;display:flex;align-items:center;justify-content:center;padding:0}#gear .ico,#gear svg{width:22px;height:22px;display:block}.nameRow button .ico,.nameRow button svg{width:20px;height:20px;display:block;color:#7dd3fc}.remB b{display:flex;align-items:center;gap:6px;font-size:15px}.remB b .ico,.remB b svg{width:18px;height:18px;flex:0 0 18px;color:#7dd3fc}form#emptyForm{margin:0}
 #gear.dot::after{content:"";position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:#f5b84a}
@@ -213,12 +218,14 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 <script src="./splash.js?v=2"></script>
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <input id="plateCam" type="file" accept="image/*" capture="environment" hidden/>
-<div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"/><button type="button" id="gear" aria-label="Settings" title="Settings" data-ico="settings"></button></div>
+<div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="92" height="26"/><a class="bkPill" id="bkPill" href="security.html#bkCard" hidden>No backup yet</a><button type="button" id="gear" aria-label="Settings" title="Settings" data-ico="settings"></button></div>
 <section id="emptyCar"><h2>Add your car</h2><p>Enter your plate. Trac3 fills in the details, MOT and tax dates.</p>
 <form id="emptyForm" action="#">
 <div class="plateEntry"><div class="ukPlate"><span class="ukStrip">UK</span><input id="emptyPlate" type="text" inputmode="text" enterkeyhint="search" placeholder="AB12 CDE" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Number plate"/></div></div>
 <button class="btn wide" type="submit" id="emptyGo" data-ico="search">Add car</button>
-</form></section>
+</form>
+<a class="btn wide" id="emptyRestore" href="security.html#rsCard" data-ico="hist">Restore from backup</a>
+<p class="restoreHint">Used Trac3 before? Load your .driv3 backup file.</p></section>
 <div class="hero" id="hero"></div>
 <div class="bar"><div class="nameRow">
 <div class="side left">
@@ -265,13 +272,13 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 <div class="sheet" id="settings"><div class="panel">
 <img class="aboutLockup" src="./about-lockup.png" alt="Trac3. Everything Auto" width="280" height="106"/>
 <h2>Settings</h2>
-<a class="btn wide" href="security.html" data-ico="shield">App lock &amp; backup <i class="due" id="secDue" hidden></i></a>
+<a class="btn wide" href="security.html" data-ico="shield">Security &amp; backup <i class="due" id="secDue" hidden></i></a>
 <a class="btn wide" href="reminders.html?v=16" data-ico="cal">Reminders</a>
 <a class="btn wide" href="privacy.html" data-ico="doc">Privacy</a>
 <button class="btn" type="button" id="setClose">Back</button>
 </div></div>
 <script>(function(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null"),t=+localStorage.getItem("gt.lastBackup")||0;
-if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";document.getElementById("gear").classList.add("dot");}}catch(e){}})();</script>
+if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";var p=document.getElementById("bkPill");if(p){p.hidden=false;p.textContent=t?"Backup due":"No backup yet";}}}catch(e){}})();</script>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
 <section class="fGroup"><h4 class="fHead">Your car</h4>
@@ -328,11 +335,8 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <p class="taxLead">Scan your reminder letter or V5C logbook to get the number, then paste it on GOV.UK.</p>
 <input id="taxScanPick" type="file" accept="image/*" capture="environment" hidden/>
 <button class="btn wide" type="button" id="taxScan" data-ico="cam">Scan letter or logbook</button>
-<button class="btn wide" type="button" id="taxUseWallet" hidden>Use logbook number from Wallet</button>
-<p class="taxTypeWrap"><button type="button" id="taxTypeIn">Type it in</button></p>
+<button class="btn wide" type="button" id="taxUseWallet" data-ico="wallet" hidden>Use logbook number</button>
 <button class="btn" type="button" id="taxGoGov">Go to GOV.UK</button>
-<p class="taxHelp">No letter? Use the 11-digit number on your V5C logbook.</p>
-<p class="taxHelp">If you have neither, you can renew at a Post Office — see <a href="https://www.gov.uk/vehicle-tax" target="_blank" rel="noopener">GOV.UK vehicle tax</a> — or <a href="https://www.gov.uk/vehicle-log-book" target="_blank" rel="noopener">apply for a new V5C</a>.</p>
 </div>
 <div id="taxBusy" hidden>
 <p class="taxLead" id="taxBusyMsg">Reading the photo… this stays on your phone.</p>
@@ -346,9 +350,8 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <p class="taxTypeWrap"><button type="button" id="taxTypeAgain">Type a different number</button></p>
 </div>
 <div id="taxFail" hidden>
-<p class="taxLead">Could not read a reference number. Try a flatter, brighter photo, or type the number in.</p>
+<p class="taxLead">Could not read a reference number. Try a flatter, brighter photo.</p>
 <p class="taxTypeWrap"><button type="button" id="taxRetry">Try another photo</button></p>
-<p class="taxTypeWrap"><button type="button" id="taxTypeInFail">Type it in</button></p>
 <button class="btn" type="button" id="taxGoGov2">Go to GOV.UK</button>
 </div>
 <button class="btn" type="button" id="taxBack">Back</button>
@@ -366,9 +369,9 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./diy-work.js?v=3"></script>
 <script src="./icons.js?v=35"></script>
 <script src="./photo-pos.js?v=1"></script>
-<script src="./home-app.js?v=113"></script>
-<script src="./wallet-store.js?v=1"></script>
-<script src="./wallet-lock.js?v=2"></script>
+<script src="./home-app.js?v=114"></script>
+<script src="./wallet-store.js?v=2"></script>
+<script src="./wallet-lock.js?v=3"></script>
 <script src="./tax-renew.js?v=2"></script>
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>

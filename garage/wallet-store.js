@@ -202,7 +202,8 @@
     if(!root.D3Wallet) root.D3Wallet={
       openInsuranceDoc:function(d){
         var id=(d&&(d.id||d.insId))||"";
-        root.location.href="wallet.html?open=insurance"+(id?("&doc="+encodeURIComponent(id)):"");
+        var from=(root.location.pathname.split("/").pop()||"home.html");
+        root.location.href="wallet.html?open=insurance"+(id?("&doc="+encodeURIComponent(id)):"")+"&from="+encodeURIComponent(from);
         return Promise.resolve();
       }
     };

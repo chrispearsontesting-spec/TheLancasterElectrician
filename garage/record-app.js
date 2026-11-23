@@ -88,7 +88,7 @@
     bluetooth:"Trac3 needs Nearby devices to see when your phone connects to your car’s Bluetooth.",
     notifications:"Trac3 shows a notification while a journey records, and a summary of miles and cost when it ends.",
     battery:"So journeys can start in the background, allow Trac3 to run without battery restrictions on the next screen."};
-  if(T){ var RAW=T; T={status:function(o){return RAW.status(o)},configure:function(o){return RAW.configure(o)},devices:function(){return RAW.devices()},startJourney:function(){return RAW.startJourney()},stopJourney:function(){return RAW.stopJourney()},takeJourneys:function(){return RAW.takeJourneys()}};
+  var RAW=T; if(T){ T={status:function(o){return RAW.status(o)},configure:function(o){return RAW.configure(o)},devices:function(){return RAW.devices()},startJourney:function(){return RAW.startJourney()},stopJourney:function(){return RAW.stopJourney()},takeJourneys:function(){return RAW.takeJourneys()}};
     var _ask=function(o){return RAW.ask(o)}; T.ask=function(o){ var k="driv3.why."+o.what; if(WHY[o.what]&&!localStorage.getItem(k)){ alert(WHY[o.what]); localStorage.setItem(k,"1"); } return _ask(o); }; }
   async function ensureLoc(){ var s=await T.status(); if(!s.location) s=await T.ask({what:"location"}); if(!s.notifications) await T.ask({what:"notifications"}); return s.location; }
   $("jBtn").onclick=async function(){
@@ -104,49 +104,120 @@
   };
 
   // --- automatic (Android app only) ---
+  var ICO=function(k){ return (window.dipstickIcon&&window.dipstickIcon(k))||""; };
   if(!T){
-    $("nativeBox").classList.remove("hide");
     $("autoOn").checked=false;
+    $("webSetup").classList.remove("hide");
     $("autoOn").onchange=function(){ this.checked=false; $("webNote").classList.remove("hide"); $("webNote").scrollIntoView({block:"nearest"}); $("webNote").style.outline="2px solid #f59e0b"; setTimeout(function(){ $("webNote").style.outline=""; },1500); };
     $("manNote").textContent="Manual start and stop. GPS distance.";
     return;
   }
   $("nativeBox").classList.remove("hide");
   $("manNote").textContent="Manual start and stop. Records with the screen off.";
+  var ST={}, PAIRED=[], NEAR={}, LINK="", LINKNAME="", scanning=false;
+  function say(t){ $("autoMsg").textContent=t||""; }
+  var PERMS=[["location","Location"],["background","Location all the time"],["bluetooth","Nearby devices"],["notifications","Notifications"],["batteryOk","Battery unrestricted"]];
+  function allOk(s){ return PERMS.every(function(r){ return !!s[r[0]]; }); }
   function permLine(s){
-    var rows=[["location","Location",s.location],["background","Location “Allow all the time”",s.background],["bluetooth","Nearby devices (Bluetooth)",s.bluetooth],["notifications","Notifications",s.notifications],["battery","Battery: unrestricted",s.batteryOk]];
-    $("perms").innerHTML=rows.map(function(r){ return "<div>"+(r[2]?"<span class='ok'>✓</span> ":"<span class='warn'>•</span> ")+r[1]+(r[2]?"":"<button type='button' data-ask='"+r[0]+"'>Allow</button>")+"</div>"; }).join("");
+    var ok=allOk(s);
+    $("permAll").classList.toggle("hide",ok);
+    $("perms").innerHTML=PERMS.map(function(r){ var g=!!s[r[0]], ask=r[0]==="batteryOk"?"battery":r[0];
+      return "<div class='ck'><span class='st"+(g?"":" no")+"'>"+(g?ICO("check"):"")+"</span><span class='l'>"+r[1]+"</span>"+(g?"":"<button type='button' data-ask='"+ask+"'>Allow</button>")+"</div>"; }).join("");
   }
+  /* One tap: Android's single prompt for location + Bluetooth + notifications, then the two
+     screens Android keeps separate (location all the time, battery). */
+  async function allowAll(){
+    var b=$("permAll"); b.disabled=true; say("");
+    try{
+      var s=RAW.askAll?await RAW.askAll():null;
+      if(!s){ s=await RAW.ask({what:"location"}); s=await RAW.ask({what:"bluetooth"}); s=await RAW.ask({what:"notifications"}); }
+      if(s.location&&!s.background) s=await RAW.ask({what:"background"}).catch(function(){ return s; });
+      if(!s.batteryOk) await RAW.ask({what:"battery"}).catch(function(){});
+    }catch(e){}
+    b.disabled=false; setTimeout(refresh,600);
+  }
+  $("permAll").onclick=allowAll;
   $("perms").onclick=async function(e){ var b=e.target.closest("[data-ask]"); if(!b) return;
     var w=b.getAttribute("data-ask"); if(w==="background"){ var s=await T.status(); if(!s.location){ await T.ask({what:"location"}); }  }
     await T.ask({what:w}).catch(function(){}); setTimeout(refresh,600); };
-  async function loadDevices(sel){
-    try{ var r=await T.devices(); var d=r.devices||[];
-      $("dev").innerHTML="<option value=''>"+(d.length?"Choose your car…":"No paired devices — pair your car in Bluetooth settings")+"</option>"+d.map(function(x){ return "<option value='"+esc(x.mac)+"'"+(String(x.mac).toUpperCase()===String(sel).toUpperCase()?" selected":"")+">"+esc(x.name)+"</option>"; }).join("");
-    }catch(e){ $("dev").innerHTML="<option value=''>Allow Nearby devices to list your car</option>"; }
+  function isConn(mac){
+    mac=String(mac||"").toUpperCase(); if(!mac) return false;
+    if(ST.running&&String(ST.liveMac||"").toUpperCase()===mac) return true;
+    return PAIRED.some(function(d){ return String(d.mac).toUpperCase()===mac&&d.connected; });
+  }
+  function row(d,near){
+    var sel=String(d.mac).toUpperCase()===String(LINK).toUpperCase(), con=isConn(d.mac);
+    var sub=con?"<span class='con'>Connected</span>":(near?(d.bonded?"Paired":"Tap to pair and use"):(sel?"Your car":"Tap to use as your car"));
+    return "<button type='button' class='dv"+(sel?" sel":"")+"' data-mac='"+esc(d.mac)+"' data-name='"+esc(d.name)+"'"+(near&&!d.bonded?" data-pair='1'":"")+">"+
+      "<span class='bi'>"+ICO("bluetooth")+"</span><span class='t'><b>"+esc(d.name)+"</b><span>"+sub+"</span></span><span class='pick'></span></button>";
+  }
+  function paint(){
+    $("paired").innerHTML=PAIRED.length?PAIRED.map(function(d){ return row(d,false); }).join(""):"<p class='empty'>"+(ST.bluetooth?"No paired devices yet. Search below, or pair in your phone’s Bluetooth settings.":"Allow Nearby devices to see your car.")+"</p>";
+    var pm={}; PAIRED.forEach(function(d){ pm[String(d.mac).toUpperCase()]=1; });
+    var nl=Object.keys(NEAR).map(function(k){ return NEAR[k]; }).filter(function(d){ return !pm[String(d.mac).toUpperCase()]; })
+      .sort(function(a,b){ return (b.rssi||-999)-(a.rssi||-999); });
+    $("nearby").innerHTML=nl.length?nl.map(function(d){ return row(d,true); }).join(""):"<p class='empty'>"+(scanning?"Searching…":"Tap Search to find devices near you.")+"</p>";
+    $("scanBtn").innerHTML=scanning?"<span class='spin'></span>Searching":"<span class='si' aria-hidden='true'>"+ICO("search")+"</span>Search";
+    $("btOff").classList.toggle("hide",ST.bluetoothOn!==false||ST.hasBluetooth===false);
+    // the chosen car, with a live Connected / Not connected badge
+    var nm=LINKNAME||(PAIRED.filter(function(d){ return String(d.mac).toUpperCase()===String(LINK).toUpperCase(); })[0]||{}).name||"";
+    $("carRow").classList.toggle("hide",!LINK);
+    if(LINK){ var con=isConn(LINK); $("carName").textContent=nm||"Your car";
+      $("carSub").textContent=ST.running&&con?"Recording this journey":(ST.on?"Auto journeys on":"Auto journeys off");
+      $("carBadge").classList.toggle("on",con); $("carState").textContent=con?"Connected":"Not connected"; }
+  }
+  async function loadDevices(){
+    try{ var r=await T.devices(); PAIRED=r.devices||[]; if(r.bluetoothOn===false) ST.bluetoothOn=false; }catch(e){ PAIRED=[]; }
+    paint();
+  }
+  function choose(mac,name){
+    LINK=mac; LINKNAME=name; paint();
+    T.configure({plate:PL(),link:mac,name:name,mac:""}).then(function(){ pushNative(); refresh(); });
+    var cf=cfg(), mp=cf.macs||{}; if(mac) mp[PL()]={mac:mac,name:name}; else delete mp[PL()]; setCfg({macs:mp,mac:"",name:""});
+    say("");
+  }
+  async function pairThen(mac,name){
+    say("Pairing with "+name+"… accept on your phone and in the car.");
+    try{ var r=await RAW.pair({mac:mac}); if(r&&r.bonded){ say(""); } choose(mac,name); }catch(e){ say("Couldn’t pair. Try pairing in your phone’s Bluetooth settings."); }
+  }
+  function onPick(e){ var b=e.target.closest(".dv"); if(!b) return; var mac=b.getAttribute("data-mac"), nm=b.getAttribute("data-name");
+    if(b.getAttribute("data-pair")) pairThen(mac,nm); else choose(mac,nm); }
+  $("paired").onclick=onPick; $("nearby").onclick=onPick;
+  $("scanBtn").onclick=async function(){
+    if(scanning){ RAW.stopScan&&RAW.stopScan().catch(function(){}); scanning=false; paint(); return; }
+    var s=await T.status();
+    if(!s.scan||!s.bluetooth){ await allowAll(); s=await T.status(); if(!s.scan||!s.bluetooth) return; }
+    try{ NEAR={}; scanning=true; paint(); await RAW.scan(); setTimeout(function(){ if(scanning){ scanning=false; paint(); } },15000); }
+    catch(e){ scanning=false; paint(); say(/off/.test(String(e&&e.message||e))?"Turn Bluetooth on to search.":"Couldn’t search. Allow Nearby devices first."); }
+  };
+  $("btOn").onclick=function(){ RAW.enable&&RAW.enable().catch(function(){}); };
+  if(RAW.addListener){
+    RAW.addListener("btFound",function(d){ if(d&&d.mac){ NEAR[String(d.mac).toUpperCase()]=d; paint(); } });
+    RAW.addListener("btScanDone",function(){ scanning=false; paint(); });
+    RAW.addListener("btConnection",function(x){ if(x&&"bluetoothOn" in x) ST.bluetoothOn=x.bluetoothOn; loadDevices(); });
+    RAW.addListener("btBond",function(x){ if(x&&x.bond===12) loadDevices(); });
   }
   async function refresh(){
-    var s=await T.status(); $("autoOn").checked=!!s.on; permLine(s); var mm=s.carmap||{}, mySel=""; Object.keys(mm).forEach(function(k){ if(mm[k]&&mm[k].plate===PL()) mySel=k; }); if(!mySel&&s.mac&&!Object.keys(mm).length&&PL()){ mySel=s.mac; T.configure({plate:PL(),link:s.mac,name:s.name||"",mac:""}).then(pushNative).catch(function(){}); } await loadDevices(mySel);
+    var s=await T.status(); ST=s; $("autoOn").checked=!!s.on; permLine(s); var mm=s.carmap||{}, mySel=""; Object.keys(mm).forEach(function(k){ if(mm[k]&&mm[k].plate===PL()){ mySel=k; LINKNAME=mm[k].name||""; } }); if(!mySel&&s.mac&&!Object.keys(mm).length&&PL()){ mySel=s.mac; LINKNAME=s.name||""; T.configure({plate:PL(),link:s.mac,name:s.name||"",mac:""}).then(pushNative).catch(function(){}); }
+    LINK=mySel; await loadDevices();
+    if(!LINK||!allOk(s)) $("autoSetup").open=true;
     if(s.running&&!on){ started=s.liveStart||Date.now(); uiOn(true); clearInterval(timer); timer=setInterval(nativeLive,2000); nativeLive(); }
     if(!s.running&&on){ clearInterval(timer); uiOn(false); }
   }
   async function nativeLive(){ try{ var s=await T.status(); if(!s.running){ clearInterval(timer); uiOn(false); pull(); return; } showLive(s.liveMiles); }catch(e){} }
   async function pull(){ if(window.driv3PullJourneys) await window.driv3PullJourneys(); renderList(); }
-  $("dev").onchange=function(){ var o=this.options[this.selectedIndex]; var nm=this.value?o.textContent:""; T.configure({plate:PL(),link:this.value,name:nm,mac:""}).then(function(){ pushNative(); refresh(); }); var cf=cfg(), mp=cf.macs||{}; if(this.value) mp[PL()]={mac:this.value,name:nm}; else delete mp[PL()]; setCfg({macs:mp,mac:"",name:""}); };
   $("autoOn").onchange=async function(){
     var want=this.checked;
     if(want){
-      var setup=$("autoSetup"); if(setup) setup.open=true;
+      $("autoSetup").open=true;
       var s=await T.status();
-      if(!s.location) s=await T.ask({what:"location"});
-      if(!s.bluetooth) s=await T.ask({what:"bluetooth"});
-      if(!s.notifications) s=await T.ask({what:"notifications"});
-      if(!s.location||!s.bluetooth){ this.checked=false; alert("Trac3 needs Location and Nearby devices permission to track journeys automatically."); permLine(s); return; }
-      if(!$("dev").value){ await loadDevices(""); alert("Now choose your car’s Bluetooth from the list."); }
-      if(!s.background) alert("Tip: tap Allow next to “Allow all the time” and “Battery: unrestricted” so journeys start even when Trac3 is closed.");
+      if(!s.location||!s.bluetooth||!s.notifications){ await allowAll(); s=await T.status(); }
+      if(!s.location||!s.bluetooth){ this.checked=false; say("Allow Location and Nearby devices to track journeys automatically."); permLine(s); return; }
+      if(!LINK){ say("Now choose your car’s Bluetooth below."); }
     }
     await T.configure({on:want}); pushNative(); setCfg({on:want}); refresh();
   };
   pushNative(); refresh(); pull();
+  window.addEventListener("load",function(){ paint(); });
   document.addEventListener("visibilitychange",function(){ if(!document.hidden){ refresh(); pull(); } });
 })();

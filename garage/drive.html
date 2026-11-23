@@ -55,6 +55,30 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 .perm{font-size:13px;margin-top:8px;line-height:1.7}.perm button{background:#26262a;color:#f2f2f2;border:0;border-radius:10px;padding:4px 10px;font-size:12px;margin-left:6px}
 .fbig{display:block;font-size:21px;font-weight:400;color:#cfcfcf;line-height:1.25}.fbig b{color:#fff;font-weight:700}.fsub{display:block;font-size:12px;color:#8a8a90;margin-top:2px}
 #journeyCard{margin-top:0}details.fold{margin-top:12px;border-top:1px solid #2a2a2e;padding-top:10px}details.fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-size:14px;font-weight:650;color:#c7c7cc;list-style:none}details.fold>summary::-webkit-details-marker{display:none}details.fold>summary::after{content:"\203A";font-size:18px;color:#7dd3fc;transition:transform .2s}details.fold[open]>summary::after{transform:rotate(90deg)}.card>h2+.btn,.card>#jBtn{margin-top:12px}
+.carRow{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border-radius:14px;background:#101216;border:1px solid #23272e}
+.carRow .btIco{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#16202a;color:#7dd3fc;flex:none}
+.carRow .btIco svg{width:22px;height:22px;fill:currentColor}.carRow .cr{flex:1;min-width:0}.carRow b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.carRow .cr span{display:block;color:#8b8b8b;font-size:12px;margin-top:2px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:650;background:#1c1c1e;color:#a1a1aa;white-space:nowrap;flex:none}
+.badge i{width:8px;height:8px;border-radius:50%;background:#52525b}.badge.on{background:#0f2a3a;color:#7dd3fc}.badge.on i{background:#7dd3fc;box-shadow:0 0 0 3px rgba(125,211,252,.25)}
+.checks{margin-top:10px;border:1px solid #23272e;border-radius:14px;overflow:hidden}
+.checks .ck{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid #1f1f23;font-size:14px}.checks .ck:first-child{border-top:0}
+.checks .ck .st{width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center}.checks .ck .st svg{width:20px;height:20px;fill:#3dd68c}
+.checks .ck .st.no:before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid #f59e0b;box-sizing:border-box}
+.checks .ck span.l{flex:1}.checks .ck button,.mini{background:#26262a;color:#f2f2f2;border:0;border-radius:10px;padding:6px 12px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.mini .ico svg{width:16px;height:16px;fill:#7dd3fc}
+.sh{display:flex;align-items:center;justify-content:space-between;margin:16px 0 6px}.sh h3{margin:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#8b8b8b;font-weight:650}
+.devs{border:1px solid #23272e;border-radius:14px;overflow:hidden}
+.dv{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;background:none;border:0;border-top:1px solid #1f1f23;color:#f2f2f2;text-align:left;font:inherit;cursor:pointer}.dv:first-child{border-top:0}
+.dv .bi{width:22px;height:22px;flex:none;color:#7dd3fc}.dv .bi svg{width:22px;height:22px;fill:currentColor}
+.dv .t{flex:1;min-width:0}.dv .t b{display:block;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dv .t span{display:block;font-size:12px;color:#8b8b8b;margin-top:1px}
+.dv.sel{background:#0f1b24}.dv .pick{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #3a3a3e;box-sizing:border-box}
+.dv.sel .pick{border:0;background:#7dd3fc;display:flex;align-items:center;justify-content:center}.dv.sel .pick:after{content:"";width:6px;height:11px;border:solid #0b0c0e;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.dv .con{color:#7dd3fc;font-weight:650}
+.devs .empty{margin:0;padding:12px;color:#8b8b8b;font-size:13px}
+.spin{width:14px;height:14px;border:2px solid #3a3a3e;border-top-color:#7dd3fc;border-radius:50%;animation:sp .8s linear infinite;display:inline-block}@keyframes sp{to{transform:rotate(360deg)}}
+#autoMsg:empty{display:none}
+.carRow.hide,#permAll.hide{display:none}
+.mini .si{display:inline-flex}.mini .si svg{width:16px;height:16px;fill:#7dd3fc}
 </style>
 </head>
 <body>
@@ -82,15 +106,27 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 <section class="card" id="autoCard">
   <div class="hd"><h2>Auto journeys</h2><label class="tg"><input type="checkbox" id="autoOn" aria-label="Track journeys automatically"/><span></span></label></div>
   <p class="muted">Starts when your phone connects to the car’s Bluetooth.</p>
-  <div id="webNote" class="note hide" style="background:#141418;border-color:#2a2a2e;color:#cfcfcf">Available on your phone.</div>
+  <div id="webNote" class="note hide" style="background:#141418;border-color:#2a2a2e;color:#cfcfcf">Car Bluetooth works in the Trac3 Android app. Browsers can’t see your car’s Bluetooth.</div>
+  <div class="carRow hide" id="carRow">
+    <span class="btIco" data-ico="bluetooth" aria-hidden="true"></span>
+    <div class="cr"><b id="carName">Your car</b><span id="carSub">Your car’s Bluetooth</span></div>
+    <span class="badge" id="carBadge"><i></i><span id="carState">Not connected</span></span>
+  </div>
+  <p class="muted warn" id="autoMsg" role="status"></p>
   <details class="fold" id="autoSetup">
     <summary>Bluetooth setup</summary>
-    <p class="muted">A journey starts when your phone connects to your car’s Bluetooth, and ends when it disconnects. Miles and cost go to your Drive diary, and stay on your phone.</p>
     <div id="nativeBox" class="hide">
-      <label class="f" for="dev">Car Bluetooth</label>
-      <select id="dev"><option value="">Choose your car…</option></select>
-      <div class="perm" id="perms"></div>
+      <div id="permBox">
+        <button class="btn go" type="button" id="permAll" data-ico="check">Allow all permissions</button>
+        <div class="checks" id="perms"></div>
+      </div>
+      <div class="note hide" id="btOff">Bluetooth is off. <button type="button" class="mini" id="btOn">Turn on</button></div>
+      <div class="sh"><h3>Paired devices</h3></div>
+      <div class="devs" id="paired"></div>
+      <div class="sh"><h3>Nearby</h3><button type="button" class="mini" id="scanBtn">Search</button></div>
+      <div class="devs" id="nearby"><p class="empty">Tap Search to find devices near you.</p></div>
     </div>
+    <p class="muted hide" id="webSetup">Install the Trac3 Android app, then choose your car here.</p>
   </details>
 </section>
 
@@ -105,6 +141,6 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 <script src="./mot-config.js?v=1"></script>
 <script src="./fuel-live.js?v=1"></script>
 <script src="./fuel.js?v=4"></script>
-<script src="./record-app.js?v=9"></script>
+<script src="./record-app.js?v=10"></script>
 </body>
 </html>

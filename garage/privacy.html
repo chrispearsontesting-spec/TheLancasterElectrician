@@ -47,7 +47,7 @@ h1{font-size:28px;margin-bottom:6px} h2{font-size:16px;margin:22px 0 4px;color:#
 <p>Only used when you tap the mic. Typing by voice uses your browser or phone’s speech service, which may send the audio to Google to turn it into text. Mechanic voice notes are sent to our Cloudflare Worker to be transcribed and are not kept.</p>
 
 <h2>Location, journeys and Bluetooth</h2>
-<p>Location is used while you record a journey, plan a route or look up fuel. If you turn on auto journeys in the Android app, Trac3 uses location and Bluetooth (to see when you’re in your car) in the background. Journeys are saved on the phone. Place names and routes are looked up with OpenStreetMap services (Photon, OSRM, postcodes.io), which receive the map point or place you search for.</p>
+<p>Location is used while you record a journey, plan a route or look up fuel. If you turn on auto journeys in the Android app, Trac3 uses location and Bluetooth (to see when you’re in your car) in the background. Searching for Bluetooth devices only lists nearby names on your phone; nothing is sent anywhere. Journeys are saved on the phone. Place names and routes are looked up with OpenStreetMap services (Photon, OSRM, postcodes.io), which receive the map point or place you search for.</p>
 
 <h2>Lookups through our Cloudflare Worker</h2>
 <p>MOT history, tax status and vehicle details: your plate is sent to our Worker, which asks the DVSA and DVLA. Fuel finder: a map point or postcode is sent to get nearby prices. Garage finder: the garage name and postcode are sent to find contact details, and an email you add for a garage may be saved so other drivers can find it. We don’t keep plates or locations.</p>

@@ -77,7 +77,12 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 .devs .empty{margin:0;padding:12px;color:#8b8b8b;font-size:13px}
 .spin{width:14px;height:14px;border:2px solid #3a3a3e;border-top-color:#7dd3fc;border-radius:50%;animation:sp .8s linear infinite;display:inline-block}@keyframes sp{to{transform:rotate(360deg)}}
 #autoMsg:empty{display:none}
-.carRow.hide,#permAll.hide{display:none}
+.carRow.hide{display:none}
+.checks .ck.all{width:100%;background:#101a22;border:0;color:#f2f2f2;font:inherit;text-align:left;cursor:pointer}
+.checks .ck.all .box{width:22px;height:22px;flex:none;border-radius:6px;border:2px solid #7dd3fc;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
+.checks .ck.all.on .box{background:#7dd3fc}.checks .ck.all.on .box:after{content:"";width:6px;height:11px;border:solid #0b0c0e;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.checks .ck.all b{display:block;font-size:15px}.checks .ck.all small{display:block;color:#8b8b8b;font-size:12px;margin-top:1px}
+.checks .ck.all[disabled]{opacity:.6}
 .mini .si{display:inline-flex}.mini .si svg{width:16px;height:16px;fill:#7dd3fc}
 </style>
 </head>
@@ -101,8 +106,6 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
   </details>
 </section>
 
-<div id="cheapFuel"></div>
-
 <section class="card" id="autoCard">
   <div class="hd"><h2>Auto journeys</h2><label class="tg"><input type="checkbox" id="autoOn" aria-label="Track journeys automatically"/><span></span></label></div>
   <p class="muted">Starts when your phone connects to the car’s Bluetooth.</p>
@@ -116,10 +119,8 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
   <details class="fold" id="autoSetup">
     <summary>Bluetooth setup</summary>
     <div id="nativeBox" class="hide">
-      <div id="permBox">
-        <button class="btn go" type="button" id="permAll" data-ico="check">Allow all permissions</button>
-        <div class="checks" id="perms"></div>
-      </div>
+      <div class="sh"><h3>Permissions</h3></div>
+      <div class="checks" id="perms"></div>
       <div class="note hide" id="btOff">Bluetooth is off. <button type="button" class="mini" id="btOn">Turn on</button></div>
       <div class="sh"><h3>Paired devices</h3></div>
       <div class="devs" id="paired"></div>
@@ -133,14 +134,13 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 <section class="card" id="dashCard">
   <h2>Dashcam</h2>
   <a class="btn go" href="dashcam.html?v=2" id="dashBtn">Start dashcam</a>
-  <p class="muted">Record the road and cabin. Clips are kept for 24 hours.</p>
+  <p class="muted">Road and cabin. Clips kept for 24 hours.</p>
 </section>
 
 <a class="btn backBtn" href="home.html#drive">Back</a>
 
 <script src="./mot-config.js?v=1"></script>
 <script src="./fuel-live.js?v=1"></script>
-<script src="./fuel.js?v=4"></script>
-<script src="./record-app.js?v=10"></script>
+<script src="./record-app.js?v=11"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* Cheapest fuel on Record journey. Talks to the garage /fuel proxy; no keys in the app. */
+/* Cheapest fuel (Financial > Cheapest fuel, fuel.html). Talks to the garage /fuel proxy; no keys in the app. */
 (function () {
   "use strict";
   var root = document.getElementById("cheapFuel");

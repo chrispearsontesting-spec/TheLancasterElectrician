@@ -119,25 +119,25 @@
   var PERMS=[["location","Location"],["background","Location all the time"],["bluetooth","Nearby devices"],["notifications","Notifications"],["batteryOk","Battery unrestricted"]];
   function allOk(s){ return PERMS.every(function(r){ return !!s[r[0]]; }); }
   function permLine(s){
-    var ok=allOk(s);
-    $("permAll").classList.toggle("hide",ok);
-    $("perms").innerHTML=PERMS.map(function(r){ var g=!!s[r[0]], ask=r[0]==="batteryOk"?"battery":r[0];
+    LASTS=s; var ok=allOk(s);
+    var all="<button type='button' class='ck all"+(ok?" on":"")+"' id='permAll' data-all='1' role='checkbox' aria-checked='"+ok+"'><span class='box'></span><span class='l'><b>"+(ok?"All allowed":"Select all")+"</b><small>"+(ok?"Auto journeys can run in the background":"Allow everything in one go")+"</small></span></button>";
+    $("perms").innerHTML=all+PERMS.map(function(r){ var g=!!s[r[0]], ask=r[0]==="batteryOk"?"battery":r[0];
       return "<div class='ck'><span class='st"+(g?"":" no")+"'>"+(g?ICO("check"):"")+"</span><span class='l'>"+r[1]+"</span>"+(g?"":"<button type='button' data-ask='"+ask+"'>Allow</button>")+"</div>"; }).join("");
   }
   /* One tap: Android's single prompt for location + Bluetooth + notifications, then the two
      screens Android keeps separate (location all the time, battery). */
   async function allowAll(){
-    var b=$("permAll"); b.disabled=true; say("");
+    var b=$("permAll"); if(b) b.disabled=true; say("");
     try{
       var s=RAW.askAll?await RAW.askAll():null;
       if(!s){ s=await RAW.ask({what:"location"}); s=await RAW.ask({what:"bluetooth"}); s=await RAW.ask({what:"notifications"}); }
       if(s.location&&!s.background) s=await RAW.ask({what:"background"}).catch(function(){ return s; });
       if(!s.batteryOk) await RAW.ask({what:"battery"}).catch(function(){});
     }catch(e){}
-    b.disabled=false; setTimeout(refresh,600);
+    if($("permAll")) $("permAll").disabled=false; setTimeout(refresh,600);
   }
-  $("permAll").onclick=allowAll;
-  $("perms").onclick=async function(e){ var b=e.target.closest("[data-ask]"); if(!b) return;
+  $("perms").onclick=async function(e){ var all=e.target.closest("[data-all]"); if(all){ if(!all.classList.contains("on")) allowAll(); return; }
+    var b=e.target.closest("[data-ask]"); if(!b) return;
     var w=b.getAttribute("data-ask"); if(w==="background"){ var s=await T.status(); if(!s.location){ await T.ask({what:"location"}); }  }
     await T.ask({what:w}).catch(function(){}); setTimeout(refresh,600); };
   function isConn(mac){
@@ -218,6 +218,6 @@
     await T.configure({on:want}); pushNative(); setCfg({on:want}); refresh();
   };
   pushNative(); refresh(); pull();
-  window.addEventListener("load",function(){ paint(); });
+  var LASTS=null; window.addEventListener("load",function(){ paint(); if(LASTS) permLine(LASTS); });
   document.addEventListener("visibilitychange",function(){ if(!document.hidden){ refresh(); pull(); } });
 })();

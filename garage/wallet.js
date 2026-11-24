@@ -83,7 +83,7 @@
     if(!d){
       return '<button class="tile add" type="button" data-add="'+spec.slot+'">'+
         '<span class="plus"><span class="ico sm" data-ico="add"></span></span>'+
-        (spec.slot==="other"?'<span>Add</span>':'<span class="addLab">'+esc(spec.title)+'</span><span class="addSub">Add</span>')+'</button>';
+        (spec.slot==="other"?'<span class="addLab">Add other</span>':'<span class="addLab">'+esc(spec.title)+'</span><span class="addSub">Add</span>')+'</button>';
     }
     var num=formatNum(d.slot,d.number||d.phone||"");
     if(d.slot==="receipt"&&!num) num=(docs("receipt").length)+" receipt"+(docs("receipt").length===1?"":"s");

@@ -93,9 +93,23 @@ details.moreCard[open]>summary::after{transform:rotate(90deg)}
 .moreLink>summary{cursor:pointer;color:#a0a0a0;font-size:13.5px;padding:10px 0;list-style:none}
 .moreLink>summary::-webkit-details-marker{display:none}
 .tools button svg,button.x svg{width:18px;height:18px;fill:currentColor;display:block;margin:auto}
+/* Simplified layout (t262u) */
+body{padding-top:calc(62px + env(safe-area-inset-top)) !important}
+body>h1{font-size:18px !important;margin:12px 2px 2px !important}
+.lead{font-size:13px !important;margin:0 2px 12px !important}
+.btn.go{background:var(--accent) !important;background-image:none !important;color:var(--on-accent) !important;border:0 !important;box-shadow:none !important}
+.btn.go .ico{color:var(--on-accent) !important}
+.privBan{color:#c9d2da !important;background:rgba(var(--accent-rgb),.05) !important;border:1px solid rgba(var(--accent-rgb),.22) !important}
+.privBan .ico{color:var(--accent) !important}
+.gframe{border:1px solid rgba(var(--accent-rgb),.35) !important}
+.gal .tabs button.on{border:1px solid rgba(var(--accent-rgb),.35) !important;border-bottom:0 !important;margin-bottom:-1px !important}
+.gal .tabs button.on::after{bottom:-1px !important;height:2px !important}
+.vsw::before{box-shadow:inset 0 0 0 1px rgba(var(--accent-rgb),.45) !important}
+.vsw{margin:0 0 6px !important}
 </style>
 </head>
 <body>
+<header class="appbar"><h1>Showcase</h1></header>
 <h1>My car</h1>
 <p class="lead">Photos, stats, mods and videos. In Show mode, a scan of your sticker opens this card — nothing else.</p>
 

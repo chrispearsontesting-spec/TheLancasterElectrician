@@ -15,12 +15,34 @@
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=83"/>
 <link rel="stylesheet" href="./wallet.css?v=3"/>
+<style>
+/* Simplified layout (t262u): compact header, saved items first-class, empty slots as slim rows */
+.topRow{margin:0 2px 2px !important}
+.pageTitle{font-size:19px !important;margin:0 !important}
+.brandLogo{height:16px !important;opacity:.55}
+.subRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 2px 0}
+.subRow .carName{margin:0 !important}
+.wPriv{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#8b8b8b;white-space:nowrap}
+.wPriv .ico,.wPriv .ico svg{width:14px !important;height:14px !important;flex-basis:14px !important}
+.wSum{margin:12px 2px 0;font-size:13px;color:#8b8b8b}
+.wSum b{color:#f2f2f2;font-weight:650}
+.sec{margin-top:16px !important}
+.tile:not(.add){border-color:#2a2a2e}
+.tile.add{flex-direction:row !important;justify-content:flex-start !important;align-items:center !important;gap:10px !important;padding:10px 12px !important;min-height:54px;border:1px solid #222226 !important;background:#111113 !important;text-align:left}
+.tile.add .plus{width:26px !important;height:26px !important;flex:0 0 26px;border-color:rgba(var(--accent-rgb),.35) !important;color:var(--accent) !important}
+.tile.add .addLab{text-align:left !important;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile.add .addSub{font-size:12px !important;margin-left:auto}
+.lockMark{width:96px !important;height:96px !important;border-color:rgba(var(--accent-rgb),.3) !important}
+.lockMark .ico,.lockMark .ico svg{width:44px !important;height:44px !important;flex-basis:44px !important}
+#unlockBtn{background:var(--accent) !important;background-image:none !important;color:var(--on-accent) !important;border:0 !important;box-shadow:none !important;font-weight:700 !important;min-height:54px !important}
+#unlockBtn .ico{color:var(--on-accent) !important}
+.tile.add .addSub{display:none !important}
+</style>
 </head>
 <body data-view="locked">
 <main class="page" id="page-locked">
-  <div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"></div>
-  <h1 class="pageTitle">Wallet</h1>
-  <p class="carName" id="lockCar"> </p>
+  <div class="topRow"><h1 class="pageTitle">Wallet</h1><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"></div>
+  <div class="subRow"><p class="carName" id="lockCar"> </p><span class="wPriv"><span class="ico sm" data-ico="lock" aria-hidden="true"></span>Private on this phone</span></div>
   <div class="lockWrap">
     <div class="lockMark"><span class="ico lg" data-ico="lock" aria-hidden="true"></span></div>
     <button class="btn" type="button" id="unlockBtn" data-ico="lock">Unlock</button>
@@ -30,9 +52,9 @@
 </main>
 
 <main class="page" id="page-open">
-  <div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"></div>
-  <h1 class="pageTitle">Wallet</h1>
-  <p class="carName" id="openCar"> </p>
+  <div class="topRow"><h1 class="pageTitle">Wallet</h1><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"></div>
+  <div class="subRow"><p class="carName" id="openCar"> </p><span class="wPriv"><span class="ico sm" data-ico="lock" aria-hidden="true"></span>Private on this phone</span></div>
+  <p class="wSum" id="wSum" aria-live="polite"></p>
   <section class="sec">
     <h2>Car documents</h2>
     <div class="grid" id="docGrid"></div>
@@ -121,6 +143,14 @@
 <script src="./wallet-barcode.js?v=1"></script>
 <script src="./tax-renew.js?v=2"></script>
 <script src="./wallet-ocr.js?v=2"></script>
-<script src="./wallet.js?v=4"></script>
+<script src="./wallet.js?v=5"></script>
+<script>
+(function(){ // "3 saved" summary above the tiles
+  function sum(){ var n=document.querySelectorAll("#docGrid .tile:not(.add), #cardGrid .tile:not(.add)").length, e=document.getElementById("wSum");
+    e.innerHTML=n?"<b>"+n+" saved</b> · tap one to open":"Tap a slot to add a photo or number."; }
+  ["docGrid","cardGrid"].forEach(function(id){ var g=document.getElementById(id); if(g) new MutationObserver(sum).observe(g,{childList:true}); });
+  sum();
+})();
+</script>
 </body>
 </html>

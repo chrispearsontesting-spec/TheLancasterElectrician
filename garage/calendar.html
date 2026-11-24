@@ -28,6 +28,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=83"/>
+<link rel="stylesheet" href="./tool-bar.css?v=8"/>
 <style>
 *{box-sizing:border-box}
 body{margin:0 auto;max-width:480px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px 28px}
@@ -126,12 +127,31 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 .legMore>summary::-webkit-details-marker{display:none}
 .legMore>summary::after{content:" \203A";color:#6b6f76}
 .legMore[open]>summary::after{content:" \2013"}
+/* Simplified layout (t262u) */
+body{padding-top:calc(64px + env(safe-area-inset-top)) !important}
+.calCard{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:10px 10px 12px;margin:0 0 4px}
+.calCard .nav{margin:0 0 6px}
+.calCard .nav .btn{width:40px !important;height:40px !important;min-height:40px !important;padding:0 !important;border-radius:50% !important;display:flex !important;align-items:center;justify-content:center;margin:0 !important}
+.calCard .grid{gap:3px}
+.calCard .day{min-height:42px;border-radius:10px;background:#18181b;border-color:#232327}
+.calCard .day.empty{background:transparent;border-color:transparent}
+.calCard .day.on{outline:1.5px solid rgba(var(--accent-rgb),.6);outline-offset:0}
+.calCard .legMore{margin:8px 2px 0}
+.calHint{margin:6px 2px 0 !important;font-size:12px !important}
+.addw{background:var(--accent) !important;background-image:none !important;color:var(--on-accent) !important;border:0 !important;box-shadow:none !important;font-weight:700 !important;min-height:52px}
+.addw .ico{color:var(--on-accent) !important}
+#calLists{margin-top:14px;background:#141416;border:1px solid #2a2a2e;border-radius:18px;overflow:hidden}
+#calLists .ddGroup+.ddGroup{border-top:1px solid #222226}
+#calLists .ddb{margin:0;border:0;border-radius:0;background:transparent;font-size:16px;min-height:58px;padding:14px 16px}
+#calLists .ddMenu{margin:0 10px 10px;background:#101012}
+button.btn.addw,.btn.addw{background:var(--accent) !important;background-image:none !important;color:var(--on-accent) !important;border:0 !important;box-shadow:none !important;font-weight:700 !important}
+button.btn.addw .ico,button.btn.addw svg{color:var(--on-accent) !important;fill:currentColor}
 </style>
 </head>
 <body>
-<h1>Drive diary</h1>
-<p class="muted">Tap a day to see or add work.</p>
+<header class="appbar"><h1>Drive diary</h1></header>
 <p class="muted" id="mechStatus" style="display:none"></p>
+<section class="calCard" id="calCard">
 <div class="nav">
   <button class="btn" type="button" id="prev" data-ico="prev" aria-label="Previous month"></button>
   <b id="label"></b>
@@ -140,6 +160,8 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 <div class="grid" id="dows"></div>
 <div class="grid" id="grid"></div>
 <details class="legMore"><summary>What the dots mean</summary><p class="legend" aria-label="Dot colours"><span><i class="cdot" style="background:var(--c-due)"></i>Due</span><span><i class="cdot" style="background:var(--c-over)"></i>Overdue</span><span><i class="cdot" style="background:var(--c-done)"></i>Work done</span><span><i class="cdot" style="background:var(--c-jour)"></i>Journeys</span><span><i class="cdot" style="background:var(--c-media)"></i>Photos/video</span></p></details>
+<p class="muted calHint">Tap a day to see or add work.</p>
+</section>
 <div id="list"></div>
 <section id="calLists">
 <div class="ddGroup">
@@ -155,7 +177,7 @@ textarea{width:100%;min-height:90px;background:#161618;border:1px solid #2a2a2e;
 <div class="ddMenu hide" id="clJournMenu"><input type="search" class="clQ" id="cl_journ_q" placeholder="Search journeys" aria-label="Search journeys"/><div id="cl_journ_list"></div><details class="clRoutes" id="routes"><summary>Saved routes <span class="muted" id="rCount"></span></summary><p class="muted">Saved from Route costs. Tap one for the breakdown.</p><div id="rList"></div><a class="btn wide" href="route.html">Check a route cost</a></details></div>
 </div>
 </section>
-<a class="btn wide" href="drive.html">Let’s drive</a>
+<a class="btn wide" href="drive.html" data-ico="wheel">Let’s drive</a>
 <a class="btn backBtn" href="home.html">Back</a>
 <script src="./trip-engine.js"></script>
 <script src="./reminders-core.js?v=5"></script>

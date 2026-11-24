@@ -29,6 +29,38 @@
     other:"Line up the document — number in the box",
     noclaims:"Line up the no-claims letter"
   };
+  var SLOT_ICO={
+    v5c:"description",insurance:"verified_user",mot:"fact_check",receipt:"receipt_long",
+    wheelnut:"hexagon",licence:"id_card",fuel:"local_gas_station",breakdown:"car_crash",
+    noclaims:"shield",other:"local_parking"
+  };
+  var SCAN_SLOTS={v5c:1,insurance:1,mot:1,receipt:1,licence:1,fuel:1};
+  function icoHtml(key, cls){
+    return (window.dipstickIconHtml&&dipstickIconHtml(key, cls||"ico sm"))||"";
+  }
+  function formatPlate(c){
+    var v=String((c&&c.plate)||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+    if(!v) return "";
+    return v.length>4?v.slice(0,-3)+" "+v.slice(-3):v;
+  }
+  function paintCar(id){
+    var e=el(id); if(!e) return;
+    var plate=formatPlate(car);
+    e.innerHTML=esc(carName(car))+(plate?' <span class="wPlate">'+esc(plate)+'</span>':'');
+  }
+  function fmtDay(iso){
+    var p=String(iso||"").split("-"); if(p.length<3) return "";
+    var mo=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1]-1];
+    return mo?(String(+p[2])+" "+mo):"";
+  }
+  function statusChip(slot){
+    var iso=slot==="insurance"?(car&&car.ins):slot==="mot"?(car&&car.mot):"";
+    var day=fmtDay(iso); if(!day) return "";
+    var tm=Date.parse(String(iso).slice(0,10)+"T12:00:00");
+    var days=isNaN(tm)?99:Math.round((tm-Date.now())/86400000);
+    var lab=slot==="insurance"?"Renews ":"Valid to ";
+    return '<span class="wChip '+(days<=30?"warn":"ok")+'">'+lab+day+"</span>";
+  }
   function el(id){ return document.getElementById(id); }
   function qs(s,r){ return (r||document).querySelector(s); }
   function carName(c){ return (c&&(c.nick||c.name||c.plate))||"Your car"; }
@@ -79,38 +111,44 @@
     return "";
   }
 
-  function tileHtml(spec, d){
+  function rowHtml(spec, d, list){
+    list=list||(d?docs(spec.slot):[]);
+    var ico=SLOT_ICO[spec.slot]||"doc";
     if(!d){
-      return '<button class="tile add" type="button" data-add="'+spec.slot+'">'+
-        '<span class="plus"><span class="ico sm" data-ico="add"></span></span>'+
-        (spec.slot==="other"?'<span class="addLab">Add other</span>':'<span class="addLab">'+esc(spec.title)+'</span><span class="addSub">Add</span>')+'</button>';
+      var scan=!!SCAN_SLOTS[spec.slot];
+      var lab=spec.slot==="other"?"Add other":spec.title;
+      var extra=spec.slot==="other"?" tile add":"";
+      return '<div class="wRow empty'+extra+'">'+
+        '<button class="wMain" type="button" data-add="'+spec.slot+'">'+
+        '<span class="ric">'+icoHtml(ico)+'</span>'+
+        '<span class="rtx"><span class="rt'+(spec.slot==="other"?" addLab":"")+'">'+esc(lab)+'</span>'+
+        '<span class="rs">Not added</span></span></button>'+
+        '<button class="addpill" type="button" data-add="'+spec.slot+'">'+
+        icoHtml(scan?"photo_camera":"add","ico xs")+
+        (scan?"Scan":"Add")+"</button></div>";
     }
     var num=formatNum(d.slot,d.number||d.phone||"");
-    if(d.slot==="receipt"&&!num) num=(docs("receipt").length)+" receipt"+(docs("receipt").length===1?"":"s");
+    if(d.slot==="receipt"&&!num) num=(list.length||docs("receipt").length)+" receipt"+((list.length||docs("receipt").length)===1?"":"s");
     if(d.slot==="noclaims"){ var y=Store.ncbCurrent(d,car); num=(y===1?"1 year":y+" years"); }
     var u=thumbUrl(d);
-    var thumb=u?'<img alt="" src="'+u+'"/>':'';
-    if(d.slot==="fuel"&&d.number&&window.D3Barcode){
-      thumb='<canvas class="fuelThumb" width="300" height="80" data-code="'+String(d.number).replace(/"/g,"")+'"></canvas>';
-    }
-    if(d.slot==="wheelnut"&&!u){
-      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><polygon points="200,44 268,83 268,161 200,200 132,161 132,83" fill="none" style="stroke:var(--accent)" stroke-width="6"/><circle cx="200" cy="122" r="28" fill="none" style="stroke:var(--accent)" stroke-width="6"/></svg>';
-    }
-    if(d.slot==="noclaims"&&!u){
-      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><path d="M200 40l70 26v52c0 46-30 80-70 96-40-16-70-50-70-96V66z" fill="none" style="stroke:var(--accent)" stroke-width="6"/><path d="M170 128l22 22 40-44" fill="none" style="stroke:var(--accent)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    }
-    if(d.slot==="breakdown"&&!u){
-      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><path d="M168 70c8 0 14 6 16 14l6 28c1 6-1 12-6 15l-14 10c12 26 32 46 58 58l10-14c3-5 9-7 15-6l28 6c8 2 14 8 14 16v22c0 10-8 18-18 18C186 237 123 174 123 88c0-10 8-18 18-18z" fill="none" style="stroke:var(--accent)" stroke-width="6" stroke-linejoin="round"/></svg>';
-    }
+    var ric=u?'<span class="ric on"><img alt="" src="'+u+'"/></span>':'<span class="ric on">'+icoHtml(ico)+'</span>';
+    var chips="";
+    if(spec.multi&&list.length>1) chips+='<span class="wChip acc">'+list.length+"</span>";
+    chips+=statusChip(d.slot);
     var copyVal=d.slot==="noclaims"?num:(d.number||d.phone||"");
     if(d.slot==="noclaims"&&copyVal) copyVal=copyVal+" no claims";
-    var act=spec.call
-      ? '<span class="copy" data-call="'+(d.phone||d.number||'')+'" aria-label="Call"><span class="ico" data-ico="phone"></span></span>'
-      : (copyVal? '<span class="copy" data-copy="'+String(copyVal).replace(/"/g,"")+'" aria-label="Copy"><span class="ico" data-ico="copy"></span></span>':'');
-    var cls=spec.call?"tile call":"tile";
-    return '<button class="'+cls+'" type="button" data-open="'+d.id+'">'+
-      '<div class="thumb">'+thumb+'</div><div class="meta"><span class="lab">'+esc(spec.title||d.title||"Document")+'</span>'+
-      '<span class="numRow"><span class="num">'+(num?esc(num):"&nbsp;")+'</span>'+act+'</span></div></button>';
+    var act;
+    if(spec.call){
+      act='<button class="wIconBtn" type="button" data-call="'+(d.phone||d.number||"")+'" aria-label="Call">'+icoHtml("phone")+"</button>";
+    }else if(copyVal && d.slot!=="receipt"){
+      act='<button class="wIconBtn" type="button" data-copy="'+String(copyVal).replace(/"/g,"")+'" aria-label="Copy">'+icoHtml("copy")+"</button>";
+    }else{
+      act='<span class="wIconBtn ghost" aria-hidden="true">'+icoHtml("chevron")+"</span>";
+    }
+    return '<div class="wRow">'+
+      '<button class="wMain" type="button" data-open="'+d.id+'">'+
+      ric+'<span class="rtx"><span class="rt">'+esc(spec.title||d.title||"Document")+chips+"</span>"+
+      '<span class="rs mono">'+(num?esc(num):"&nbsp;")+"</span></span></button>"+act+"</div>";
   }
   function esc(s){ return String(s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
 
@@ -119,33 +157,83 @@
     return (rec.docs||[]).filter(function(d){ return !known[d.slot]; });
   }
 
+  function paintPick(){
+    var box=el("pickOpts"); if(!box) return;
+    var html="";
+    DOCS.concat(CARDS).forEach(function(s){
+      var list=docs(s.slot), n=list.length, ico=SLOT_ICO[s.slot]||"doc";
+      var cls="wOpt", tag="", attrs=' type="button"';
+      if(s.multi&&n){
+        cls+=" more";
+        tag='<span class="wOtag more">+ another</span>';
+        attrs+=' data-add="'+s.slot+'"';
+      }else if(n){
+        cls+=" done";
+        tag='<span class="wOtag done">'+icoHtml("check","ico xs")+"Saved</span>";
+        attrs+=' data-open="'+list[0].id+'"';
+      }else{
+        attrs+=' data-add="'+s.slot+'"';
+        tag='<span class="wOtag">'+(SCAN_SLOTS[s.slot]?"Scan":"Add")+"</span>";
+      }
+      html+='<button class="'+cls+'"'+attrs+'>'+icoHtml(ico)+'<span class="wOptName">'+esc(s.title)+"</span>"+tag+"</button>";
+    });
+    html+='<button class="wOpt" type="button" data-add="other">'+icoHtml("add")+'<span class="wOptName">Add other</span><span class="wOtag more">Name it</span></button>';
+    box.innerHTML=html;
+  }
+  function openPick(){
+    paintPick();
+    var sh=el("pickSheet"); if(!sh) return;
+    sh.classList.add("on");
+    if(el("page-open")) el("page-open").classList.add("dim");
+    if(window.dipstickIcons) dipstickIcons(el("pickOpts"));
+  }
+  function closePick(){
+    var sh=el("pickSheet"); if(sh) sh.classList.remove("on");
+    if(el("page-open")) el("page-open").classList.remove("dim");
+  }
   function paintOpen(){
-    var dg=el("docGrid"), cg=el("cardGrid");
-    if(el("openCar")) el("openCar").textContent=carName(car);
-    if(el("lockCar")) el("lockCar").textContent=carName(car);
-    var dh="", i;
-    for(i=0;i<DOCS.length;i++){
-      var s=DOCS[i], list=docs(s.slot), d=list[0]||null;
-      if(s.multi&&list.length) d=Object.assign({},list[0],{title:s.title});
-      dh+=tileHtml(s,d);
+    paintCar("openCar"); paintCar("lockCar");
+    var slots=DOCS.concat(CARDS), have=0, miss=[], i;
+    for(i=0;i<slots.length;i++){
+      if(docs(slots[i].slot).length) have++; else miss.push(slots[i]);
     }
-    dh+=tileHtml({slot:"other",title:"Add"},null);
-    dg.innerHTML=dh;
+    var pct=Math.round(have/slots.length*100);
+    if(el("wSumText")) el("wSumText").innerHTML="<b>"+have+" of "+slots.length+"</b> stored";
+    if(el("wPct")) el("wPct").textContent=pct+"%";
+    if(el("wBarFill")) el("wBarFill").style.width=pct+"%";
+    var missEl=el("wMiss");
+    if(missEl){
+      missEl.hidden=!miss.length;
+      var chips='<span class="wLab">Next</span>';
+      miss.forEach(function(s){
+        chips+='<button class="mchip" type="button" data-add="'+s.slot+'">'+icoHtml("add","ico xs")+esc(s.title)+"</button>";
+      });
+      missEl.innerHTML=miss.length?chips:"";
+    }
+    var dg=el("docGrid"), cg=el("cardGrid"), og=el("otherGrid");
+    var dh="";
+    for(i=0;i<DOCS.length;i++){
+      var s=DOCS[i], list=docs(s.slot);
+      dh+=rowHtml(s,list[0]||null,list);
+    }
+    if(dg) dg.innerHTML=dh;
     var ch="";
     for(i=0;i<CARDS.length;i++){
       var s=CARDS[i], list=docs(s.slot);
-      ch+=tileHtml(s,list[0]||null);
+      ch+=rowHtml(s,list[0]||null,list);
     }
-    otherDocs().forEach(function(d){ ch+=tileHtml({slot:d.slot,title:d.title||"Document"},d); });
-    ch+=tileHtml({slot:"other",title:"Add"},null);
-    cg.innerHTML=ch;
-    Array.prototype.forEach.call(document.querySelectorAll("canvas.fuelThumb"),function(c){
-      if(Bar) Bar.draw(c,c.getAttribute("data-code")||"",{width:300,height:80,bg:"#161820",fg:"#f2f2f2"});
+    if(cg) cg.innerHTML=ch;
+    var others=otherDocs(), oh="";
+    others.forEach(function(d){ oh+=rowHtml({slot:d.slot||"other",title:d.title||"Document"},d,[d]); });
+    if(!others.length) oh+=rowHtml({slot:"other",title:"Add other"},null,[]);
+    if(og) og.innerHTML=oh;
+    if(el("otherSec")) el("otherSec").hidden=!oh;
+    paintPick();
+    ["docGrid","cardGrid","otherGrid","wMiss","pickOpts"].forEach(function(id){
+      var n=el(id); if(n&&window.dipstickIcons) dipstickIcons(n);
     });
-    if(window.dipstickIcons) dipstickIcons(dg.parentNode||document);
-    if(window.dipstickIcons) dipstickIcons(cg);
+    if(window.dipstickPinBack) setTimeout(dipstickPinBack,40);
   }
-
   function slotTitle(slot,d){
     var s=DOCS.concat(CARDS).filter(function(x){return x.slot===slot})[0];
     return (d&&d.title)||(s&&s.title)||"Document";
@@ -448,12 +536,31 @@
     showSaved(findDoc(doc.id)||doc);
   }
 
+  function paintLocked(info){
+    info=info||{kind:"none",label:"Unlock"};
+    var none=info.kind==="none";
+    var mark=el("lockMark");
+    if(mark){
+      mark.classList.toggle("warn",none);
+      mark.innerHTML='<span class="ico lg" data-ico="'+(none?"lock_open":"fingerprint")+'" aria-hidden="true"></span>';
+      if(window.dipstickIcons) dipstickIcons(mark);
+    }
+    if(el("lockTitle")) el("lockTitle").textContent=none?"No screen lock yet":"Wallet locked";
+    if(el("lockWho")) el("lockWho").textContent=none?"Anyone holding this phone could open it.":"Fingerprint, face or your phone's PIN";
+    if(el("needPin")) el("needPin").hidden=!none;
+    var btn=el("unlockBtn");
+    if(btn){
+      btn.innerHTML='<span class="ico" data-ico="'+(none?"lock_open":"fingerprint")+'" aria-hidden="true"></span>'+(info.label||"Unlock");
+      if(window.dipstickIcons) dipstickIcons(btn);
+    }
+  }
+
   async function doUnlock(){
     var ok=false;
     try{ ok=await Lock.unlock(); }catch(e){ ok=false; }
     if(!ok){
-      var k=(await Lock.canBio()).kind;
-      el("needPin").hidden=!(k==="none");
+      var info=await Lock.canBio();
+      paintLocked(info);
       return false;
     }
     rec=await Store.load(car);
@@ -475,9 +582,9 @@
       if(view==="locked"||!Lock||Lock.unlocked()) return;
       stopCam();
       if(View&&View.close) View.close();
-      closeAdd();
+      closeAdd(); closePick();
       rec={docs:[]};
-      el("docGrid").innerHTML=""; el("cardGrid").innerHTML="";
+      ["docGrid","cardGrid","otherGrid"].forEach(function(id){ if(el(id)) el(id).innerHTML=""; });
       setView("locked");
     },5000);
     ["pointerdown","keydown"].forEach(function(t){
@@ -488,11 +595,9 @@
   async function boot(){
     relockWatch();
     car=Store.currentCar();
-    if(el("lockCar")) el("lockCar").textContent=carName(car);
-    if(el("openCar")) el("openCar").textContent=carName(car);
+    paintCar("lockCar"); paintCar("openCar");
     var info=await Lock.canBio();
-    if(el("unlockBtn")) el("unlockBtn").textContent=info.label||"Unlock";
-    if(info.kind==="none") el("needPin").hidden=false;
+    paintLocked(info);
     rec=await Store.load(car); // migrate even while locked; no photos shown
     if(Lock.unlocked()){
       paintOpen();
@@ -534,6 +639,16 @@
     el("unlockBtn").onclick=function(){ doUnlock(); };
     el("docGrid").addEventListener("click",onGridClick);
     el("cardGrid").addEventListener("click",onGridClick);
+    if(el("otherGrid")) el("otherGrid").addEventListener("click",onGridClick);
+    if(el("wMiss")) el("wMiss").addEventListener("click",onGridClick);
+    if(el("addDocBtn")) el("addDocBtn").onclick=openPick;
+    if(el("pickCancel")) el("pickCancel").onclick=closePick;
+    if(el("pickScrim")) el("pickScrim").onclick=closePick;
+    if(el("pickOpts")) el("pickOpts").addEventListener("click",function(e){
+      if(!e.target.closest("[data-add],[data-open]")) return;
+      closePick();
+      onGridClick(e);
+    });
     el("camClose").onclick=function(){ retakeOf=null; stopCam(); setView("open"); paintOpen(); };
     el("camShutter").onclick=function(){ capture(); };
     el("camFile").onclick=function(){ el("scanPick").click(); };
@@ -616,7 +731,8 @@
     };
     document.addEventListener("keydown",function(e){
       if(e.key==="Escape"){
-        if(el("addSheet").classList.contains("on")) closeAdd();
+        if(el("pickSheet")&&el("pickSheet").classList.contains("on")) closePick();
+        else if(el("addSheet").classList.contains("on")) closeAdd();
         else if(view==="scan"){ stopCam(); setView("open"); paintOpen(); }
         else if(view==="saved"){ if(View) View.close(); setView("open"); paintOpen(); }
       }

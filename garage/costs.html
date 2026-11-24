@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<script src="./app-lock.js?v=3"></script>
+<script src="./car-scope.js?v=1"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0c0e"/>
+<title>Car costs</title>
+<meta name="description" content="Buying guide, maintenance planner and the cheapest fuel near you."/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Trac3"/>
+<meta property="og:title" content="Car costs · Trac3"/>
+<meta property="og:description" content="Buying guide, maintenance planner and the cheapest fuel near you."/>
+<meta property="og:url" content="https://thelancasterelectrician.com/garage/costs.html"/>
+<meta property="og:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=4"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="Trac3 – your car organiser for UK drivers"/>
+<meta property="og:locale" content="en_GB"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Car costs · Trac3"/>
+<meta name="twitter:description" content="Buying guide, maintenance planner and the cheapest fuel near you."/>
+<meta name="twitter:image" content="https://thelancasterelectrician.com/garage/og-image.png?v=4"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="icon" href="./favicon.ico?v=4" sizes="any"/>
+<link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
+<script src="./sw-reg.js?v=1" defer></script>
+<script src="./icons.js?v=36" defer></script>
+<link rel="stylesheet" href="./tool-bar.css?v=7"/>
+<style>
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:480px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(64px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));min-height:100vh;display:flex;flex-direction:column}
+.hubs{background:#141416;border:1px solid #2a2a2e;border-radius:18px;overflow:hidden}
+.hub{display:flex;align-items:center;gap:14px;padding:14px;text-decoration:none;color:#f2f2f2;border-top:1px solid #222226;min-height:76px}
+.hub:first-child{border-top:0}.hub:active{background:#1a1b1f}
+.ring{width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(125,211,252,.55);background:radial-gradient(circle at 50% 35%,#1b2630,#121418 70%);color:#7dd3fc;display:flex;align-items:center;justify-content:center;flex:none}
+.ring svg{width:24px;height:24px;display:block;fill:currentColor}
+.t{flex:1;min-width:0}.t b{display:block;font-size:16px;font-weight:650}.t small{display:block;color:#8b8b8b;font-size:12.5px;margin-top:3px}
+.chev{width:10px;height:10px;border:solid #6b6f76;border-width:2px 2px 0 0;transform:rotate(45deg);margin-right:6px;flex:none}
+.sp{flex:1}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;width:100%;border:0;border-radius:16px;padding:14px;font-weight:650;font-size:16px;background:#1c1c1e;color:#f2f2f2;text-align:center;text-decoration:none;margin-top:12px}
+</style>
+</head>
+<body>
+<header class="appbar"><h1>Car costs</h1></header>
+<nav class="hubs">
+<a class="hub" href="buy.html"><span class="ring" data-k="search" aria-hidden="true"></span><span class="t"><b>Buying guide</b><small>Check a car before you buy</small></span><span class="chev" aria-hidden="true"></span></a>
+<a class="hub" href="service.html?v=13"><span class="ring" data-k="wrench" aria-hidden="true"></span><span class="t"><b>Maintenance planner</b><small>Upcoming work and what it costs</small></span><span class="chev" aria-hidden="true"></span></a>
+<a class="hub" href="fuel.html?v=2"><span class="ring" data-k="fuel" aria-hidden="true"></span><span class="t"><b>Cheapest fuel</b><small>Nearest cheap pumps</small></span><span class="chev" aria-hidden="true"></span></a>
+</nav>
+<div class="sp"></div>
+<a class="btn backBtn" href="home.html">Back</a>
+<script src="./grid-icons.js?v=1"></script>
+<script>
+(function(){ function paint(){ var GI=window.T3_GRID_ICONS||{}; document.querySelectorAll("[data-k]").forEach(function(el){ var k=el.getAttribute("data-k"); var v=GI[k]||(window.dipstickIcon&&window.dipstickIcon(k))||""; if(v) el.innerHTML=v; }); }
+  paint(); window.addEventListener("load",paint); })();
+</script>
+</body>
+</html>

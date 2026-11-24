@@ -27,7 +27,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<script src="./icons.js?v=35" defer></script>
+<script src="./icons.js?v=36" defer></script>
 <link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <style>
 :root{--bg:#0b0c0e;--ink:#f3efe6;--dim:#9aa3b0}
@@ -49,6 +49,19 @@ body.track #rear,body.track #front,body.track #flip{display:none}
 .err{color:#e7b1a0;font-size:12px;margin:6px 0 0;text-align:center}
 .links{margin-top:8px;display:flex;gap:8px}
 .links a{color:#f2f2f2;text-decoration:none;background:#1c1c1e;border-radius:14px;padding:8px 12px;font-weight:600}
+/* Sleek dock: glass stats, one Start, quiet links */
+.top .btn{display:inline-flex;align-items:center;gap:6px;background:rgba(11,12,14,.55);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);min-height:38px}
+.rec{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:rgba(11,12,14,.55);border:1px solid rgba(255,255,255,.14);color:#e6e6e6;font-size:12.5px;letter-spacing:.04em;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.rec::before{content:"";width:9px;height:9px;border-radius:50%;background:#6b7280}
+body.on .rec{color:#fecaca;border-color:rgba(239,68,68,.6)}body.on .rec::before{background:#ef4444;animation:rp 1s infinite}
+@keyframes rp{50%{opacity:.3}}
+.dock{background:linear-gradient(transparent,rgba(0,0,0,.8) 35%);padding-top:40px}
+.ticker{gap:0;width:min(92vw,440px);justify-content:space-around;background:rgba(20,20,22,.7);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:10px 6px;margin-bottom:12px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.ticker>div{text-align:center;min-width:80px}.ticker b{font-variant-numeric:tabular-nums}
+.go{width:min(92vw,440px);border-radius:18px}
+.hint{color:#9aa3b0;font-size:12.5px;margin:8px 0 0;text-align:center}
+.links{margin:8px 0 0}.links a{display:inline-flex;align-items:center;gap:6px;background:rgba(28,28,30,.8);border:1px solid rgba(255,255,255,.1);font-size:14px}
+.dock .backBtn{width:min(92vw,440px)}
 </style>
 </head>
 <body>
@@ -57,7 +70,7 @@ body.track #rear,body.track #front,body.track #flip{display:none}
   <video id="rear" playsinline muted autoplay></video>
   <video id="front" playsinline muted autoplay></video>
   <div class="top">
-    <button class="btn" id="flip" type="button">Flip</button>
+    <button class="btn" id="flip" type="button" data-ico="cam">Flip</button>
     <span class="rec" id="rec">Ready</span>
   </div>
   <div class="dock">
@@ -67,11 +80,13 @@ body.track #rear,body.track #front,body.track #flip{display:none}
       <div><span>Speed</span><b id="speed">0</b></div>
     </div>
     <button class="go" id="go" type="button">Start</button>
+    <p class="hint" id="dcHint">Road and cabin. Clips kept for 24 hours.</p>
     <p class="err" id="err"></p>
-    <p class="links"><a href="calendar.html">Drive diary</a></p>
-    <a class="btn backBtn" href="drive.html">Back</a>
+    <p class="links"><a href="calendar.html" data-ico="cal">Clips in Drive diary</a></p>
+    <a class="btn backBtn" href="home.html">Back</a>
   </div>
 </div>
 <script src="drive-app.js?v=6"></script>
+<script>(function(){var r=document.getElementById("rec");function u(){document.body.classList.toggle("on",/^(REC|TRACKING)$/.test(r.textContent.trim()));}new MutationObserver(u).observe(r,{childList:true,characterData:true,subtree:true});u();})();</script>
 </body>
 </html>

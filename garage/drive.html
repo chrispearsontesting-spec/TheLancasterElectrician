@@ -27,7 +27,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<script src="./icons.js?v=35" defer></script>
+<script src="./icons.js?v=36" defer></script>
 <link rel="stylesheet" href="./tool-bar.css?v=7"/>
 <style>
 *{box-sizing:border-box}
@@ -84,6 +84,13 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 .checks .ck.all b{display:block;font-size:15px}.checks .ck.all small{display:block;color:#8b8b8b;font-size:12px;margin-top:1px}
 .checks .ck.all[disabled]{opacity:.6}
 .mini .si{display:inline-flex}.mini .si svg{width:16px;height:16px;fill:#7dd3fc}
+/* Connected: the car row goes clearly blue */
+.carRow{transition:background .2s,border-color .2s}
+.carRow.conn{background:linear-gradient(180deg,rgba(125,211,252,.16),rgba(125,211,252,.07));border:1.5px solid #7dd3fc;box-shadow:0 0 0 3px rgba(125,211,252,.12)}
+.carRow.conn .btIco{background:#7dd3fc;color:#0b0c0e}
+.carRow.conn .cr span{color:#bfe8fb}
+.badge.on{background:#7dd3fc !important;color:#0b0c0e !important;font-weight:800;font-size:12.5px}.badge.on i{background:#0b0c0e !important;box-shadow:none !important}
+.carRow:not(.conn) .badge{background:#1c1c1e;color:#8b8b8b}
 </style>
 </head>
 <body>
@@ -131,16 +138,11 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
   </details>
 </section>
 
-<section class="card" id="dashCard">
-  <h2>Dashcam</h2>
-  <a class="btn go" href="dashcam.html?v=2" id="dashBtn">Start dashcam</a>
-  <p class="muted">Road and cabin. Clips kept for 24 hours.</p>
-</section>
 
-<a class="btn backBtn" href="home.html#drive">Back</a>
+<a class="btn backBtn" href="home.html">Back</a>
 
 <script src="./mot-config.js?v=1"></script>
 <script src="./fuel-live.js?v=1"></script>
-<script src="./record-app.js?v=11"></script>
+<script src="./record-app.js?v=12"></script>
 </body>
 </html>

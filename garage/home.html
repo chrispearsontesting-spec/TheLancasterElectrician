@@ -212,6 +212,32 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 #taxToast{position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;background:#16120e;color:#f3efe6;border:1px solid #6b7280;border-radius:14px;padding:12px 14px;font-weight:700;text-align:center;display:none}
 #taxToast.on{display:block}
 #taxSheet .taxTypeWrap{text-align:center;margin:8px 0 14px}
+/* App grid (home): 3x3 round icon buttons. Icons from grid-icons.js (one map, easy to swap). */
+.appGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 8px;margin:16px 0 8px;padding:16px 6px 14px;background:#141416;border:1px solid rgba(255,255,255,0.08);border-radius:18px}
+.app{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;color:#f2f2f2;-webkit-tap-highlight-color:transparent;min-width:0}
+.app .ring{width:62px;height:62px;border-radius:50%;border:1.5px solid rgba(125,211,252,.55);background:radial-gradient(circle at 50% 35%,#1b2630,#121418 70%);color:#7dd3fc;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 2px 6px rgba(0,0,0,.35);transition:transform .12s ease,border-color .12s ease}
+.app .ring svg{width:28px;height:28px;display:block}
+.app[data-g=rec] .ring svg,.app[data-g=perf] .ring svg{width:32px;height:32px}
+.app .al{font-size:12.5px;font-weight:600;line-height:1.2;text-align:center;color:#e6e6e6;max-width:100%}
+.app:active .ring{transform:scale(.94);border-color:#7dd3fc}
+.app:focus-visible{outline:none}.app:focus-visible .ring{outline:2px solid #7dd3fc;outline-offset:3px}
+.app .chip{position:absolute;top:-4px;right:6px;margin:0;font-size:10px;padding:1px 7px}
+.app .chip[hidden]{display:none}
+@media (max-width:370px){.app .ring{width:56px;height:56px}.app .al{font-size:12px}}
+.heroWrap{position:relative}
+.fuelFab{position:absolute;left:10px;bottom:6px;width:34px;height:34px;border-radius:50%;background:rgba(11,12,14,.55);border:1px solid rgba(125,211,252,.45);color:#7dd3fc;display:flex;align-items:center;justify-content:center;z-index:3;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:.88}
+.fuelFab svg{width:19px;height:19px;display:block}
+.fuelFab:active{opacity:1;transform:scale(.94)}
+body.noCars .fuelFab{display:none}
+/* First run: location, pre-selected */
+.locOpt{display:flex;align-items:center;gap:12px;text-align:left;margin:0 0 12px;padding:12px;border-radius:14px;background:#0f1a22;border:1px solid rgba(125,211,252,.45);cursor:pointer}
+.locOpt input{position:absolute;opacity:0;width:1px;height:1px}
+.locOpt .bx{width:24px;height:24px;border-radius:7px;border:2px solid #7dd3fc;flex:none;display:flex;align-items:center;justify-content:center}
+.locOpt input:checked+.bx{background:#7dd3fc}
+.locOpt input:checked+.bx::after{content:"";width:6px;height:11px;border:solid #0b0c0e;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.locOpt .li{color:#7dd3fc;flex:none;display:flex}.locOpt .li svg{width:22px;height:22px}
+.locOpt b{display:block;font-size:15px;color:#f2f2f2}.locOpt small{display:block;color:#9aa3ad;font-size:12.5px;margin-top:2px;line-height:1.35}
+.locOpt input:focus-visible+.bx{outline:2px solid #7dd3fc;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -222,11 +248,12 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 <section id="emptyCar"><h2>Add your car</h2><p>Enter your plate. Trac3 fills in the details, MOT and tax dates.</p>
 <form id="emptyForm" action="#">
 <div class="plateEntry"><div class="ukPlate"><span class="ukStrip">UK</span><input id="emptyPlate" type="text" inputmode="text" enterkeyhint="search" placeholder="AB12 CDE" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Number plate"/></div></div>
+<label class="locOpt" for="locAsk"><input type="checkbox" id="locAsk" checked/><span class="bx" aria-hidden="true"></span><span class="li" data-g="loc" aria-hidden="true"></span><span><b>Location</b><small>For nearby fuel and recording journeys. Stays on your phone.</small></span></label>
 <button class="btn wide" type="submit" id="emptyGo" data-ico="search">Add car</button>
 </form>
 <a class="btn wide" id="emptyRestore" href="security.html#rsCard" data-ico="hist">Restore from backup</a>
 <p class="restoreHint">Used Trac3 before? Load your .driv3 backup file.</p></section>
-<div class="hero" id="hero"></div>
+<div class="heroWrap"><div class="hero" id="hero"></div><a class="fuelFab" id="fuelFab" href="fuel.html?go=1" aria-label="Cheapest fuel near me" title="Cheapest fuel near me"></a></div>
 <div class="bar"><div class="nameRow">
 <div class="side left">
 <button type="button" id="btnAdd" aria-label="Add car" title="Add car" data-ico="add"></button>
@@ -243,32 +270,17 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 <button class="btn wide dd" type="button" id="datesToggle" data-ico="cal" aria-expanded="false" aria-controls="dues"><span class="lab">Reminders</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide" id="dues"></div>
 </div>
-<div class="ddGroup">
-<button class="btn wide dd" type="button" id="driveToggle" data-ico="wheel" aria-expanded="false" aria-controls="driveMenu"><span class="lab">Drive</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
-<div class="card hide ddMenu" id="driveMenu">
-<a href="drive.html?v=4">Record journey</a>
-<a href="performance.html?v=3">Performance</a>
-<a href="route.html">Route costs</a>
-</div>
-</div>
-<div class="ddGroup">
-<button class="btn wide dd" type="button" id="histToggle" data-ico="cal" aria-expanded="false" aria-controls="histMenu"><span class="lab">History</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
-<div class="card hide ddMenu" id="histMenu">
-<a href="calendar.html?v=7">Drive diary</a>
-<a href="mechanic.html?v=17">Mechanic QR sticker</a>
-<a href="share.html">Share for sale</a>
-</div>
-</div>
-<div class="ddGroup">
-<button class="btn wide dd" type="button" id="finToggle" data-ico="gbp" aria-expanded="false" aria-controls="finMenu"><span class="lab">Financial</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
-<div class="card hide ddMenu" id="finMenu">
-<a href="service.html?v=13">Maintenance planner</a>
-<a href="fuel.html?v=1">Cheapest fuel</a>
-<a href="buy.html">Buying guide</a>
-</div>
-</div>
-<a class="btn wide" href="wallet.html" data-ico="wallet">Wallet</a>
-<a class="btn wide" href="showcase-edit.html" data-ico="star">Car showcase <span class="chip" id="showChip" hidden></span></a>
+<nav class="appGrid" id="appGrid" aria-label="Trac3 apps">
+<a class="app" href="drive.html?v=5" data-g="rec"><span class="ring"></span><span class="al">Record journey</span></a>
+<a class="app" href="dashcam.html?v=3" data-g="dashcam"><span class="ring"></span><span class="al">Dashcam</span></a>
+<a class="app" href="performance.html?v=4" data-g="perf"><span class="ring"></span><span class="al">Performance</span></a>
+<a class="app" href="wallet.html" data-g="wallet"><span class="ring"></span><span class="al">Wallet</span></a>
+<a class="app" href="route.html" data-g="route"><span class="ring"></span><span class="al">Route costs</span></a>
+<a class="app" href="costs.html?v=1" data-g="costs"><span class="ring"></span><span class="al">Car costs</span></a>
+<a class="app" href="calendar.html?v=7" data-g="diary"><span class="ring"></span><span class="al">Drive diary</span></a>
+<a class="app" href="qrid.html?v=1" data-g="qr"><span class="ring"></span><span class="al">QR ID</span></a>
+<a class="app" href="showcase-edit.html" data-g="show"><span class="ring"></span><span class="al">Showcase</span><span class="chip" id="showChip" hidden></span></a>
+</nav>
 </section>
 <div class="sheet" id="settings"><div class="panel">
 <img class="aboutLockup" src="./about-lockup.png" alt="Trac3. Everything Auto" width="280" height="106"/>
@@ -368,7 +380,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="plate-fill.js?v=2"></script>
 <script src="./reminders-core.js?v=6"></script>
 <script src="./diy-work.js?v=3"></script>
-<script src="./icons.js?v=35"></script>
+<script src="./icons.js?v=36"></script>
 <script src="./photo-pos.js?v=1"></script>
 <script src="./backup-remind.js?v=1"></script>
 <script src="./home-app.js?v=115"></script>
@@ -378,21 +390,33 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>
 <script src="./home-insure.js?v=4"></script>
+<script src="./grid-icons.js?v=1"></script>
 <script src="./home-tabs.js?v=6"></script>
 <script src="./reminders-web.js?v=2"></script>
 <script>
 (function(){
   // Group buttons open inline dropdowns, like Reminders. One open at a time; remembered for this session.
-  var G=[["datesToggle","dues","dates"],["driveToggle","driveMenu","drive"],["histToggle","histMenu","hist"],["finToggle","finMenu","fin"]];
+  var G=[["datesToggle","dues","dates"]];
+  // App grid + fuel shortcut icons (grid-icons.js). Swap an icon by changing its entry in that map.
+  var GI=window.T3_GRID_ICONS||{};
+  document.querySelectorAll("[data-g]").forEach(function(el){ var k=el.getAttribute("data-g"), t=el.querySelector(".ring")||el; if(GI[k]) t.innerHTML=GI[k]; });
+  var ff=document.getElementById("fuelFab"); if(ff&&GI.fuel) ff.innerHTML=GI.fuel;
   function setOpen(key){
     G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[1]); if(!b||!m) return; var on=g[2]===key; m.classList.toggle("hide",!on); b.setAttribute("aria-expanded",on?"true":"false"); var gEl=b.closest(".ddGroup"); if(gEl) gEl.classList.toggle("is-open",on); });
     try{ sessionStorage.setItem("gt.homeOpen",key||""); sessionStorage.setItem("gt.datesOpen",key==="dates"?"1":"0"); }catch(e){}
   }
-  window.driv3OpenGroup=function(key){ setOpen(key); var g=G.filter(function(x){return x[2]===key})[0]; if(g){ var b=document.getElementById(g[0]); if(b) b.scrollIntoView({block:"start"}); } };
+  window.driv3OpenGroup=function(key){ if(key!=="dates"){ var ag=document.getElementById("appGrid"); if(ag) ag.scrollIntoView({block:"nearest"}); return; } setOpen(key); var g=G.filter(function(x){return x[2]===key})[0]; if(g){ var b=document.getElementById(g[0]); if(b) b.scrollIntoView({block:"start"}); } };
   G.forEach(function(g){ var b=document.getElementById(g[0]), m=document.getElementById(g[1]); if(b&&m) b.onclick=function(){ setOpen(m.classList.contains("hide")?g[2]:""); }; });
   var k=""; try{ k=sessionStorage.getItem("gt.homeOpen"); if(k===null) k=sessionStorage.getItem("gt.datesOpen")==="1"?"dates":""; }catch(e){}
-  var h=(location.hash||"").replace("#",""), fromHash={drive:"drive",docs:"hist",qr:"hist",history:"hist",fin:"fin",money:"fin"}[h];
-  if(fromHash) window.driv3OpenGroup(fromHash); else setOpen(k||"");
+  var h=(location.hash||"").replace("#",""), fromHash={drive:"grid",docs:"grid",qr:"grid",history:"grid",fin:"grid",money:"grid"}[h];
+  if(k&&k!=="dates") k=""; setOpen(k||""); if(fromHash) window.driv3OpenGroup(fromHash);
+  // First run: Location is pre-selected; the real permission is asked when they continue (Add car).
+  function askLoc(){ var c=document.getElementById("locAsk"); if(!c||!c.checked||askLoc.done) return; askLoc.done=1; try{ localStorage.setItem("gt.locAsked","1"); }catch(e){}
+    var P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Driv3Track;
+    if(P&&P.ask){ P.ask({what:"location"}).catch(function(){}); return; }
+    if(navigator.geolocation) navigator.geolocation.getCurrentPosition(function(){},function(){},{enableHighAccuracy:false,timeout:10000,maximumAge:600000}); }
+  var ef=document.getElementById("emptyForm"); if(ef) ef.addEventListener("submit",askLoc,true);
+  var eg=document.getElementById("emptyGo"); if(eg) eg.addEventListener("click",askLoc,true);
 })();
 </script>
 </body>

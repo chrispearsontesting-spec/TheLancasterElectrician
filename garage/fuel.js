@@ -563,6 +563,15 @@
     $("cfPc").addEventListener("keydown", function (ev) {
       if (ev.key === "Enter") { ev.preventDefault(); $("cfPcBtn").click(); }
     });
+    // Home fuel shortcut (fuel.html?go=1): search straight away from here; if location is refused, use the postcode box.
+    if (/[?&]go=1/.test(location.search)) {
+      say("Finding your location…");
+      locate().then(function (p) { return search(p.lat, p.lng, p.label); }).catch(function () {
+        say("Location is off. Type a postcode to find cheap fuel nearby.");
+        root.classList.add("cf-pcfirst");
+        try { $("cfPc").focus(); } catch (e) {}
+      });
+    }
   }
 
   boot();

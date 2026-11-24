@@ -25,7 +25,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<script src="./icons.js?v=35" defer></script>
+<script src="./icons.js?v=36" defer></script>
 <style>
 body{margin:0 auto;max-width:640px;padding:24px 16px 48px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5}
 h1{font-size:28px;margin-bottom:6px} h2{font-size:16px;margin:22px 0 4px;color:#7dd3fc} p{margin:0 0 8px;color:#d4d4d4;font-size:15px} .lead{color:#f2f2f2;font-size:16px} a{color:#f2f2f2}
@@ -47,6 +47,7 @@ h1{font-size:28px;margin-bottom:6px} h2{font-size:16px;margin:22px 0 4px;color:#
 <p>Only used when you tap the mic. Typing by voice uses your browser or phone’s speech service, which may send the audio to Google to turn it into text. Mechanic voice notes are sent to our Cloudflare Worker to be transcribed and are not kept.</p>
 
 <h2>Location, journeys and Bluetooth</h2>
+<p id="locPromise"><b>Your location stays on your phone.</b> Trac3 only uses it to find nearby fuel and to record your journeys. It is never sold, never shared and never used for anything else. To get fuel prices, only the map point of your search is sent to our Worker, which doesn’t keep it.</p>
 <p>Location is used while you record a journey, plan a route or look up fuel. If you turn on auto journeys in the Android app, Trac3 uses location and Bluetooth (to see when you’re in your car) in the background. Searching for Bluetooth devices only lists nearby names on your phone; nothing is sent anywhere. Journeys are saved on the phone. Place names and routes are looked up with OpenStreetMap services (Photon, OSRM, postcodes.io), which receive the map point or place you search for.</p>
 
 <h2>Lookups through our Cloudflare Worker</h2>

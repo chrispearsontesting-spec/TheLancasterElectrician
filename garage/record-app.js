@@ -164,7 +164,8 @@
     $("carRow").classList.toggle("hide",!LINK);
     if(LINK){ var con=isConn(LINK); $("carName").textContent=nm||"Your car";
       $("carSub").textContent=ST.running&&con?"Recording this journey":(ST.on?"Auto journeys on":"Auto journeys off");
-      $("carBadge").classList.toggle("on",con); $("carState").textContent=con?"Connected":"Not connected"; }
+      $("carBadge").classList.toggle("on",con); $("carState").textContent=con?"Connected":"Not connected";
+      $("carRow").classList.toggle("conn",con); var bi=$("carRow").querySelector(".btIco"), want=con?"btc":"bluetooth"; if(bi&&bi.getAttribute("data-k")!==want&&ICO(want)){ bi.innerHTML=ICO(want); bi.setAttribute("data-k",want); } }
   }
   async function loadDevices(){
     try{ var r=await T.devices(); PAIRED=r.devices||[]; if(r.bluetoothOn===false) ST.bluetoothOn=false; }catch(e){ PAIRED=[]; }

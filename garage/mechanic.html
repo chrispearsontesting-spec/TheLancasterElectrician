@@ -2,7 +2,8 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./app-lock.js?v=3"></script>
+<script src="./accent.js?v=1"></script>
+<script src="./app-lock.js?v=4"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Mechanic uploads</title>
@@ -26,8 +27,8 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=82"/>
-<link rel="stylesheet" href="./tool-bar.css?v=7"/>
+<link rel="stylesheet" href="./ui.css?v=83"/>
+<link rel="stylesheet" href="./tool-bar.css?v=8"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -46,7 +47,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 .qrBox{text-align:center}
 .qrBox canvas{position:absolute;left:-99999px;top:0;width:10px;height:10px;visibility:hidden}
 .qrBox{text-align:left}.stTop{display:flex;gap:12px;align-items:center}.stTop b{font-size:16px}.stTop .cap{margin-top:2px}
-.stIco{flex:none;width:40px;height:40px;border-radius:10px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;color:#7dd3fc}.stIco .ico,.stIco svg{width:22px;height:22px;display:block;fill:currentColor}
+.stIco{flex:none;width:40px;height:40px;border-radius:10px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;color:var(--accent)}.stIco .ico,.stIco svg{width:22px;height:22px;display:block;fill:currentColor}
 .btn.order{display:flex !important;flex-direction:column;align-items:center !important;justify-content:center;width:100%;margin-top:12px;background:#f2f2f2 !important;color:#0b0c0e !important;font-weight:700}
 .btn.order small{font-size:12px;font-weight:500;color:#3a3a3e;margin-top:2px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.row3 .btn{margin:0 !important;min-height:46px;padding:10px 6px !important;font-size:14px !important;justify-content:center !important;text-align:center}
@@ -182,7 +183,7 @@ h1{font-size:26px;margin:8px 0 6px;font-weight:650}
 
 <div class="card">
   <h2>Received work</h2>
-  <p class="note">Also shown in your <a href="calendar.html?v=7" style="color:#7dd3fc">Drive diary</a>.</p>
+  <p class="note">Also shown in your <a href="calendar.html?v=7" style="color:var(--accent)">Drive diary</a>.</p>
   <button class="btn" type="button" id="check" data-ico="check">Check for uploads</button>
   <div class="status" id="checkStatus"></div>
   <div id="jobs"></div>

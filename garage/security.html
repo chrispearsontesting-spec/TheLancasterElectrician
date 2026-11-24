@@ -2,7 +2,8 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./app-lock.js?v=3"></script>
+<script src="./accent.js?v=1"></script>
+<script src="./app-lock.js?v=4"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Security &amp; backup · Trac3</title>
@@ -26,7 +27,7 @@
 <link rel="icon" href="./icon.svg?v=4" type="image/svg+xml"/>
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
-<link rel="stylesheet" href="./ui.css?v=82"/>
+<link rel="stylesheet" href="./ui.css?v=83"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -55,11 +56,11 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 .hide{display:none !important}
 .file{display:block;width:100%;padding:12px;border:1px dashed #3a3a40;border-radius:12px;color:#b0b0b0;font-size:14px;text-align:center}
 .file input{display:none}
-.bioRow{display:flex;gap:12px;align-items:flex-start;background:#101a22;border:1px solid #23425a;border-radius:14px;padding:12px;margin:8px 0 4px}
+.bioRow{display:flex;gap:12px;align-items:flex-start;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.3);border-radius:14px;padding:12px;margin:8px 0 4px}
 .bioRow b{display:block;font-size:15px}.bioRow span#bioTxt{display:block;color:#b9c7d2;font-size:13px;margin-top:2px;line-height:1.4}
 .phraseBox{background:#0f0f11;border:1px solid #2a2a2e;border-radius:14px;padding:12px;margin:8px 0}
-.phrase{margin:0 0 4px;font:600 19px/1.4 ui-monospace,"Geist Mono",Menlo,monospace;color:#7dd3fc;word-break:break-word;text-align:center}
-.linkBtn{background:none;border:0;color:#7dd3fc;font-size:14px;font-weight:600;padding:8px 2px;margin:2px 0 4px;cursor:pointer}
+.phrase{margin:0 0 4px;font:600 19px/1.4 ui-monospace,"Geist Mono",Menlo,monospace;color:var(--accent);word-break:break-word;text-align:center}
+.linkBtn{background:none;border:0;color:var(--accent);font-size:14px;font-weight:600;padding:8px 2px;margin:2px 0 4px;cursor:pointer}
 #pmBp,#pmGet{font-size:15px !important;white-space:nowrap;gap:8px !important;padding-left:10px !important;padding-right:10px !important;justify-content:center !important}
 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.row3 .btn{margin-top:0!important;padding:10px 6px!important;gap:6px!important;font-size:14px!important;justify-content:center!important}
 </style>
@@ -151,7 +152,7 @@ label.l{display:block;font-size:13px;color:#b0b0b0;margin:12px 0 5px}
 
 <script src="./backup.js?v=3"></script>
 <script src="./passphrase.js?v=1"></script>
-<script src="./backup-remind.js?v=1"></script>
+<script src="./backup-remind.js?v=2"></script>
 <script src="./wallet-lock.js?v=3"></script>
 <script src="./export.js?v=1"></script>
 <script>

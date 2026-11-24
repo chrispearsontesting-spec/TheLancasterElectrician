@@ -16,7 +16,7 @@
    Logo paths are the approved traced master (garage/trac3-wordmark.svg, variant C 'a'). Logo is 880px / 81.5% of the 1080 canvas. */
 (function(){
   "use strict";
-  var W = window, D = document, BG = "#0b0c0e", TAGC = "#7dd3fc", KEY = "t3.splash";
+  var W = window, D = document, BG = "#0b0c0e", TAGC = (W.T3Accent && W.T3Accent.hex) || "#7dd3fc", KEY = "t3.splash";
   var TEXT = "EVERYTHING AUTO";
   var NS = "http://www.w3.org/2000/svg";
 

@@ -23,9 +23,9 @@
       "#d3docDock .btnRow{display:flex;gap:10px}"+
       "#d3docDock .btnRow .btn{flex:1;width:auto !important;margin-top:0 !important}"+
       "#d3docBack{margin-top:8px !important}"+
-      "#d3docNote{display:flex;align-items:center;gap:10px;margin:-4px 0 12px;padding:10px 12px;border-radius:12px;background:#101a22;border:1px solid #23425a;font-size:14px;color:#dbeafe}"+
-      "#d3docNote[hidden]{display:none !important}#d3docNote span{flex:1;min-width:0}#d3docNote b{color:#7dd3fc;font-family:ui-monospace,Menlo,monospace}"+
-      "#d3docNote button{background:none;border:0;color:#7dd3fc;font-weight:650;font-size:14px;padding:4px 2px}";
+      "#d3docNote{display:flex;align-items:center;gap:10px;margin:-4px 0 12px;padding:10px 12px;border-radius:12px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.3);font-size:14px;color:#dbeafe}"+
+      "#d3docNote[hidden]{display:none !important}#d3docNote span{flex:1;min-width:0}#d3docNote b{color:var(--accent);font-family:ui-monospace,Menlo,monospace}"+
+      "#d3docNote button{background:none;border:0;color:var(--accent);font-weight:650;font-size:14px;padding:4px 2px}";
     document.head.appendChild(s);
   }
   function build(){

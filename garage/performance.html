@@ -2,7 +2,8 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./app-lock.js?v=3"></script>
+<script src="./accent.js?v=1"></script>
+<script src="./app-lock.js?v=4"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Performance</title>
@@ -27,7 +28,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <script src="./icons.js?v=36" defer></script>
-<link rel="stylesheet" href="./tool-bar.css?v=7"/>
+<link rel="stylesheet" href="./tool-bar.css?v=8"/>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden}
@@ -37,7 +38,7 @@ html,body{margin:0;background:#0b0c0e;color:#fff;font-family:-apple-system,Blink
 .hud b{font-size:16px;font-weight:700;display:block;font-variant-numeric:tabular-nums}
 .hud span{font-size:10px;color:#ccc;text-transform:uppercase}
 #gDot{flex:0 0 auto;width:88px;height:88px;min-width:88px;aspect-ratio:1/1;border-radius:50%;background:rgba(20,20,22,.55);border:1px solid rgba(255,255,255,.25);position:relative}
-#gDot i{position:absolute;width:14px;height:14px;border-radius:50%;background:#73BDE0;left:50%;top:50%;transform:translate(-50%,-50%)}
+#gDot i{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--accent);left:50%;top:50%;transform:translate(-50%,-50%)}
 .top{position:fixed;top:calc(62px + env(safe-area-inset-top));left:0;right:0;padding:0 12px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:6}
 select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,255,255,.08);border-radius:18px;min-height:40px;padding:10px 14px;font-weight:600;font-size:14px}
 .disclaimer{position:fixed;left:12px;right:12px;top:calc(112px + env(safe-area-inset-top));background:rgba(28,22,8,.92);border:1px solid #5c4a1f;color:#f2f2f2;padding:10px 12px;border-radius:14px;z-index:10;font-size:13px;line-height:1.4;display:flex;gap:10px;align-items:center}
@@ -45,7 +46,7 @@ select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,25
 .disclaimer button{background:#f5b84a;color:#111;border:0;white-space:nowrap}
 .disclaimer.flash{animation:fl .5s 2}
 @keyframes fl{50%{background:#7a4b00}}
-#bigStart{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7;background:#7dd3fc;color:#0b0c0e;border:0;border-radius:20px;padding:18px 28px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#bigStart{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7;background:var(--accent);color:#0b0c0e;border:0;border-radius:20px;padding:18px 28px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 #bigStart.hide{display:none}
 #bigStart{gap:10px;align-items:center}#bigStart .ico{color:#0b0c0e}
 .light{width:42px;height:42px;border-radius:50%;background:#333;border:2px solid #555;box-shadow:inset 0 0 8px #000}
@@ -74,12 +75,12 @@ body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pk-t{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:72px;padding:10px 4px;border-radius:16px;background:#141416;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit}
 .pk-t b{font-size:16px;font-weight:700;letter-spacing:-.01em}.pk-t small{font-size:11.5px;color:#8b8b8b;font-weight:500;font-variant-numeric:tabular-nums}
-.pk-t[aria-pressed=true]{border:1px solid rgba(125,211,252,.5);background:rgba(125,211,252,.06)}.pk-t[aria-pressed=true] small{color:#7dd3fc}
+.pk-t[aria-pressed=true]{border:1px solid rgba(var(--accent-rgb),.5);background:rgba(var(--accent-rgb),.06)}.pk-t[aria-pressed=true] small{color:var(--accent)}
 #pick .disclaimer{position:static;margin:12px 0 0;background:#1c1608;font-size:12.5px}
 #pick .disclaimer[style*="none"]{display:none !important}
 .pk-keep{display:flex;align-items:center;justify-content:space-between;margin:12px 0 0;padding:12px 14px;border-radius:16px;background:#141416;border:1px solid #2a2a2e;font-size:15px;font-weight:600}
-.pk-keep input{width:22px;height:22px;accent-color:#7dd3fc;margin:0}
-.pk-start{width:100%;margin:14px 0 4px;min-height:56px;border:0 !important;border-radius:18px !important;background:#7dd3fc !important;color:#0b0c0e !important;font-size:18px !important;font-weight:700 !important;display:flex;align-items:center;justify-content:center;gap:10px}
+.pk-keep input{width:22px;height:22px;accent-color:var(--accent);margin:0}
+.pk-start{width:100%;margin:14px 0 4px;min-height:56px;border:0 !important;border-radius:18px !important;background:var(--accent) !important;color:#0b0c0e !important;font-size:18px !important;font-weight:700 !important;display:flex;align-items:center;justify-content:center;gap:10px}
 .pk-start .ico{color:#0b0c0e !important}
 .pk-hd{display:flex;align-items:center;gap:8px;margin-top:18px}.pk-hd .pk-h{margin:6px 4px 8px;flex:1}
 .pk-all{min-height:32px !important;padding:4px 12px !important;font-size:13px !important;border-radius:999px !important}
@@ -88,8 +89,8 @@ body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #
 .pk-runs{background:#141416;border:1px solid #2a2a2e;border-radius:16px;overflow:hidden}
 .pk-r{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none !important;border:0 !important;border-top:1px solid #222226 !important;border-radius:0 !important;text-align:left;color:#f2f2f2;min-height:58px}
 .pk-r:first-child{border-top:0 !important}
-.pk-r .bd{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid rgba(125,211,252,.3);color:#7dd3fc;font-size:11px;font-weight:800}
-.pk-r .bd svg{width:16px;height:16px;fill:currentColor}.pk-r .bd.best{background:rgba(125,211,252,.14);color:#7dd3fc;border-color:rgba(125,211,252,.4)}
+.pk-r .bd{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid rgba(var(--accent-rgb),.3);color:var(--accent);font-size:11px;font-weight:800}
+.pk-r .bd svg{width:16px;height:16px;fill:currentColor}.pk-r .bd.best{background:rgba(var(--accent-rgb),.14);color:var(--accent);border-color:rgba(var(--accent-rgb),.4)}
 .pk-r .m{flex:1;min-width:0}.pk-r .m b{display:block;font-size:15px}.pk-r .m small{display:block;color:#8b8b8b;font-size:12px;margin-top:2px}
 .pk-r .tm{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
 .pk-empty{color:#8b8b8b;font-size:13.5px;margin:0;padding:16px 14px}
@@ -117,7 +118,7 @@ body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #
 </div>
 <div id="go" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9;font-size:48px;font-weight:800;color:#fff;text-shadow:0 2px 8px #000">GO</div>
 <div id="react" style="position:fixed;top:22%;left:50%;transform:translateX(-50%);z-index:8;font-size:18px;font-weight:700;color:#fff;text-shadow:0 1px 4px #000;display:none"></div>
-<div id="listening" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:13px;color:#73BDE0;display:none;align-items:center;gap:8px"><span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:#2f6fd6;color:#fff;align-items:center;justify-content:center"><svg class="ico" viewBox="0 -960 960 960" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/></svg></span><span id="listenTxt">Listening for “start run”</span></div>
+<div id="listening" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--accent);display:none;align-items:center;gap:8px"><span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);align-items:center;justify-content:center"><svg class="ico" viewBox="0 -960 960 960" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/></svg></span><span id="listenTxt">Listening for “start run”</span></div>
 <button id="bigStart" type="button" data-ico="flag">Start run</button>
 <div class="gpk" id="gPeak">Peak accel 0.00 · brake 0.00 · corner 0.00 G</div>
 <a class="btn backBtn fixed" href="home.html">Back</a>

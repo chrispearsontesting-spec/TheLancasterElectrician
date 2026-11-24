@@ -10,6 +10,6 @@ a.backBtn{display:flex;width:100%;box-sizing:border-box;align-items:center;justi
 a.backBtn.fixed{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));width:auto;margin:0;z-index:6}
 
 /* Material icon slot (pages without ui.css) */
-.ico{display:inline-flex;width:22px;height:22px;flex:0 0 22px;color:#7dd3fc}.ico svg{width:22px;height:22px;display:block;fill:currentColor}
+.ico{display:inline-flex;width:22px;height:22px;flex:0 0 22px;color:var(--accent)}.ico svg{width:22px;height:22px;display:block;fill:currentColor}
 a.backBtn{gap:8px}
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not(.sw),select{min-height:48px;box-sizing:border-box}

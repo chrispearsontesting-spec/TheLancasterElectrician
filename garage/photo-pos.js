@@ -27,14 +27,14 @@
       "#d3ppFrame .ppPlate{position:absolute;inset:0;pointer-events:none;opacity:.9}"+
       "#d3ppFrame .ppGrid{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .15s;background:linear-gradient(to right,transparent calc(33.33% - .5px),rgba(255,255,255,.28) calc(33.33% - .5px),rgba(255,255,255,.28) calc(33.33% + .5px),transparent calc(33.33% + .5px),transparent calc(66.66% - .5px),rgba(255,255,255,.28) calc(66.66% - .5px),rgba(255,255,255,.28) calc(66.66% + .5px),transparent calc(66.66% + .5px)),linear-gradient(to bottom,transparent calc(33.33% - .5px),rgba(255,255,255,.28) calc(33.33% - .5px),rgba(255,255,255,.28) calc(33.33% + .5px),transparent calc(33.33% + .5px),transparent calc(66.66% - .5px),rgba(255,255,255,.28) calc(66.66% - .5px),rgba(255,255,255,.28) calc(66.66% + .5px),transparent calc(66.66% + .5px))}"+
       "#d3ppFrame.drag .ppGrid{opacity:1}"+
-      "#d3pp .ppRead{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(11,12,14,.75);color:#7dd3fc;border-radius:10px;padding:4px 10px;font-size:13px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .15s}"+
+      "#d3pp .ppRead{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(11,12,14,.75);color:var(--accent);border-radius:10px;padding:4px 10px;font-size:13px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .15s}"+
       "#d3pp .ppRead.on{opacity:1}"+
       "#d3pp .ppHint{color:#8b8b8b;font-size:13px;margin:14px 0 12px;text-align:center;line-height:1.35}"+
       "#d3pp .ppBar{width:100%;max-width:440px;display:grid;grid-template-columns:1fr 1fr;gap:8px}"+
       "#d3pp .ppBar .btn{margin:0 !important;width:100% !important}"+
-      "#d3ppSet{grid-column:1 / -1;min-height:52px !important;background:#7dd3fc !important;background-image:none !important;color:#0b0c0e !important;border:0 !important;font-weight:700 !important;box-shadow:none !important}"+
+      "#d3ppSet{grid-column:1 / -1;min-height:52px !important;background:var(--accent) !important;background-image:none !important;color:#0b0c0e !important;border:0 !important;font-weight:700 !important;box-shadow:none !important}"+
       "#d3ppSet .ico{color:#0b0c0e !important}"+
-      "#d3ppChange{color:#7dd3fc !important}#d3ppChange[hidden]{display:none !important}";
+      "#d3ppChange{color:var(--accent) !important}#d3ppChange[hidden]{display:none !important}";
     document.head.appendChild(s);
   }
   function build(){

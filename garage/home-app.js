@@ -523,7 +523,7 @@ if(dues) dues.addEventListener("click",function(e){
     var isBelt = key==="timingbelt";
     var lab = isBelt ? "Date the belt was fitted" : (key==="tyres" ? "Date the tyres were fitted" : "New expiry date");
     var note = isBelt ? '<p class="left" style="margin-top:8px">Next change: fitted date + '+(c.beltYears||5)+' years (set in Edit).</p>' : '';
-    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>'+lab+'</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/>'+note+remHtml+'<div style="margin-top:14px"><button class="btn" id="dateOk" data-ico="save" style="background:#7dd3fc !important;background-image:none !important;color:#0b0c0e !important">Save</button><button class="btn" id="dateCancel" data-ico="back">Back</button></div></div>';
+    sheet.innerHTML='<div class="panel"><h2>Edit '+niceName+'</h2><label>'+lab+'</label><input type="date" id="dateCal" value="'+current+'" style="font-size:18px;padding:12px;width:100%"/>'+note+remHtml+'<div style="margin-top:14px"><button class="btn" id="dateOk" data-ico="save" style="background:var(--accent) !important;background-image:none !important;color:#0b0c0e !important">Save</button><button class="btn" id="dateCancel" data-ico="back">Back</button></div></div>';
     document.body.appendChild(sheet);
     if(rt){ sheet.querySelector("#remOn").onchange=function(){ sheet.querySelector("#remOpts").style.opacity=this.checked?"":".45"; };
       sheet.querySelector("#remLead").onchange=function(){ sheet.querySelector("#remCust").style.display=this.value==="c"?"":"none"; }; }

@@ -120,13 +120,13 @@
       "#cheapFuel .cf-meta{margin:8px 0 0;font-size:14px;color:#c7c7cc;line-height:1.45}" +
       "#cheapFuel .cf-chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}" +
       "#cheapFuel .cf-chip{appearance:none;border:1px solid #2a2a2e;background:#1c1c1e;color:#f2f2f2;border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;font-weight:650;cursor:pointer}" +
-      "#cheapFuel .cf-chip[aria-pressed='true']{background:rgba(125,211,252,.08);border-color:rgba(125,211,252,.45);color:#7dd3fc}" +
+      "#cheapFuel .cf-chip[aria-pressed='true']{background:rgba(var(--accent-rgb),.08);border-color:rgba(var(--accent-rgb),.45);color:var(--accent)}" +
       "#cheapFuel .cf-go{display:block;width:100%;margin-top:14px;box-sizing:border-box;border:0;border-radius:16px;padding:14px 16px;font:inherit;font-size:16px;font-weight:700;background:#14532d;color:#fff;text-align:center;text-decoration:none;cursor:pointer}" +
       "#cheapFuel .cf-go[aria-disabled='true'],#cheapFuel .cf-go:disabled{opacity:.45;pointer-events:none}" +
       "#cheapFuel .cf-mapbtn{display:block;width:100%;margin-top:8px;box-sizing:border-box;border:1px solid #2a2a2e;border-radius:16px;padding:13px 16px;font:inherit;font-size:16px;font-weight:650;background:#1c1c1e;color:#f2f2f2;text-align:center;cursor:pointer}" +
       "#cheapFuel .cf-mapbtn:disabled{opacity:.45;cursor:default}" +
       "#cheapFuel .cf-find{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}" +
-      "#cheapFuel .cf-find button{appearance:none;border:0;background:none;color:#7dd3fc;font:inherit;font-size:14px;font-weight:650;padding:0;cursor:pointer}" +
+      "#cheapFuel .cf-find button{appearance:none;border:0;background:none;color:var(--accent);font:inherit;font-size:14px;font-weight:650;padding:0;cursor:pointer}" +
       "#cheapFuel .cf-pc{display:flex;gap:8px;margin-top:10px}" +
       "#cheapFuel .cf-pc input{flex:1;min-width:0;border:1px solid #2a2a2e;border-radius:12px;background:#0b0c0e;color:#f2f2f2;padding:10px 12px;font:inherit;font-size:16px}" +
       "#cheapFuel .cf-pc button{appearance:none;border:1px solid #2a2a2e;border-radius:12px;background:#1c1c1e;color:#f2f2f2;padding:10px 14px;font:inherit;font-size:14px;font-weight:650;cursor:pointer}" +
@@ -138,18 +138,18 @@
       "#cheapFuel .cf-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid #2a2a2e;font-size:14px}" +
       "#cheapFuel .cf-row:first-child{border-top:0}" +
       "#cheapFuel .cf-sub{display:block;color:#8a8a8e;font-size:13px;margin-top:3px;font-weight:400}" +
-      "#cheapFuel .cf-dir{color:#7dd3fc;text-decoration:none;font-weight:650;white-space:nowrap;flex-shrink:0;padding-top:2px}" +
+      "#cheapFuel .cf-dir{color:var(--accent);text-decoration:none;font-weight:650;white-space:nowrap;flex-shrink:0;padding-top:2px}" +
       "#cheapFuel .cf-stale{color:#e6c07b}" +
-      "#cheapFuel a.cf-place{color:#7dd3fc;text-decoration:none;font-weight:650}" +
+      "#cheapFuel a.cf-place{color:var(--accent);text-decoration:none;font-weight:650}" +
       "#cheapFuel a.cf-place:hover{text-decoration:underline}" +
       "#cheapFuel .cf-empty{color:#8a8a8e;font-size:14px;margin:8px 0 0}" +
       "#cfSheet{position:fixed;inset:0;z-index:80;background:#0b0c0e;display:flex;flex-direction:column}" +
       "#cfSheet[hidden]{display:none!important}" +
       "#cfSheet .cf-sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;border-bottom:1px solid #2a2a2e;background:#141416}" +
       "#cfSheet .cf-sheet-bar p{margin:0;font-size:16px;font-weight:650;letter-spacing:-.01em}" +
-      "#cfSheet .cf-sheet-bar button{appearance:none;border:0;background:none;color:#7dd3fc;font:inherit;font-size:16px;font-weight:650;cursor:pointer;padding:4px 0}" +
+      "#cfSheet .cf-sheet-bar button{appearance:none;border:0;background:none;color:var(--accent);font:inherit;font-size:16px;font-weight:650;cursor:pointer;padding:4px 0}" +
       "#cfMap{flex:1;min-height:0;width:100%;background:#0b0c0e}" +
-      "#cheapFuel .cf-you{width:16px;height:16px;border-radius:50%;background:#7dd3fc;border:3px solid #fff;box-shadow:0 0 0 6px rgba(125,211,252,.28)}" +
+      "#cheapFuel .cf-you{width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 0 0 6px rgba(var(--accent-rgb),.28)}" +
       "#cheapFuel .cf-pin{appearance:none;border:1px solid #3a3a3e;background:#1c1c1e;color:#f2f2f2;border-radius:999px;padding:5px 8px;font:inherit;font-size:11px;font-weight:750;letter-spacing:-.02em;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);line-height:1.1}" +
       "#cheapFuel .cf-pin-best{background:#14532d;border-color:#22c55e;color:#fff}" +
       "#cheapFuel .maplibregl-popup{z-index:30}" +"#cheapFuel .maplibregl-marker{z-index:1}" +"#cheapFuel .maplibregl-popup-content{background:#141416;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:14px;padding:12px 14px 12px;box-shadow:0 8px 24px rgba(0,0,0,.45)}" +
@@ -302,11 +302,11 @@
       map.addSource("cf-radius", { type: "geojson", data: gj });
       map.addLayer({
         id: "cf-radius-fill", type: "fill", source: "cf-radius",
-        paint: { "fill-color": "#7dd3fc", "fill-opacity": 0.10 }
+        paint: { "fill-color": (window.T3Accent&&T3Accent.hex)||"#7dd3fc", "fill-opacity": 0.10 }
       });
       map.addLayer({
         id: "cf-radius-line", type: "line", source: "cf-radius",
-        paint: { "line-color": "#7dd3fc", "line-width": 1.5, "line-opacity": 0.55 }
+        paint: { "line-color": (window.T3Accent&&T3Accent.hex)||"#7dd3fc", "line-width": 1.5, "line-opacity": 0.55 }
       });
     }
     map.fitBounds(circleBounds(last.lat, last.lng, miles), { padding: 36, duration: 0, maxZoom: 14 });

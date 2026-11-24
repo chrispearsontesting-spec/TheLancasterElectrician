@@ -7,7 +7,7 @@
 }
 
 :root{
-  --blue:#7dd3fc;
+  --blue:var(--accent);
   --text:#f2f2f2;
   --muted:#8b8b8b;
   --bg:#0b0c0e;
@@ -23,7 +23,7 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-.ico{display:inline-flex;width:22px;height:22px;flex:0 0 22px;color:#7dd3fc}
+.ico{display:inline-flex;width:22px;height:22px;flex:0 0 22px;color:var(--accent)}
 .ico svg{width:22px;height:22px;display:block;fill:currentColor}
 .ico.lg{width:64px;height:64px;flex-basis:64px}
 .ico.lg svg{width:64px;height:64px}
@@ -71,7 +71,7 @@ body[data-view="saved"] #page-saved{display:flex}
 .lockMark .ico, .lockMark .ico svg{
   width:64px !important;height:64px !important;
   flex:0 0 64px;
-  color:#7dd3fc;
+  color:var(--accent);
 }
 
 /* Open wallet */
@@ -130,11 +130,11 @@ body[data-view="saved"] #page-saved{display:flex}
   display:grid;place-items:center;
   border-radius:8px;
   margin:-4px -2px -4px 0;
-  color:#7dd3fc;
+  color:var(--accent);
 }
 .tile .copy .ico{width:16px;height:16px;flex-basis:16px}
 .tile .copy .ico svg{width:16px;height:16px}
-.tile.call .num{color:#7dd3fc}
+.tile.call .num{color:var(--accent)}
 
 .tile.add{
   align-items:center;
@@ -227,7 +227,7 @@ body[data-view="saved"] #page-saved{display:flex}
 
 .guide .frame{
   position:absolute;inset:0;
-  border:1.5px solid rgba(125,211,252,.55);
+  border:1.5px solid rgba(var(--accent-rgb),.55);
   border-radius:10px;
   box-shadow:0 0 0 1px rgba(0,0,0,.25);
   z-index:2;
@@ -242,13 +242,13 @@ body[data-view="saved"] #page-saved{display:flex}
   left:calc(var(--wx) * 1%);
   width:calc(var(--ww) * 1%);
   height:calc(var(--wh) * 1%);
-  border:2px solid #7dd3fc;
+  border:2px solid var(--accent);
   border-radius:7px;
   overflow:hidden;
   z-index:3;
   box-shadow:
     0 0 0 1px rgba(0,0,0,.4),
-    0 0 18px rgba(125,211,252,.28),
+    0 0 18px rgba(var(--accent-rgb),.28),
     0 0 0 9999px rgba(0,0,0,.58);
   background:transparent;
 }
@@ -358,7 +358,7 @@ body[data-view="saved"] #page-saved{display:flex}
   display:block;
   text-align:center;
   margin:12px 0 4px;
-  color:#7dd3fc;
+  color:var(--accent);
   font-size:15px;
   font-weight:600;
   text-decoration:none;
@@ -379,7 +379,7 @@ body[data-view="saved"] #page-saved{display:flex}
 .guide,.camHint,.camClose,.camBar{z-index:2}
 .camFile{
   position:absolute;right:14px;bottom:calc(28px + env(safe-area-inset-bottom,0px));
-  z-index:6;color:#7dd3fc;background:rgba(11,12,14,.7);border:0;border-radius:14px;
+  z-index:6;color:var(--accent);background:rgba(11,12,14,.7);border:0;border-radius:14px;
   padding:10px 14px;font:inherit;font-size:14px;font-weight:600;
 }
 #walletToast{
@@ -392,7 +392,7 @@ body[data-view="saved"] #page-saved{display:flex}
 #walletToast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 .needPin{max-width:320px;text-align:center;color:#8b8b8b;font-size:14px;line-height:1.45;margin:0 8px}
-.needPin a{color:#7dd3fc;text-decoration:none;font-weight:600}
+.needPin a{color:var(--accent);text-decoration:none;font-weight:600}
 
 #page-saved .big[contenteditable]{outline:none}
 .barcodeBox{background:#fff;border-radius:12px;padding:10px 10px 6px;margin:0 0 14px}
@@ -430,20 +430,20 @@ body[data-view="saved"] #page-saved{display:flex}
   width:min(260px,80%);aspect-ratio:3/4;border-radius:14px;
   background:#141518;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit;cursor:pointer;
 }
-#page-saved .pdfTile .ico{color:#7dd3fc}
+#page-saved .pdfTile .ico{color:var(--accent)}
 #page-saved .pdfTile .pdfName{font-size:14px;font-weight:600;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#page-saved .pdfTile .pdfOpen{font-size:13px;color:#7dd3fc}
+#page-saved .pdfTile .pdfOpen{font-size:13px;color:var(--accent)}
 #page-saved .shot .pic img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 10px 36px rgba(0,0,0,.45);display:block}
 /* hidden must win over .btn / .retake display rules */
 [hidden]{display:none !important}
 .tile.add .addLab{font-size:13px;font-weight:600;color:#f2f2f2;text-align:center}
-.tile.add .addSub{font-size:12px;font-weight:500;color:#7dd3fc}
+.tile.add .addSub{font-size:12px;font-weight:500;color:var(--accent)}
 html body a.btn[hidden],html body button.btn[hidden],html body .retake[hidden]{display:none !important}
-#savedNum.addNum{font-size:18px;color:#7dd3fc;cursor:pointer;font-family:inherit}
+#savedNum.addNum{font-size:18px;color:var(--accent);cursor:pointer;font-family:inherit}
 /* ui.css styles .card as a panel; the camera guide must stay see-through */
 .guide.card{background:transparent !important;border:0 !important;box-shadow:none !important;padding:0 !important;margin:0 !important}
 #page-saved .pager{display:flex;align-items:center;justify-content:center;gap:18px;margin:2px 0 6px;color:#8b8b8b;font-size:14px;font-weight:600}
-#page-saved .pager button{width:40px;height:40px;border-radius:50%;border:1px solid #2a2a2e;background:#141416;color:#7dd3fc;display:grid;place-items:center;padding:0}
+#page-saved .pager button{width:40px;height:40px;border-radius:50%;border:1px solid #2a2a2e;background:#141416;color:var(--accent);display:grid;place-items:center;padding:0}
 #page-saved .pager #savedPrev .ico{transform:rotate(90deg)}
 #page-saved .pager #savedNext .ico{transform:rotate(-90deg)}
 #page-saved .pager .ico svg{width:22px;height:22px;fill:currentColor}

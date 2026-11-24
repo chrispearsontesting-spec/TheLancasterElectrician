@@ -94,13 +94,13 @@
       thumb='<canvas class="fuelThumb" width="300" height="80" data-code="'+String(d.number).replace(/"/g,"")+'"></canvas>';
     }
     if(d.slot==="wheelnut"&&!u){
-      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><polygon points="200,44 268,83 268,161 200,200 132,161 132,83" fill="none" stroke="#7dd3fc" stroke-width="6"/><circle cx="200" cy="122" r="28" fill="none" stroke="#7dd3fc" stroke-width="6"/></svg>';
+      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><polygon points="200,44 268,83 268,161 200,200 132,161 132,83" fill="none" style="stroke:var(--accent)" stroke-width="6"/><circle cx="200" cy="122" r="28" fill="none" style="stroke:var(--accent)" stroke-width="6"/></svg>';
     }
     if(d.slot==="noclaims"&&!u){
-      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><path d="M200 40l70 26v52c0 46-30 80-70 96-40-16-70-50-70-96V66z" fill="none" stroke="#7dd3fc" stroke-width="6"/><path d="M170 128l22 22 40-44" fill="none" stroke="#7dd3fc" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><path d="M200 40l70 26v52c0 46-30 80-70 96-40-16-70-50-70-96V66z" fill="none" style="stroke:var(--accent)" stroke-width="6"/><path d="M170 128l22 22 40-44" fill="none" style="stroke:var(--accent)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     }
     if(d.slot==="breakdown"&&!u){
-      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><path d="M168 70c8 0 14 6 16 14l6 28c1 6-1 12-6 15l-14 10c12 26 32 46 58 58l10-14c3-5 9-7 15-6l28 6c8 2 14 8 14 16v22c0 10-8 18-18 18C186 237 123 174 123 88c0-10 8-18 18-18z" fill="none" stroke="#7dd3fc" stroke-width="6" stroke-linejoin="round"/></svg>';
+      thumb='<svg class="docArt" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="400" height="260" rx="8" fill="#1a1a1e"/><path d="M168 70c8 0 14 6 16 14l6 28c1 6-1 12-6 15l-14 10c12 26 32 46 58 58l10-14c3-5 9-7 15-6l28 6c8 2 14 8 14 16v22c0 10-8 18-18 18C186 237 123 174 123 88c0-10 8-18 18-18z" fill="none" style="stroke:var(--accent)" stroke-width="6" stroke-linejoin="round"/></svg>';
     }
     var copyVal=d.slot==="noclaims"?num:(d.number||d.phone||"");
     if(d.slot==="noclaims"&&copyVal) copyVal=copyVal+" no claims";

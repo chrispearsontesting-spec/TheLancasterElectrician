@@ -55,9 +55,9 @@
     el.innerHTML='<style>#bkRemind{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:12px 12px calc(16px + env(safe-area-inset-bottom))}'+
       '#bkRemind .p{width:100%;max-width:440px;background:#141416;border:1px solid #2a2a2e;border-radius:20px;padding:18px 16px 14px;color:#f2f2f2}'+
       '#bkRemind h2{margin:8px 0 6px;font-size:19px;letter-spacing:-.01em}#bkRemind p{margin:0 0 8px;color:#b9b9b9;font-size:14.5px;line-height:1.45}'+
-      '#bkRemind .ic{width:44px;height:44px;border-radius:50%;background:#101a22;border:1px solid #23425a;display:flex;align-items:center;justify-content:center;color:#7dd3fc}'+
+      '#bkRemind .ic{width:44px;height:44px;border-radius:50%;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.3);display:flex;align-items:center;justify-content:center;color:var(--accent)}'+
       '#bkRemind .ic svg{width:24px;height:24px;fill:currentColor}'+
-      '#bkRemind .go{background:#7dd3fc !important;background-image:none !important;color:#0b0c0e !important;justify-content:center !important}#bkRemind .later{justify-content:center !important}</style>'+
+      '#bkRemind .go{background:var(--accent) !important;background-image:none !important;color:#0b0c0e !important;justify-content:center !important}#bkRemind .later{justify-content:center !important}</style>'+
       '<div class="p"><div class="ic">'+((root.dipstickIcon&&root.dipstickIcon("shield"))||"")+'</div><h2 id="bkRemindT"></h2><p id="bkRemindB"></p>'+
       '<a class="btn wide go" href="security.html#bkCard" id="bkRemindGo">Back up now</a><button class="btn wide later" type="button" id="bkRemindLater">Later</button></div>';
     el.querySelector("#bkRemindT").textContent=d.title; el.querySelector("#bkRemindB").textContent=d.body;

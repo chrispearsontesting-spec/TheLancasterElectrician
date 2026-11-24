@@ -1,0 +1,73 @@
+/* Trac3 Drive diary entry page (event.html): one event, same cards as the redone pages. Accent via variables only. */
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:480px;background:#0b0c0e;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:calc(64px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));min-height:100vh;display:flex;flex-direction:column}
+.sp{flex:1}
+.muted{color:#8b8b8b;font-size:13px;line-height:1.45;margin:6px 2px 0}
+.card{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:14px;margin:0 0 12px}
+.card h2{font-size:13px;font-weight:650;color:#8b8b8b;letter-spacing:.06em;text-transform:uppercase;margin:0 0 10px}
+.hero{display:flex;align-items:center;gap:14px}
+.ring{width:52px;height:52px;border-radius:50%;border:1px solid rgba(var(--accent-rgb),.3);background:radial-gradient(circle at 50% 35%,#181c20,#121417 70%);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+.ring svg{width:26px;height:26px;display:block;fill:currentColor}
+.ring.over{border-color:rgba(252,165,165,.45);color:#fca5a5}
+.hero .t{flex:1;min-width:0}
+.hero .t b{display:block;font-size:18px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.hero .t small{display:block;color:#8b8b8b;font-size:13px;margin-top:4px}
+.tag{display:inline-block;font-size:11.5px;font-weight:650;border-radius:999px;padding:3px 9px;margin-top:8px;background:rgba(var(--accent-rgb),.1);color:var(--accent);border:1px solid rgba(var(--accent-rgb),.25)}
+.tag.warn{background:rgba(252,165,165,.08);color:#fca5a5;border-color:rgba(252,165,165,.3)}
+.tag.ok{background:rgba(61,214,140,.08);color:#3dd68c;border-color:rgba(61,214,140,.3)}
+.big{display:flex;align-items:baseline;gap:8px;margin:2px 0 0}
+.big b{font-size:44px;font-weight:800;letter-spacing:-.02em;color:var(--accent)}
+.big span{color:#8b8b8b;font-size:15px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.st{background:#18181b;border:1px solid #232327;border-radius:14px;padding:10px 12px;min-width:0}
+.st span{display:block;color:#8b8b8b;font-size:12px}
+.st b{display:block;font-size:18px;font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st.wide{grid-column:1/-1}
+.lines .ln{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #222226;font-size:14.5px}
+.lines .ln:first-child{border-top:0;padding-top:0}
+.lines .ln span{color:#c8c8cc;min-width:0;overflow-wrap:anywhere}
+.lines .ln b{white-space:nowrap;font-weight:650}
+.lines .ln.skip span,.lines .ln.skip b{color:#6b6f76;text-decoration:line-through}
+.lines .ln.tot{border-top:1px solid #2f2f34;margin-top:2px;font-size:16px}
+.lines .ln.tot span{color:#f2f2f2;font-weight:650}
+.lines .ln.tot b{color:var(--accent);font-size:18px}
+.lines .ln.sub span{color:#8b8b8b}
+.media video{display:block;width:100%;border-radius:12px;background:#000;max-height:60vh}
+.media .cap{color:#8b8b8b;font-size:12.5px;margin:8px 2px 0}
+.pics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pics.one{grid-template-columns:1fr}
+.pics button{padding:0;border:0;background:#0b0c0e;border-radius:12px;overflow:hidden;aspect-ratio:4/3;cursor:pointer;display:block;width:100%}
+.pics.one button{aspect-ratio:16/10}
+.pics img{width:100%;height:100%;object-fit:cover;display:block}
+.media .pics+video,.media video+.pics{margin-top:8px}
+.desc{white-space:pre-wrap;font-size:15px;line-height:1.5;margin:0;overflow-wrap:anywhere}
+.files a{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #222226;color:#f2f2f2;text-decoration:none;font-size:14.5px}
+.files a:first-of-type{border-top:0;padding-top:0}
+.files a .ico,.files a svg{width:20px;height:20px;color:var(--accent);fill:currentColor;flex:none}
+.files a small{margin-left:auto;color:#8b8b8b;white-space:nowrap}
+.place{display:flex;gap:12px;align-items:stretch}
+.place .rail{display:flex;flex-direction:column;align-items:center;padding:4px 0}
+.place .rail i{width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);display:block}
+.place .rail i.e{background:var(--accent)}
+.place .rail u{flex:1;width:2px;background:rgba(var(--accent-rgb),.3);margin:3px 0;min-height:18px}
+.place .pl{display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-width:0}
+.place .pl span{display:block;color:#8b8b8b;font-size:12px}
+.place .pl b{display:block;font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.roads{color:#8b8b8b;font-size:13px;margin:12px 0 0;line-height:1.45}
+.acts .btn{margin-top:0}
+.acts .btn+.btn{margin-top:8px}
+a.btn,button.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:16px;padding:14px;font-weight:650;font-size:16px;background:#1c1c1e;color:#f2f2f2;text-align:center;text-decoration:none;margin-top:12px;font-family:inherit;cursor:pointer}
+a.btn.pri,button.btn.pri{background:var(--accent) !important;background-image:none !important;color:var(--on-accent) !important;border:0 !important;box-shadow:none !important;font-weight:700 !important}
+a.btn.pri .ico,button.btn.pri .ico,a.btn.pri svg{color:var(--on-accent) !important;fill:currentColor}
+.gone{text-align:center;padding:26px 16px}
+.gone b{display:block;font-size:17px;margin-bottom:6px}
+.evLoad{text-align:center;margin-top:30px}
+/* Full screen photo viewer */
+.pv{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:60;display:flex;flex-direction:column}
+.pv .top{display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;color:#c8c8cc;font-size:14px}
+.pv .x{width:44px;height:44px;border-radius:50%;border:1px solid #2a2a2e;background:#141416;color:#f2f2f2;font-size:18px;cursor:pointer}
+.pv .strip{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.pv .strip::-webkit-scrollbar{display:none}
+.pv figure{flex:0 0 100%;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;scroll-snap-align:center;padding:0 8px}
+.pv figure img{max-width:100%;max-height:78vh;object-fit:contain;border-radius:8px}
+.pv figcaption{color:#8b8b8b;font-size:13px;margin-top:10px;text-align:center}

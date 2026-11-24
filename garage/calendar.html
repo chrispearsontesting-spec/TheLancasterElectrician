@@ -146,6 +146,16 @@ body{padding-top:calc(64px + env(safe-area-inset-top)) !important}
 #calLists .ddMenu{margin:0 10px 10px;background:#101012}
 button.btn.addw,.btn.addw{background:var(--accent) !important;background-image:none !important;color:var(--on-accent) !important;border:0 !important;box-shadow:none !important;font-weight:700 !important}
 button.btn.addw .ico,button.btn.addw svg{color:var(--on-accent) !important;fill:currentColor}
+/* Diary entries open their own page (t263u) */
+.evCard{cursor:pointer;position:relative}
+.evCard:active{background:#18181b}
+.card b.title{display:flex;align-items:center;gap:6px}
+.evChev{width:9px;height:9px;border:solid #6b6f76;border-width:2px 2px 0 0;transform:rotate(45deg);margin:0 6px 0 auto;flex:none;display:inline-block}
+.route .top{align-items:center}
+.route .evGo{display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin:-8px -8px -8px 0;flex:none}
+.route .evGo .evChev{margin:0}
+.day .dots{padding:5px 0 3px;margin-top:2px !important}
+.clItem .evChev{margin:0 4px 0 2px}
 </style>
 </head>
 <body>
@@ -184,6 +194,7 @@ button.btn.addw .ico,button.btn.addw svg{color:var(--on-accent) !important;fill:
 <script src="./reminders-web.js?v=2"></script>
 <script src="./car-scope.js?v=1"></script>
 <script src="./diy-work.js?v=3"></script>
+<script src="./ev-url.js?v=1"></script>
 <script>
 var view=new Date();
 view.setDate(1);
@@ -231,8 +242,8 @@ function render(sel){
     var tm=new Date(t.when).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
     var end=t.end?new Date(t.end).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}):"";
     var ico = (window.dipstickIconHtml?dipstickIconHtml(t.type==="run"?"flag":"pin","ico"):"");
-    return "<div class='card' data-id='"+t.id+"'><b class='title'>"+ico+(t.from||"Start")+" → "+(t.to||"Finish")+"</b><p class='muted'>"+tm+(end?" – "+end:"")+(t.type==="run"&&t.time?" · "+t.time:"")+"</p><div class='kv'><span>Miles</span><b>"+(+t.miles||0).toFixed(2)+"</b></div><div class='kv'><span>Cost</span><b>£"+(+t.cost||0).toFixed(2)+"</b></div><div class='kv'><span>MPG</span><b>"+(t.mpg||"-")+"</b></div><div class='row'><button class='btn' type='button' data-edit='"+t.id+"'>✎ Edit</button></div><div class='edit hide' id='ed-"+t.id+"'><label>Miles per gallon for this trip</label><input type='number' step='0.1' value='"+(t.mpg||"")+"' data-mpg='"+t.id+"'/><div class='row'><button class='btn' type='button' data-save='"+t.id+"'>Save mpg</button><button class='btn' type='button' data-del='"+t.id+"'>Delete journey</button></div></div></div>";
-  }).join("")+rItems.map(function(t){ return "<div class='card route'><b class='title'>🗺 "+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><p class='muted'>Saved route · "+(+t.miles||0).toFixed(1)+" mi · one way "+moneyTxt(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp)+"</p></div>"; }).join("");
+    return "<div class='card' data-id='"+t.id+"' data-ev='"+D3Ev.url(t.type==="run"?"run":"j",t.id,sel)+"'><b class='title'>"+ico+(t.from||"Start")+" → "+(t.to||"Finish")+"</b><p class='muted'>"+tm+(end?" – "+end:"")+(t.type==="run"&&t.time?" · "+t.time:"")+"</p><div class='kv'><span>Miles</span><b>"+(+t.miles||0).toFixed(2)+"</b></div><div class='kv'><span>Cost</span><b>£"+(+t.cost||0).toFixed(2)+"</b></div><div class='kv'><span>MPG</span><b>"+(t.mpg||"-")+"</b></div><div class='row'><button class='btn' type='button' data-edit='"+t.id+"'>✎ Edit</button></div><div class='edit hide' id='ed-"+t.id+"'><label>Miles per gallon for this trip</label><input type='number' step='0.1' value='"+(t.mpg||"")+"' data-mpg='"+t.id+"'/><div class='row'><button class='btn' type='button' data-save='"+t.id+"'>Save mpg</button><button class='btn' type='button' data-del='"+t.id+"'>Delete journey</button></div></div></div>";
+  }).join("")+rItems.map(function(t){ return "<div class='card route' data-ev='"+D3Ev.url("route",t.when,sel)+"'><b class='title'>🗺 "+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><p class='muted'>Saved route · "+(+t.miles||0).toFixed(1)+" mi · one way "+moneyTxt(t.oneGBP!=null?t.oneGBP:scoreTrip(t).gbp)+"</p></div>"; }).join("");
 }
 function remByDay(){
   var m={}; if(!window.D3Rem) return m;
@@ -248,7 +259,7 @@ function remCard(e){
   if(e.type==="tax") acts.push("<a class='btn' href='https://www.gov.uk/vehicle-tax' target='_blank' rel='noopener'>Renew</a>","<a class='btn' href='tax.html?plate="+e.vrn+"'>Check tax</a>");
   if(e.type==="insurance") acts.push("<a class='btn' href='insurance.html?v=19'>Policy</a>","<a class='btn' href='renew.html?v=13'>Renew</a>");
   var ico=(window.dipstickIconHtml&&window.dipstickIconHtml(e.icon))||e.icon||"";
-  return "<div class='card rem-card"+(D3Rem.daysUntil(e.due)<0?" over":"")+"'><b class='title'>"+ico+" "+escR(e.label)+" · "+escR(e.plate)+"</b><p class='muted'>"+escR(e.name)+" · "+D3Rem.niceDate(e.due)+" · "+left+"</p><div class='row'>"+acts.join("")+"</div></div>";
+  return "<div class='card rem-card"+(D3Rem.daysUntil(e.due)<0?" over":"")+"' data-ev='"+D3Ev.url("rem",e.type,e.due,"&c="+e.carIndex)+"'><b class='title'>"+ico+" "+escR(e.label)+" · "+escR(e.plate)+"</b><p class='muted'>"+escR(e.name)+" · "+D3Rem.niceDate(e.due)+" · "+left+"</p><div class='row'>"+acts.join("")+"</div></div>";
 }
 function upNext(){
   return ""; // replaced by the Maintenance dropdown below the calendar
@@ -273,7 +284,7 @@ function renderRoutes(){
       "<div class='kv'><span>Fuel price</span><b>"+(t.ppl?Number(t.ppl).toFixed(1)+"p":"-")+"</b></div>"+
       (t.roads&&t.roads.length?"<p class='muted'>"+escR(t.roads.join(" \u00b7 "))+"</p>":"")+
       "<p class='muted'>Saved "+new Date(t.when||Date.now()).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})+"</p><button type='button' class='rdel' data-rdel='"+i+"'>Delete this route</button>";
-    return "<div class='route' data-i='"+i+"' role='button' tabindex='0'><div class='top'><div><b class='title'>"+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><div class='muted'>"+miles+" mi \u00b7 "+kindLabel(t)+"</div></div><div class='cost'>"+moneyTxt(head)+"</div></div><div class='more hide'>"+ex+"</div></div>";
+    return "<div class='route' data-i='"+i+"' role='button' tabindex='0'><div class='top'><div><b class='title'>"+escR(t.title||((t.from||"")+" \u2192 "+(t.to||"")))+"</b><div class='muted'>"+miles+" mi \u00b7 "+kindLabel(t)+"</div></div><div class='cost'>"+moneyTxt(head)+"</div><a class='evGo' href='"+D3Ev.url("route",t.when,key(new Date(t.when||Date.now())))+"' aria-label='Open details'><span class='evChev'></span></a></div><div class='more hide'>"+ex+"</div></div>";
   }).join("");
 }
 document.getElementById("rList").addEventListener("click",function(e){
@@ -287,6 +298,7 @@ var qd=/[?&]d=(\d{4}-\d\d-\d\d)/.exec(location.search);
 var selected=qd?qd[1]:key(new Date());
 if(qd){ view=new Date(+qd[1].slice(0,4),+qd[1].slice(5,7)-1,1); }
 render(selected);
+(function(){ var ow=/[?&]openw=([^&]+)/.exec(location.search); if(ow&&window.D3Diy&&D3Diy.get(decodeURIComponent(ow[1]))) setTimeout(function(){ openWork(decodeURIComponent(ow[1])); },0); })();
 document.getElementById("grid").addEventListener("click",function(e){
   var b=e.target.closest("[data-k]"); if(!b)return;
   selected=b.getAttribute("data-k"); render(selected);
@@ -326,7 +338,7 @@ function curPlate(){ try{var g=JSON.parse(localStorage.getItem("gt.garage")||"nu
 function diyByDay(){ var m={}; if(!window.D3Diy) return m; D3Diy.forPlate(curPlate()).forEach(function(w){(m[w.date]=m[w.date]||[]).push(w)}); return m; }
 function diyCard(w){
   var ph=(w.files||[]).filter(function(f){return f.kind==="photo"}), inv=(w.files||[]).filter(function(f){return f.kind!=="photo"});
-  return "<div class='card diy'><b class='title'>🔧 "+escR(w.title||"Work done")+"</b><p class='muted'>DIY work"+(ph.length?" · "+ph.length+" photo"+(ph.length>1?"s":""):"")+(inv.length?" · "+inv.length+" invoice"+(inv.length>1?"s":""):"")+"</p>"+
+  return "<div class='card diy' data-ev='"+D3Ev.url("diy",w.id,w.date)+"'><b class='title'>🔧 "+escR(w.title||"Work done")+"</b><p class='muted'>DIY work"+(ph.length?" · "+ph.length+" photo"+(ph.length>1?"s":""):"")+(inv.length?" · "+inv.length+" invoice"+(inv.length>1?"s":""):"")+"</p>"+
     (w.desc?"<p style='margin:6px 0 0;font-size:14px;white-space:pre-wrap'>"+escR(w.desc)+"</p>":"")+
     "<div class='ph'>"+ph.map(function(f){return "<img alt='' data-blob='"+f.id+"'/>"}).join("")+"</div>"+
     inv.map(function(f){return "<a class='inv' target='_blank' rel='noopener' data-blob='"+f.id+"' data-type='"+escR(f.type)+"'>"+(window.dipstickIconHtml?dipstickIconHtml("doc","ico"):"")+""+escR(f.title||f.name)+(f.price?" · £"+escR(f.price):"")+"</a>"}).join("")+
@@ -391,9 +403,10 @@ document.getElementById("next").onclick=function(){view.setMonth(view.getMonth()
 <script src="./uploads-config.js?v=1"></script>
 <script src="./uploads-client.js?v=5"></script>
 <script src="./perf-g.js?v=2"></script>
-<script src="./cal-media.js?v=3"></script>
+<script src="./cal-media.js?v=4"></script>
 <script src="./icons.js?v=36"></script>
-<script src="./cal-lists.js?v=6"></script>
+<script src="./cal-lists.js?v=7"></script>
+<script src="./cal-events.js?v=1"></script>
 <script src="./receipt-scan.js?v=2"></script>
 </body>
 </html>

@@ -14,7 +14,7 @@
   async function load(){
     M.byDay={}; var c=car(), pl=vrn(c&&c.plate);
     var own=[]; try{ own=JSON.parse(localStorage.getItem("dipstick-history")||"[]")||[]; }catch(e){}
-    own.forEach(function(it,i){ if(!it) return; if(window.D3Car&&!D3Car.owns(it.plate)) return; var t=tsOf(it); if(t) add(k(t),{k:"own",t:t,it:it}); });
+    own.forEach(function(it,i){ if(!it) return; if(window.D3Car&&!D3Car.owns(it.plate)) return; var t=tsOf(it); if(t) add(k(t),{k:"own",t:t,it:it,i:i}); });
     var U=window.DipUploads;
     if(U&&U.allJobs){ try{ M.jobs=(await U.allJobs()).filter(function(j){ return (c&&c.upId&&j.up===c.upId)||(pl&&j.plate===pl); }); }catch(e){ M.jobs=[]; } }
     M.jobs.forEach(function(j){ var t=j.created||j.received||0; if(t) add(k(t),{k:"mech",t:t,j:j}); });
@@ -31,16 +31,16 @@
   function card(e,i){
     var day=k(e.t), when=new Date(e.t).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
     if(e.k==="run"){ var r=e.r, st=r.stats||{};
-      return "<div class='card media run'><b class='title'>🏁 "+esc(r.label||"Performance run")+" · "+esc(r.time)+"s</b><p class='muted'>Performance · "+when+(st.maxComb!=null?" · peak "+(+st.maxComb).toFixed(2)+" G":"")+(r.video?" · video":"")+"</p>"+
+      return "<div class='card media run' data-ev='"+(window.D3Ev?D3Ev.url("run",r.id,day):"")+"'><b class='title'>🏁 "+esc(r.label||"Performance run")+" · "+esc(r.time)+"s</b><p class='muted'>Performance · "+when+(st.maxComb!=null?" · peak "+(+st.maxComb).toFixed(2)+" G":"")+(r.video?" · video":"")+"</p>"+
         "<div class='row'>"+(r.video?"<button class='btn' type='button' data-mv='run:"+esc(r.id)+"'>▶ Watch video</button>":"")+"<button class='btn' type='button' data-mg='"+esc(r.id)+"'>📈 G chart</button></div>"+
         "<a class='inv' href='performance.html?v=3&run="+encodeURIComponent(r.id)+"'>Open in Performance</a></div>";
     }
     if(e.k==="own"){ var it=e.it, img=/^image\//.test(it.type||"");
-      return "<div class='card media own'><b class='title'>📝 "+esc(it.note||"Work")+"</b><p class='muted'>Your note"+(img?" · 1 photo":it.data?" · PDF":"")+"</p>"+
+      return "<div class='card media own' data-ev='"+(window.D3Ev?D3Ev.url("note",e.i,day):"")+"'><b class='title'>📝 "+esc(it.note||"Work")+"</b><p class='muted'>Your note"+(img?" · 1 photo":it.data?" · PDF":"")+"</p>"+
         (img?"<div class='ph'><img alt='' src='"+esc(it.data)+"' data-mo='"+day+":"+i+"'/></div><div class='row'><button class='btn' type='button' data-mo='"+day+":"+i+"'>🖼 View photos</button></div>":it.data?"<a class='inv' href='"+esc(it.data)+"' target='_blank' rel='noopener' download='invoice.pdf'>🧾 Open PDF</a>":"")+"</div>";
     }
     var j=e.j, who=[j.garage,j.mechanic].filter(Boolean).join(" · "), ph=(j.files||[]).filter(function(f){return /^image\//.test(f.type)}), docs=(j.files||[]).filter(function(f){return !/^image\//.test(f.type)});
-    return "<div class='card media mech'><b class='title'>🛠 "+esc(j.note||"Work from your mechanic")+(j.seen?"":" <span class='newTag'>NEW</span>")+"</b><p class='muted'>Mechanic"+(who?" · "+esc(who):"")+(j.mileage!=null?" · "+esc(Number(j.mileage).toLocaleString("en-GB"))+" miles":"")+(ph.length?" · "+ph.length+" photo"+(ph.length>1?"s":""):"")+"</p>"+
+    return "<div class='card media mech' data-ev='"+(window.D3Ev?D3Ev.url("mech",j.id,day):"")+"'><b class='title'>🛠 "+esc(j.note||"Work from your mechanic")+(j.seen?"":" <span class='newTag'>NEW</span>")+"</b><p class='muted'>Mechanic"+(who?" · "+esc(who):"")+(j.mileage!=null?" · "+esc(Number(j.mileage).toLocaleString("en-GB"))+" miles":"")+(ph.length?" · "+ph.length+" photo"+(ph.length>1?"s":""):"")+"</p>"+
       (ph.length?"<div class='ph'>"+ph.map(function(f){return "<img alt='' data-jf='"+esc(j.id)+"|"+esc(f.key)+"' data-mj='"+esc(j.id)+"'/>"}).join("")+"</div>":"")+
       docs.map(function(f){return "<a class='inv' data-jd='"+esc(j.id)+"|"+esc(f.key)+"' target='_blank' rel='noopener'>🧾 "+esc(window.DipUploads?DipUploads.fileTitle(f):f.name)+"</a>"}).join("")+
       "<div class='row'>"+(ph.length?"<button class='btn' type='button' data-mj='"+esc(j.id)+"'>🖼 View photos</button>":"")+"<button class='btn' type='button' data-mrm='"+esc(j.id)+"'>Remove from phone</button></div></div>";

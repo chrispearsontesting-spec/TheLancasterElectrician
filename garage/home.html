@@ -215,23 +215,23 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 /* App grid (home): 3x3 round icon buttons. Icons from grid-icons.js (one map, easy to swap). */
 .appGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 8px;margin:16px 0 8px;padding:16px 6px 14px;background:#141416;border:1px solid rgba(255,255,255,0.08);border-radius:18px}
 .app{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;color:#f2f2f2;-webkit-tap-highlight-color:transparent;min-width:0}
-.app .ring{width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(125,211,252,.55);background:radial-gradient(circle at 50% 35%,#1b2630,#121418 70%);color:#7dd3fc;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 2px 6px rgba(0,0,0,.35);transition:transform .12s ease,border-color .12s ease}
+.app .ring{width:54px;height:54px;border-radius:50%;border:1px solid rgba(125,211,252,.3);background:radial-gradient(circle at 50% 35%,#181c20,#121417 70%);color:#7dd3fc;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 2px 6px rgba(0,0,0,.35);transition:transform .12s ease,border-color .12s ease}
 .app .ring svg{width:25px;height:25px;display:block}
 .app{min-height:48px;padding:2px 0}
 .app .al{font-size:12.5px;font-weight:600;line-height:1.2;text-align:center;color:#e6e6e6;max-width:100%}
-.app:active .ring{transform:scale(.94);border-color:#7dd3fc}
+.app:active .ring{transform:scale(.94);border-color:rgba(125,211,252,.6)}
 .app:focus-visible{outline:none}.app:focus-visible .ring{outline:2px solid #7dd3fc;outline-offset:3px}
 .app .chip{position:absolute;top:-4px;right:6px;margin:0;font-size:10px;padding:1px 7px}
 .app .chip[hidden]{display:none}
 @media (max-width:370px){.app .ring{width:50px;height:50px}.app .ring svg{width:23px;height:23px}.app .al{font-size:12px}}
 .heroWrap{position:relative}
-.fuelFab{position:absolute;left:10px;bottom:5px;width:36px;height:36px;border-radius:50%;background:rgba(11,12,14,.55);border:1px solid rgba(125,211,252,.45);color:#7dd3fc;display:flex;align-items:center;justify-content:center;z-index:3;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:.88}
+.fuelFab{position:absolute;left:10px;bottom:5px;width:36px;height:36px;border-radius:50%;background:rgba(11,12,14,.55);border:1px solid rgba(125,211,252,.28);color:#7dd3fc;display:flex;align-items:center;justify-content:center;z-index:3;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:.88}
 .fuelFab svg{width:20px;height:20px;display:block}
 .fuelFab::before{content:"";position:absolute;inset:-6px;border-radius:50%}
 .fuelFab:active{opacity:1;transform:scale(.94)}
 body.noCars .fuelFab{display:none}
 /* First run: location, pre-selected */
-.locOpt{display:flex;align-items:center;gap:12px;text-align:left;margin:0 0 12px;padding:12px;border-radius:14px;background:#0f1a22;border:1px solid rgba(125,211,252,.45);cursor:pointer}
+.locOpt{display:flex;align-items:center;gap:12px;text-align:left;margin:0 0 12px;padding:12px;border-radius:14px;background:#121519;border:1px solid rgba(125,211,252,.25);cursor:pointer}
 .locOpt input{position:absolute;opacity:0;width:1px;height:1px}
 .locOpt .bx{width:24px;height:24px;border-radius:7px;border:2px solid #7dd3fc;flex:none;display:flex;align-items:center;justify-content:center}
 .locOpt input:checked+.bx{background:#7dd3fc}
@@ -239,6 +239,11 @@ body.noCars .fuelFab{display:none}
 .locOpt .li{color:#7dd3fc;flex:none;display:flex}.locOpt .li svg{width:22px;height:22px}
 .locOpt b{display:block;font-size:15px;color:#f2f2f2}.locOpt small{display:block;color:#9aa3ad;font-size:12.5px;margin-top:2px;line-height:1.35}
 .locOpt input:focus-visible+.bx{outline:2px solid #7dd3fc;outline-offset:2px}
+/* Reminders bar: word centred, a subtle chevron each side */
+#datesToggle{justify-content:center !important;gap:12px !important;text-align:center !important}
+#datesToggle .lab{flex:1 1 auto;text-align:center;letter-spacing:.01em}
+#datesToggle .chev{margin:0 !important;opacity:.55}
+#datesToggle .chev .ico,#datesToggle .chev svg{color:#9aa3ad !important}
 </style>
 </head>
 <body>
@@ -268,13 +273,13 @@ body.noCars .fuelFab{display:none}
 </div><p class="dots" id="dots"></p></div>
 <section class="tabp on" id="car">
 <div class="ddGroup">
-<button class="btn wide dd" type="button" id="datesToggle" data-ico="cal" aria-expanded="false" aria-controls="dues"><span class="lab">Reminders</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
+<button class="btn wide dd" type="button" id="datesToggle" data-iconed="1" aria-expanded="false" aria-controls="dues"><span class="chev" aria-hidden="true" data-ico="chevron"></span><span class="lab">Reminders</span><span class="chev" aria-hidden="true" data-ico="chevron"></span></button>
 <div class="card hide" id="dues"></div>
 </div>
 <nav class="appGrid" id="appGrid" aria-label="Trac3 apps">
-<a class="app" href="drive.html?v=5" data-g="rec"><span class="ring"></span><span class="al">Record journey</span></a>
+<a class="app" href="drive.html?v=6" data-g="rec"><span class="ring"></span><span class="al">Record journey</span></a>
 <a class="app" href="dashcam.html?v=3" data-g="dashcam"><span class="ring"></span><span class="al">Dashcam</span></a>
-<a class="app" href="performance.html?v=4" data-g="perf"><span class="ring"></span><span class="al">Performance</span></a>
+<a class="app" href="performance.html?v=5" data-g="perf"><span class="ring"></span><span class="al">Performance</span></a>
 <a class="app" href="wallet.html" data-g="wallet"><span class="ring"></span><span class="al">Wallet</span></a>
 <a class="app" href="route.html" data-g="route"><span class="ring"></span><span class="al">Route costs</span></a>
 <a class="app" href="costs.html?v=1" data-g="costs"><span class="ring"></span><span class="al">Car costs</span></a>

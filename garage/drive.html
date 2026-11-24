@@ -71,14 +71,14 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 .dv{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;background:none;border:0;border-top:1px solid #1f1f23;color:#f2f2f2;text-align:left;font:inherit;cursor:pointer}.dv:first-child{border-top:0}
 .dv .bi{width:22px;height:22px;flex:none;color:#7dd3fc}.dv .bi svg{width:22px;height:22px;fill:currentColor}
 .dv .t{flex:1;min-width:0}.dv .t b{display:block;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dv .t span{display:block;font-size:12px;color:#8b8b8b;margin-top:1px}
-.dv.sel{background:#0f1b24}.dv .pick{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #3a3a3e;box-sizing:border-box}
+.dv.sel{background:rgba(125,211,252,.04)}.dv .pick{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid #3a3a3e;box-sizing:border-box}
 .dv.sel .pick{border:0;background:#7dd3fc;display:flex;align-items:center;justify-content:center}.dv.sel .pick:after{content:"";width:6px;height:11px;border:solid #0b0c0e;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .dv .con{color:#7dd3fc;font-weight:650}
 .devs .empty{margin:0;padding:12px;color:#8b8b8b;font-size:13px}
 .spin{width:14px;height:14px;border:2px solid #3a3a3e;border-top-color:#7dd3fc;border-radius:50%;animation:sp .8s linear infinite;display:inline-block}@keyframes sp{to{transform:rotate(360deg)}}
 #autoMsg:empty{display:none}
 .carRow.hide{display:none}
-.checks .ck.all{width:100%;background:#101a22;border:0;color:#f2f2f2;font:inherit;text-align:left;cursor:pointer}
+.checks .ck.all{width:100%;background:#131619;border:0;color:#f2f2f2;font:inherit;text-align:left;cursor:pointer}
 .checks .ck.all .box{width:22px;height:22px;flex:none;border-radius:6px;border:2px solid #7dd3fc;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .checks .ck.all.on .box{background:#7dd3fc}.checks .ck.all.on .box:after{content:"";width:6px;height:11px;border:solid #0b0c0e;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .checks .ck.all b{display:block;font-size:15px}.checks .ck.all small{display:block;color:#8b8b8b;font-size:12px;margin-top:1px}
@@ -86,10 +86,10 @@ select,input[type=number]{width:100%;background:#161618;border:1px solid #2a2a2e
 .mini .si{display:inline-flex}.mini .si svg{width:16px;height:16px;fill:#7dd3fc}
 /* Connected: the car row goes clearly blue */
 .carRow{transition:background .2s,border-color .2s}
-.carRow.conn{background:linear-gradient(180deg,rgba(125,211,252,.16),rgba(125,211,252,.07));border:1.5px solid #7dd3fc;box-shadow:0 0 0 3px rgba(125,211,252,.12)}
-.carRow.conn .btIco{background:#7dd3fc;color:#0b0c0e}
-.carRow.conn .cr span{color:#bfe8fb}
-.badge.on{background:#7dd3fc !important;color:#0b0c0e !important;font-weight:800;font-size:12.5px}.badge.on i{background:#0b0c0e !important;box-shadow:none !important}
+.carRow.conn{background:rgba(125,211,252,.05);border:1px solid rgba(125,211,252,.38)}
+.carRow.conn .btIco{background:rgba(125,211,252,.12);color:#7dd3fc}
+.carRow.conn .cr span{color:#a9b4be}
+.badge.on{background:rgba(125,211,252,.12) !important;color:#7dd3fc !important;font-weight:700;font-size:12.5px;border:1px solid rgba(125,211,252,.25)}.badge.on i{background:#7dd3fc !important;box-shadow:none !important}
 .carRow:not(.conn) .badge{background:#1c1c1e;color:#8b8b8b}
 </style>
 </head>

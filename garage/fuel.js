@@ -120,7 +120,7 @@
       "#cheapFuel .cf-meta{margin:8px 0 0;font-size:14px;color:#c7c7cc;line-height:1.45}" +
       "#cheapFuel .cf-chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}" +
       "#cheapFuel .cf-chip{appearance:none;border:1px solid #2a2a2e;background:#1c1c1e;color:#f2f2f2;border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;font-weight:650;cursor:pointer}" +
-      "#cheapFuel .cf-chip[aria-pressed='true']{background:#1d2a33;border-color:#7dd3fc;color:#7dd3fc}" +
+      "#cheapFuel .cf-chip[aria-pressed='true']{background:rgba(125,211,252,.08);border-color:rgba(125,211,252,.45);color:#7dd3fc}" +
       "#cheapFuel .cf-go{display:block;width:100%;margin-top:14px;box-sizing:border-box;border:0;border-radius:16px;padding:14px 16px;font:inherit;font-size:16px;font-weight:700;background:#14532d;color:#fff;text-align:center;text-decoration:none;cursor:pointer}" +
       "#cheapFuel .cf-go[aria-disabled='true'],#cheapFuel .cf-go:disabled{opacity:.45;pointer-events:none}" +
       "#cheapFuel .cf-mapbtn{display:block;width:100%;margin-top:8px;box-sizing:border-box;border:1px solid #2a2a2e;border-radius:16px;padding:13px 16px;font:inherit;font-size:16px;font-weight:650;background:#1c1c1e;color:#f2f2f2;text-align:center;cursor:pointer}" +

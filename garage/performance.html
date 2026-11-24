@@ -74,7 +74,7 @@ body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pk-t{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:72px;padding:10px 4px;border-radius:16px;background:#141416;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit}
 .pk-t b{font-size:16px;font-weight:700;letter-spacing:-.01em}.pk-t small{font-size:11.5px;color:#8b8b8b;font-weight:500;font-variant-numeric:tabular-nums}
-.pk-t[aria-pressed=true]{border:1.5px solid #7dd3fc;background:linear-gradient(180deg,rgba(125,211,252,.14),rgba(125,211,252,.05))}.pk-t[aria-pressed=true] small{color:#7dd3fc}
+.pk-t[aria-pressed=true]{border:1px solid rgba(125,211,252,.5);background:rgba(125,211,252,.06)}.pk-t[aria-pressed=true] small{color:#7dd3fc}
 #pick .disclaimer{position:static;margin:12px 0 0;background:#1c1608;font-size:12.5px}
 #pick .disclaimer[style*="none"]{display:none !important}
 .pk-keep{display:flex;align-items:center;justify-content:space-between;margin:12px 0 0;padding:12px 14px;border-radius:16px;background:#141416;border:1px solid #2a2a2e;font-size:15px;font-weight:600}
@@ -88,8 +88,8 @@ body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #
 .pk-runs{background:#141416;border:1px solid #2a2a2e;border-radius:16px;overflow:hidden}
 .pk-r{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none !important;border:0 !important;border-top:1px solid #222226 !important;border-radius:0 !important;text-align:left;color:#f2f2f2;min-height:58px}
 .pk-r:first-child{border-top:0 !important}
-.pk-r .bd{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(125,211,252,.5);color:#7dd3fc;font-size:11px;font-weight:800}
-.pk-r .bd svg{width:16px;height:16px;fill:currentColor}.pk-r .bd.best{background:#7dd3fc;color:#0b0c0e;border-color:#7dd3fc}
+.pk-r .bd{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid rgba(125,211,252,.3);color:#7dd3fc;font-size:11px;font-weight:800}
+.pk-r .bd svg{width:16px;height:16px;fill:currentColor}.pk-r .bd.best{background:rgba(125,211,252,.14);color:#7dd3fc;border-color:rgba(125,211,252,.4)}
 .pk-r .m{flex:1;min-width:0}.pk-r .m b{display:block;font-size:15px}.pk-r .m small{display:block;color:#8b8b8b;font-size:12px;margin-top:2px}
 .pk-r .tm{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
 .pk-empty{color:#8b8b8b;font-size:13.5px;margin:0;padding:16px 14px}
@@ -390,6 +390,7 @@ function paintPick(){
 }
 document.getElementById('pkGrid').addEventListener('click',e=>{ const t=e.target.closest('[data-run]'); if(!t) return; runSel.value=t.getAttribute('data-run'); paintPick(); });
 document.getElementById('pkStart').onclick=()=>beginRun();
+window.addEventListener('load',()=>paintPick());
 document.getElementById('pkAll').onclick=()=>{ if(PKEX) return; showList(); };
 (function(){
   const slot=document.getElementById('pkSlot'), disc=document.getElementById('disc'), keep=document.getElementById('keep');

@@ -215,18 +215,19 @@ body.noCars .hero,body.noCars .bar,body.noCars #car,body.noCars #remBanner{displ
 /* App grid (home): 3x3 round icon buttons. Icons from grid-icons.js (one map, easy to swap). */
 .appGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 8px;margin:16px 0 8px;padding:16px 6px 14px;background:#141416;border:1px solid rgba(255,255,255,0.08);border-radius:18px}
 .app{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;color:#f2f2f2;-webkit-tap-highlight-color:transparent;min-width:0}
-.app .ring{width:62px;height:62px;border-radius:50%;border:1.5px solid rgba(125,211,252,.55);background:radial-gradient(circle at 50% 35%,#1b2630,#121418 70%);color:#7dd3fc;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 2px 6px rgba(0,0,0,.35);transition:transform .12s ease,border-color .12s ease}
-.app .ring svg{width:28px;height:28px;display:block}
-.app[data-g=rec] .ring svg,.app[data-g=perf] .ring svg{width:32px;height:32px}
+.app .ring{width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(125,211,252,.55);background:radial-gradient(circle at 50% 35%,#1b2630,#121418 70%);color:#7dd3fc;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 2px 6px rgba(0,0,0,.35);transition:transform .12s ease,border-color .12s ease}
+.app .ring svg{width:25px;height:25px;display:block}
+.app{min-height:48px;padding:2px 0}
 .app .al{font-size:12.5px;font-weight:600;line-height:1.2;text-align:center;color:#e6e6e6;max-width:100%}
 .app:active .ring{transform:scale(.94);border-color:#7dd3fc}
 .app:focus-visible{outline:none}.app:focus-visible .ring{outline:2px solid #7dd3fc;outline-offset:3px}
 .app .chip{position:absolute;top:-4px;right:6px;margin:0;font-size:10px;padding:1px 7px}
 .app .chip[hidden]{display:none}
-@media (max-width:370px){.app .ring{width:56px;height:56px}.app .al{font-size:12px}}
+@media (max-width:370px){.app .ring{width:50px;height:50px}.app .ring svg{width:23px;height:23px}.app .al{font-size:12px}}
 .heroWrap{position:relative}
-.fuelFab{position:absolute;left:10px;bottom:6px;width:34px;height:34px;border-radius:50%;background:rgba(11,12,14,.55);border:1px solid rgba(125,211,252,.45);color:#7dd3fc;display:flex;align-items:center;justify-content:center;z-index:3;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:.88}
-.fuelFab svg{width:19px;height:19px;display:block}
+.fuelFab{position:absolute;left:10px;bottom:5px;width:36px;height:36px;border-radius:50%;background:rgba(11,12,14,.55);border:1px solid rgba(125,211,252,.45);color:#7dd3fc;display:flex;align-items:center;justify-content:center;z-index:3;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:.88}
+.fuelFab svg{width:20px;height:20px;display:block}
+.fuelFab::before{content:"";position:absolute;inset:-6px;border-radius:50%}
 .fuelFab:active{opacity:1;transform:scale(.94)}
 body.noCars .fuelFab{display:none}
 /* First run: location, pre-selected */
@@ -390,7 +391,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./insurers.js?v=1"></script>
 <script src="./form-pickers.js?v=5"></script>
 <script src="./home-insure.js?v=4"></script>
-<script src="./grid-icons.js?v=1"></script>
+<script src="./grid-icons.js?v=2"></script>
 <script src="./home-tabs.js?v=6"></script>
 <script src="./reminders-web.js?v=2"></script>
 <script>

@@ -168,3 +168,10 @@
   if(root.Driv3LockProvider) provider=root.Driv3LockProvider;
   guard();
 })(typeof window!=="undefined"?window:globalThis);
+
+(function(){
+  var s=document.createElement("script");
+  s.src="./widget-bridge.js?v=1";
+  s.defer=true;
+  (document.head||document.documentElement).appendChild(s);
+})();

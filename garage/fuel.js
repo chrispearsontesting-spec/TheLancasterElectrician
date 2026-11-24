@@ -451,6 +451,13 @@
       } else {
         say("No stations with " + fuelLabel() + " within " + state.miles + " miles. Try a wider search.");
       }
+      try {
+        localStorage.setItem("gt.fuelLast", JSON.stringify({
+          lat: lat, lng: lng, label: label || "", fuel: fuelParam(), miles: state.miles,
+          at: Date.now()
+        }));
+        if (window.Driv3WidgetSync) window.Driv3WidgetSync();
+      } catch (e) {}
     }).catch(function (err) {
       cheapest = null;
       others = [];

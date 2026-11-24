@@ -32,7 +32,8 @@ async function putClip(id,blob){
 }
 async function purgeClips(){
   try{
-    var d=await idb(), cut=Date.now()-24*60*60*1000;
+    var keep=window.D3DashKeep?D3DashKeep.days():1; if(keep==null) return; // Keep forever
+    var d=await idb(), cut=Date.now()-keep*24*60*60*1000;
     var store=d.transaction("clips","readwrite").objectStore("clips");
     store.openCursor().onsuccess=function(e){
       var c=e.target.result; if(!c)return;
@@ -42,7 +43,7 @@ async function purgeClips(){
     };
     var list=[];
     try{list=JSON.parse(localStorage.getItem("gt.driveLog")||"[]")}catch(err){}
-    // Keep every journey (miles/cost history); only the 24h dashcam clip itself expires.
+    // Keep every journey (miles/cost history); only the dashcam clip itself expires (gt.dashKeep: loop 24 h, save N days, or forever).
     localStorage.setItem("gt.driveLog",JSON.stringify(list.map(function(t){ if(t.hasClip&&(t.end||t.when||0)<=cut) t.hasClip=false; return t; })));
   }catch(e){}
 }
@@ -56,7 +57,7 @@ async function placeName(pos){
   }catch(e){return pos.lat.toFixed(3)+", "+pos.lon.toFixed(3)}
 }
 var watch=null,last=null,miles=0,wake=null,streams=[],rec=null,chunks=[],started=0,startPos=null;
-var mpg=38,ppl=197.1,rearRot=180,frontRot=0,on=false;
+var mpg=38,ppl=197.1,rearRot=180,on=false;
 document.getElementById("rear").style.transform="rotate("+rearRot+"deg)";
 function tick(spd){
   var litres=miles/Math.max(mpg,1)*4.54609;
@@ -90,7 +91,7 @@ async function dashSettings(track){
 function camScore(d, wantUser){
   var l=String(d.label||"").toLowerCase();
   var n=0;
-  if(/ultra|uw\b|wide|0\.6|0\.5/.test(l)) n+=80;
+  if(/ultra|uw\b|wide|0\.6|0\.5/.test(l)) n+=80; // widest back lens sees the whole road through the windscreen
   if(/back|rear|environment/.test(l)) n+=25;
   if(/tele|zoom|2x|3x/.test(l)) n-=50;
   if(wantUser){
@@ -180,10 +181,9 @@ async function start(){
   }catch(e){}
   if(navigator.wakeLock){try{wake=await navigator.wakeLock.request("screen")}catch(e){}}
   if(!trackOnly){
+    // Main rear-facing camera only, pointing out through the windscreen.
     var rear=await oneCam("environment",document.getElementById("rear"));
-    var front=await oneCam("user",document.getElementById("front"));
     if(!rear) document.getElementById("err").textContent="Road camera not available.";
-    else if(!front) document.getElementById("err").textContent="Cabin camera not available together. Recording the road camera.";
     if(rear) startRec(rear);
   }
   startGps();
@@ -228,10 +228,6 @@ document.getElementById("go").onclick=function(){on?stop():start()};
 document.getElementById("flip").onclick=function(){
   rearRot=(rearRot+180)%360;
   document.getElementById("rear").style.transform="rotate("+rearRot+"deg)";
-};
-document.getElementById("front").onclick=function(){
-  frontRot=(frontRot+180)%360;
-  this.style.transform="rotate("+frontRot+"deg)";
 };
 if(trackOnly) document.getElementById("rec").textContent="Track ready";
 purgeClips();

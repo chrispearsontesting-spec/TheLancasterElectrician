@@ -71,3 +71,11 @@ a.btn.pri .ico,button.btn.pri .ico,a.btn.pri svg{color:var(--on-accent) !importa
 .pv figure{flex:0 0 100%;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;scroll-snap-align:center;padding:0 8px}
 .pv figure img{max-width:100%;max-height:78vh;object-fit:contain;border-radius:8px}
 .pv figcaption{color:#8b8b8b;font-size:13px;margin-top:10px;text-align:center}
+/* From / To open the route in Maps (t265u) */
+.place .pl{flex:1}
+.plink{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;color:#f2f2f2;text-decoration:none;border-radius:12px;padding:6px 8px;margin:-6px -8px;min-height:44px}
+.plink span{flex-basis:100%}
+.plink b{color:var(--accent);text-decoration:underline;text-decoration-color:rgba(var(--accent-rgb),.4);text-underline-offset:3px;flex:1;min-width:0}
+.plink .mapIco{width:18px;height:18px;color:var(--accent);flex:none;display:inline-flex}
+.plink .mapIco svg{width:18px;height:18px;fill:currentColor}
+.plink:active{background:rgba(var(--accent-rgb),.08)}

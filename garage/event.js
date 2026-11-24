@@ -26,8 +26,11 @@
       (total!=null?"<div class='ln tot'><span>Total</span><b>"+esc(total)+"</b></div>":"")+"</section>"; }
   function card(title,inner,id){ return "<section class='card'"+(id?" id='"+id+"'":"")+">"+(title?"<h2>"+esc(title)+"</h2>":"")+inner+"</section>"; }
   function acts(list){ list=list.filter(Boolean); if(!list.length) return ""; return "<section class='acts' id='evActs'>"+list.map(function(a,i){ return "<a class='btn"+(i===0?" pri":"")+"' href='"+esc(a[1])+"'"+(a[2]?" data-iconed='1'":"")+(/^https?:/.test(a[1])?" target='_blank' rel='noopener'":"")+">"+(a[2]?"<span class='ico' data-k='"+a[2]+"'></span>":"")+esc(a[0])+"</a>"; }).join("")+"</section>"; }
-  function places(from,to,roads){ if(!from&&!to) return "";
-    return card("Route","<div class='place'><div class='rail'><i></i><u></u><i class='e'></i></div><div class='pl'><div><span>From</span><b>"+esc(from||"Start")+"</b></div><div><span>To</span><b>"+esc(to||"Finish")+"</b></div></div></div>"+(roads&&roads.length?"<p class='roads'>"+esc(roads.join(" · "))+"</p>":""),"evRoute"); }
+  // Google Maps link: directions when both ends are known (opens the Maps app on Android), otherwise just the one place.
+  function mapUrl(from,to){ var G="https://www.google.com/maps/"; if(from&&to) return G+"dir/?api=1&origin="+encodeURIComponent(from)+"&destination="+encodeURIComponent(to)+"&travelmode=driving"; return G+"search/?api=1&query="+encodeURIComponent(from||to); }
+  function placeLink(id,lab,name,u){ return "<a class='plink' id='"+id+"' href='"+esc(u)+"' target='_blank' rel='noopener' aria-label='"+esc(lab+" "+name+": open the route in Maps")+"'><span>"+lab+"</span><b>"+esc(name)+"</b><i class='mapIco' data-k='map' aria-hidden='true'></i></a>"; }
+  function places(from,to,roads){ if(!from&&!to) return ""; var u=mapUrl(from,to);
+    return card("Route","<div class='place'><div class='rail'><i></i><u></u><i class='e'></i></div><div class='pl'>"+(from?placeLink("evFrom","From",from,u):"<div><span>From</span><b>Start</b></div>")+(to?placeLink("evTo","To",to,u):"<div><span>To</span><b>Finish</b></div>")+"</div></div>"+(roads&&roads.length?"<p class='roads'>"+esc(roads.join(" · "))+"</p>":""),"evRoute"); }
   // media: {video:{src,cap}, pics:[{src,cap}]}; nothing shown when there is nothing to show.
   var PICS=[];
   function media(m){ var h="", n=(m.pics||[]).length; if(!m.video&&!n) return "";
@@ -51,7 +54,7 @@
     var title=(t.from||t.to)?(t.from||"Start")+" → "+(t.to||"Finish"):how, ms=(t.end||0)-(t.when||0), hrs=ms/36e5, miles=+t.miles||0;
     var elec=t.mikwh!=null&&t.mpg==null, eff=elec?t.mikwh:t.mpg, used=eff?(elec?miles/eff:miles/eff*4.54609):0;
     var v=await clip(t.id), h=hero("loc",title,when(t.when)+(t.end?" – "+hm(t.end):""),[[how]]);
-    if(v) h+=media({title:"Dashcam clip",video:{src:url(v),cap:"Kept on this phone for 24 hours."}});
+    if(v) h+=media({title:"Dashcam clip",video:{src:url(v),cap:(window.D3DashKeep?D3DashKeep.label():"Loop · last 24 hours")+"."}});
     h+="<section class='card' id='evBig'><div class='big'><b>"+esc(gbp(t.cost))+"</b><span>for "+miles.toFixed(1)+" miles</span></div></section>";
     h+=stats([["Distance",miles.toFixed(1)+" mi"],["Time",dur(ms)],["Average speed",hrs>0.01&&miles?Math.round(miles/hrs)+" mph":""],[elec?"Economy":"MPG",eff?(elec?(+eff).toFixed(1)+" mi/kWh":(+eff).toFixed(1)):""]]);
     h+=lines("Cost",[[elec?"Energy used":"Fuel used",used?used.toFixed(elec?1:2)+(elec?" kWh":" L"):""],[elec?"Price":"Fuel price",t.ppl?(+t.ppl).toFixed(1)+(elec?"p per kWh":"p per litre"):""]].filter(function(r){return r[1]}),gbp(t.cost));

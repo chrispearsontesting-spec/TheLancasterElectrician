@@ -156,6 +156,14 @@ button.btn.addw .ico,button.btn.addw svg{color:var(--on-accent) !important;fill:
 .route .evGo .evChev{margin:0}
 .day .dots{padding:5px 0 3px;margin-top:2px !important}
 .clItem .evChev{margin:0 4px 0 2px}
+/* Day icons instead of dots (t265u) */
+.day .dots.evIcons{gap:1px;padding:4px 0 2px;min-height:16px;flex-wrap:nowrap;align-items:center}
+.evi{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;flex:none;font-style:normal}
+.evi svg{width:13px;height:13px;display:block;fill:currentColor}
+.evi.due{color:var(--c-due)}.evi.over{color:var(--c-over)}.evi.done{color:var(--c-done)}.evi.jour{color:var(--accent)}
+.evi.more{width:auto;font-size:9.5px;font-weight:700;color:#c8c8cc;letter-spacing:-.02em;padding-left:1px}
+@media (max-width:370px){.evi,.evi svg{width:11px;height:11px}.evi.more{font-size:9px}}
+.legend .evi{width:15px;height:15px}.legend .evi svg{width:15px;height:15px}
 </style>
 </head>
 <body>
@@ -406,7 +414,8 @@ document.getElementById("next").onclick=function(){view.setMonth(view.getMonth()
 <script src="./cal-media.js?v=4"></script>
 <script src="./icons.js?v=36"></script>
 <script src="./cal-lists.js?v=7"></script>
-<script src="./cal-events.js?v=1"></script>
+<script src="./grid-icons.js?v=2"></script>
+<script src="./cal-events.js?v=2"></script>
 <script src="./receipt-scan.js?v=2"></script>
 </body>
 </html>

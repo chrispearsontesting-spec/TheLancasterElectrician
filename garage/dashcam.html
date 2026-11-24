@@ -36,8 +36,7 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
 .stage{position:fixed;inset:0;background:#0b0c0e}
 #rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
-#front{position:absolute;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));width:26vw;max-width:200px;height:16vw;max-height:120px;object-fit:cover;background:#111;border-radius:12px;border:2px solid rgba(255,255,255,.35);z-index:3}
-body.track #rear,body.track #front,body.track #flip{display:none}
+body.track #rear,body.track #flip{display:none}
 .top{position:absolute;left:max(12px,env(safe-area-inset-left));top:calc(64px + env(safe-area-inset-top));z-index:4;display:flex;gap:8px;align-items:center}
 .dock{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;align-items:center;padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.65))}
 .ticker{display:flex;gap:18px;align-items:baseline;margin-bottom:8px}
@@ -63,16 +62,36 @@ body.on .rec{color:#fecaca;border-color:rgba(239,68,68,.6)}body.on .rec::before{
 .hint{color:#9aa3b0;font-size:12.5px;margin:8px 0 0;text-align:center}
 .links{margin:8px 0 0}.links a{display:inline-flex;align-items:center;gap:6px;background:rgba(28,28,30,.8);border:1px solid rgba(255,255,255,.1);font-size:14px}
 .dock .backBtn{width:min(92vw,440px)}
+/* Clip storage sheet (t265u) */
+.top{right:max(12px,env(safe-area-inset-right))}
+#keepBtn{margin-left:auto}
+#keepBtn .ico,#keepBtn svg{width:18px;height:18px;fill:currentColor}
+.ksheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
+.ksheet.hide{display:none}
+.kcard{width:100%;max-width:480px;background:#141416;border:1px solid #2a2a2e;border-radius:22px 22px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
+.kcard h2{margin:0 0 12px;font-size:18px;font-weight:700}
+.kopts{display:grid;gap:8px}
+.kopts button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:#18181b;border:1px solid #2a2a2e;border-radius:14px;padding:12px 14px;color:#f2f2f2;font:inherit;cursor:pointer}
+.kopts button b{font-size:15.5px}.kopts button small{color:#8b8b8b;font-size:12.5px}
+.kopts button[aria-checked="true"]{border-color:rgba(var(--accent-rgb),.6);background:rgba(var(--accent-rgb),.08)}
+.kopts button[aria-checked="true"] b{color:var(--accent)}
+.kdays{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 2px 0;font-size:15px;color:#f2f2f2}
+.kdays.hide{display:none}
+.kdays select{background:#18181b;color:#f2f2f2;border:1px solid #2a2a2e;border-radius:12px;padding:10px 12px;font-size:15px;min-width:130px}
+.kwarn{display:flex;gap:8px;align-items:flex-start;margin:12px 0 0;padding:10px 12px;border-radius:12px;background:rgba(253,186,116,.07);border:1px solid rgba(253,186,116,.28);color:#e9d5c0;font-size:13px;line-height:1.45}
+.kwarn .ico,.kwarn svg{width:18px;height:18px;fill:#fdba74;flex:none;margin-top:1px}
+.kwarn b{font-weight:600;color:#f2f2f2}
+.kcard .go{width:100%;margin-top:14px}
 </style>
 </head>
 <body>
 <header class="appbar"><h1>Dashcam</h1></header>
 <div class="stage">
   <video id="rear" playsinline muted autoplay></video>
-  <video id="front" playsinline muted autoplay></video>
   <div class="top">
     <button class="btn" id="flip" type="button" data-ico="cam">Flip</button>
     <span class="rec" id="rec">Ready</span>
+    <button class="btn" id="keepBtn" type="button" data-ico="settings" data-iconed="1" aria-haspopup="dialog"><span class="ico" data-k="settings"></span>Clips</button>
   </div>
   <div class="dock">
     <div class="ticker">
@@ -81,13 +100,30 @@ body.on .rec{color:#fecaca;border-color:rgba(239,68,68,.6)}body.on .rec::before{
       <div><span>Speed</span><b id="speed">0</b></div>
     </div>
     <button class="go" id="go" type="button">Start</button>
-    <p class="hint" id="dcHint">Road and cabin. Clips kept for 24 hours.</p>
+    <p class="hint" id="dcHint">Road camera. Loop · last 24 hours.</p>
     <p class="err" id="err"></p>
     <p class="links"><a href="calendar.html" data-ico="cal">Clips in Drive diary</a></p>
     <a class="btn backBtn" href="home.html">Back</a>
   </div>
 </div>
-<script src="drive-app.js?v=6"></script>
+<div class="ksheet hide" id="keepSheet" role="dialog" aria-modal="true" aria-labelledby="keepTitle">
+  <section class="kcard" id="keepCard">
+    <h2 id="keepTitle">Clip storage</h2>
+    <div class="kopts" id="keepOpts" role="radiogroup" aria-label="Clip storage">
+      <button type="button" role="radio" data-mode="loop"><b>Loop</b><small>Keep the last 24 hours</small></button>
+      <button type="button" role="radio" data-mode="save"><b>Save each day</b><small>Delete after a set time</small></button>
+      <button type="button" role="radio" data-mode="forever"><b>Keep forever</b><small>Until you delete them</small></button>
+    </div>
+    <label class="kdays" id="keepDaysRow" for="keepDays">Delete after
+      <select id="keepDays"><option value="1">1 day</option><option value="3">3 days</option><option value="7">1 week</option><option value="14">2 weeks</option><option value="30">1 month</option></select>
+    </label>
+    <p class="kwarn" id="keepWarn"><span class="ico" data-k="warning"></span><span>Saving clips uses phone storage. <b id="keepUse">Checking space…</b></span></p>
+    <button class="go" id="keepDone" type="button">Done</button>
+  </section>
+</div>
+<script src="./dash-keep.js?v=1"></script>
+<script src="drive-app.js?v=7"></script>
+<script src="./dash-keep-ui.js?v=1"></script>
 <script>(function(){var r=document.getElementById("rec");function u(){document.body.classList.toggle("on",/^(REC|TRACKING)$/.test(r.textContent.trim()));}new MutationObserver(u).observe(r,{childList:true,characterData:true,subtree:true});u();})();</script>
 </body>
 </html>

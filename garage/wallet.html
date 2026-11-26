@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <script src="./accent.js?v=1"></script>
-<script src="./app-lock.js?v=4"></script>
+<script src="./app-lock.js?v=5"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
 <title>Wallet · Trac3</title>
@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=83"/>
-<link rel="stylesheet" href="./wallet.css?v=4"/>
+<link rel="stylesheet" href="./wallet.css?v=5"/>
 </head>
 <body data-view="locked">
 <main class="page" id="page-locked">
@@ -35,25 +35,20 @@
 <main class="page" id="page-open">
   <div class="topRow"><h1 class="pageTitle">Wallet</h1><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="71" height="20"></div>
   <div class="subRow"><p class="carName" id="openCar"> </p><span class="wPriv"><span class="ico sm" data-ico="lock" aria-hidden="true"></span>Private on this phone</span></div>
-  <div class="wProg wSum" id="wSum" aria-live="polite">
-    <div class="wPt"><span id="wSumText"></span><span class="wPct" id="wPct"></span></div>
-    <div class="wBar"><i id="wBarFill"></i></div>
-    <div class="wMiss" id="wMiss" hidden><span class="wLab">Next</span></div>
-  </div>
+  <p class="wSumB" id="wSum" aria-live="polite"></p>
   <section class="sec">
-    <h2 class="wLab">Car documents</h2>
-    <div class="wList" id="docGrid"></div>
+    <div class="sh"><h2 class="wLab">Car documents</h2><span class="cnt" id="docCnt"></span></div>
+    <div class="wGrid" id="docGrid"></div>
   </section>
   <section class="sec">
-    <h2 class="wLab">Cards</h2>
-    <div class="wList" id="cardGrid"></div>
+    <div class="sh"><h2 class="wLab">Cards</h2><span class="cnt" id="cardCnt"></span></div>
+    <div class="wGrid" id="cardGrid"></div>
   </section>
   <section class="sec" id="otherSec">
-    <h2 class="wLab">Other</h2>
-    <div class="wList" id="otherGrid"></div>
+    <div class="sh"><h2 class="wLab">Other</h2></div>
+    <div class="wGrid" id="otherGrid"></div>
   </section>
   <div class="foot">
-    <button class="wFab" type="button" id="addDocBtn"><span class="ico sm" data-ico="add" aria-hidden="true"></span>Add document</button>
     <a class="btn backBtn fixed" href="home.html" id="openBack" data-ico="back">Back to Home</a>
   </div>
 </main>
@@ -69,7 +64,7 @@
       <div class="win" id="camWin"></div>
     </div>
     <div class="camBar"><button class="shutter" type="button" id="camShutter" aria-label="Capture"></button></div>
-    <button class="camFile" type="button" id="camFile">Choose a photo</button>
+    <button class="camFile" type="button" id="camFile">Upload file</button>
     <div class="camBusy" id="camBusy" hidden>Reading the number…</div>
   </div>
 </main>
@@ -93,7 +88,8 @@
     <p class="links">
     <a class="retake" href="#" id="savedEdit" hidden>Reset after a claim</a>
     <a class="retake" href="#" id="savedAddMore" hidden>Add another</a>
-    <a class="retake" href="#" id="savedRetake">Retake</a>
+    <a class="retake" href="#" id="savedRetake">Take photo</a>
+    <a class="retake" href="#" id="savedUpload">Upload file</a>
     <a class="retake del" href="#" id="savedDelete">Delete</a>
     </p>
     <a class="btn" href="#" id="savedCall" hidden>Call</a>
@@ -118,34 +114,42 @@
       <p class="hint" id="addNcbHint"></p>
     </div>
     <input id="addPick" type="file" accept="image/*,application/pdf" hidden/>
-    <button class="btn wide" type="button" id="addPhoto" data-ico="cam">Take or choose a photo</button>
+    <input id="addCam" type="file" accept="image/*" capture="environment" hidden/>
+    <div class="wSrc2">
+      <button class="btn" type="button" id="addPhoto" data-ico="photo_camera">Take photo</button>
+      <button class="btn" type="button" id="addUpload" data-ico="upload_file">Upload file</button>
+    </div>
     <p class="hint" id="addHint"></p>
     <button class="btn wide" type="button" id="addSave" data-ico="save">Save</button>
     <button class="btn backBtn" type="button" id="addCancel" data-ico="back">Back</button>
   </div>
 </div>
 
-<div class="wPick" id="pickSheet">
-  <div class="wScrim" id="pickScrim"></div>
-  <div class="wPickPanel" role="dialog" aria-labelledby="pickTitle">
+<div class="wPick" id="srcSheet">
+  <div class="wScrim" id="srcScrim"></div>
+  <div class="wPickPanel" role="dialog" aria-labelledby="srcTitle">
     <span class="wGrab" aria-hidden="true"></span>
-    <h2 id="pickTitle">Add document</h2>
-    <p class="wPickHint">Scan a photo or add a number</p>
-    <div class="wOpts" id="pickOpts"></div>
-    <button class="btn backBtn" type="button" id="pickCancel" data-ico="close">Cancel</button>
+    <h2 id="srcTitle">Add</h2>
+    <p class="wPickHint">A photo of it, or a file you already have (image or PDF)</p>
+    <div class="wOpts">
+      <button class="wOpt" type="button" id="srcCam"><span class="ico" data-ico="photo_camera" aria-hidden="true"></span><span class="wOptName">Take photo</span><span class="wOtag more">Camera</span></button>
+      <button class="wOpt" type="button" id="srcFile"><span class="ico" data-ico="upload_file" aria-hidden="true"></span><span class="wOptName">Upload file</span><span class="wOtag more">Image or PDF</span></button>
+    </div>
+    <button class="btn backBtn" type="button" id="srcCancel" data-ico="close">Cancel</button>
   </div>
 </div>
 
-<input id="scanPick" type="file" accept="image/*" capture="environment" hidden/>
+<input id="scanPick" type="file" accept="image/*,application/pdf" hidden/>
+<input id="upPick" type="file" accept="image/*,application/pdf" hidden/>
 <div id="walletToast" role="status"></div>
 
-<script src="./icons.js?v=37"></script>
+<script src="./icons.js?v=38"></script>
 <script src="./doc-view.js?v=3"></script>
 <script src="./wallet-store.js?v=2"></script>
-<script src="./wallet-lock.js?v=3"></script>
+<script src="./wallet-lock.js?v=4"></script>
 <script src="./wallet-barcode.js?v=1"></script>
 <script src="./tax-renew.js?v=2"></script>
 <script src="./wallet-ocr.js?v=2"></script>
-<script src="./wallet.js?v=6"></script>
+<script src="./wallet.js?v=7"></script>
 </body>
 </html>

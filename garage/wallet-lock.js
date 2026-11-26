@@ -8,9 +8,12 @@
   try{ ls.removeItem("gt.wallet.webauthn"); }catch(e){}
 
   function now(){ return Date.now(); }
+  function passFresh(){ try{ return !!(root.Driv3Lock&&root.Driv3Lock.intentFresh&&root.Driv3Lock.intentFresh()); }catch(e){ return false; } }
   function unlocked(){
     var t=+ss.getItem(SS_KEY)||0;
     if(!t) return false;
+    /* Back from the camera or file picker we opened: still unlocked (that trip only). */
+    if(passFresh()){ markUnlocked(); return true; }
     if(now()-t>TTL){ ss.removeItem(SS_KEY); return false; }
     return true;
   }

@@ -147,15 +147,27 @@
       /* Show the system sheet straight away; the PIN pad stays behind it as the fallback. */
       if(doc.visibilityState!=="hidden") bio(); } }).catch(function(){}); }
   }
+  /* Intent round trip (camera / file picker): the app goes to the background for a moment.
+     intentPass() marks it; the return within 10 minutes does not re-lock, and the pass is
+     spent 5 s after coming back, so it covers that one trip only. */
+  var PASS="d3.intentAt", BACK="d3.intentBack";
+  function intentPass(){ try{ ss.setItem(PASS,String(Date.now())); ss.removeItem(BACK); }catch(e){} }
+  function intentFresh(){
+    var t=+ss.getItem(PASS)||0; if(!t) return false;
+    var n=Date.now(), b=+ss.getItem(BACK)||0;
+    if(n-t>10*60000||(b&&n-b>5000)){ ss.removeItem(PASS); ss.removeItem(BACK); return false; }
+    return true;
+  }
   function lockNow(){ ss.removeItem("d3.unlock"); if(isOn()) show(); }
   function guard(){ if(!isOn()) return; if(unlocked()) ss.removeItem("d3.hiddenAt"); else show(); }
   doc.addEventListener("visibilitychange",function(){
-    if(doc.visibilityState==="hidden"){ if(isOn()) ss.setItem("d3.hiddenAt",String(Date.now())); }
+    if(doc.visibilityState==="hidden"){ if(isOn()&&!intentFresh()) ss.setItem("d3.hiddenAt",String(Date.now())); }
+    else if(intentFresh()){ if(!ss.getItem(BACK)) ss.setItem(BACK,String(Date.now())); ss.removeItem("d3.hiddenAt"); }
     else { if(isOn()&&!unlocked()) show(); else ss.removeItem("d3.hiddenAt"); }
   });
   root.addEventListener("pageshow",function(e){ if(e.persisted) guard(); });
   var api={
-    isOn:isOn, lockNow:lockNow, guard:guard,
+    isOn:isOn, lockNow:lockNow, guard:guard, intentPass:intentPass, intentFresh:intentFresh,
     // Turn on / change: needs the current PIN when one is set. Returns true on success.
     setPin:async function(pin,current){ if(isOn()&&!(await check(rec(),current))) throw new Error("The current PIN isn't right."); ls.setItem(KEY,JSON.stringify(await makeRecord(pin))); ls.removeItem(TRIES); ss.setItem("d3.unlock","1"); return true; },
     disable:async function(current){ if(isOn()&&!(await check(rec(),current))) throw new Error("The current PIN isn't right."); ls.removeItem(KEY); ls.removeItem(TRIES); return true; },

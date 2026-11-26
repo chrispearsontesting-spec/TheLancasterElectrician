@@ -111,44 +111,47 @@
     return "";
   }
 
-  function rowHtml(spec, d, list){
+  /* Concept B · Tiles: saved items show their photo (or art), name, number and one Copy/Call;
+     empty slots are dashed Scan / Add tiles; an odd last empty slot becomes a wide add row. */
+  function artHtml(slot, d){
+    var ico=SLOT_ICO[slot]||"doc";
+    if(d&&d.blob&&!/^image\//.test(d.type||d.blob.type||"")){
+      return '<span class="tArt pdf">'+icoHtml("description","ico")+'<b>PDF</b></span>';
+    }
+    if(slot==="fuel"&&d&&String(d.number||"").replace(/\D/g,"").length>=6) return '<canvas class="tBar" width="300" height="90" data-bar="'+esc(String(d.number).replace(/\D/g,""))+'"></canvas>';
+    return '<span class="tArt">'+icoHtml(ico,"ico")+'</span>';
+  }
+  function tileHtml(spec, d, list, wide){
     list=list||(d?docs(spec.slot):[]);
     var ico=SLOT_ICO[spec.slot]||"doc";
     if(!d){
-      var scan=!!SCAN_SLOTS[spec.slot];
-      var lab=spec.slot==="other"?"Add other":spec.title;
-      var extra=spec.slot==="other"?" tile add":"";
-      return '<div class="wRow empty'+extra+'">'+
-        '<button class="wMain" type="button" data-add="'+spec.slot+'">'+
-        '<span class="ric">'+icoHtml(ico)+'</span>'+
-        '<span class="rtx"><span class="rt'+(spec.slot==="other"?" addLab":"")+'">'+esc(lab)+'</span>'+
-        '<span class="rs">Not added</span></span></button>'+
-        '<button class="addpill" type="button" data-add="'+spec.slot+'">'+
-        icoHtml(scan?"photo_camera":"add","ico xs")+
-        (scan?"Scan":"Add")+"</button></div>";
+      var scan=!!SCAN_SLOTS[spec.slot], other=spec.slot==="other";
+      var verb=other?'<span class="verb">Photo or PDF</span>':'<span class="verb">'+icoHtml(scan?"photo_camera":"add","ico xs")+(scan?"Scan":"Add")+'</span>';
+      return '<button class="tile add'+(other?" other":"")+(wide?" wide":"")+'" type="button" data-add="'+spec.slot+'">'+
+        '<span class="addic">'+icoHtml(other?"add":(scan?"document_scanner":ico))+'</span>'+
+        '<span class="tt">'+esc(other?"Add other":spec.title)+'</span>'+verb+'</button>';
     }
     var num=formatNum(d.slot,d.number||d.phone||"");
-    if(d.slot==="receipt"&&!num) num=(list.length||docs("receipt").length)+" receipt"+((list.length||docs("receipt").length)===1?"":"s");
+    var n=list.length||1;
+    if(d.slot==="receipt"&&!num) num=n+" receipt"+(n===1?"":"s");
     if(d.slot==="noclaims"){ var y=Store.ncbCurrent(d,car); num=(y===1?"1 year":y+" years"); }
     var u=thumbUrl(d);
-    var ric=u?'<span class="ric on"><img alt="" src="'+u+'"/></span>':'<span class="ric on">'+icoHtml(ico)+'</span>';
-    var chips="";
-    if(spec.multi&&list.length>1) chips+='<span class="wChip acc">'+list.length+"</span>";
-    chips+=statusChip(d.slot);
+    var thumb=u?'<img alt="" src="'+u+'"/>':artHtml(d.slot,d);
+    var badge=(spec.multi&&list.length>1)?'<span class="count">×'+list.length+'</span>':"";
     var copyVal=d.slot==="noclaims"?num:(d.number||d.phone||"");
     if(d.slot==="noclaims"&&copyVal) copyVal=copyVal+" no claims";
-    var act;
-    if(spec.call){
-      act='<button class="wIconBtn" type="button" data-call="'+(d.phone||d.number||"")+'" aria-label="Call">'+icoHtml("phone")+"</button>";
-    }else if(copyVal && d.slot!=="receipt"){
-      act='<button class="wIconBtn" type="button" data-copy="'+String(copyVal).replace(/"/g,"")+'" aria-label="Copy">'+icoHtml("copy")+"</button>";
-    }else{
-      act='<span class="wIconBtn ghost" aria-hidden="true">'+icoHtml("chevron")+"</span>";
-    }
-    return '<div class="wRow">'+
-      '<button class="wMain" type="button" data-open="'+d.id+'">'+
-      ric+'<span class="rtx"><span class="rt">'+esc(spec.title||d.title||"Document")+chips+"</span>"+
-      '<span class="rs mono">'+(num?esc(num):"&nbsp;")+"</span></span></button>"+act+"</div>";
+    var act="";
+    if(spec.call&&(d.phone||d.number)) act='<span class="wIconBtn call" role="button" tabindex="0" data-call="'+esc(d.phone||d.number)+'" aria-label="Call">'+icoHtml("phone")+"</span>";
+    else if(copyVal&&d.slot!=="receipt") act='<span class="wIconBtn" role="button" tabindex="0" data-copy="'+esc(String(copyVal))+'" aria-label="Copy">'+icoHtml("copy")+"</span>";
+    return '<div class="tile" role="button" tabindex="0" data-open="'+d.id+'">'+
+      '<div class="thumb">'+thumb+badge+'</div>'+
+      '<div class="meta"><span class="tt">'+esc(spec.title||d.title||"Document")+'</span>'+
+      '<span class="nr"><span class="num mono">'+(num?esc(num):"&nbsp;")+'</span>'+act+'</span></div></div>';
+  }
+  function gridHtml(specs){
+    var cells=specs.map(function(s){ var list=s.list||docs(s.slot); return {s:s,d:s.doc||list[0]||null,list:list}; });
+    var odd=cells.length%2===1, last=cells[cells.length-1];
+    return cells.map(function(c,i){ return tileHtml(c.s,c.d,c.list, odd&&i===cells.length-1&&!c.d&&c.s.slot!=="other"); }).join("");
   }
   function esc(s){ return String(s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
 
@@ -157,80 +160,57 @@
     return (rec.docs||[]).filter(function(d){ return !known[d.slot]; });
   }
 
-  function paintPick(){
-    var box=el("pickOpts"); if(!box) return;
-    var html="";
-    DOCS.concat(CARDS).forEach(function(s){
-      var list=docs(s.slot), n=list.length, ico=SLOT_ICO[s.slot]||"doc";
-      var cls="wOpt", tag="", attrs=' type="button"';
-      if(s.multi&&n){
-        cls+=" more";
-        tag='<span class="wOtag more">+ another</span>';
-        attrs+=' data-add="'+s.slot+'"';
-      }else if(n){
-        cls+=" done";
-        tag='<span class="wOtag done">'+icoHtml("check","ico xs")+"Saved</span>";
-        attrs+=' data-open="'+list[0].id+'"';
-      }else{
-        attrs+=' data-add="'+s.slot+'"';
-        tag='<span class="wOtag">'+(SCAN_SLOTS[s.slot]?"Scan":"Add")+"</span>";
-      }
-      html+='<button class="'+cls+'"'+attrs+'>'+icoHtml(ico)+'<span class="wOptName">'+esc(s.title)+"</span>"+tag+"</button>";
-    });
-    html+='<button class="wOpt" type="button" data-add="other">'+icoHtml("add")+'<span class="wOptName">Add other</span><span class="wOtag more">Name it</span></button>';
-    box.innerHTML=html;
-  }
-  function openPick(){
-    paintPick();
-    var sh=el("pickSheet"); if(!sh) return;
-    sh.classList.add("on");
+  /* Camera / file picker leave the app for a moment on Android; don't re-lock for that round trip. */
+  function intentPass(){ try{ if(window.Driv3Lock&&Driv3Lock.intentPass) Driv3Lock.intentPass(); }catch(e){} if(Lock&&Lock.touch) Lock.touch(); }
+  function pickFile(id){ intentPass(); el(id).click(); }
+  var srcSlot=null;
+  function openSrc(slot, replace){
+    srcSlot={slot:slot, replace:replace||null};
+    el("srcTitle").textContent=replace?("Replace "+slotTitle(slot,replace).toLowerCase()):("Add "+slotTitle(slot));
+    el("srcSheet").classList.add("on");
     if(el("page-open")) el("page-open").classList.add("dim");
-    if(window.dipstickIcons) dipstickIcons(el("pickOpts"));
+    if(window.dipstickIcons) dipstickIcons(el("srcSheet"));
   }
-  function closePick(){
-    var sh=el("pickSheet"); if(sh) sh.classList.remove("on");
+  function closeSrc(){
+    var sh=el("srcSheet"); if(sh) sh.classList.remove("on");
     if(el("page-open")) el("page-open").classList.remove("dim");
+  }
+  function closePick(){ closeSrc(); }
+  function isPdf(f){ return /pdf$/i.test((f&&(f.type||f.name))||""); }
+  /* Upload file: a PDF is stored as-is (and viewable); an image goes through the same OCR as a scan. */
+  async function handleUpload(slot, f, replace){
+    if(!f) return;
+    if(!isPdf(f)){
+      retakeOf=replace||null; camSlot=slot; pendingFile=f;
+      try{ await capture(); }catch(e){ toast((e&&e.message)||"Can't read that file"); }
+      pendingFile=null; return;
+    }
+    var blob=new Blob([await f.arrayBuffer()],{type:f.type||"application/pdf"});
+    var doc=replace?Object.assign({},replace,{ref:0}):{id:Store.newId(),slot:slot,title:slotTitle(slot),number:"",at:Date.now()};
+    doc.blob=blob; doc.type=blob.type; doc.name=f.name||"document.pdf"; doc.at=Date.now();
+    if(replace&&replace.numberAuto) { doc.number=""; delete doc.numberAuto; }
+    await Store.putDoc(car,doc);
+    rec=await Store.load(car);
+    toast("PDF saved");
+    showSaved(findDoc(doc.id)||doc);
   }
   function paintOpen(){
     paintCar("openCar"); paintCar("lockCar");
-    var slots=DOCS.concat(CARDS), have=0, miss=[], i;
-    for(i=0;i<slots.length;i++){
-      if(docs(slots[i].slot).length) have++; else miss.push(slots[i]);
-    }
-    var pct=Math.round(have/slots.length*100);
-    if(el("wSumText")) el("wSumText").innerHTML="<b>"+have+" of "+slots.length+"</b> stored";
-    if(el("wPct")) el("wPct").textContent=pct+"%";
-    if(el("wBarFill")) el("wBarFill").style.width=pct+"%";
-    var missEl=el("wMiss");
-    if(missEl){
-      missEl.hidden=!miss.length;
-      var chips='<span class="wLab">Next</span>';
-      miss.forEach(function(s){
-        chips+='<button class="mchip" type="button" data-add="'+s.slot+'">'+icoHtml("add","ico xs")+esc(s.title)+"</button>";
-      });
-      missEl.innerHTML=miss.length?chips:"";
-    }
-    var dg=el("docGrid"), cg=el("cardGrid"), og=el("otherGrid");
-    var dh="";
-    for(i=0;i<DOCS.length;i++){
-      var s=DOCS[i], list=docs(s.slot);
-      dh+=rowHtml(s,list[0]||null,list);
-    }
-    if(dg) dg.innerHTML=dh;
-    var ch="";
-    for(i=0;i<CARDS.length;i++){
-      var s=CARDS[i], list=docs(s.slot);
-      ch+=rowHtml(s,list[0]||null,list);
-    }
-    if(cg) cg.innerHTML=ch;
-    var others=otherDocs(), oh="";
-    others.forEach(function(d){ oh+=rowHtml({slot:d.slot||"other",title:d.title||"Document"},d,[d]); });
-    if(!others.length) oh+=rowHtml({slot:"other",title:"Add other"},null,[]);
-    if(og) og.innerHTML=oh;
-    if(el("otherSec")) el("otherSec").hidden=!oh;
-    paintPick();
-    ["docGrid","cardGrid","otherGrid","wMiss","pickOpts"].forEach(function(id){
-      var n=el(id); if(n&&window.dipstickIcons) dipstickIcons(n);
+    var slots=DOCS.concat(CARDS), others=otherDocs();
+    var saved=0; slots.forEach(function(x){ saved+=docs(x.slot).length; }); saved+=others.length;
+    var cnt=function(arr){ return arr.filter(function(x){ return docs(x.slot).length; }).length+"/"+arr.length; };
+    if(el("wSum")) el("wSum").innerHTML=saved?("<b>"+saved+" saved</b> · tap one to open"):"<b>Nothing saved yet</b> · tap a tile to scan or add";
+    if(el("docCnt")) el("docCnt").textContent=cnt(DOCS);
+    if(el("cardCnt")) el("cardCnt").textContent=cnt(CARDS);
+    if(el("docGrid")) el("docGrid").innerHTML=gridHtml(DOCS);
+    if(el("cardGrid")) el("cardGrid").innerHTML=gridHtml(CARDS);
+    var os=others.map(function(d){ return {slot:d.slot||"other",title:d.title||"Document",doc:d,list:[d]}; });
+    os.push({slot:"other",title:"Add other",list:[]});
+    if(el("otherGrid")) el("otherGrid").innerHTML=gridHtml(os);
+    ["docGrid","cardGrid","otherGrid"].forEach(function(id){
+      var n=el(id); if(!n) return;
+      if(window.dipstickIcons) dipstickIcons(n);
+      if(Bar) n.querySelectorAll("canvas[data-bar]").forEach(function(cv){ try{ Bar.draw(cv, cv.getAttribute("data-bar"), {width:300,height:90}); }catch(e){} });
     });
     if(window.dipstickPinBack) setTimeout(dipstickPinBack,40);
   }
@@ -368,8 +348,8 @@
       el("camVideo").srcObject=camStream;
       await el("camVideo").play().catch(function(){});
     }catch(e){
-      toast("Camera unavailable — choose a photo instead");
-      el("scanPick").click();
+      toast("Camera unavailable — upload a file instead");
+      pickFile("scanPick");
     }
   }
   function windowRect(video){
@@ -629,7 +609,7 @@
     if(add){
       var slot=add.getAttribute("data-add");
       if(slot==="other"||slot==="breakdown"||slot==="wheelnut"||slot==="noclaims"){ openAdd(slot); return; }
-      startCam(slot);
+      openSrc(slot);
       return;
     }
     if(open){ openExisting(open.getAttribute("data-open")); }
@@ -640,21 +620,21 @@
     el("docGrid").addEventListener("click",onGridClick);
     el("cardGrid").addEventListener("click",onGridClick);
     if(el("otherGrid")) el("otherGrid").addEventListener("click",onGridClick);
-    if(el("wMiss")) el("wMiss").addEventListener("click",onGridClick);
-    if(el("addDocBtn")) el("addDocBtn").onclick=openPick;
-    if(el("pickCancel")) el("pickCancel").onclick=closePick;
-    if(el("pickScrim")) el("pickScrim").onclick=closePick;
-    if(el("pickOpts")) el("pickOpts").addEventListener("click",function(e){
-      if(!e.target.closest("[data-add],[data-open]")) return;
-      closePick();
-      onGridClick(e);
-    });
+    ["docGrid","cardGrid","otherGrid"].forEach(function(id){ var g=el(id); if(g) g.addEventListener("keydown",function(e){ if((e.key==="Enter"||e.key===" ")&&e.target.matches("[role=button]")){ e.preventDefault(); e.target.click(); } }); });
+    el("srcCancel").onclick=closeSrc; el("srcScrim").onclick=closeSrc;
+    el("srcCam").onclick=function(){ var s2=srcSlot; closeSrc(); if(!s2) return; retakeOf=s2.replace; startCam(s2.slot); };
+    el("srcFile").onclick=function(){ pickFile("upPick"); };
+    el("upPick").onchange=function(){
+      var f=this.files&&this.files[0], s2=srcSlot; this.value=""; closeSrc();
+      if(f&&s2) handleUpload(s2.slot,f,s2.replace).catch(function(e){ toast((e&&e.message)||"Could not save"); });
+    };
     el("camClose").onclick=function(){ retakeOf=null; stopCam(); setView("open"); paintOpen(); };
     el("camShutter").onclick=function(){ capture(); };
-    el("camFile").onclick=function(){ el("scanPick").click(); };
+    el("camFile").onclick=function(){ pickFile("scanPick"); };
     el("scanPick").onchange=function(){
       var f=this.files&&this.files[0]; this.value="";
       if(!f) return;
+      if(isPdf(f)){ var rt=retakeOf; stopCam(); handleUpload(camSlot,f,rt).catch(function(e){ toast((e&&e.message)||"Could not save"); }); return; }
       pendingFile=f;
       /* Show the chosen photo as the camera background so the user can still line up / just capture. */
       loadImage(f).then(function(im){
@@ -695,7 +675,8 @@
         (p||navigator.share({title:current.title,text:parts})).catch(function(){ if(parts) copyText(parts); });
       }else if(parts) copyText(parts);
     };
-    el("savedAddMore").onclick=function(e){ e.preventDefault(); if(View) View.close(); if(current) startCam(current.slot); };
+    el("savedAddMore").onclick=function(e){ e.preventDefault(); if(View) View.close(); if(current) openSrc(current.slot); };
+    el("savedUpload").onclick=function(e){ e.preventDefault(); if(View) View.close(); if(!current) return; srcSlot={slot:current.slot,replace:current}; pickFile("upPick"); };
     el("savedDelete").onclick=async function(e){
       e.preventDefault(); if(!current) return;
       var name=current.title||slotTitle(current.slot);
@@ -706,14 +687,23 @@
       rec=await Store.load(car); current=null;
       paintOpen(); setView("open"); toast("Deleted");
     };
-    el("savedRetake").onclick=function(e){ e.preventDefault(); if(View) View.close(); if(current){ retakeOf=current; startCam(current.slot); } };
+    el("savedRetake").onclick=function(e){
+      e.preventDefault(); if(View) View.close(); if(!current) return;
+      if(SCAN_SLOTS[current.slot]||current.slot==="noclaims"){ retakeOf=current; startCam(current.slot); return; }
+      openAdd(current.slot,current); pickFile("addCam");
+    };
     el("openBack").addEventListener("click",function(){ if(Lock) Lock.lock(); });
     el("lockBack").addEventListener("click",function(){ if(Lock) Lock.lock(); });
     el("addCancel").onclick=closeAdd;
     el("addSave").onclick=function(){ saveAdd().catch(function(e){ toast((e&&e.message)||"Could not save"); }); };
+    el("addUpload").onclick=function(){ pickFile("addPick"); };
+    el("addCam").onchange=function(){
+      var f=this.files&&this.files[0]; this.value="";
+      if(!f) return; pendingFile=f; el("addHint").textContent="Photo ready: "+(f.name||"photo");
+    };
     el("addPhoto").onclick=function(){
       var slot=el("addSheet").dataset.slot;
-      if(slot==="other"||slot==="breakdown"||slot==="wheelnut"){ el("addPick").click(); return; }
+      if(slot==="other"||slot==="breakdown"||slot==="wheelnut"){ pickFile("addCam"); return; }
       if(slot==="noclaims"){
         /* Keep the years/date the user typed, then open the letter camera. */
         window.__ncbDraft={
@@ -727,11 +717,11 @@
     };
     el("addPick").onchange=function(){
       var f=this.files&&this.files[0]; this.value="";
-      if(!f) return; pendingFile=f; el("addHint").textContent="Photo ready: "+(f.name||"image");
+      if(!f) return; pendingFile=f; el("addHint").textContent=(isPdf(f)?"PDF ready: ":"Photo ready: ")+(f.name||"file");
     };
     document.addEventListener("keydown",function(e){
       if(e.key==="Escape"){
-        if(el("pickSheet")&&el("pickSheet").classList.contains("on")) closePick();
+        if(el("srcSheet")&&el("srcSheet").classList.contains("on")) closeSrc();
         else if(el("addSheet").classList.contains("on")) closeAdd();
         else if(view==="scan"){ stopCam(); setView("open"); paintOpen(); }
         else if(view==="saved"){ if(View) View.close(); setView("open"); paintOpen(); }

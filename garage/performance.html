@@ -75,6 +75,7 @@ body.pick .pf-top,body.pick .pf-bot,body.pick .pf-rail,body.pick .pf-mid,body.pi
 .pk-r .bd svg{width:16px;height:16px;fill:currentColor}.pk-r .bd.best{background:rgba(var(--accent-rgb),.14);color:var(--accent);border-color:rgba(var(--accent-rgb),.4)}
 .pk-r .m{flex:1;min-width:0}.pk-r .m b{display:block;font-size:15px}.pk-r .m small{display:block;color:#8b8b8b;font-size:12px;margin-top:2px}
 .pk-r .tm{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.pk-empty{color:#8b8b8b;font-size:13.5px;margin:0;padding:16px 14px}
 /* ---- Live HUD (option 1b): frosted pills at the edges, big lights in the middle ---- */
 :root{--pf-btn-h:38px;--pf-sx:12px;--pf-st:max(14px,env(safe-area-inset-top));--pf-sb:max(14px,env(safe-area-inset-bottom));--pf-rail:132px}
 body:not(.pick) .appbar,body:not(.pick) a.backBtn.fixed{display:none !important}
@@ -129,6 +130,7 @@ body:not(.pick) .appbar,body:not(.pick) a.backBtn.fixed{display:none !important}
 <body class="pick">
 <video id="vid" playsinline muted autoplay></video>
 <header class="appbar"><h1>Performance</h1></header>
+<a class="btn backBtn fixed" href="home.html">Back</a>
 <select id="run" hidden aria-hidden="true">
   <option value="60">0–60 mph</option>
   <option value="100">0–100 mph</option>

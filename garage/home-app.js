@@ -608,20 +608,7 @@ on("btnSave",function(){
   save(s);paint();document.getElementById("sheet").className="sheet";
   if(typeof syncDates==="function") syncDates();
 });
-var swipeAt=0;
-function swipeStart(e){swipeAt=e.changedTouches?e.changedTouches[0].clientX:e.clientX}
-function swipeEnd(e){
-  var x=e.changedTouches?e.changedTouches[0].clientX:e.clientX;
-  var d=x-swipeAt;
-  if(Math.abs(d)<40) return;
-  step(d<0?1:-1);
-}
-["hero","caption"].forEach(function(id){
-  var el=document.getElementById(id);
-  if(!el) return;
-  el.addEventListener("touchstart",swipeStart,{passive:true});
-  el.addEventListener("touchend",swipeEnd);
-});
+// Car swipe (anywhere on the screen) lives in swipe-cars.js + home-swipe.js
 function goEmpty(){
   var v=document.getElementById("emptyPlate").value.trim();
   openSheet("add");

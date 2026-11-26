@@ -22,7 +22,9 @@
   /* Resolves {fuel,label,known,electric,price,unit,date,checked}. price = p/litre, or p/kWh for electric. */
   function live(c){
     var fo=fuelOf(c);
-    return fetch(BASE()+"prices.json?t="+Date.now(),{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(p){
+    // The installed app reads the website copy first; if that can't be reached (no data, blocked) it uses the price file bundled in the app.
+    function get(base){ return fetch(base+"prices.json?t="+Date.now(),{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+    return get(BASE()).catch(function(){ if(BASE()) return get(""); throw new Error("no price"); }).then(function(p){
       var el=fo.fuel==="electric", price=el?+p.electric_pkwh:(fo.fuel==="diesel"?+p.diesel_ppl:+p.petrol_ppl);
       var out={fuel:fo.fuel,label:LABEL[fo.fuel],known:fo.known,electric:el,price:price,unit:el?"p/kWh":"p/L",date:p.date||"",checked:Date.now()};
       try{ localStorage.setItem("gt.livePrice",JSON.stringify(out)); }catch(e){}

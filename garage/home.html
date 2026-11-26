@@ -151,12 +151,7 @@ input,select{width:100%;background:#161618;border:1px solid #2a2a2e;color:#f2f2f
 .secLink i{font-style:normal;font-size:11.5px;color:#f5b84a;background:#2e2410;border:1px solid #5c4a1f;border-radius:999px;padding:1px 8px}
 #emptyCar #emptyRestore{margin-top:10px !important}
 #emptyCar .restoreHint{margin:6px 2px 0;font-size:12.5px;color:#8b8b8b}
-.topRow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:8px;min-height:44px;margin:0 2px 8px}
-.topRow #gear{justify-self:end;grid-column:3}
-.bkPill{grid-column:2;justify-self:center;display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:650;color:#f5b84a;background:#2e2410;border:1px solid #5c4a1f;text-decoration:none;white-space:nowrap}
-.bkPill[hidden]{display:none}
 .topRow b{font-size:18px;letter-spacing:.3px}
-.topRow .brandLogo{display:block;height:26px;width:auto;justify-self:start;grid-column:1}
 .aboutLockup{display:block;width:min(280px,86%);height:auto;margin:2px auto 16px}
 #gear{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:#1c1c1e;color:var(--accent);display:flex;align-items:center;justify-content:center;padding:0}#gear .ico,#gear svg{width:22px;height:22px;display:block}.nameRow button .ico,.nameRow button svg{width:20px;height:20px;display:block;color:var(--accent)}.remB b{display:flex;align-items:center;gap:6px;font-size:15px}.remB b .ico,.remB b svg{width:18px;height:18px;flex:0 0 18px;color:var(--accent)}form#emptyForm{margin:0}
 #gear.dot::after{content:"";position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:#f5b84a}
@@ -253,13 +248,50 @@ body.noCars .fuelFab{display:none}
 .sw[aria-checked=true] i::after{content:"";width:7px;height:13px;border:solid #0b0c0e;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .swName{display:block;text-align:center;color:#8b8b8b;font-size:12px;margin:4px 0 2px;min-height:15px}
+/* Home header (option B): full-bleed photo with the logo in a notch, cog over the photo, photo runs behind the car selector */
+:root{--bg0:#0b0c0e;--nw:128px;--nh:58px;--nr:20px;--hh:min(450px,max(300px,49vh));--bh:108px}
+html,body{touch-action:pan-y}
+body{padding-top:0;overflow-x:hidden}
+#deck{position:relative;margin:0 -12px;overflow-x:clip}
+#deck .pg{position:relative;padding:env(safe-area-inset-top,0px) 12px 0}
+#deck>.ghost{position:absolute;left:0;top:0;width:100%}
+.topRow{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;height:var(--nh);z-index:6;pointer-events:none}
+.topRow .brandLogo{position:absolute !important;left:16px !important;top:calc((var(--nh) - 24px)/2 - 2px) !important;height:24px !important;width:auto !important;display:block !important;pointer-events:auto !important}
+.topRow #gear{position:absolute !important;right:12px !important;top:12px !important;width:42px !important;height:42px !important;background:rgba(11,12,14,.42) !important;border:1px solid rgba(255,255,255,.22) !important;-webkit-backdrop-filter:blur(10px) !important;backdrop-filter:blur(10px) !important;color:#f2f2f2 !important;box-shadow:0 2px 10px rgba(0,0,0,.25) !important;pointer-events:auto !important}
+.topRow #gear .ico{color:#f2f2f2 !important}
+.heroWrap{margin:0 -12px;position:relative}
+.hero{height:var(--hh) !important;border-radius:0 0 24px 24px !important;border:0 !important}
+.hero img{height:100% !important;object-position:50% 74% !important}
+.hero::before{content:"";position:absolute;inset:0 0 auto 0;height:90px;background:linear-gradient(rgba(0,0,0,.28),transparent);z-index:1;pointer-events:none}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(transparent,rgba(11,12,14,.55) 45%,rgba(11,12,14,.92));z-index:2;pointer-events:none}
+.heroWrap::before{content:"";position:absolute;left:0;top:0;width:var(--nw);height:var(--nh);background:var(--bg0);border-bottom-right-radius:var(--nr);z-index:4}
+.heroWrap::after{content:"";position:absolute;left:var(--nw);top:0;width:var(--nr);height:var(--nr);background:radial-gradient(circle at 100% 100%,transparent calc(var(--nr) - .5px),var(--bg0) var(--nr));z-index:4}
+.heroWrap .notchB{position:absolute;left:0;top:var(--nh);width:var(--nr);height:var(--nr);background:radial-gradient(circle at 100% 100%,transparent calc(var(--nr) - .5px),var(--bg0) var(--nr));z-index:4}
+.hint{left:14px !important;top:calc(var(--nh) + 10px) !important}
+.plate{z-index:3 !important;right:14px !important;bottom:calc(var(--bh) + 12px) !important}
+.fuelFab{z-index:3 !important;left:14px !important;bottom:calc(var(--bh) + 10px) !important;width:40px !important;height:40px !important;background:rgba(11,12,14,.45) !important;border-color:rgba(255,255,255,.2) !important;-webkit-backdrop-filter:blur(10px) !important;backdrop-filter:blur(10px) !important}
+.bar{position:relative !important;z-index:5 !important;margin:calc(-1 * var(--bh)) 0 12px !important;height:var(--bh) !important;background:transparent !important;border:0 !important;padding:14px 4px 0 !important}
+.nameRow button{display:grid !important;place-items:center !important;box-sizing:border-box !important;padding:0 !important;line-height:0 !important;width:42px !important;height:42px !important;background:rgba(20,20,22,.62) !important;border:1px solid rgba(255,255,255,.2) !important;-webkit-backdrop-filter:blur(10px) !important;backdrop-filter:blur(10px) !important;box-shadow:0 2px 10px rgba(0,0,0,.35) !important;color:#fff !important}
+.nameRow button .ico{display:block !important;width:22px !important;height:22px !important;margin:0 !important;position:static !important;transform:none !important;color:var(--accent) !important}
+.nameRow button svg{display:block !important;width:22px !important;height:22px !important;margin:0 !important}
+#prev svg,#next svg{transform:translateX(.28px) !important}
+.nameRow .side{width:100px !important}
+.name .carName,.name .sub{text-shadow:0 1px 8px rgba(0,0,0,.6) !important}
+#dots{color:#c8c8cc !important;text-shadow:0 1px 6px rgba(0,0,0,.7) !important}
+/* Settings: car swipe effect */
+.fxRow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 2px 6px}
+.fxLab{font-size:15px;color:#f2f2f2}
+.fxSeg{display:inline-flex;background:#1c1c1e;border:1px solid #2a2a2e;border-radius:999px;padding:3px}
+.fxSeg button{background:none;border:0;color:#9aa3ad;font:600 13.5px/1 inherit;font-family:inherit;padding:10px 14px;border-radius:999px;min-height:40px}
+.fxSeg button[aria-checked="true"]{background:rgba(var(--accent-rgb),.16);color:var(--accent)}
 </style>
 </head>
 <body>
 <script src="./splash.js?v=3"></script>
 <input id="photoPick" type="file" accept="image/*,image/gif" hidden/>
 <input id="plateCam" type="file" accept="image/*" capture="environment" hidden/>
-<div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="92" height="26"/><a class="bkPill" id="bkPill" href="security.html#bkCard" hidden>No backup yet</a><button type="button" id="gear" aria-label="Settings" title="Settings" data-ico="settings"></button></div>
+<div id="deck"><div class="pg" id="pgLive">
+<div class="topRow"><img class="brandLogo" src="./header-logo.svg" alt="Trac3" width="92" height="26"/><button type="button" id="gear" aria-label="Settings" title="Settings" data-ico="settings"></button></div>
 <section id="emptyCar"><h2>Add your car</h2><p>Enter your plate. Trac3 fills in the details, MOT and tax dates.</p>
 <form id="emptyForm" action="#">
 <div class="plateEntry"><div class="ukPlate"><span class="ukStrip">UK</span><input id="emptyPlate" type="text" inputmode="text" enterkeyhint="search" placeholder="AB12 CDE" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Number plate"/></div></div>
@@ -268,7 +300,7 @@ body.noCars .fuelFab{display:none}
 </form>
 <a class="btn wide" id="emptyRestore" href="security.html#rsCard" data-ico="hist">Restore from backup</a>
 <p class="restoreHint">Used Trac3 before? Load your .driv3 backup file.</p></section>
-<div class="heroWrap"><div class="hero" id="hero"></div><a class="fuelFab" id="fuelFab" href="fuel.html?go=1" aria-label="Cheapest fuel near me" title="Cheapest fuel near me"></a></div>
+<div class="heroWrap"><div class="hero" id="hero"></div><span class="notchB" aria-hidden="true"></span><a class="fuelFab" id="fuelFab" href="fuel.html?go=1" aria-label="Cheapest fuel near me" title="Cheapest fuel near me"></a></div>
 <div class="bar"><div class="nameRow">
 <div class="side left">
 <button type="button" id="btnAdd" aria-label="Add car" title="Add car" data-ico="add"></button>
@@ -297,16 +329,18 @@ body.noCars .fuelFab{display:none}
 <a class="app" href="showcase-edit.html" data-g="show"><span class="ring"></span><span class="al">Showcase</span><span class="chip" id="showChip" hidden></span></a>
 </nav>
 </section>
+</div></div>
 <div class="sheet" id="settings"><div class="panel">
 <img class="aboutLockup" src="./about-lockup.png" alt="Trac3. Everything Auto" width="280" height="106"/>
 <h2>Settings</h2>
 <a class="btn wide" href="security.html" data-ico="shield">Security &amp; backup <i class="due" id="secDue" hidden></i></a>
 <a class="btn wide" href="reminders.html?v=16" data-ico="cal">Reminders</a>
 <a class="btn wide" href="privacy.html" data-ico="doc">Privacy</a>
+<div class="fxRow"><span class="fxLab" id="fxLab">Car swipe effect</span><div class="fxSeg" id="fxSeg" role="radiogroup" aria-labelledby="fxLab"><button type="button" role="radio" data-fx="slide" aria-checked="true">Slide</button><button type="button" role="radio" data-fx="turn" aria-checked="false">Page turn</button></div></div>
 <button class="btn" type="button" id="setClose">Back</button>
 </div></div>
 <script>(function(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null"),t=+localStorage.getItem("gt.lastBackup")||0;
-if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";var p=document.getElementById("bkPill");if(p){p.hidden=false;p.textContent=t?"Backup due":"No backup yet";}}}catch(e){}})();</script>
+if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElementById("secDue");d.hidden=false;d.textContent=t?"backup due":"no backup yet";}}catch(e){}})();</script>
 <div class="sheet" id="sheet"><div class="panel">
 <h2 id="sheetTitle">Add car</h2>
 <section class="fGroup"><h4 class="fHead">Your car</h4>
@@ -400,7 +434,8 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./icons.js?v=36"></script>
 <script src="./photo-pos.js?v=2"></script>
 <script src="./backup-remind.js?v=2"></script>
-<script src="./home-app.js?v=116"></script>
+<script src="./swipe-cars.js?v=1"></script>
+<script src="./home-app.js?v=117"></script>
 <script src="./wallet-store.js?v=2"></script>
 <script src="./wallet-lock.js?v=3"></script>
 <script src="./tax-renew.js?v=2"></script>
@@ -409,6 +444,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./home-insure.js?v=4"></script>
 <script src="./grid-icons.js?v=2"></script>
 <script src="./home-tabs.js?v=6"></script>
+<script src="./home-swipe.js?v=1"></script>
 <script src="./reminders-web.js?v=2"></script>
 <script>
 (function(){

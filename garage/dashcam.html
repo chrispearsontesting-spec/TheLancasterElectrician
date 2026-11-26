@@ -35,33 +35,58 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
 .stage{position:fixed;inset:0;background:#0b0c0e}
-#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
+#rear{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;opacity:0;transition:opacity .25s}
+#rear.live{opacity:1}
+#rear::-webkit-media-controls,#rear::-webkit-media-controls-start-playback-button,#rear::-webkit-media-controls-overlay-play-button,#rear::-webkit-media-controls-panel{display:none !important;-webkit-appearance:none}
 body.track #rear,body.track #flip{display:none}
-.top{position:absolute;left:max(12px,env(safe-area-inset-left));top:calc(64px + env(safe-area-inset-top));z-index:4;display:flex;gap:8px;align-items:center}
-.dock{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;align-items:center;padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.65))}
-.ticker{display:flex;gap:18px;align-items:baseline;margin-bottom:8px}
-.ticker b{font-size:22px}
-.ticker span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase}
-.go{width:min(72vw,420px);height:56px;border:0;border-radius:18px;font-weight:600;font-size:20px;background:var(--accent);color:#0b0c0e}
-.go.stop{background:#7f1d1d;color:#fff}
-.btn{border:0;border-radius:18px;padding:10px 16px;font-weight:600;background:#1c1c1e;color:#fff}
-.rec{color:#fca5a5;font-weight:800;font-size:13px}
-.err{color:#e7b1a0;font-size:12px;margin:6px 0 0;text-align:center}
-.links{margin-top:8px;display:flex;gap:8px}
-.links a{color:#f2f2f2;text-decoration:none;background:#1c1c1e;border-radius:14px;padding:8px 12px;font-weight:600}
-/* Sleek dock: glass stats, one Start, quiet links */
-.top .btn{display:inline-flex;align-items:center;gap:6px;background:rgba(11,12,14,.55);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);min-height:38px}
-.rec{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:rgba(11,12,14,.55);border:1px solid rgba(255,255,255,.14);color:#e6e6e6;font-size:12.5px;letter-spacing:.04em;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.rec::before{content:"";width:9px;height:9px;border-radius:50%;background:#6b7280}
-body.on .rec{color:#fecaca;border-color:rgba(239,68,68,.6)}body.on .rec::before{background:#ef4444;animation:rp 1s infinite}
-@keyframes rp{50%{opacity:.3}}
-.dock{background:linear-gradient(transparent,rgba(0,0,0,.8) 35%);padding-top:40px}
-.ticker{gap:0;width:min(92vw,440px);justify-content:space-around;background:rgba(20,20,22,.7);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:10px 6px;margin-bottom:12px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.ticker>div{text-align:center;min-width:80px}.ticker b{font-variant-numeric:tabular-nums}
-.go{width:min(92vw,440px);border-radius:18px}
-.hint{color:#9aa3b0;font-size:12.5px;margin:8px 0 0;text-align:center}
-.links{margin:8px 0 0}.links a{display:inline-flex;align-items:center;gap:6px;background:rgba(28,28,30,.8);border:1px solid rgba(255,255,255,.1);font-size:14px}
-.dock .backBtn{width:min(92vw,440px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.stage::before,.stage::after{content:"";position:absolute;left:0;right:0;z-index:3;pointer-events:none}
+.stage::before{top:0;height:110px;background:linear-gradient(rgba(0,0,0,.45),transparent)}
+.stage::after{bottom:0;height:150px;background:linear-gradient(transparent,rgba(0,0,0,.4))}
+/* Option 1: side rail. Status + a thin ticker top-left, buttons down the right edge */
+:root{--glass:rgba(10,11,13,.46);--line:rgba(255,255,255,.13);--red:#ff453a}
+.glass{background:var(--glass);border:1px solid var(--line);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.stat{position:absolute;z-index:5;left:max(14px,env(safe-area-inset-left));top:calc(14px + env(safe-area-inset-top));display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:999px;font-size:12px;letter-spacing:.04em;color:#e9e9ea;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;flex:none}
+body.on .pill::before{background:var(--red);box-shadow:0 0 8px var(--red);animation:rp 1s infinite}
+@keyframes rp{50%{opacity:.35}}
+.rec{font-weight:600}body.on .rec{font-weight:700;color:#fff}
+#recT{display:none}body.on #recT{display:inline}
+.pill small{color:#9aa3b0;font-size:11px;letter-spacing:0}
+body.on #dcHint{display:none}#dcHint:empty{display:none}
+.ticker{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:11.5px;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums;white-space:nowrap}
+body.on .ticker{color:rgba(255,255,255,.9)}
+.ticker b{font-weight:500}.ticker em{font-style:normal;color:#9aa3b0;font-size:10.5px;margin-left:2px}
+.ticker i{display:inline-block;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.4);margin:0 8px}
+.ctl{position:absolute;inset:0;z-index:5;pointer-events:none}
+.ctl>*{pointer-events:auto}
+.ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--accent);padding:0;margin:0;line-height:0;text-decoration:none;font-size:0;cursor:pointer;-webkit-tap-highlight-color:transparent;gap:0;min-height:0;box-sizing:border-box}
+.ib .ico,.ib svg{display:block;width:22px;height:22px;margin:0;position:static}
+.ib svg{fill:currentColor}
+.rail{position:absolute;right:max(12px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:28px}
+.rail .ib{background:transparent;border:0}
+.rail .glass{background:none}
+body.on .rail{opacity:.72}
+#go{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(28px + env(safe-area-inset-bottom));width:68px;height:68px;border-radius:50%;border:3px solid rgba(255,255,255,.92);background:rgba(0,0,0,.18);display:grid;place-items:center;padding:0;margin:0;font-size:0;color:transparent;box-shadow:0 2px 14px rgba(0,0,0,.4);cursor:pointer}
+#go::after{content:"";width:52px;height:52px;border-radius:50%;background:var(--red);transition:width .2s,height .2s,border-radius .2s}
+#go.stop::after{width:24px;height:24px;border-radius:6px}
+a.backBtn.ib.fixed{position:absolute;left:max(14px,env(safe-area-inset-left));right:auto;bottom:calc(40px + env(safe-area-inset-bottom));width:44px;margin:0;padding:0;border-radius:50%;min-height:0;font-size:0}
+.err{position:absolute;z-index:6;left:70px;right:96px;bottom:calc(44px + env(safe-area-inset-bottom));margin:0;text-align:center;color:#ffd7c9;font-size:12px;text-shadow:0 1px 3px #000}.err:empty{display:none}
+#allowCam{position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;color:#f2f2f2;font:600 15px/1 inherit;font-family:inherit;cursor:pointer}
+#allowCam[hidden]{display:none}#allowCam .ico{color:var(--accent)}
+@media (orientation:landscape) and (max-height:520px){
+  .stage::after{display:none}
+  .stage::before{height:70px}
+  .ctl{left:auto;right:max(16px,env(safe-area-inset-right));width:106px;display:grid !important;grid-template-columns:44px 44px;justify-content:center;align-content:center;gap:14px 12px;background:linear-gradient(90deg,transparent,rgba(0,0,0,0))}
+  .stage .ctl::before{content:"";position:absolute;top:0;bottom:0;right:-16px;width:150px;background:linear-gradient(90deg,transparent,rgba(0,0,0,.5));z-index:-1;pointer-events:none}
+  .rail{display:contents}
+  .rail .ib{background:var(--glass);border:1px solid var(--line);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .ctl>*{position:static !important;transform:none !important}
+  #flip{order:1}#keepBtn{order:2}#go{order:3;grid-column:1 / span 2;justify-self:center;width:62px;height:62px}#go::after{width:46px;height:46px}#go.stop::after{width:22px;height:22px}
+  #diaryBtn{order:4}a.backBtn.ib.fixed{order:5;position:static !important;background:var(--glass);border:1px solid var(--line)}
+  .err{left:auto;right:150px;bottom:12px;width:40vw;text-align:right}
+}
 /* Clip storage sheet (t265u) */
 .top{right:max(12px,env(safe-area-inset-right))}
 #keepBtn{margin-left:auto}
@@ -85,25 +110,23 @@ body.on .rec{color:#fecaca;border-color:rgba(239,68,68,.6)}body.on .rec::before{
 </style>
 </head>
 <body>
-<header class="appbar"><h1>Dashcam</h1></header>
+<h1 class="sr">Dashcam</h1>
 <div class="stage">
-  <video id="rear" playsinline muted autoplay></video>
-  <div class="top">
-    <button class="btn" id="flip" type="button" data-ico="cam">Flip</button>
-    <span class="rec" id="rec">Ready</span>
-    <button class="btn" id="keepBtn" type="button" data-ico="settings" data-iconed="1" aria-haspopup="dialog"><span class="ico" data-k="settings"></span>Clips</button>
+  <video id="rear" playsinline muted autoplay poster="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></video>
+  <button id="allowCam" class="glass" type="button" hidden data-ico="cam" data-iconed="1"><span class="ico" data-k="cam"></span>Allow camera</button>
+  <div class="stat">
+    <div class="pill glass"><span class="rec" id="rec">Ready</span><span id="recT"></span><small id="dcHint"></small></div>
+    <div class="ticker glass" aria-label="Journey cost, miles and speed"><span title="Cost"><b id="cost">£0.00</b></span><i></i><span title="Miles"><b id="miles">0.00</b><em>mi</em></span><i></i><span title="Speed"><b id="speed">0</b><em>mph</em></span></div>
   </div>
-  <div class="dock">
-    <div class="ticker">
-      <div><span>Cost</span><b id="cost">£0.00</b></div>
-      <div><span>Miles</span><b id="miles">0.00</b></div>
-      <div><span>Speed</span><b id="speed">0</b></div>
+  <p class="err" id="err" role="status"></p>
+  <div class="ctl">
+    <div class="rail glass">
+      <button class="ib" id="flip" type="button" aria-label="Flip camera" title="Flip camera"><svg viewBox="0 -960 960 960" aria-hidden="true"><path d="M160-160v-80h110l-16-14q-52-46-73-105t-21-119q0-111 66.5-197.5T400-790v84q-72 26-116 88.5T240-478q0 45 17 87.5t53 78.5l10 10v-98h80v240H160Zm400-10v-84q72-26 116-88.5T720-482q0-45-17-87.5T650-648l-10-10v98h-80v-240h240v80H690l16 14q49 49 71.5 106.5T800-482q0 111-66.5 197.5T560-170Z"/></svg></button>
+      <button class="ib" id="keepBtn" type="button" data-ico="settings" data-iconed="1" aria-haspopup="dialog" aria-label="Clip storage" title="Clip storage"><span class="ico" data-k="settings"></span></button>
+      <a class="ib" id="diaryBtn" href="calendar.html" data-ico="book" data-iconed="1" aria-label="Clips in Drive diary" title="Clips in Drive diary"><span class="ico" data-k="book"></span></a>
     </div>
-    <button class="go" id="go" type="button">Start</button>
-    <p class="hint" id="dcHint">Road camera. Loop · last 24 hours.</p>
-    <p class="err" id="err"></p>
-    <p class="links"><a href="calendar.html" data-ico="cal">Clips in Drive diary</a></p>
-    <a class="btn backBtn" href="home.html">Back</a>
+    <button id="go" type="button">Start</button>
+    <a class="ib glass backBtn fixed" href="home.html" data-ico="back" data-iconed="1" aria-label="Back" title="Back"><span class="ico" data-k="back"></span></a>
   </div>
 </div>
 <div class="ksheet hide" id="keepSheet" role="dialog" aria-modal="true" aria-labelledby="keepTitle">
@@ -122,8 +145,9 @@ body.on .rec{color:#fecaca;border-color:rgba(239,68,68,.6)}body.on .rec::before{
   </section>
 </div>
 <script src="./dash-keep.js?v=1"></script>
-<script src="drive-app.js?v=7"></script>
-<script src="./dash-keep-ui.js?v=1"></script>
+<script src="drive-app.js?v=8"></script>
+<script src="./dash-keep-ui.js?v=2"></script>
+<script>(function(){function ic(){document.querySelectorAll(".stage [data-k]").forEach(function(el){if(!el.firstChild&&window.dipstickIcon)el.innerHTML=window.dipstickIcon(el.getAttribute("data-k"))||""})}ic();window.addEventListener("load",ic);setTimeout(ic,300);})();</script>
 <script>(function(){var r=document.getElementById("rec");function u(){document.body.classList.toggle("on",/^(REC|TRACKING)$/.test(r.textContent.trim()));}new MutationObserver(u).observe(r,{childList:true,characterData:true,subtree:true});u();})();</script>
 </body>
 </html>

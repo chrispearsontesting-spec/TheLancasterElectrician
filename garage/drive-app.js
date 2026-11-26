@@ -109,6 +109,7 @@ async function pickDevice(wantUser){
     return cams[0]&&cams[0].deviceId||"";
   }catch(e){return ""}
 }
+var camErr=null;
 async function oneCam(mode,el){
   var wantUser=mode==="user";
   var base={facingMode:{ideal:wantUser?"user":"environment"},width:{ideal:1920},height:{ideal:1080},aspectRatio:{ideal:16/9},frameRate:{ideal:30}};
@@ -135,7 +136,7 @@ async function oneCam(mode,el){
     return first;
   }catch(e){
     try{ return await open({facingMode:{ideal:mode}}); }
-    catch(e2){ return null; }
+    catch(e2){ camErr=e2||e; return null; }
   }
 }
 function mime(){
@@ -169,6 +170,39 @@ function startGps(){
     prev=here;last=here;tick(mph);
   },function(e){document.getElementById("err").textContent=e.message||"Location blocked";},{enableHighAccuracy:true,maximumAge:1000,timeout:15000});
 }
+/* Live preview: the road camera opens as soon as the page loads (no Start needed) and the same stream is recorded when Start is pressed. */
+var pre=null,recTimer=null,previewing=null;
+function showCam(ok,msg){
+  var v=document.getElementById("rear"), b=document.getElementById("allowCam");
+  if(v) v.classList.toggle("live",!!ok);
+  if(b) b.hidden=!!ok||trackOnly;
+  if(!ok&&!trackOnly&&msg!==undefined) document.getElementById("err").textContent=msg||"";
+}
+function camAlive(){ return !!(pre&&pre.getVideoTracks().some(function(t){return t.readyState==="live"})); }
+function preview(){
+  if(trackOnly) return Promise.resolve(null);
+  if(camAlive()) return Promise.resolve(pre);
+  if(previewing) return previewing;
+  previewing=(async function(){
+    var el=document.getElementById("rear");
+    camErr=null;
+    var s=await oneCam("environment",el);
+    previewing=null;
+    if(s){ pre=s; try{ el.play&&el.play().catch(function(){}); }catch(e){} showCam(true,""); return s; }
+    var denied=camErr&&/NotAllowed|Permission|Security/i.test(String(camErr.name||camErr));
+    showCam(false,denied?"Camera is off for Trac3. Tap Allow camera, or turn it on in your phone settings.":"Road camera not available.");
+    return null;
+  })();
+  return previewing;
+}
+function releaseCam(){
+  streams.forEach(function(s){s.getTracks().forEach(function(t){t.stop()})}); streams=[]; pre=null;
+  var el=document.getElementById("rear"); if(el){ el.srcObject=null; el.classList.remove("live"); }
+}
+function tickTimer(){
+  var s=Math.max(0,Math.floor((Date.now()-started)/1000)), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60, p=function(n){return String(n).padStart(2,"0")};
+  var t=document.getElementById("recT"); if(t) t.textContent=(h?p(h)+":":"")+p(m)+":"+p(x);
+}
 async function start(){
   document.getElementById("err").textContent="";
   await purgeClips();
@@ -182,7 +216,7 @@ async function start(){
   if(navigator.wakeLock){try{wake=await navigator.wakeLock.request("screen")}catch(e){}}
   if(!trackOnly){
     // Main rear-facing camera only, pointing out through the windscreen.
-    var rear=await oneCam("environment",document.getElementById("rear"));
+    var rear=await preview();
     if(!rear) document.getElementById("err").textContent="Road camera not available.";
     if(rear) startRec(rear);
   }
@@ -190,6 +224,7 @@ async function start(){
   on=true;
   document.getElementById("go").textContent="Stop";document.getElementById("go").classList.add("stop");
   document.getElementById("rec").textContent=trackOnly?"TRACKING":"REC";
+  tickTimer(); clearInterval(recTimer); recTimer=setInterval(tickTimer,1000);
 }
 async function saveTrip(blob){
   var id="d"+started;
@@ -212,9 +247,9 @@ function stop(){
   watch=null;
   function finish(blob){
     saveTrip(blob).then(function(){
-      streams.forEach(function(s){s.getTracks().forEach(function(t){t.stop()})});
-      streams=[];
+      // the live preview stays on after Stop (it is released when the page is hidden or closed)
       if(wake){try{wake.release()}catch(e){}}
+      wake=null; clearInterval(recTimer); recTimer=null;
       document.getElementById("go").textContent="Start";document.getElementById("go").classList.remove("stop");
       document.getElementById("rec").textContent="Saved";
     });
@@ -231,3 +266,12 @@ document.getElementById("flip").onclick=function(){
 };
 if(trackOnly) document.getElementById("rec").textContent="Track ready";
 purgeClips();
+(function(){
+  var v=document.getElementById("rear"), b=document.getElementById("allowCam");
+  if(v) v.addEventListener("playing",function(){ v.classList.add("live"); });
+  if(b) b.onclick=function(){ preview(); };
+  // Release the camera when the page goes away or is hidden (unless a journey is recording); reopen it on return.
+  window.addEventListener("pagehide",function(){ if(!on) releaseCam(); });
+  document.addEventListener("visibilitychange",function(){ if(document.hidden){ if(!on) releaseCam(); } else if(!on) preview(); });
+  preview();
+})();

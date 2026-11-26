@@ -66,7 +66,7 @@
   function uiOn(v){ on=v; $("jBtn").textContent=v?"Stop journey":"Start journey"; $("jBtn").className="btn "+(v?"stop":"go"); $("live").classList.toggle("hide",!v); }
   async function startWeb(){
     if(!navigator.geolocation){ $("jErr").textContent="GPS isn't available on this phone."; return; }
-    miles=0; prev=null; started=Date.now(); uiOn(true); $("jErr").textContent="";
+    miles=0; prev=null; started=Date.now(); uiOn(true); if(price()) $("jErr").textContent="";
     if(navigator.wakeLock){ try{ wake=await navigator.wakeLock.request("screen"); }catch(e){} }
     watch=navigator.geolocation.watchPosition(function(p){
       var here={lat:p.coords.latitude,lon:p.coords.longitude};
@@ -91,7 +91,14 @@
   var RAW=T; if(T){ T={status:function(o){return RAW.status(o)},configure:function(o){return RAW.configure(o)},devices:function(){return RAW.devices()},startJourney:function(){return RAW.startJourney()},stopJourney:function(){return RAW.stopJourney()},takeJourneys:function(){return RAW.takeJourneys()}};
     var _ask=function(o){return RAW.ask(o)}; T.ask=function(o){ var k="driv3.why."+o.what; if(WHY[o.what]&&!localStorage.getItem(k)){ alert(WHY[o.what]); localStorage.setItem(k,"1"); } return _ask(o); }; }
   async function ensureLoc(){ var s=await T.status(); if(!s.location) s=await T.ask({what:"location"}); if(!s.notifications) await T.ask({what:"notifications"}); return s.location; }
+  /* Manual start: make sure a fuel price is loaded first, otherwise the £ figure would stay at £0.00. */
+  async function ensurePrice(){
+    if(price()||!window.D3Fuel) return;
+    try{ var l=await D3Fuel.live(car()); if(l){ LIVE=l; costLine(); } }catch(e){}
+    if(!price()){ $("jErr").textContent="No fuel price yet, so the cost can't be worked out. Add your own price under Trip cost."; var f=$("costFold"); if(f) f.open=true; }
+  }
   $("jBtn").onclick=async function(){
+    if(!on) await ensurePrice();
     if(T){
       try{
         if(on){ await T.stopJourney(); clearInterval(timer); uiOn(false); setTimeout(pull,1200); return; }
@@ -151,13 +158,29 @@
     return "<button type='button' class='dv"+(sel?" sel":"")+"' data-mac='"+esc(d.mac)+"' data-name='"+esc(d.name)+"'"+(near&&!d.bonded?" data-pair='1'":"")+">"+
       "<span class='bi'>"+ICO("bluetooth")+"</span><span class='t'><b>"+esc(d.name)+"</b><span>"+sub+"</span></span><span class='pick'></span></button>";
   }
+  /* Device order: the connected one pinned on top, then most used first (gt.btUse = {MAC: times chosen}), then the chosen car, then A-Z. */
+  function useMap(){ try{ return JSON.parse(localStorage.getItem("gt.btUse")||"{}")||{}; }catch(e){ return {}; } }
+  function bumpUse(mac){ mac=String(mac||"").toUpperCase(); if(!mac) return; var m=useMap(); m[mac]=(+m[mac]||0)+1; try{ localStorage.setItem("gt.btUse",JSON.stringify(m)); }catch(e){} }
+  function ordered(list,tie){
+    var u=useMap(), up=function(k){ return String(k).toUpperCase(); };
+    return list.slice().sort(function(a,b){
+      var ca=isConn(a.mac)?1:0, cb=isConn(b.mac)?1:0; if(ca!==cb) return cb-ca;
+      var ua=+u[up(a.mac)]||0, ub=+u[up(b.mac)]||0; if(ua!==ub) return ub-ua;
+      var sa=up(a.mac)===up(LINK)?1:0, sb=up(b.mac)===up(LINK)?1:0; if(sa!==sb) return sb-sa;
+      return tie?tie(a,b):String(a.name||"").localeCompare(String(b.name||""));
+    });
+  }
+  // The device lists scroll inside a box about 4½ rows tall (the half row shows there is more).
+  function fitDevs(){ var f=document.querySelector(".devs .dv"); if(f&&f.offsetHeight) document.documentElement.style.setProperty("--devsH",Math.round(f.offsetHeight*4.5)+"px"); }
+  $("autoSetup").addEventListener("toggle",fitDevs);
   function paint(){
-    $("paired").innerHTML=PAIRED.length?PAIRED.map(function(d){ return row(d,false); }).join(""):"<p class='empty'>"+(ST.bluetooth?"No paired devices yet. Search below, or pair in your phone’s Bluetooth settings.":"Allow Nearby devices to see your car.")+"</p>";
+    $("paired").innerHTML=PAIRED.length?ordered(PAIRED).map(function(d){ return row(d,false); }).join(""):"<p class='empty'>"+(ST.bluetooth?"No paired devices yet. Search below, or pair in your phone’s Bluetooth settings.":"Allow Nearby devices to see your car.")+"</p>";
     var pm={}; PAIRED.forEach(function(d){ pm[String(d.mac).toUpperCase()]=1; });
     var nl=Object.keys(NEAR).map(function(k){ return NEAR[k]; }).filter(function(d){ return !pm[String(d.mac).toUpperCase()]; })
-      .sort(function(a,b){ return (b.rssi||-999)-(a.rssi||-999); });
+    ;nl=ordered(nl,function(a,b){ return (b.rssi||-999)-(a.rssi||-999); });
     $("nearby").innerHTML=nl.length?nl.map(function(d){ return row(d,true); }).join(""):"<p class='empty'>"+(scanning?"Searching…":"Tap Search to find devices near you.")+"</p>";
     $("scanBtn").innerHTML=scanning?"<span class='spin'></span>Searching":"<span class='si' aria-hidden='true'>"+ICO("search")+"</span>Search";
+    fitDevs();
     $("btOff").classList.toggle("hide",ST.bluetoothOn!==false||ST.hasBluetooth===false);
     // the chosen car, with a live Connected / Not connected badge
     var nm=LINKNAME||(PAIRED.filter(function(d){ return String(d.mac).toUpperCase()===String(LINK).toUpperCase(); })[0]||{}).name||"";
@@ -172,7 +195,7 @@
     paint();
   }
   function choose(mac,name){
-    LINK=mac; LINKNAME=name; paint();
+    bumpUse(mac); LINK=mac; LINKNAME=name; paint();
     T.configure({plate:PL(),link:mac,name:name,mac:""}).then(function(){ pushNative(); refresh(); });
     var cf=cfg(), mp=cf.macs||{}; if(mac) mp[PL()]={mac:mac,name:name}; else delete mp[PL()]; setCfg({macs:mp,mac:"",name:""});
     say("");

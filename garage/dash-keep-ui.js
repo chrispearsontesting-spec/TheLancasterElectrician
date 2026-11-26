@@ -1,9 +1,9 @@
-/* Trac3 Dashcam: the Clips storage sheet (gt.dashKeep via dash-keep.js) and the short hint under Start. */
+/* Trac3 Dashcam: the Clips storage sheet (gt.dashKeep via dash-keep.js) and the storage mode shown (small) in the status pill. */
 (function(){
   var K=window.D3DashKeep; if(!K) return;
   var $=function(id){ return document.getElementById(id); }, sheet=$("keepSheet");
   function paintIcons(){ document.querySelectorAll("#keepBtn [data-k],#keepWarn [data-k]").forEach(function(el){ if(!el.firstChild&&window.dipstickIcon) el.innerHTML=window.dipstickIcon(el.getAttribute("data-k"))||""; }); }
-  function hint(){ var h=$("dcHint"); if(h&&!document.body.classList.contains("track")) h.textContent="Road camera. "+K.label()+"."; }
+  function hint(){ var h=$("dcHint"); if(h&&!document.body.classList.contains("track")) h.textContent="· "+K.label(); }
   function paint(){ var c=K.get();
     document.querySelectorAll("#keepOpts [data-mode]").forEach(function(b){ b.setAttribute("aria-checked",b.getAttribute("data-mode")===c.mode?"true":"false"); });
     $("keepDays").value=String(c.days); $("keepDaysRow").classList.toggle("hide",c.mode!=="save"); hint(); }

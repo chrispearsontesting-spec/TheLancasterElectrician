@@ -1,18 +1,29 @@
 /* Driv3 Performance: G-force tracking (moved from g-meter.html), the run G chart, and saved runs in IndexedDB (db "driv3-runs"). */
 (function(){
   var G={};
-  // Live readings. Same maths as the old G-meter: device x = lateral, y = longitudinal, gravity removed by zeroing at the start.
-  var offX=0, offY=0, lat=0, lon=0, raw=[], peak={acc:0,brk:0,lat:0,comb:0};
+  // Live readings. Gravity is removed by zeroing (auto-zero from the first second of samples, and again at each run start).
+  // Axes follow how the phone is held: screen orientation (portrait / landscape either way) picks lateral, and
+  // longitudinal is along the camera (device z) when the phone stands up facing the road, or screen-up when it lies flat.
+  var off=null, lat=0, lon=0, raw=[], peak={acc:0,brk:0,lat:0,comb:0};
+  function angle(){ try{ if(screen.orientation&&typeof screen.orientation.angle==="number") return screen.orientation.angle; }catch(e){} var w=window.orientation; return typeof w==="number"?((w%360)+360)%360:0; }
+  G.axes=function(dx,dy,dz,o,ang){
+    var a=ang==null?angle():ang, sx, sy; // 90 = turned anticlockwise (phone top to the left)
+    if(a===90){ sx=-dy; sy=dx; } else if(a===270){ sx=dy; sy=-dx; } else if(a===180){ sx=-dx; sy=-dy; } else { sx=dx; sy=dy; }
+    var flat=o?Math.abs(o[2])>Math.hypot(o[0],o[1]):false;
+    return {lat:sx, lon:flat?sy:-dz, flat:flat};
+  };
   G.read=function(e){
     var a=e.accelerationIncludingGravity||e.acceleration; if(!a||a.x==null) return null;
-    var rx=(a.x||0)/9.81, ry=(a.y||0)/9.81;
-    raw.push([rx,ry]); if(raw.length>40) raw.shift();
-    var k=0.28; lat=lat*(1-k)+(rx-offX)*k; lon=lon*(1-k)+(ry-offY)*k;
+    var r=[(a.x||0)/9.81,(a.y||0)/9.81,(a.z||0)/9.81];
+    raw.push(r); if(raw.length>40) raw.shift();
+    if(!off){ if(raw.length<20) return {lat:0,lon:0,comb:0}; G.zero(); }
+    var m=G.axes(r[0]-off[0],r[1]-off[1],r[2]-off[2],off);
+    var k=0.28; lat=lat*(1-k)+m.lat*k; lon=lon*(1-k)+m.lon*k;
     var c=Math.sqrt(lat*lat+lon*lon);
     peak.acc=Math.max(peak.acc,lon); peak.brk=Math.max(peak.brk,-lon); peak.lat=Math.max(peak.lat,Math.abs(lat)); peak.comb=Math.max(peak.comb,c);
     return {lat:lat,lon:lon,comb:c};
   };
-  G.zero=function(){ if(raw.length){ var sx=0,sy=0; raw.forEach(function(r){sx+=r[0];sy+=r[1]}); offX=sx/raw.length; offY=sy/raw.length; } lat=lon=0; G.resetPeaks(); };
+  G.zero=function(){ if(raw.length<10){ off=null; } else { var s=[0,0,0]; raw.forEach(function(r){s[0]+=r[0];s[1]+=r[1];s[2]+=r[2]}); off=[s[0]/raw.length,s[1]/raw.length,s[2]/raw.length]; } lat=lon=0; G.resetPeaks(); };
   G.resetPeaks=function(){ peak={acc:0,brk:0,lat:0,comb:0}; };
   G.peaks=function(){ return peak; };
   G.ask=async function(){ if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){ try{ await DeviceMotionEvent.requestPermission(); }catch(e){} } };

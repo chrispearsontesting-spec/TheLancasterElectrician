@@ -33,44 +33,26 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#0b0c0e;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;height:100%;overflow:hidden}
 #vid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#111}
-.overlay{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:center;gap:18px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));pointer-events:none;z-index:5}
-.hud{background:rgba(0,0,0,.45);border-radius:14px;padding:8px 12px;text-align:center;min-width:70px;backdrop-filter:blur(4px)}
-.hud b{font-size:16px;font-weight:700;display:block;font-variant-numeric:tabular-nums}
-.hud span{font-size:10px;color:#ccc;text-transform:uppercase}
-#gDot{flex:0 0 auto;width:88px;height:88px;min-width:88px;aspect-ratio:1/1;border-radius:50%;background:rgba(20,20,22,.55);border:1px solid rgba(255,255,255,.25);position:relative}
-#gDot i{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--accent);left:50%;top:50%;transform:translate(-50%,-50%)}
-.top{position:fixed;top:calc(62px + env(safe-area-inset-top));left:0;right:0;padding:0 12px 8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;z-index:6}
 select,button,.btn{background:#1c1c1e;color:#f2f2f2;border:1px solid rgba(255,255,255,.08);border-radius:18px;min-height:40px;padding:10px 14px;font-weight:600;font-size:14px}
 .disclaimer{position:fixed;left:12px;right:12px;top:calc(112px + env(safe-area-inset-top));background:rgba(28,22,8,.92);border:1px solid #5c4a1f;color:#f2f2f2;padding:10px 12px;border-radius:14px;z-index:10;font-size:13px;line-height:1.4;display:flex;gap:10px;align-items:center}
 .disclaimer span{flex:1}
 .disclaimer button{background:#f5b84a;color:#111;border:0;white-space:nowrap}
 .disclaimer.flash{animation:fl .5s 2}
 @keyframes fl{50%{background:#7a4b00}}
-#bigStart{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7;background:var(--accent);color:#0b0c0e;border:0;border-radius:20px;padding:18px 28px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
-#bigStart.hide{display:none}
-#bigStart{gap:10px;align-items:center}#bigStart .ico{color:#0b0c0e}
-.light{width:42px;height:42px;border-radius:50%;background:#333;border:2px solid #555;box-shadow:inset 0 0 8px #000}
-.light.on{background:#e10600;box-shadow:0 0 12px #e10600}
-#cancel{display:none}
 .chart-wrap{position:fixed;inset:0;background:#0b0c0e;z-index:12;display:none;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:calc(72px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));overflow-y:auto;max-width:520px;margin:0 auto}
 .chart-wrap .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
 .chart-wrap .row button{flex:1 1 45%}
 #runVid{width:100%;border-radius:14px;background:#000;max-height:46vh;margin:6px 0}
-.gpk{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(118px + env(safe-area-inset-bottom));z-index:5;background:rgba(0,0,0,.5);border-radius:12px;padding:6px 10px;font-size:12px;color:#ddd;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none}
-.hud{flex:0 1 auto;min-width:0}
-@media (max-width:480px){.overlay{gap:8px;padding-left:8px;padding-right:8px}.hud{padding:8px 8px;min-width:58px}}
-.hud small{display:block;font-size:10px;color:#aaa;font-variant-numeric:tabular-nums}
 .runItem{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;margin:6px 0;border-radius:14px}
 .runItem small{color:#9a9aa0;font-weight:500}
 .chart-wrap.show{display:flex}
 canvas#chart{width:100%;height:auto;background:#0b0c0e;border-radius:12px;display:block}
-.overlay{bottom:calc(64px + env(safe-area-inset-bottom))}.gpk{bottom:calc(182px + env(safe-area-inset-bottom))}#listening{bottom:154px !important}
 /* Run picker (first screen): pick a run type, start, see best and recent runs */
 #pick{position:fixed;inset:0;z-index:10;background:#0b0c0e;overflow-y:auto;padding:calc(64px + env(safe-area-inset-top)) 14px calc(84px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto}
 body:not(.pick) #pick{display:none}
 body.pick a.backBtn.fixed{z-index:11}
 .pk-t.wide{grid-column:1/-1;min-height:48px;flex-direction:row;gap:8px}
-body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #listening{display:none !important}
+body.pick .pf-top,body.pick .pf-bot,body.pick .pf-rail,body.pick .pf-mid,body.pick #go{display:none !important}
 .pk-h{font-size:12px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:#8b8b8b;margin:6px 4px 10px}
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pk-t{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:72px;padding:10px 4px;border-radius:16px;background:#141416;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit}
@@ -93,41 +75,110 @@ body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #
 .pk-r .bd svg{width:16px;height:16px;fill:currentColor}.pk-r .bd.best{background:rgba(var(--accent-rgb),.14);color:var(--accent);border-color:rgba(var(--accent-rgb),.4)}
 .pk-r .m{flex:1;min-width:0}.pk-r .m b{display:block;font-size:15px}.pk-r .m small{display:block;color:#8b8b8b;font-size:12px;margin-top:2px}
 .pk-r .tm{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
-.pk-empty{color:#8b8b8b;font-size:13.5px;margin:0;padding:16px 14px}
+/* ---- Live HUD (option 1b): frosted pills at the edges, big lights in the middle ---- */
+:root{--pf-btn-h:38px;--pf-sx:12px;--pf-st:max(14px,env(safe-area-inset-top));--pf-sb:max(14px,env(safe-area-inset-bottom));--pf-rail:132px}
+body:not(.pick) .appbar,body:not(.pick) a.backBtn.fixed{display:none !important}
+.pf-btn{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:4px;height:var(--pf-btn-h);min-height:0;width:100%;padding:0 6px;margin:0;border-radius:999px;background:rgba(14,15,17,.56);-webkit-backdrop-filter:blur(18px) saturate(1.35);backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.18);box-shadow:0 2px 10px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.10);color:#f4f4f5;font:inherit;font-weight:500;font-size:11px;line-height:1;letter-spacing:-.01em;white-space:nowrap;text-align:center;text-decoration:none;cursor:pointer}
+.pf-btn .pi{width:12px;height:12px;flex:0 0 12px;display:block}
+.pf-btn span{display:block;line-height:1}
+.pf-btn.on{background:rgba(var(--accent-rgb),.22);border-color:rgba(var(--accent-rgb),.72);color:var(--accent);box-shadow:0 2px 12px rgba(var(--accent-rgb),.16),inset 0 1px 0 rgba(255,255,255,.12)}
+.pf-btn:disabled{opacity:.45}
+.pf-top{position:fixed;top:var(--pf-st);left:var(--pf-sx);right:var(--pf-sx);z-index:6;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:center}
+.pf-bot{position:fixed;left:var(--pf-sx);right:var(--pf-sx);bottom:var(--pf-sb);z-index:6;display:flex;flex-direction:column;gap:8px}
+.pf-pk{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:6px}
+.pf-pill{height:26px;width:100%;padding:0 10px;border-radius:999px;background:rgba(14,15,17,.5);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.14);box-shadow:0 2px 8px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);color:#c4c4c8;font-weight:500;font-size:10.5px;line-height:1;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums}
+.pf-bar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;align-items:center;height:64px;padding:0 6px;border-radius:22px;background:rgba(14,15,17,.56);-webkit-backdrop-filter:blur(18px) saturate(1.35);backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.16);box-shadow:0 2px 12px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08)}
+.pf-bar .pf-btn{background:transparent;border:0;box-shadow:none;height:48px;padding:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.pf-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;height:48px;text-align:center}
+.pf-cell b{font-weight:600;font-size:18px;line-height:1;letter-spacing:-.03em;color:#f4f4f5;font-variant-numeric:tabular-nums}
+.pf-cell span{font-weight:500;font-size:8.5px;line-height:1;letter-spacing:.08em;text-transform:uppercase;color:#c4c4c8}
+.pf-cell small{font-weight:500;font-size:9px;line-height:1;color:#c4c4c8;font-variant-numeric:tabular-nums}
+.pf-ball{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(8,8,10,.45);position:relative;justify-self:center;overflow:hidden}
+.pf-ball i{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--accent);left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(var(--accent-rgb),.7)}
+.pf-ball svg{position:absolute;inset:0;width:100%;height:100%;display:none}
+.pf-mid{position:fixed;left:50%;top:50%;transform:translate(-50%,-54%);z-index:4;display:flex;flex-direction:column;align-items:center}
+#lights{display:flex;align-items:center;justify-content:center;gap:22px}
+.light{width:78px;height:78px;border-radius:50%;background:rgba(40,40,44,.82);border:3px solid rgba(90,90,96,.7);box-shadow:0 2px 10px rgba(0,0,0,.35),inset 0 2px 8px rgba(0,0,0,.35);transition:background .08s}
+.light.on{background:#e10600;border-color:#ff5046;box-shadow:0 0 28px rgba(225,6,0,.55),inset 0 2px 8px rgba(255,200,180,.25)}
+#bigStart{margin-top:18px;height:28px;min-height:0;padding:0 14px;border-radius:999px;background:rgba(14,15,17,.52);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.16);box-shadow:0 2px 8px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);color:#c4c4c8;font:inherit;font-weight:500;font-size:12px;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+#bigStart.hide{visibility:hidden}
+#bigStart.act{color:var(--accent);border-color:rgba(var(--accent-rgb),.6)}
+#go{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9;font-size:56px;font-weight:800;color:#fff;text-shadow:0 2px 12px #000;pointer-events:none}
+#status{margin-top:10px;font-size:12px;font-weight:500;color:#f4f4f5;text-shadow:0 1px 4px #000;min-height:14px;text-align:center;line-height:1.2}
+#status.lis{color:var(--accent)}
+.pf-rail{display:none}
+@media (orientation:landscape){
+  :root{--pf-sx:max(10px,env(safe-area-inset-left));--pf-st:max(10px,env(safe-area-inset-top));--pf-sb:max(10px,env(safe-area-inset-bottom))}
+  .pf-top,.pf-bot{display:none}
+  .pf-rail{display:flex;position:fixed;top:var(--pf-st);bottom:var(--pf-sb);z-index:6;width:var(--pf-rail);flex-direction:column;justify-content:space-evenly;align-items:stretch}
+  .pf-rl{left:var(--pf-sx)}
+  .pf-rr{right:max(10px,env(safe-area-inset-right));align-items:center;background:rgba(14,15,17,.52);-webkit-backdrop-filter:blur(18px) saturate(1.35);backdrop-filter:blur(18px) saturate(1.35);border:1px solid rgba(255,255,255,.16);box-shadow:0 2px 12px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.08);border-radius:22px;padding:6px 8px}
+  .pf-rr .pf-cell{height:auto;width:100%}
+  .pf-rr .pf-cell b{font-size:22px}.pf-rr .pf-cell span{font-size:9px}.pf-rr .pf-cell small{margin-top:3px}
+  .pf-rr .pf-ball{width:100%;height:auto;aspect-ratio:1/1;flex:0 0 auto;background:radial-gradient(circle at 50% 50%,rgba(18,19,22,.15) 0%,rgba(8,8,10,.55) 70%,rgba(6,6,8,.7) 100%);box-shadow:inset 0 2px 8px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08),0 2px 10px rgba(0,0,0,.28)}
+  .pf-rr .pf-ball svg{display:block}
+  .pf-rr .pf-ball i{width:14px;height:14px;box-shadow:0 0 8px rgba(var(--accent-rgb),.85)}
+  .pf-rr .pf-pin{color:#c4c4c8;font-weight:500;font-size:10px;line-height:1.25;text-align:center;width:100%;font-variant-numeric:tabular-nums}
+  .pf-mid{transform:translate(-50%,-50%)}
+  #lights{gap:26px}.light{width:86px;height:86px}
+  #bigStart{margin-top:16px}
+}
+@media (orientation:portrait) and (max-width:370px){.light{width:68px;height:68px}#lights{gap:18px}.pf-btn{font-size:10px;gap:3px}.pf-btn .pi{width:10px;height:10px;flex-basis:10px}.pf-pill{font-size:9.5px;padding:0 6px}}
 </style>
 </head>
 <body class="pick">
 <video id="vid" playsinline muted autoplay></video>
 <header class="appbar"><h1>Performance</h1></header>
-<div class="top">
-  <select id="run">
-    <option value="60">0–60 mph</option>
-    <option value="100">0–100 mph</option>
-    <option value="30-70">30–70 mph</option>
-    <option value="quarter">Quarter mile</option>
-    <option value="half">Half mile</option>
-    <option value="100-200">100–200 km/h</option>
-    <option value="track">Track mode</option>
-  </select>
-  <button id="cancel" type="button">Cancel run</button>
-  <label style="font-size:13px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="keep"/> Keep video</label>
-  <button id="runsBtn" type="button">Saved runs</button>
+<select id="run" hidden aria-hidden="true">
+  <option value="60">0–60 mph</option>
+  <option value="100">0–100 mph</option>
+  <option value="30-70">30–70 mph</option>
+  <option value="quarter">Quarter mile</option>
+  <option value="half">Half mile</option>
+  <option value="100-200">100–200 km/h</option>
+  <option value="track">Track mode</option>
+</select>
+<label hidden><input type="checkbox" id="keep"/> Keep video</label>
+<!-- Portrait: five equal pills across the top -->
+<nav class="pf-top" aria-label="Run controls">
+  <button class="pf-btn" type="button" data-act="mode"><span data-v="mode">0–60 mph</span><svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5 12 15.5 18 9.5"/></svg></button>
+  <button class="pf-btn" type="button" data-act="cancel"><span>Cancel</span></button>
+  <button class="pf-btn" type="button" data-act="saved"><span>Saved</span></button>
+  <button class="pf-btn" type="button" data-act="voice" aria-pressed="false"><svg class="pi" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14.5a3.2 3.2 0 0 0 3.2-3.2V7.2a3.2 3.2 0 0 0-6.4 0v4.1A3.2 3.2 0 0 0 12 14.5Zm5.1-3.2a.7.7 0 1 0-1.4 0 3.7 3.7 0 0 1-7.4 0 .7.7 0 1 0-1.4 0 5.1 5.1 0 0 0 4.4 5v1.8H9.2a.7.7 0 1 0 0 1.4h5.6a.7.7 0 1 0 0-1.4h-2.1v-1.8a5.1 5.1 0 0 0 4.4-5Z"/></svg><span data-v="voice">Voice off</span></button>
+  <button class="pf-btn" type="button" data-act="rec" aria-pressed="false"><svg class="pi" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="5.2"/></svg><span data-v="rec">Rec off</span></button>
+</nav>
+<div class="pf-mid">
+  <div id="lights" aria-hidden="true"><span class="light"></span><span class="light"></span><span class="light"></span></div>
+  <button id="bigStart" type="button">Tap to start</button>
+  <div id="status" role="status" aria-live="polite"></div>
 </div>
-<div id="lights" style="display:none;position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:8;gap:28px">
-  <span class="light"></span><span class="light"></span><span class="light"></span>
+<div id="go">GO</div>
+<div class="pf-bot">
+  <div class="pf-pk"><div class="pf-pill" data-v="latlon">Lat 0.00 · Long 0.00</div><div class="pf-pill" data-v="peak">Peak 0.00 acc · 0.00 brk · 0.00 corner</div></div>
+  <div class="pf-bar">
+    <button class="pf-btn" type="button" data-act="back"><svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg><span>Back</span></button>
+    <div class="pf-cell"><b data-v="time">0.0</b><span>Time</span></div>
+    <div class="pf-ball" aria-hidden="true"><i data-v="dot"></i></div>
+    <div class="pf-cell"><b data-v="g">0.00</b><span>G</span></div>
+    <div class="pf-cell"><b data-v="spd">0</b><span>Mph</span></div>
+  </div>
 </div>
-<div id="go" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9;font-size:48px;font-weight:800;color:#fff;text-shadow:0 2px 8px #000">GO</div>
-<div id="react" style="position:fixed;top:22%;left:50%;transform:translateX(-50%);z-index:8;font-size:18px;font-weight:700;color:#fff;text-shadow:0 1px 4px #000;display:none"></div>
-<div id="listening" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--accent);display:none;align-items:center;gap:8px"><span style="display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);align-items:center;justify-content:center"><svg class="ico" viewBox="0 -960 960 960" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/></svg></span><span id="listenTxt">Listening for “start run”</span></div>
-<button id="bigStart" type="button" data-ico="flag">Start run</button>
-<div class="gpk" id="gPeak">Peak accel 0.00 · brake 0.00 · corner 0.00 G</div>
-<a class="btn backBtn fixed" href="home.html">Back</a>
-<div class="overlay">
-  <div class="hud"><b id="time">0.0</b><span>Time</span></div>
-  <div id="gDot"><i id="dot"></i></div>
-  <div class="hud"><b id="gNow">0.00</b><span>G</span><small id="gDet">Lat 0.00 · Long 0.00</small></div>
-  <div class="hud"><b id="spd">0</b><span>mph</span></div>
-</div>
+<!-- Landscape: six equal pills down the left, readouts and G meter down the right -->
+<nav class="pf-rail pf-rl" aria-label="Run controls">
+  <button class="pf-btn" type="button" data-act="mode"><span data-v="mode">0–60 mph</span><svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5 12 15.5 18 9.5"/></svg></button>
+  <button class="pf-btn" type="button" data-act="cancel"><span>Cancel</span></button>
+  <button class="pf-btn" type="button" data-act="saved"><span>Saved</span></button>
+  <button class="pf-btn" type="button" data-act="voice" aria-pressed="false"><svg class="pi" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14.5a3.2 3.2 0 0 0 3.2-3.2V7.2a3.2 3.2 0 0 0-6.4 0v4.1A3.2 3.2 0 0 0 12 14.5Zm5.1-3.2a.7.7 0 1 0-1.4 0 3.7 3.7 0 0 1-7.4 0 .7.7 0 1 0-1.4 0 5.1 5.1 0 0 0 4.4 5v1.8H9.2a.7.7 0 1 0 0 1.4h5.6a.7.7 0 1 0 0-1.4h-2.1v-1.8a5.1 5.1 0 0 0 4.4-5Z"/></svg><span data-v="voice">Voice off</span></button>
+  <button class="pf-btn" type="button" data-act="rec" aria-pressed="false"><svg class="pi" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="5.2"/></svg><span data-v="rec">Rec off</span></button>
+  <button class="pf-btn" type="button" data-act="back"><svg class="pi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg><span>Back</span></button>
+</nav>
+<aside class="pf-rail pf-rr" aria-label="Live readouts">
+  <div class="pf-cell"><span>Time</span><b data-v="time">0.0</b></div>
+  <div class="pf-cell"><span>Mph</span><b data-v="spd">0</b></div>
+  <div class="pf-cell"><span>G</span><b data-v="g">0.00</b><small data-v="latlon">Lat 0.00 · Long 0.00</small></div>
+  <div class="pf-ball" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="33" stroke="rgba(255,255,255,.16)" stroke-width="1"/><circle cx="50" cy="50" r="16.5" stroke="rgba(255,255,255,.10)" stroke-width=".8"/><line x1="50" y1="5" x2="50" y2="95" stroke="rgba(255,255,255,.22)" stroke-width="1"/><line x1="5" y1="50" x2="95" y2="50" stroke="rgba(255,255,255,.22)" stroke-width="1"/><g stroke="rgba(255,255,255,.42)" stroke-width="1.4" stroke-linecap="round"><line x1="50" y1="5" x2="50" y2="11"/><line x1="50" y1="89" x2="50" y2="95"/><line x1="5" y1="50" x2="11" y2="50"/><line x1="89" y1="50" x2="95" y2="50"/></g></svg><i data-v="dot"></i></div>
+  <div class="pf-pin" data-v="peak2">Peak 0.00 acc<br>0.00 brk · 0.00 corner</div>
+</aside>
 <div class="disclaimer" id="disc" role="note"><span><b>Closed roads or tracks only.</b> Phone estimate, not for public roads. Tap “I understand” before your first run.</span><button id="ok" type="button">I understand</button></div>
 <section id="pick" aria-label="Choose a run">
   <h2 class="pk-h">Run type</h2>
@@ -149,83 +200,108 @@ body.pick .top,body.pick #bigStart,body.pick .overlay,body.pick .gpk,body.pick #
   <div class="row"><button id="runsBtn2" type="button">Saved runs</button><button id="again" type="button">New run</button></div>
 </div>
 <script src="./car-scope.js?v=1"></script>
-<script src="./perf-g.js?v=2"></script>
+<script src="./perf-g.js?v=3"></script>
 <script>
 const vid = document.getElementById('vid');
-const timeEl = document.getElementById('time');
-const spdEl = document.getElementById('spd');
-const dot = document.getElementById('dot');
 const runSel = document.getElementById('run');
 const keepChk = document.getElementById('keep');
 const chartWrap = document.getElementById('chartWrap');
 const resultEl = document.getElementById('result');
 const savedEl = document.getElementById('saved');
-let stream, recorder, chunks = [], running = false, startTs = 0, speed = 0, lon = 0, samples = [], watchId = null, lastFrame = null, motionStart = false, goTs = 0, reactMs = 0;
+const statusEl = document.getElementById('status');
+const startBtn = document.getElementById('bigStart');
+const lightsBox = document.getElementById('lights');
+const goEl = document.getElementById('go');
+const $v = k => document.querySelectorAll('[data-v="'+k+'"]');
+const setV = (k, t) => $v(k).forEach(e => { e.textContent = t; });
+const LBL={"60":"0–60 mph","100":"0–100 mph","30-70":"30–70 mph","quarter":"Quarter mile","half":"Half mile","100-200":"100–200 km/h","track":"Track mode"};
+const DIST={quarter:402.34, half:804.67};
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let voiceOn = false, rec = null, recRestart = null;
+
+// state: 'idle' (armed, waiting for a tap or voice), 'count' (lights), 'run' (GO, timing)
+let state = 'idle', gen = 0;
+let stream, recorder, chunks = [], startTs = 0, speed = 0, lon = 0, lat = 0, samples = [], watchId = null, lastFrame = null, visMove = false, goTs = 0, reactMs = 0;
+let gpsSpeedSeen = false, lastFix = null, dist = 0, launchHits = 0, gpsWarnT = null;
 
 let acked = false;
 document.getElementById('ok').onclick = () => { acked = true; document.getElementById('disc').style.display = 'none'; };
 function needAck(){ if(acked) return false; const d=document.getElementById('disc'); d.classList.remove('flash'); void d.offsetWidth; d.classList.add('flash'); return true; }
 document.getElementById('again').onclick = () => { chartWrap.classList.remove('show'); location.replace('performance.html'); };
 
+function say(txt, cls){ statusEl.textContent = txt || ''; statusEl.className = cls || ''; }
+function paintHud(){
+  setV('mode', LBL[runSel.value] ? LBL[runSel.value].replace('Quarter mile','¼ mile').replace('Half mile','½ mile').replace('Track mode','Track') : 'Run');
+  const busy = state !== 'idle';
+  document.querySelectorAll('[data-act="mode"]').forEach(b => b.disabled = busy);
+  const rec = keepChk.checked;
+  document.querySelectorAll('[data-act="rec"]').forEach(b => { b.classList.toggle('on', rec); b.setAttribute('aria-pressed', rec); });
+  setV('rec', rec ? 'Rec on' : 'Rec off');
+  document.querySelectorAll('[data-act="voice"]').forEach(b => { b.classList.toggle('on', voiceOn); b.setAttribute('aria-pressed', voiceOn); b.disabled = !SR; });
+  setV('voice', voiceOn ? 'Voice on' : 'Voice off');
+  startBtn.classList.remove('hide','act');
+  if(state === 'idle') startBtn.textContent = 'Tap to start';
+  else if(state === 'run' && runSel.value === 'track'){ startBtn.textContent = 'Stop and save'; startBtn.classList.add('act'); }
+  else startBtn.classList.add('hide');
+}
+
 async function startCam(){
   try{
     stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1280}}, audio:false});
     vid.srcObject = stream;
-  }catch(e){ alert('Camera needed'); }
+  }catch(e){ say('Camera not available – timing still works'); }
 }
 startCam();
 
-const gNowEl=document.getElementById('gNow'), gDetEl=document.getElementById('gDet'), gPeakEl=document.getElementById('gPeak');
-let lat=0;
 function onMotion(e){
   const r = PerfG.read(e);
   if(!r) return;
   lon = r.lon; lat = r.lat;
-  if(dot){
-    dot.style.transform = `translate(calc(-50% + ${lat*22}px), calc(-50% - ${lon*22}px))`;
-  }
-  gNowEl.textContent = r.comb.toFixed(2);
-  gDetEl.textContent = 'Lat ' + lat.toFixed(2) + ' · Long ' + lon.toFixed(2);
+  $v('dot').forEach(d => {
+    const big = d.parentElement.offsetWidth || 36, k = big / 4;
+    const mx = Math.max(-1, Math.min(1, lat)) * k, my = Math.max(-1, Math.min(1, lon)) * k;
+    d.style.transform = `translate(calc(-50% + ${mx}px), calc(-50% - ${my}px))`;
+  });
+  setV('g', r.comb.toFixed(2));
+  setV('latlon', 'Lat ' + lat.toFixed(2) + ' · Long ' + lon.toFixed(2));
   const pk = PerfG.peaks();
-  gPeakEl.textContent = 'Peak accel ' + pk.acc.toFixed(2) + ' · brake ' + pk.brk.toFixed(2) + ' · corner ' + pk.lat.toFixed(2) + ' G';
-  if(running && !startTs && (runSel.value==='30-70' ? speed>=30 : (Math.abs(lon) > 0.25 || motionStart))){
-    startTs = performance.now();
-    if(goTs && !reactMs && runSel.value!=='30-70'){
-      reactMs = Math.round(startTs - goTs);
-      const r = document.getElementById('react');
-      if(r){ r.textContent = 'Reaction ' + reactMs + ' ms'; r.style.display = 'block'; setTimeout(()=>r.style.display='none', 2500); }
-    }
-  }
-  if(running && startTs){
+  setV('peak', 'Peak ' + pk.acc.toFixed(2) + ' acc · ' + pk.brk.toFixed(2) + ' brk · ' + pk.lat.toFixed(2) + ' corner');
+  $v('peak2').forEach(e => { e.innerHTML = 'Peak ' + pk.acc.toFixed(2) + ' acc<br>' + pk.brk.toFixed(2) + ' brk · ' + pk.lat.toFixed(2) + ' corner'; });
+  if(state === 'run' && !startTs && launched()) markLaunch();
+  if(state === 'run' && startTs){
     const t = (performance.now()-startTs)/1000;
-    timeEl.textContent = t.toFixed(1);
+    setV('time', t.toFixed(1));
     samples.push({t:+t.toFixed(3), speed:+speed.toFixed(1), lon:+lon.toFixed(3), lat:+lat.toFixed(3)});
     checkFinish(t);
   }
 }
+// Launch: a clean pull of at least 0.3 G held for 4 readings in a row, or GPS moving above 3 mph.
+// Camera movement alone no longer starts the clock; it only counts when the phone also feels 0.15 G.
+function launched(){
+  if(runSel.value === '30-70') return speed >= 30;
+  const g = Math.abs(lon);
+  launchHits = g > 0.3 ? launchHits + 1 : 0;
+  if(launchHits >= 4) return true;
+  if(visMove && g > 0.15) return true;
+  return gpsSpeedSeen && speed > 3;
+}
+function markLaunch(){
+  startTs = performance.now(); dist = 0;
+  if(goTs && !reactMs && runSel.value !== '30-70'){ reactMs = Math.round(startTs - goTs); say('Reaction ' + reactMs + ' ms'); }
+}
 
 let motionOn = false;
-async function enableMotion(){
-  if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
-    try{ await DeviceMotionEvent.requestPermission(); }catch(e){}
-  }
-  if(!motionOn){ motionOn = true; window.addEventListener('devicemotion', onMotion); }
-}
-// Android and desktop need no permission, so start the live G read-out straight away (it also calibrates while still).
-if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') enableMotion();
+// Listen straight away so the live G read-out calibrates while the phone is still; permission (where a browser asks) is requested on Start.
+function listenMotion(){ if(!motionOn){ motionOn = true; window.addEventListener('devicemotion', onMotion); } }
+async function enableMotion(){ listenMotion(); await PerfG.ask(); }
+listenMotion();
 
 function checkVisual(){
-  if(!running || startTs || !vid.videoWidth) return;
-  const c = document.createElement('canvas');
-  c.width = 64; c.height = 36;
-  const ctx = c.getContext('2d');
-  ctx.drawImage(vid, 0, 0, 64, 36);
+  if(state !== 'run' || startTs || !vid.videoWidth) return;
+  const c = document.createElement('canvas'); c.width = 64; c.height = 36;
+  const ctx = c.getContext('2d'); ctx.drawImage(vid, 0, 0, 64, 36);
   const data = ctx.getImageData(0,0,64,36).data;
-  if(lastFrame){
-    let diff = 0;
-    for(let i=0;i<data.length;i+=16) diff += Math.abs(data[i]-lastFrame[i]);
-    if(diff > 7000) motionStart = true;
-  }
+  if(lastFrame){ let diff = 0; for(let i=0;i<data.length;i+=16) diff += Math.abs(data[i]-lastFrame[i]); visMove = diff > 9000; }
   lastFrame = data;
 }
 setInterval(checkVisual, 120);
@@ -236,37 +312,66 @@ function checkFinish(t){
   if(mode==='60' && speed>=60){ done=true; label='0–60'; }
   else if(mode==='100' && speed>=100){ done=true; label='0–100'; }
   else if(mode==='30-70' && speed>=70){ done=true; label='30–70'; }
-  else if(mode==='quarter' && t>8){ done=true; label='Quarter'; }
-  else if(mode==='half' && t>15){ done=true; label='Half'; }
+  else if(DIST[mode] && dist>=DIST[mode]){ done=true; label = mode==='quarter' ? 'Quarter' : 'Half'; }
   else if(mode==='100-200' && speed>=124){ done=true; label='100–200'; }
   if(done) finish(t, label);
 }
 
+// GPS: speed from the fix when the phone gives it, otherwise from the distance between fixes. Distance drives ¼ / ½ mile.
+function hav(a, b){ const R=6371000, r=x=>x*Math.PI/180, dLa=r(b.latitude-a.latitude), dLo=r(b.longitude-a.longitude);
+  const h=Math.sin(dLa/2)**2+Math.cos(r(a.latitude))*Math.cos(r(b.latitude))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+function onFix(pos){
+  const c = pos.coords, now = pos.timestamp || Date.now();
+  let v = null;
+  if(c.speed != null && !isNaN(c.speed)) v = c.speed;
+  if(lastFix){
+    const d = hav(lastFix.c, c), dt = (now - lastFix.t) / 1000;
+    if(v == null && dt > 0.2 && dt < 5 && (c.accuracy||0) < 30) v = d / dt;
+    if(startTs && d < 200) dist += d;
+  }
+  lastFix = {c:{latitude:c.latitude, longitude:c.longitude}, t:now};
+  if(v != null){ speed = v * 2.23694; gpsSpeedSeen = true; if(gpsWarnT){ clearTimeout(gpsWarnT); gpsWarnT = null; } if(/GPS/.test(statusEl.textContent)) say(''); }
+  setV('spd', Math.round(speed));
+  if(state === 'run' && startTs) checkFinish((performance.now()-startTs)/1000);
+}
+function needsGps(){ return runSel.value !== 'track'; }
+
+function stopSensors(){
+  if(recorder && recorder.state==='recording'){ try{ recorder.stop(); }catch(e){} }
+  if(watchId != null && navigator.geolocation){ navigator.geolocation.clearWatch(watchId); watchId = null; }
+  if(gpsWarnT){ clearTimeout(gpsWarnT); gpsWarnT = null; }
+}
+function resetHud(){
+  lightsBox.querySelectorAll('.light').forEach(l => l.classList.remove('on'));
+  goEl.style.display = 'none';
+  setV('time', '0.0');
+}
+
 let stopP = null;
 async function finish(t, label){
-  running = false;
+  if(state !== 'run') return;
+  state = 'idle'; gen++;
   const hadRec = recorder && recorder.state==='recording';
-  if(hadRec) recorder.stop();
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-  const runLabel = runSel.options[runSel.selectedIndex].text;
+  stopSensors(); voiceStop();
+  const runLabel = LBL[runSel.value];
   resultEl.textContent = label + '  ' + t.toFixed(2) + 's' + (reactMs ? '  ·  reaction ' + reactMs + ' ms' : '');
-  // Save to shared diary
   try{
     const list = JSON.parse(localStorage.getItem("gt.driveLog")||"[]");
-    list.unshift({ id: "run-"+Date.now(), type: "run", plate: (window.D3Car&&D3Car.curVrn())||"", when: Date.now(), from: runLabel, to: t.toFixed(2)+"s", time: t.toFixed(2)+"s", miles: 0, cost: 0, mpg: null });
+    list.unshift({ id: "run-"+Date.now(), type: "run", plate: (window.D3Car&&D3Car.curVrn())||"", when: Date.now(), from: runLabel, to: t.toFixed(2)+"s", time: t.toFixed(2)+"s", miles: +(dist/1609.34).toFixed(2), cost: 0, mpg: null });
     localStorage.setItem("gt.driveLog", JSON.stringify(list.slice(0,500)));
   }catch(e){}
   let video = null;
   if(hadRec && stopP){ try{ await stopP; }catch(e){} }
   if(keepChk.checked && chunks.length) video = new Blob(chunks, {type: (chunks[0]&&chunks[0].type) || 'video/webm'});
   chunks = [];
-  const run = { id: 'run-' + Date.now(), when: Date.now(), plate: (window.D3Car&&D3Car.curVrn())||'', label: runLabel, result: resultEl.textContent, time: t.toFixed(2), reactMs, samples: samples.slice(), stats: PerfG.stats(samples), video };
+  const run = { id: 'run-' + Date.now(), when: Date.now(), plate: (window.D3Car&&D3Car.curVrn())||'', label: runLabel, result: resultEl.textContent, time: t.toFixed(2), reactMs, distM: Math.round(dist), samples: samples.slice(), stats: PerfG.stats(samples), video };
   const cv = document.getElementById('chart');
   PerfG.draw(cv, run);
   run.chart = await new Promise(r => cv.toBlob(r, 'image/png'));
   let ok = true;
   try{ await PerfG.save(run); }catch(e){ ok = false; }
-  showRun(run, ok ? (video ? 'Saved on this phone with its video and G chart.' : 'Saved on this phone with its G chart. Video discarded (Keep video was off).') : 'Could not save on this phone (storage full?). You can still share the chart.');
+  resetHud(); paintHud(); say('');
+  showRun(run, ok ? (video ? 'Saved on this phone with its video and G chart.' : 'Saved on this phone with its G chart. Video discarded (Rec was off).') : 'Could not save on this phone (storage full?). You can still share the chart.');
 }
 
 let shown = null;
@@ -309,46 +414,48 @@ async function showList(){
     box.appendChild(b);
   });
 }
-document.getElementById('runsBtn').onclick = showList;
 document.getElementById('runsBtn2').onclick = showList;
 (function(){ const q = new URLSearchParams(location.search); const id = q.get('run');
   if(id) PerfG.get(id).then(r => r ? showRun(r) : showList()).catch(showList); else if(q.has('runs') || location.hash === '#runs') showList(); })();
 
-document.getElementById('cancel').onclick = () => {
-  running = false;
-  if(recorder && recorder.state==='recording') recorder.stop();
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-  document.getElementById('bigStart').classList.remove('hide');
-  document.getElementById('cancel').style.display = 'none';
-  timeEl.textContent = '0.0';
-  showPick(true);
-};
+// Cancel: bumps the generation so a countdown in progress stops at its next step, then resets everything.
+function cancelRun(){
+  if(state === 'idle') return;
+  gen++; state = 'idle';
+  stopSensors(); voiceStop();
+  chunks = []; startTs = 0;
+  resetHud(); say('Run cancelled'); paintHud();
+}
 
+const wait = ms => new Promise(r => setTimeout(r, ms));
 async function beginRun(){
+  if(state !== 'idle') return;
   if(needAck()){ showPick(true); return; }
   showPick(false);
-  document.getElementById('bigStart').classList.add('hide');
-  document.getElementById('cancel').style.display = 'inline-block';
-  const lights = document.querySelectorAll('.light');
-  const lightsBox = document.getElementById('lights');
-  const go = document.getElementById('go');
-  lightsBox.style.display = 'flex';
+  voiceStop();                       // the mic is released as soon as a run starts
+  const my = ++gen; state = 'count'; paintHud(); say('');
+  const lights = lightsBox.querySelectorAll('.light');
+  lights.forEach(l => l.classList.remove('on'));
+  // Start GPS during the lights so speed is ready at GO.
+  gpsSpeedSeen = false; lastFix = null; dist = 0; speed = 0; setV('spd', '0');
+  if(navigator.geolocation && needsGps()) watchId = navigator.geolocation.watchPosition(onFix, ()=>{}, {enableHighAccuracy:true, maximumAge:400});
   for(let i=0;i<3;i++){
-    await new Promise(r=>setTimeout(r,1100));
+    await wait(1100); if(my !== gen) return;
     lights[i].classList.add('on');
   }
-  await new Promise(r=>setTimeout(r,900));
-  lightsBox.style.display = 'none';
+  await wait(900); if(my !== gen) return;
   lights.forEach(l=>l.classList.remove('on'));
-  go.style.display = 'block';
-  goTs = performance.now();
-  setTimeout(()=>go.style.display='none', 800);
-
-  await enableMotion();
+  goEl.style.display = 'block'; goTs = performance.now();
+  setTimeout(()=>{ goEl.style.display='none'; }, 800);
+  await enableMotion(); if(my !== gen){ goEl.style.display='none'; return; }
   PerfG.zero();
-  running = true; startTs = 0; samples = []; motionStart = false; speed = 0; reactMs = 0;
-  timeEl.textContent = '0.0';
-
+  state = 'run'; startTs = 0; samples = []; visMove = false; lastFrame = null; reactMs = 0; launchHits = 0;
+  setV('time', '0.0'); paintHud();
+  if(runSel.value === 'track'){ markLaunch(); }
+  if(needsGps()){
+    if(!navigator.geolocation) say('This run needs GPS speed – location is not available');
+    else gpsWarnT = setTimeout(() => { if(my === gen && !gpsSpeedSeen) say('Waiting for GPS speed – this run needs location on'); }, 3000);
+  }
   if(stream){
     chunks = [];
     try{
@@ -358,22 +465,33 @@ async function beginRun(){
       recorder.start();
     }catch(e){}
   }
-  if(navigator.geolocation){
-    watchId = navigator.geolocation.watchPosition(pos => {
-      if(pos.coords.speed != null) speed = pos.coords.speed * 2.23694;
-      spdEl.textContent = Math.round(speed);
-    }, ()=>{}, {enableHighAccuracy:true, maximumAge:400});
-  }
 }
 
-document.getElementById('bigStart').onclick = beginRun;
+startBtn.onclick = (e) => {
+  e.stopPropagation();
+  if(state === 'idle') beginRun();
+  else if(state === 'run' && runSel.value === 'track'){ finish(startTs ? (performance.now()-startTs)/1000 : 0, 'Track'); }
+};
+// Tapping the camera view also starts the countdown (not the pills).
+vid.addEventListener('click', () => { if(state === 'idle' && !document.body.classList.contains('pick')) beginRun(); });
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b || b.disabled) return;
+  const a = b.getAttribute('data-act');
+  if(a === 'mode'){ if(state === 'idle') showPick(true); }
+  else if(a === 'cancel') cancelRun();
+  else if(a === 'saved'){ if(state === 'idle') showList(); }
+  else if(a === 'voice') voiceOn ? voiceStop() : voiceStart();
+  else if(a === 'rec'){ keepChk.checked = !keepChk.checked; paintHud(); }
+  else if(a === 'back'){ cancelRun(); voiceStop(); location.href = 'home.html'; }
+});
+keepChk.addEventListener('change', paintHud);
 
 // ---- Run picker ----
 const PK=[["60","0–60","mph"],["100","0–100","mph"],["30-70","30–70","mph"],["quarter","¼ mile",""],["half","½ mile",""],["100-200","100–200","km/h"],["track","Track mode","no finish line"]];
-const LBL={"60":"0–60 mph","100":"0–100 mph","30-70":"30–70 mph","quarter":"Quarter mile","half":"Half mile","100-200":"100–200 km/h","track":"Track mode"};
-function showPick(on){ document.body.classList.toggle('pick', !!on); if(on) window.scrollTo(0,0); }
+function showPick(on){ document.body.classList.toggle('pick', !!on); if(on){ window.scrollTo(0,0); voiceStop(); } paintHud(); }
 function typeOf(r){ const l=(r.label||'').toLowerCase(); for(const k in LBL){ if(LBL[k].toLowerCase()===l) return k; } return ''; }
-function bests(runs){ const b={}; runs.forEach(r=>{ const k=typeOf(r), t=parseFloat(r.time); if(k&&t>0&&(!b[k]||t<b[k].t)) b[k]={t, id:r.id}; }); return b; }
+function bests(runs){ const b={}; runs.forEach(r=>{ const k=typeOf(r), t=parseFloat(r.time); if(k&&k!=='track'&&t>0&&(!b[k]||t<b[k].t)) b[k]={t, id:r.id}; }); return b; }
 let PKRUNS=[], PKEX=false;
 function paintPick(){
   const b=bests(PKRUNS), cur=runSel.value;
@@ -384,22 +502,25 @@ function paintPick(){
   const ids=new Set(Object.values(b).map(x=>x.id));
   box.innerHTML='';
   PKRUNS.slice(0,5).forEach(r=>{ const k=typeOf(r), el=document.createElement('button'); el.type='button'; el.className='pk-r';
-    const short=(PK.find(p=>p[0]===k)||[0,'Run'])[1];
     el.innerHTML='<span class="bd'+(ids.has(r.id)?' best':'')+'">'+(ids.has(r.id)?'★':((window.dipstickIcon&&dipstickIcon('flag'))||''))+'</span><span class="m"><b>'+(r.label||'Run')+'</b><small>'+new Date(r.when).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+(ids.has(r.id)?' · Best':'')+((r.stats&&r.stats.maxComb)?' · '+r.stats.maxComb.toFixed(2)+' G':'')+'</small></span><span class="tm">'+parseFloat(r.time).toFixed(2)+'s</span>';
     if(!PKEX) el.onclick=()=>showRun(r);
     box.appendChild(el); });
 }
-document.getElementById('pkGrid').addEventListener('click',e=>{ const t=e.target.closest('[data-run]'); if(!t) return; runSel.value=t.getAttribute('data-run'); paintPick(); });
-document.getElementById('pkStart').onclick=()=>beginRun();
+// Choosing a run type only selects it: no mic, no countdown.
+document.getElementById('pkGrid').addEventListener('click',e=>{ const t=e.target.closest('[data-run]'); if(!t) return; runSel.value=t.getAttribute('data-run'); paintPick(); paintHud(); });
+// Start run on the picker arms the camera view; the countdown begins on "Tap to start" (or voice, if switched on).
+document.getElementById('pkStart').onclick=()=>{ if(needAck()) return; showPick(false); say(''); };
 window.addEventListener('load',()=>paintPick());
 document.getElementById('pkAll').onclick=()=>{ if(PKEX) return; showList(); };
 (function(){
-  const slot=document.getElementById('pkSlot'), disc=document.getElementById('disc'), keep=document.getElementById('keep');
+  const slot=document.getElementById('pkSlot'), disc=document.getElementById('disc');
   slot.appendChild(disc);
-  const kl=keep.closest('label'); const row=document.createElement('label'); row.className='pk-keep'; row.htmlFor='keep'; row.innerHTML='<span>Keep video</span>'; row.appendChild(keep); if(kl) kl.remove(); slot.appendChild(row);
+  const row=document.createElement('label'); row.className='pk-keep'; row.htmlFor='keep'; row.innerHTML='<span>Keep video</span>';
+  const kl=keepChk.closest('label'); row.appendChild(keepChk); if(kl) kl.remove(); slot.appendChild(row);
   const q=new URLSearchParams(location.search);
   if(q.has('run')||q.has('runs')||location.hash==='#runs') showPick(false);
-  if(q.get('example')==='1'){ // mockup only: clearly labelled example runs
+  if(q.get('hud')==='1'){ acked=true; disc.style.display='none'; showPick(false); }
+  if(q.get('example')==='1'){
     PKEX=true; const d=Date.now(), h=36e5;
     PKRUNS=[{id:'e1',label:'0–60 mph',time:'7.84',when:d-2*h,stats:{maxComb:.61}},{id:'e2',label:'30–70 mph',time:'6.12',when:d-26*h,stats:{maxComb:.48}},{id:'e3',label:'0–60 mph',time:'8.21',when:d-50*h,stats:{maxComb:.57}},{id:'e4',label:'Quarter mile',time:'15.90',when:d-120*h,stats:{maxComb:.63}},{id:'e5',label:'0–100 mph',time:'19.45',when:d-200*h,stats:{maxComb:.55}}];
     paintPick(); return; }
@@ -407,57 +528,43 @@ document.getElementById('pkAll').onclick=()=>{ if(PKEX) return; showList(); };
   PerfG.list().then(rs=>{ PKRUNS=rs.filter(r=>!window.D3Car||D3Car.owns(r.plate)); paintPick(); }).catch(()=>{});
 })();
 
-
-// Voice: say "start run"
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const listenEl = document.getElementById('listening');
-function showListening(txt){ if(listenEl){ listenEl.style.display = 'flex'; document.getElementById('listenTxt').textContent = txt || 'Listening for “start run”'; } }
-if(!SR){
-  showListening('Voice not supported – use the button');
-}else{
-  let listening = false;
-  async function tryStart(){
-    if(listening) return;
-    try{
-      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-      stream.getTracks().forEach(t => t.stop());
-    }catch(e){
-      showListening('Tap the lock icon → Allow microphone');
-      return;
-    }
-    const rec = new SR();
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.lang = 'en-GB';
-    rec.onresult = (e) => {
-      const said = Array.from(e.results).map(r => r[0].transcript).join(' ').toLowerCase();
-      showListening('Heard: ' + said.slice(-40));
-      if(said.includes('start') && !running && !document.getElementById('bigStart').classList.contains('hide')){
-        beginRun();
-      }
-    };
-    rec.onerror = (ev) => {
-      if(ev.error === 'not-allowed'){
-        showListening('Microphone blocked – tap lock icon and allow');
-      }else{
-        showListening('Mic error – tap screen to retry');
-      }
-      listening = false;
-    };
-    rec.onend = () => { listening = false; setTimeout(tryStart, 800); };
-    try{
-      rec.start();
-      listening = true;
-      showListening('Listening… say “start run”');
-    }catch(err){
-      showListening('Could not start mic – tap screen');
-      listening = false;
-    }
-  }
-  document.addEventListener('touchstart', tryStart, {once:true, passive:true});
-  document.addEventListener('click', tryStart, {once:true});
-  document.getElementById('ok').addEventListener('click', tryStart);
+// ---- Voice start: a toggle, off by default. The mic is only open while it is on and the run is armed. ----
+const PHRASE = /^(?:ok(?:ay)?\s+)?(?:start(?:\s+the)?\s+run|start)$/;
+function voiceStop(){
+  const was = voiceOn;
+  voiceOn = false;
+  if(recRestart){ clearTimeout(recRestart); recRestart = null; }
+  if(rec){ const r = rec; rec = null; r.onend = r.onresult = r.onerror = null; try{ r.abort(); }catch(e){} }
+  if(was && /Listening|Heard/.test(statusEl.textContent)) say('');
+  paintHud();
 }
+function voiceListen(){
+  if(!voiceOn || state !== 'idle' || document.body.classList.contains('pick')) return;
+  const r = new SR(); rec = r;
+  r.continuous = false; r.interimResults = false; r.lang = 'en-GB'; r.maxAlternatives = 3;
+  r.onresult = (e) => {
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal) continue;
+      for(let j=0;j<e.results[i].length;j++){
+        const said = String(e.results[i][j].transcript||'').toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim();
+        if(PHRASE.test(said)){ beginRun(); return; }
+      }
+      say('Heard “' + String(e.results[i][0].transcript||'').trim().slice(0,30) + '” – say “start run”', 'lis');
+    }
+  };
+  r.onerror = (ev) => { if(ev.error === 'not-allowed' || ev.error === 'service-not-allowed'){ say('Microphone blocked – allow it in settings'); voiceStop(); } };
+  r.onend = () => { if(rec === r){ rec = null; if(voiceOn && state === 'idle') recRestart = setTimeout(voiceListen, 600); } };
+  try{ r.start(); say('Listening – say “start run”', 'lis'); }catch(err){ say('Could not start the mic'); voiceStop(); }
+}
+async function voiceStart(){
+  if(!SR){ say('Voice start is not supported on this phone'); return; }
+  if(state !== 'idle') return;
+  try{ const s = await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(t => t.stop()); }
+  catch(e){ say('Microphone blocked – allow it in settings'); return; }
+  voiceOn = true; paintHud(); voiceListen();
+}
+document.addEventListener('visibilitychange', () => { if(document.hidden){ voiceStop(); if(state !== 'idle') cancelRun(); } });
+paintHud();
 </script>
 </body>
 </html>

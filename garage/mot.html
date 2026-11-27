@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#0b0c0e"/>
 <link rel="stylesheet" href="./ui.css?v=83"/>
 <link rel="stylesheet" href="./tool-bar.css?v=8"/>
+<link rel="stylesheet" href="./mot-ui.css?v=1"/>
 <title>MOT</title>
 <meta name="description" content="Check MOT history, advisories and the next due date for your car."/>
 <meta property="og:type" content="website"/>
@@ -46,10 +47,7 @@ h1{margin:0;font-size:22px}
 /* MOT test rows: text left, pass/fail circle right (restored from before 86aec74) */
 .row.test{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .row.test>div{min-width:0}
-.tag{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:104px;min-height:64px;flex:0 0 104px;border-radius:14px !important;font-size:11px;font-weight:800;line-height:1.15;border-radius:999px;padding:8px;box-sizing:border-box}
-.tag.pass{background:#1e3a34;color:#a7f3d0}
-.tag.fail{background:#5b1d1d;color:#fecaca}
-.tag em{display:block;font-style:normal;font-weight:600;font-size:11px;opacity:.85;margin-top:3px}
+/* Pass/Fail marks live in mot-ui.css (.motMark). */
 #motStatus{display:none;border-radius:16px;padding:14px 16px;margin:10px 0 4px;font-weight:600;line-height:1.35}
 #motStatus b{display:block;font-size:19px}
 #motStatus small{display:block;font-size:13px;font-weight:500;opacity:.85}
@@ -91,6 +89,7 @@ h1{margin:0;font-size:22px}
 <script src="diy-work.js?v=3"></script>
 <script src="maint-link.js?v=1"></script>
 <script src="icons.js?v=36"></script>
+<script src="outlook.js?v=1"></script>
 <script>
 function $(id){return document.getElementById(id)}
 var plate=new URLSearchParams(location.search).get("plate")||"";
@@ -126,7 +125,8 @@ function render(info){
   var rows=tests.map(function(t){
     var ok=String(t.testResult||"").toUpperCase()==="PASSED";
     var items=(t.defects||[]).map(itemLine).join("");
-    return "<div class='row test'><div><b>"+date(t.completedDate||t.testDate)+"</b><p class='muted'>"+miles(t.odometerValue)+" "+(t.odometerUnit||"")+"</p>"+items+"</div><span class='tag "+(ok?"pass":"fail")+"'>"+(ok?"PASSED":"FAILED")+" · "+ukNice(t.completedDate||t.testDate)+(ok&&t.expiryDate?"<em>Expires "+ukNice(t.expiryDate)+"</em>":"")+"</span></div>";
+    var exp=ok&&t.expiryDate?("<p class='muted'>Expires "+ukNice(t.expiryDate)+"</p>"):"";
+    return "<div class='motRow'><div><b>"+date(t.completedDate||t.testDate)+"</b><p class='muted'>"+miles(t.odometerValue)+" "+(t.odometerUnit||"")+"</p>"+items+exp+"</div><span class='motMark "+(ok?"pass":"fail")+"'>"+(ok?"Pass":"Fail")+"</span></div>";
   }).join("");
   hist.innerHTML=rows||"<p class='muted'>No tests.</p>";
   var fails=[];
@@ -192,7 +192,14 @@ function render(info){
     line("Timing belt","Many belts are five years or 60,000 to 100,000 miles. A chain has no set date. Ask for the invoice.", milesNow>80000||age>=5?"\u00a3400 to \u00a3900 if it is a belt":"Check the schedule", null, age>=5||milesNow>80000)
   ];
   var totals="<div class='totCard' id='outRow'><p class='totLab'>Estimated total</p><p class='outTotal' id='outTotal'></p><p class='totSub'>Outstanding work, independent garage prices</p><p class='muted' id='outNote'></p></div>";
-  $("future").innerHTML=totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+(age?"About "+age+" years on record. ":"")+"Typical life, not a quote, and only for this car.</p>";
+  var outlook=window.T3Outlook?window.T3Outlook.score({
+      tests:tests, year:year||null, age:age, miles:milesNow,
+      make:info.make||raw.make||raw.Make, model:info.model||raw.model||raw.Model,
+      name:info.name||[raw.make||raw.Make, raw.model||raw.Model].filter(Boolean).join(" "),
+      fuel:info.fuel||raw.fuelType||raw.FuelType, engine:info.engine
+    }):null;
+  var card=outlook&&window.T3Outlook.cardHtml(outlook)||"";
+  $("future").innerHTML=card+totals+summary+future.join("")+"<p class='muted'>"+(milesNow?miles(milesNow)+" miles on the latest test. ":"")+(age?"About "+age+" years on record. ":"")+"Typical life, not a quote, and only for this car.</p>";
   // Done ticks are saved per car (by plate) through D3Maint, which also moves the car's tyre/service/belt dates
   // so the Maintenance planner, reminders and Drive diary follow. A tick made before a newer MOT no longer counts.
   var motDay=String(latest.completedDate||latest.testDate||"").slice(0,10);

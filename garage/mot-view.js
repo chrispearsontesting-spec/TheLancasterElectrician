@@ -1,4 +1,4 @@
-window.paintMotView=function(tests, year){
+window.paintMotView=function(tests, year, car){
   tests=tests||[];
   function $(id){return document.getElementById(id)}
   function defects(t){return t.defects||t.rfrAndComments||t.rfrAndComment||[]}
@@ -11,18 +11,18 @@ window.paintMotView=function(tests, year){
   var hist=$("hist")||$("motBox");
   if(!hist) return;
   if(!tests.length){hist.innerHTML="<p class='muted'>No tests returned.</p>";if($("work"))$("work").innerHTML="";if($("future"))$("future").innerHTML="";return}
-  hist.innerHTML=tests.slice(0,16).map(function(t){
+  hist.innerHTML=window.T3Outlook?window.T3Outlook.historyHtml(tests.slice(0,16)):tests.slice(0,16).map(function(t){
     var result=t.testResult||"", date=ukDate(t.completedDate);
     var milesTxt=t.odometerValue?(" · "+miles(t.odometerValue)+" mi"):"";
     var list=defects(t).map(function(x){return "<p class='muted'>"+textOf(x)+"</p>"}).join("");
-    return "<div class='row'><div><b>"+date+milesTxt+"</b>"+(list||"<p class='muted'>No defects listed.</p>")+"</div><span class='tag "+(/FAIL/i.test(result)?"fail":"pass")+"'>"+(/FAIL/i.test(result)?"Fail":"Pass")+"</span></div>";
+    return "<div class='motRow'><div><b>"+date+milesTxt+"</b>"+(list||"<p class='muted'>No defects listed.</p>")+"</div><span class='motMark "+(/FAIL/i.test(result)?"fail":"pass")+"'>"+(/FAIL/i.test(result)?"Fail":"Pass")+"</span></div>";
   }).join("");
   var cut=new Date().getFullYear()-5, jobs=[];
   tests.forEach(function(t){
     if(+yearOf(t)<cut) return;
     defects(t).forEach(function(x){ if(isMajor(x)) jobs.push({date:ukDate(t.completedDate), text:textOf(x)}); });
   });
-  if($("work")) $("work").innerHTML=jobs.length?jobs.map(function(j){return "<div class='row'><div><b>"+j.date+"</b><p class='muted'>"+j.text+"</p></div><span class='tag fail'>Had to be fixed</span></div>"}).join("")+"<p class='muted'>A current MOT means these fails were put right.</p>":"<p class='muted'>No major fails in the last five years.</p>";
+  if($("work")) $("work").innerHTML=jobs.length?jobs.map(function(j){return "<div class='futureItem'><b>"+j.date+" · had to be fixed</b><p class='muted'>"+j.text+"</p></div>"}).join("")+"<p class='muted'>A current MOT means these fails were put right.</p>":"<p class='muted'>No major fails in the last five years.</p>";
   var latest=tests[0]||{}, milesNow=parseInt(String(latest.odometerValue||"").replace(/[^0-9]/g,""),10)||0;
   var firstYear=+(tests[tests.length-1].completedDate||"").slice(0,4)||new Date().getFullYear();
   var age=year?new Date().getFullYear()-year:new Date().getFullYear()-firstYear;
@@ -38,23 +38,20 @@ window.paintMotView=function(tests, year){
     var state=soon?"Due soon":"Plan for", note=life;
     if(hit&&hit.major){state="Seen in a fail";note="Last recorded "+hit.date+". A fail usually means it was put right. "+life}
     else if(hit){state="Advised";note="MOT said: "+hit.text+". "+life}
-    return "<div class='row'><div><b>"+title+"</b><p class='muted'>"+state+". "+note+" Guide "+cost+".</p></div></div>";
+    return "<div class='futureItem'><b>"+title+"</b><p class='muted'>"+state+". "+note+" Guide "+cost+".</p></div>";
   }
   if($("future")){
     var tyre=lastHit(/tyre/), brake=lastHit(/brake/), sus=lastHit(/suspension|spring|arm|bush/), exh=lastHit(/exhaust|corrosion/);
-    var soon=[], lo=0, hi=0;
-    function add(on, name, a, b){ if(on){ soon.push(name); lo+=a; hi+=b; } }
-    add(!!(tyre&&!tyre.major)||age>=6, "tyres", 250, 500);
-    add(!!(brake&&!brake.major), "brakes", 150, 350);
-    add(age>=8||!!(sus&&!sus.major), "suspension", 150, 400);
-    add(age>=8||!!(exh&&!exh.major), "exhaust", 150, 400);
-    add(true, "a service", 150, 300);
-    add(age>=5||milesNow>80000, "a timing belt check", 0, 900);
-    var summary="<p class='muted'><b>Next few years.</b> ";
-    if(soon.length) summary+="From this car's tests and age, plan for "+soon.join(", ")+". A rough independent-garage total is £"+lo+" to £"+hi+".";
-    else summary+="Nothing in the recent tests points to a big bill. A yearly service is the usual cost.";
-    summary+=" This is for this registration only, not a quote.</p>";
-    $("future").innerHTML=summary+[
+    var carInfo=car||{};
+    var diyText="";
+    try{ (JSON.parse(localStorage.getItem("gt.diy")||"[]")||[]).forEach(function(x){ diyText+=" "+(x.text||x.title||x.job||x.name||""); }); }catch(e){}
+    var outlook=window.T3Outlook?window.T3Outlook.score({
+      tests:tests, year:year||null, age:age, miles:milesNow,
+      make:carInfo.make, model:carInfo.model, name:carInfo.name, fuel:carInfo.fuel, engine:carInfo.engine,
+      doneText:diyText
+    }):null;
+    var card=outlook&&window.T3Outlook.cardHtml(outlook)||"";
+    $("future").innerHTML=card+[
       line("Tyres","A set often lasts 20,000 to 30,000 miles, or about five years.","£250 to £500",tyre,!!(tyre&&!tyre.major)||age>=6),
       line("Brakes","Pads are often 25,000 to 40,000 miles. Discs last longer.","£150 to £350 an axle",brake,!!(brake&&!brake.major)),
       line("Suspension","Bushes, arms and springs commonly need attention after 60,000 miles or eight to ten years.","£150 to £400 a corner",sus,age>=8||!!(sus&&!sus.major)),

@@ -1,0 +1,36 @@
+/* MOT history marks and Future costs outlook. Keep off the generic .row / .tag classes. */
+.motRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.motRow:last-child{border-bottom:0}
+.motRow>div{min-width:0;flex:1}
+.motMark{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:56px;height:56px;flex:0 0 56px;margin-top:2px;
+  border-radius:50%;
+  font-size:11px;font-weight:800;letter-spacing:.06em;line-height:1;
+  text-transform:uppercase;text-align:center;
+  box-sizing:border-box;padding:0;overflow:hidden;white-space:nowrap;
+}
+.motMark.pass{background:#1e3a34;color:#a7f3d0}
+.motMark.fail{background:#5b1d1d;color:#fecaca}
+
+.outlook{margin:0 0 14px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:#171a20}
+.outHead{display:flex;align-items:center;gap:14px;margin:0 0 10px}
+.outRing{--p:0;--c:#34d399;width:84px;height:84px;flex:0 0 84px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%), #2a2e36 0);display:grid;place-items:center}
+.outRing::before{content:"";width:60px;height:60px;border-radius:50%;background:#171a20;grid-area:1/1}
+.outRing b{grid-area:1/1;z-index:1;font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#f3efe6}
+.outHead .outTitle{margin:0;font-size:15px;font-weight:700;line-height:1.25}
+.outHead .estLab{margin:4px 0 0;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa3b0}
+.outSum{margin:0 0 10px;font-size:13px;line-height:1.45;color:#c9c2b4}
+.outFacts{display:grid;gap:4px;margin:0 0 10px}
+.outFact{font-size:12px;line-height:1.35;color:#d7d3c8}
+.outFact.up{color:#a7f3d0}
+.outFact.down{color:#fecaca}
+.outDone{margin:0;padding:0;list-style:none}
+.outDone b{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9aa3b0;margin:0 0 6px}
+.outDone li{font-size:13px;padding:4px 0;border-top:1px solid rgba(255,255,255,.08);color:#f3efe6}
+.outDone li:first-of-type{border-top:0}
+.futureItem{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.futureItem:last-child{border-bottom:0}
+.futureItem b{display:block}
+
+.motBad{color:#fecaca;font-weight:700}

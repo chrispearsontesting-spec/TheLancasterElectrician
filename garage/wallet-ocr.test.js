@@ -14,3 +14,25 @@ assert.equal(O.extractPolicy("Policy Number: ABC-123456/01 Start date 01/01/2026
 assert.equal(O.extractPolicy("Policy number\nPOL204918\nInsurer Hastings"), "POL204918");
 assert.equal(O.extractPolicy("Policyholder: Chris Pearson\nPostcode LA1 1AA"), "");
 console.log("extractPolicy ok");
+
+var R1="TESCO PETROL STATION\nLancaster LA1 1AA\nVAT Receipt\nDate 27/11/2026\nUNLEADED  32.15 L  @  142.9 p/l\nFuel £45.94\nVAT @ 20%  £7.66\nTOTAL  £45.94\nVAT No GB 123 4567 89\nThank you";
+var r=O.extractReceipt(R1);
+assert.equal(r.supplier, "TESCO PETROL STATION");
+assert.equal(r.dateISO, "2026-11-27");
+assert.equal(r.total, 45.94);
+assert.equal(r.vat, 7.66);
+assert.equal(r.vatRate, 20);
+assert.equal(r.vatNo, "GB123456789");
+assert.equal(r.litres, 32.15);
+assert.equal(r.ppl, 142.9);
+
+var R2="SHELL\nFORECOURT\n12 Dec 2026\nDiesel 40.00 LITRES\n£1.359 per litre\nNET 45.30\nVAT 9.06\nAMOUNT DUE £54.36\nVAT REG NO: GB 890123456000\n**** CUSTOMER COPY ****";
+var r2=O.extractReceipt(R2);
+assert.equal(r2.supplier, "SHELL");
+assert.equal(r2.dateISO, "2026-12-12");
+assert.equal(r2.total, 54.36);
+assert.equal(r2.vat, 9.06);
+assert.equal(r2.vatNo, "GB890123456000");
+assert.equal(r2.litres, 40);
+assert.equal(r2.ppl, 135.9);
+console.log("extractReceipt ok");

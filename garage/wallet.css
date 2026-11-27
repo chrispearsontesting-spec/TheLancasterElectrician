@@ -668,3 +668,45 @@ html body a.btn[hidden],html body button.btn[hidden],html body .retake[hidden]{d
 .wSrc2 .btn{min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;margin:0 !important;width:100%}
 .retake + .retake{margin-left:0}
 .tile.add .tt{color:#f2f2f2}
+
+/* Torch, tap-to-focus, OCR fail, receipt frame */
+.camTorch{
+  position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;
+  z-index:6;width:44px;height:44px;border:0;border-radius:22px;
+  background:rgba(11,12,14,.7);color:#f2f2f2;
+  display:flex;align-items:center;justify-content:center;padding:0;
+}
+.camTorch.on{color:#ffe566;background:rgba(11,12,14,.9)}
+.camTorch svg{display:block}
+.camFocus{
+  position:absolute;width:72px;height:72px;margin:-36px 0 0 -36px;
+  border:2px solid #fff;border-radius:50%;pointer-events:none;z-index:5;
+  opacity:0;box-shadow:0 0 0 1px rgba(0,0,0,.35);
+}
+.camFocus.show{animation:camFocusRing .65s ease-out}
+@keyframes camFocusRing{
+  0%{opacity:1;transform:scale(1.28)}
+  65%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(1)}
+}
+.guide.receipt{
+  width:min(78%, 340px);height:78%;
+}
+.guide.receipt .frame{border-radius:10px}
+.camFail{
+  position:absolute;left:14px;right:14px;
+  bottom:calc(110px + env(safe-area-inset-bottom,0px));
+  z-index:9;background:rgba(11,12,14,.94);border:1px solid #2a2a2e;
+  border-radius:16px;padding:16px;text-align:center;color:#f2f2f2;
+}
+.camFail p{margin:0 0 12px;font-weight:600;line-height:1.35}
+.camFail .btn{margin:6px 4px 0;min-width:44%}
+.wSheet input[type="date"],
+.wSheet input[type="number"],
+.wSheet input[inputmode="decimal"]{
+  width:100%;background:#161618;color:#f2f2f2;border:1px solid #2a2a2e;
+  border-radius:12px;padding:12px;font-size:16px;
+}
+#recvSheet .btn.wide{margin-top:16px}
+#recvSheet .backBtn{margin-top:8px;width:100%}
+.recvBits{display:block}

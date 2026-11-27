@@ -3,6 +3,7 @@
   "use strict";
   var Store=window.D3WalletStore, Lock=window.D3WalletLock, Ocr=window.D3WalletOcr, Bar=window.D3Barcode, View=window.D3DocView;
   var car=null, rec={docs:[]}, view="locked", current=null, camStream=null, camSlot=null, pendingFile=null, retakeOf=null;
+  var torchOn=false, torchAvail=false, capturing=false, lastCapture=null, pendingReceipt=null;
 
   var DOCS=[
     {slot:"v5c",title:"V5C logbook"},
@@ -23,7 +24,7 @@
     fuel:"Line up the card — barcode in the box",
     insurance:"Line up the policy — number in the box",
     mot:"Line up the certificate — number in the box",
-    receipt:"Line up the receipt — number in the box",
+    receipt:"Line up the whole receipt",
     wheelnut:"Line up the code — number in the box",
     breakdown:"Line up the card — number in the box",
     other:"Line up the document — number in the box",
@@ -133,7 +134,15 @@
     }
     var num=formatNum(d.slot,d.number||d.phone||"");
     var n=list.length||1;
-    if(d.slot==="receipt"&&!num) num=n+" receipt"+(n===1?"":"s");
+    if(d.slot==="receipt"){
+      var bits=[];
+      if(d.total!=null&&d.total!=="") bits.push("£"+Number(d.total).toFixed(2));
+      else if(num) bits.push(num);
+      if(d.dateISO) bits.push(d.dateISO.split("-").reverse().join("/"));
+      else if(d.date) bits.push(d.date);
+      if(d.supplier) bits.push(d.supplier);
+      num=bits.length?bits.join(" · "):(n+" receipt"+(n===1?"":"s"));
+    }
     if(d.slot==="noclaims"){ var y=Store.ncbCurrent(d,car); num=(y===1?"1 year":y+" years"); }
     var u=thumbUrl(d);
     var thumb=u?'<img alt="" src="'+u+'"/>':artHtml(d.slot,d);
@@ -166,6 +175,7 @@
   var srcSlot=null;
   function openSrc(slot, replace){
     srcSlot={slot:slot, replace:replace||null};
+    retakeOf=replace||null;
     el("srcTitle").textContent=replace?("Replace "+slotTitle(slot,replace).toLowerCase()):("Add "+slotTitle(slot));
     el("srcSheet").classList.add("on");
     if(el("page-open")) el("page-open").classList.add("dim");
@@ -250,6 +260,7 @@
     var known=DOCS.concat(CARDS).some(function(x){ return x.slot===d.slot; });
     el("savedKind").textContent=known?slotTitle(d.slot):(d.title||"Document");
     var num=formatNum(d.slot,d.number||"");
+    if(d.slot==="receipt"&&d.total!=null&&d.total!=="") num="£"+Number(d.total).toFixed(2);
     if(d.slot==="noclaims"){ var y=Store.ncbCurrent(d,car); num=(y===1?"1 year":y+" years"); }
     var big=el("savedNum");
     big.textContent=num;
@@ -262,6 +273,19 @@
         var bits=[];
         if(d.ncbAt) bits.push("Counting from "+d.ncbAt.split("-").reverse().join("/"));
         if(next) bits.push("Next increase "+next.split("-").reverse().join("/"));
+        sub.textContent=bits.join(" · ");
+        sub.hidden=!bits.length;
+      }else if(d.slot==="receipt"){
+        var bits=[];
+        if(d.supplier) bits.push(d.supplier);
+        if(d.dateISO) bits.push(d.dateISO.split("-").reverse().join("/"));
+        else if(d.date) bits.push(d.date);
+        if(d.total!=null&&d.total!=="") bits.push("£"+Number(d.total).toFixed(2));
+        if(d.vat!=null&&d.vat!=="") bits.push("VAT £"+Number(d.vat).toFixed(2)+(d.vatRate!=null?" @ "+d.vatRate+"%":""));
+        else if(d.vatRate!=null&&d.vatRate!=="") bits.push("VAT @ "+d.vatRate+"%");
+        if(d.vatNo) bits.push(d.vatNo);
+        if(d.litres!=null&&d.litres!=="") bits.push(Number(d.litres)+" L");
+        if(d.ppl!=null&&d.ppl!=="") bits.push(Number(d.ppl)+" p/l");
         sub.textContent=bits.join(" · ");
         sub.hidden=!bits.length;
       }else if(d.numberAuto&&d.number){ sub.textContent="Read from the document. Tap Edit if it’s wrong."; sub.hidden=false; }
@@ -332,21 +356,97 @@
   function guideFor(slot){
     var g=el("camGuide");
     var card=slot==="licence"||slot==="fuel"||slot==="breakdown";
-    g.className="guide "+(card?"card ":"")+(slot==="licence"?"licence":slot==="fuel"?"fuel":slot==="noclaims"?"v5c generic":"v5c");
+    var receipt=slot==="receipt";
+    g.className="guide "+(card?"card ":"")+(receipt?"generic receipt":slot==="licence"?"licence":slot==="fuel"?"fuel":slot==="noclaims"?"v5c generic":"v5c");
     el("camHint").textContent=HINTS[slot]||HINTS.other;
   }
+  function videoTrack(){
+    return camStream&&camStream.getVideoTracks&&camStream.getVideoTracks()[0]||null;
+  }
+  function paintTorch(){
+    var b=el("camTorch"); if(!b) return;
+    b.hidden=!torchAvail;
+    b.setAttribute("aria-pressed", torchOn?"true":"false");
+    b.classList.toggle("on", !!torchOn);
+  }
+  async function setTorch(on){
+    torchOn=!!on;
+    paintTorch();
+    try{
+      var t=videoTrack(); if(!t||!t.applyConstraints) return;
+      var caps=t.getCapabilities&&t.getCapabilities();
+      if(!caps||!caps.torch) return;
+      await t.applyConstraints({advanced:[{torch:!!on}]});
+    }catch(e){}
+  }
+  async function detectTorch(){
+    torchAvail=false;
+    try{
+      var t=videoTrack();
+      var caps=t&&t.getCapabilities&&t.getCapabilities();
+      torchAvail=!!(caps&&caps.torch);
+    }catch(e){}
+    paintTorch();
+  }
+  function showFocusRing(x,y){
+    var r=el("camFocus"); if(!r) return;
+    r.style.left=x+"px"; r.style.top=y+"px";
+    r.classList.remove("show");
+    void r.offsetWidth;
+    r.classList.add("show");
+  }
+  async function tapFocus(ev){
+    if(ev.target.closest("button,a,input,.camBar,.camFile,.camClose,.camTorch,.camFail,.wSheet,.camHint")) return;
+    var cam=document.querySelector("#page-scan .cam")||el("camVideo")&&el("camVideo").parentElement;
+    if(!cam) return;
+    var cr=cam.getBoundingClientRect();
+    showFocusRing(ev.clientX-cr.left, ev.clientY-cr.top);
+    var video=el("camVideo");
+    var vr=video?video.getBoundingClientRect():cr;
+    var nx=(ev.clientX-vr.left)/Math.max(1,vr.width), ny=(ev.clientY-vr.top)/Math.max(1,vr.height);
+    nx=Math.max(0,Math.min(1,nx)); ny=Math.max(0,Math.min(1,ny));
+    try{
+      var t=videoTrack(); if(!t||!t.applyConstraints) return;
+      var caps=t.getCapabilities&&t.getCapabilities()||{};
+      var adv={};
+      if(caps.pointsOfInterest) adv.pointsOfInterest=[{x:nx,y:ny}];
+      var modes=caps.focusMode||[];
+      if(modes.indexOf("single-shot")>=0) adv.focusMode="single-shot";
+      else if(modes.indexOf("manual")>=0) adv.focusMode="manual";
+      else if(modes.indexOf("continuous")>=0) adv.focusMode="continuous";
+      var em=caps.exposureMode||[];
+      if(em.indexOf("single-shot")>=0) adv.exposureMode="single-shot";
+      else if(em.indexOf("continuous")>=0) adv.exposureMode="continuous";
+      if(Object.keys(adv).length) await t.applyConstraints({advanced:[adv]});
+    }catch(e){}
+  }
+  function hideFail(){ var f=el("camFail"); if(f) f.hidden=true; }
+  function showFail(msg){
+    var f=el("camFail"); if(!f) return;
+    if(el("camFailMsg")) el("camFailMsg").textContent=msg||"Couldn't read it — try again or type it";
+    f.hidden=false;
+  }
   function stopCam(){
+    try{ if(torchOn) { var t=videoTrack(); if(t&&t.applyConstraints) t.applyConstraints({advanced:[{torch:false}]}); } }catch(e){}
+    torchOn=false; torchAvail=false; paintTorch();
     if(camStream){ camStream.getTracks().forEach(function(t){ t.stop(); }); camStream=null; }
-    var v=el("camVideo"); if(v) v.srcObject=null;
+    var v=el("camVideo"); if(v){ v.srcObject=null; v.style.display=""; }
+    hideFail();
+    var b=el("camBusy"); if(b) b.hidden=true;
   }
   async function startCam(slot){
-    camSlot=slot; pendingFile=null;
+    camSlot=slot; pendingFile=null; lastCapture=null;
     setView("scan"); guideFor(slot);
-    el("camBusy").hidden=true;
+    hideFail();
+    var busy=el("camBusy"); if(busy) busy.hidden=true;
+    var v=el("camVideo"); if(v) v.style.display="";
+    if(Ocr&&Ocr.prewarm) Ocr.prewarm();
     try{
-      camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920}},audio:false});
+      camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false});
       el("camVideo").srcObject=camStream;
       await el("camVideo").play().catch(function(){});
+      await detectTorch();
+      if(torchAvail) await setTorch(true);
     }catch(e){
       toast("Camera unavailable — upload a file instead");
       pickFile("scanPick");
@@ -355,12 +455,15 @@
   function windowRect(video){
     var g=el("camGuide"), w=el("camWin");
     if(!g||!w||!video) return {x:0,y:0,w:video.videoWidth,h:video.videoHeight};
-    var gr=g.getBoundingClientRect(), wr=w.getBoundingClientRect(), vr=video.getBoundingClientRect();
+    var wr=w.getBoundingClientRect(), vr=video.getBoundingClientRect();
     /* The video uses object-fit:cover, so undo that scale and crop offset. */
     var vw=video.videoWidth||vr.width, vh=video.videoHeight||vr.height;
     var sc=Math.max(vr.width/vw, vr.height/vh)||1;
     var ox=(vr.width-vw*sc)/2, oy=(vr.height-vh*sc)/2;
     var x=(wr.left-vr.left-ox)/sc, y=(wr.top-vr.top-oy)/sc, w=wr.width/sc, h=wr.height/sc;
+    /* A little padding around the box so glyphs on the edge aren't clipped. */
+    var px=w*0.08, py=h*0.22;
+    x-=px; y-=py; w+=px*2; h+=py*2;
     x=Math.max(0,x); y=Math.max(0,y);
     return {x:x, y:y, w:Math.max(8,Math.min(w,vw-x)), h:Math.max(8,Math.min(h,vh-y))};
   }
@@ -382,50 +485,55 @@
       im.src=u;
     });
   }
-  async function capture(){
-    var video=el("camVideo"), busy=el("camBusy");
-    var srcCanvas=document.createElement("canvas");
-    if(pendingFile){
-      var im=await loadImage(pendingFile);
-      srcCanvas.width=im.naturalWidth||im.width; srcCanvas.height=im.naturalHeight||im.height;
-      srcCanvas.getContext("2d").drawImage(im,0,0);
-    }else if(video&&video.videoWidth){
-      srcCanvas.width=video.videoWidth; srcCanvas.height=video.videoHeight;
-      srcCanvas.getContext("2d").drawImage(video,0,0);
-    }else{ toast("No picture yet"); return; }
-    busy.hidden=false; busy.textContent="Reading the number…";
-    var blob=await compressCanvas(srcCanvas,1600,0.8);
-    var region=document.createElement("canvas");
-    if(pendingFile){
-      /* file: OCR a generous central band, plus a second pass of the whole image */
-      var bx=srcCanvas.width*0.08, by=srcCanvas.height*0.15, bw=srcCanvas.width*0.84, bh=srcCanvas.height*0.7;
-      region.width=bw; region.height=bh;
-      region.getContext("2d").drawImage(srcCanvas,bx,by,bw,bh,0,0,bw,bh);
-    }else{
-      var r=windowRect(video);
-      /* Map from on-screen video box to the captured canvas, which matches videoWidth. */
-      region.width=Math.max(8,r.w); region.height=Math.max(8,r.h);
-      region.getContext("2d").drawImage(srcCanvas,r.x,r.y,r.w,r.h,0,0,region.width,region.height);
-    }
-    var number="";
-    try{
-      if(Ocr){
-        var res=await Ocr.readRegion(region, camSlot);
-        number=res&&res.number||"";
-      }
-    }catch(e){}
-    busy.hidden=true;
-    stopCam();
-    var doc={
-      id:Store.newId(), slot:camSlot, title:slotTitle(camSlot),
-      number:number, type:"image/jpeg", blob:blob, name:(camSlot||"doc")+".jpg", at:Date.now()
+  function moneyOrBlank(s){
+    if(s==null||s==="") return null;
+    var n=parseFloat(String(s).replace(/[£,\s]/g,""));
+    return isNaN(n)?null:Math.round(n*100)/100;
+  }
+  function fillReceiptSheet(rec){
+    rec=rec||{};
+    el("recvSupplier").value=rec.supplier||"";
+    el("recvDate").value=rec.dateISO||"";
+    el("recvTotal").value=rec.total!=null?Number(rec.total).toFixed(2):"";
+    el("recvVat").value=rec.vat!=null?Number(rec.vat).toFixed(2):"";
+    el("recvVatRate").value=rec.vatRate!=null?String(rec.vatRate):"";
+    el("recvVatNo").value=rec.vatNo||"";
+    el("recvLitres").value=rec.litres!=null?String(rec.litres):"";
+    el("recvPpl").value=rec.ppl!=null?String(rec.ppl):"";
+    el("recvSheet").classList.add("on");
+    if(window.dipstickIcons) dipstickIcons(el("recvSheet"));
+  }
+  function closeReceiptSheet(){ var s=el("recvSheet"); if(s) s.classList.remove("on"); }
+  async function saveReceiptFromSheet(){
+    if(!pendingReceipt) return;
+    var fields={
+      supplier:el("recvSupplier").value.trim(),
+      dateISO:el("recvDate").value||"",
+      total:moneyOrBlank(el("recvTotal").value),
+      vat:moneyOrBlank(el("recvVat").value),
+      vatRate:moneyOrBlank(el("recvVatRate").value),
+      vatNo:el("recvVatNo").value.trim().toUpperCase().replace(/\s+/g,""),
+      litres:moneyOrBlank(el("recvLitres").value),
+      ppl:moneyOrBlank(el("recvPpl").value)
     };
-    if(retakeOf&&retakeOf.slot===camSlot){
-      /* Retake replaces the photo (and number, if one was read) on the same item. */
-      doc=Object.assign({},retakeOf,{blob:blob,type:"image/jpeg",name:doc.name,at:Date.now(),number:number||retakeOf.number||"",ref:0});
-    }
-    retakeOf=null;
-    if(camSlot==="breakdown"&&!doc.phone) doc.phone=number;
+    fields.date=fields.dateISO?fields.dateISO.split("-").reverse().join("/"):"";
+    var pr=pendingReceipt;
+    var doc=pr.doc||{};
+    doc.supplier=fields.supplier; doc.date=fields.date; doc.dateISO=fields.dateISO;
+    doc.total=fields.total; doc.vat=fields.vat; doc.vatRate=fields.vatRate; doc.vatNo=fields.vatNo;
+    doc.litres=fields.litres; doc.ppl=fields.ppl;
+    if(pr.text) doc.text=pr.text;
+    doc.number=fields.total!=null?("£"+Number(fields.total).toFixed(2)):"";
+    doc.numberAuto=true;
+    await Store.putDoc(car,doc);
+    rec=await Store.load(car);
+    closeReceiptSheet();
+    pendingReceipt=null;
+    lastCapture=null;
+    showSaved(findDoc(doc.id)||doc);
+  }
+  async function finishScanDoc(doc){
+    if(camSlot==="breakdown"&&!doc.phone) doc.phone=doc.number;
     if(camSlot==="noclaims"){
       var draft=window.__ncbDraft||{};
       var prev=draft.editId?findDoc(draft.editId):first("noclaims");
@@ -440,10 +548,92 @@
     }
     current=doc;
     showSaved(doc);
-    /* Save immediately so Back keeps it; Retake can replace. */
     await Store.putDoc(car,doc);
     rec=await Store.load(car);
     current=findDoc(doc.id)||doc;
+  }
+  async function capture(){
+    if(capturing) return;
+    var video=el("camVideo"), busy=el("camBusy");
+    var srcCanvas=document.createElement("canvas");
+    if(pendingFile){
+      var im=await loadImage(pendingFile);
+      srcCanvas.width=im.naturalWidth||im.width; srcCanvas.height=im.naturalHeight||im.height;
+      srcCanvas.getContext("2d").drawImage(im,0,0);
+    }else if(video&&video.videoWidth){
+      srcCanvas.width=video.videoWidth; srcCanvas.height=video.videoHeight;
+      srcCanvas.getContext("2d").drawImage(video,0,0);
+    }else{ toast("No picture yet"); return; }
+    capturing=true;
+    hideFail();
+    var isReceipt=camSlot==="receipt";
+    if(busy){ busy.hidden=false; busy.textContent=isReceipt?"Reading the receipt…":"Reading the number…"; }
+    var blob=await compressCanvas(srcCanvas,1600,0.8);
+    var region=document.createElement("canvas");
+    if(isReceipt){
+      /* Full receipt, not the number box — a tiny inset avoids dark viewfinder edges. */
+      var inset=Math.round(Math.min(srcCanvas.width,srcCanvas.height)*0.02);
+      var rw=Math.max(8,srcCanvas.width-inset*2), rh=Math.max(8,srcCanvas.height-inset*2);
+      region.width=rw; region.height=rh;
+      region.getContext("2d").drawImage(srcCanvas,inset,inset,rw,rh,0,0,rw,rh);
+    }else if(pendingFile){
+      /* file: OCR a generous central band */
+      var bx=srcCanvas.width*0.08, by=srcCanvas.height*0.15, bw=srcCanvas.width*0.84, bh=srcCanvas.height*0.7;
+      region.width=bw; region.height=bh;
+      region.getContext("2d").drawImage(srcCanvas,bx,by,bw,bh,0,0,bw,bh);
+    }else{
+      var r=windowRect(video);
+      region.width=Math.max(8,r.w); region.height=Math.max(8,r.h);
+      region.getContext("2d").drawImage(srcCanvas,r.x,r.y,r.w,r.h,0,0,region.width,region.height);
+    }
+    var number="", rec=null, ocrErr=null, ocrText="";
+    try{
+      if(Ocr){
+        var res=await Ocr.readRegion(region, camSlot);
+        number=res&&res.number||"";
+        ocrText=res&&res.text||"";
+        if(isReceipt) rec=res;
+      }
+    }catch(e){ ocrErr=e; }
+    if(busy) busy.hidden=true;
+    capturing=false;
+    lastCapture={blob:blob, slot:camSlot};
+
+    var base=retakeOf&&retakeOf.slot===camSlot
+      ? Object.assign({},retakeOf,{blob:blob,type:"image/jpeg",name:(camSlot||"doc")+".jpg",at:Date.now(),ref:0})
+      : {id:Store.newId(), slot:camSlot, title:slotTitle(camSlot), number:"", type:"image/jpeg", blob:blob, name:(camSlot||"doc")+".jpg", at:Date.now()};
+
+    if(isReceipt){
+      try{ await setTorch(false); }catch(e){}
+      stopCam();
+      if(rec&&rec.number) base.number=rec.number;
+      pendingReceipt={doc:base, text:ocrText||(rec&&rec.text)||""};
+      fillReceiptSheet(rec||{});
+      if(ocrErr) toast("Couldn't read it — check or type the details");
+      return;
+    }
+
+    if(ocrErr || !number){
+      /* Live camera: keep it running so Retry is instant. File upload: open the add form. Never silently save a blank. */
+      if(pendingFile && view!=="scan"){
+        var slot=camSlot, prev=retakeOf;
+        pendingFile=new File([blob],(slot||"doc")+".jpg",{type:"image/jpeg"});
+        openAdd(slot, prev);
+        if(el("addHint")) el("addHint").textContent="Couldn't read it — type the number";
+        toast("Couldn't read it — try again or type it");
+        return;
+      }
+      showFail();
+      return;
+    }
+
+    try{ await setTorch(false); }catch(e){}
+    stopCam();
+    retakeOf=null;
+    pendingFile=null;
+    base.number=number;
+    base.numberAuto=true;
+    await finishScanDoc(base);
   }
 
   function openAdd(slot, existing){
@@ -544,6 +734,7 @@
       return false;
     }
     rec=await Store.load(car);
+    if(Ocr&&Ocr.prewarm) Ocr.prewarm();
     var q=new URLSearchParams(location.search);
     var docId=q.get("doc"), open=q.get("open");
     paintOpen();
@@ -628,9 +819,38 @@
       var f=this.files&&this.files[0], s2=srcSlot; this.value=""; closeSrc();
       if(f&&s2) handleUpload(s2.slot,f,s2.replace).catch(function(e){ toast((e&&e.message)||"Could not save"); });
     };
-    el("camClose").onclick=function(){ retakeOf=null; stopCam(); setView("open"); paintOpen(); };
+    el("camClose").onclick=function(){ retakeOf=null; pendingReceipt=null; closeReceiptSheet(); stopCam(); setView("open"); paintOpen(); };
     el("camShutter").onclick=function(){ capture(); };
     el("camFile").onclick=function(){ pickFile("scanPick"); };
+    if(el("camTorch")) el("camTorch").onclick=function(){ setTorch(!torchOn); };
+    var camEl=document.querySelector("#page-scan .cam");
+    if(camEl) camEl.addEventListener("click",function(ev){ tapFocus(ev); });
+    if(el("camRetry")) el("camRetry").onclick=function(){ hideFail(); if(pendingFile||(el("camVideo")&&el("camVideo").srcObject)) capture(); };
+    if(el("camType")) el("camType").onclick=function(){
+      hideFail();
+      var slot=camSlot, cap=lastCapture, prev=retakeOf;
+      stopCam();
+      if(slot==="receipt"){
+        var blob=cap&&cap.blob;
+        var doc=prev&&prev.slot===slot?Object.assign({},prev,{blob:blob,type:"image/jpeg",name:(slot||"doc")+".jpg",at:Date.now(),ref:0}):{id:Store.newId(),slot:slot,title:slotTitle(slot),number:"",type:"image/jpeg",blob:blob,name:(slot||"doc")+".jpg",at:Date.now()};
+        pendingReceipt={doc:doc,text:""};
+        fillReceiptSheet({});
+        return;
+      }
+      if(cap&&cap.blob) pendingFile=new File([cap.blob],(slot||"doc")+".jpg",{type:"image/jpeg"});
+      openAdd(slot, prev);
+      if(el("addHint")) el("addHint").textContent="Photo ready — type the number";
+    };
+    if(el("recvSave")) el("recvSave").onclick=function(){ saveReceiptFromSheet().catch(function(e){ toast((e&&e.message)||"Could not save"); }); };
+    if(el("recvRetry")) el("recvRetry").onclick=function(){
+      closeReceiptSheet();
+      var slot=camSlot|| (pendingReceipt&&pendingReceipt.doc&&pendingReceipt.doc.slot)||"receipt";
+      var keep=pendingReceipt&&pendingReceipt.doc&&retakeOf?retakeOf: (pendingReceipt&&pendingReceipt.doc&&pendingReceipt.doc.id?pendingReceipt.doc:null);
+      pendingReceipt=null;
+      if(keep&&keep.id) retakeOf=keep;
+      startCam(slot);
+    };
+    if(el("recvCancel")) el("recvCancel").onclick=function(){ closeReceiptSheet(); pendingReceipt=null; retakeOf=null; setView("open"); paintOpen(); };
     el("scanPick").onchange=function(){
       var f=this.files&&this.files[0]; this.value="";
       if(!f) return;

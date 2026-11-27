@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=4"/>
 <script src="./sw-reg.js?v=1" defer></script>
 <link rel="stylesheet" href="./ui.css?v=83"/>
-<link rel="stylesheet" href="./wallet.css?v=5"/>
+<link rel="stylesheet" href="./wallet.css?v=6"/>
 </head>
 <body data-view="locked">
 <main class="page" id="page-locked">
@@ -58,14 +58,23 @@
     <video id="camVideo" autoplay playsinline muted></video>
     <div class="camDesk"></div>
     <button class="camClose" type="button" id="camClose" aria-label="Close"><span class="ico" data-ico="back"></span></button>
+    <button class="camTorch" type="button" id="camTorch" hidden aria-label="Torch" aria-pressed="false">
+      <svg viewBox="0 -960 960 960" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M280-80v-320h-80l280-400h80v280h80L360-80h-80Zm80-160h40v-120l90-132h-34v-120l-96 140v232Zm80-80Z"/></svg>
+    </button>
     <p class="camHint" id="camHint">Line up the document — number in the box</p>
     <div class="guide v5c" id="camGuide">
       <div class="frame"></div>
       <div class="win" id="camWin"></div>
     </div>
+    <div class="camFocus" id="camFocus" aria-hidden="true"></div>
     <div class="camBar"><button class="shutter" type="button" id="camShutter" aria-label="Capture"></button></div>
     <button class="camFile" type="button" id="camFile">Upload file</button>
     <div class="camBusy" id="camBusy" hidden>Reading the number…</div>
+    <div class="camFail" id="camFail" hidden>
+      <p id="camFailMsg">Couldn't read it — try again or type it</p>
+      <button class="btn" type="button" id="camRetry">Retry</button>
+      <button class="btn" type="button" id="camType">Type it myself</button>
+    </div>
   </div>
 </main>
 
@@ -97,6 +106,32 @@
   </div>
 </main>
 
+
+<div class="wSheet" id="recvSheet">
+  <div class="panel">
+    <h2>Check this receipt</h2>
+    <p class="hint">Edit anything that's wrong, then save.</p>
+    <label for="recvSupplier">Supplier</label>
+    <input id="recvSupplier" type="text" maxlength="80" autocomplete="off"/>
+    <label for="recvDate">Date</label>
+    <input id="recvDate" type="date"/>
+    <label for="recvTotal">Total (£)</label>
+    <input id="recvTotal" type="text" inputmode="decimal" autocomplete="off"/>
+    <label for="recvVat">VAT amount (£)</label>
+    <input id="recvVat" type="text" inputmode="decimal" autocomplete="off"/>
+    <label for="recvVatRate">VAT rate (%)</label>
+    <input id="recvVatRate" type="text" inputmode="decimal" autocomplete="off"/>
+    <label for="recvVatNo">VAT number</label>
+    <input id="recvVatNo" type="text" maxlength="20" autocomplete="off" placeholder="GB 123 4567 89"/>
+    <label for="recvLitres">Litres</label>
+    <input id="recvLitres" type="text" inputmode="decimal" autocomplete="off"/>
+    <label for="recvPpl">Pence per litre</label>
+    <input id="recvPpl" type="text" inputmode="decimal" autocomplete="off"/>
+    <button class="btn wide" type="button" id="recvSave" data-ico="save">Save</button>
+    <button class="btn backBtn" type="button" id="recvRetry">Retry scan</button>
+    <button class="btn backBtn" type="button" id="recvCancel" data-ico="close">Cancel</button>
+  </div>
+</div>
 <div class="wSheet" id="addSheet">
   <div class="panel">
     <h2 id="addTitle">Add</h2>
@@ -149,7 +184,7 @@
 <script src="./wallet-lock.js?v=4"></script>
 <script src="./wallet-barcode.js?v=1"></script>
 <script src="./tax-renew.js?v=2"></script>
-<script src="./wallet-ocr.js?v=2"></script>
-<script src="./wallet.js?v=7"></script>
+<script src="./wallet-ocr.js?v=3"></script>
+<script src="./wallet.js?v=8"></script>
 </body>
 </html>

@@ -33,7 +33,8 @@
 
   // markup for the hero: header plate, or the plate on the photo
   function heroHtml(c,hero){
-    var t=text(c); if(!t) return "";
+    var t=text(c);
+    if(!t) return c?"<button type='button' class='hplate regchip' data-addreg='1' aria-label='Add registration'>+ Add reg</button>":"";
     var p=getPlace(c);
     if(!p) return markup(t,"hplate",hfs(t));
     var st="visibility:hidden";
@@ -81,7 +82,7 @@
       "<div class='psPrev'"+bg+">"+inner(t,cur)+"</div>"+
       "<div class='psGrid' role='radiogroup' aria-labelledby='psLab'>"+STYLES.map(function(s){ return "<button type='button' role='radio' class='psSw' data-ps-style='"+s[0]+"' aria-checked='"+(s[0]===cur)+"'>"+inner(t,s[0])+"<span>"+s[1]+"</span></button>"; }).join("")+"</div>"+
       "<div class='psAct'><button type='button' class='psBtn' id='psPlace'"+(can?"":" disabled")+">"+(placed?"Edit on photo":"Place on photo")+"</button>"+(placed?"<button type='button' class='psBtn ghost' id='psReset'>Back to header</button>":"")+"</div>"+
-      (can?"":"<p class='psNote'>"+(c&&text(c)?"Add a car photo first.":"Add a plate and a photo first.")+"</p>");
+      (can?"":"<p class='psNote'>"+(c&&text(c)?"Add a car photo first.":"Add the registration first.")+"</p>");
   }
   var st=document.getElementById("settings");
   if(st&&window.MutationObserver) new MutationObserver(function(){ if(st.classList.contains("on")) refresh(); }).observe(st,{attributes:true,attributeFilter:["class"]});
@@ -150,7 +151,7 @@
   var lp=null, swallowUntil=0;
   function lpClear(){ if(lp){ clearTimeout(lp.t); lp=null; } }
   document.addEventListener("pointerdown",function(e){
-    var t=e.target.closest&&e.target.closest("#pgLive .hplate,#pgLive .pplate"); if(!t) return; lpClear();
+    var t=e.target.closest&&e.target.closest("#pgLive .hplate:not(.regchip),#pgLive .pplate"); if(!t) return; lpClear();
     lp={x:e.clientX,y:e.clientY,t:setTimeout(function(){ lp=null; swallowUntil=Date.now()+900; try{ navigator.vibrate&&navigator.vibrate(12); }catch(x){} openEditor(); },550)}; },true);
   document.addEventListener("pointermove",function(e){ if(lp&&Math.hypot(e.clientX-lp.x,e.clientY-lp.y)>10) lpClear(); },true);
   document.addEventListener("pointerup",lpClear,true); document.addEventListener("pointercancel",lpClear,true);

@@ -56,7 +56,7 @@ function tyreLeft(c){
   var used=(new Date()-new Date(c.tyreDate+"T12:00:00"))/86400000/365*(+c.miles);
   return Math.max(0,Math.round(100*(1-used/+c.tyreLife)));
 }
-function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p||"YOUR REG"}
+function plate(p){p=String(p||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(p.length>=7)return p.slice(0,4)+" "+p.slice(4);return p}
 function esc(s){return encodeURIComponent(s||"")}
 function mail(c,subject,body){
   if(!c.motEmail)return "#book";
@@ -64,7 +64,7 @@ function mail(c,subject,body){
 }
 function jobCopy(c,kind){
   var name=c.nick||c.name||"car";
-  var pl=plate(c.plate);
+  var pl=plate(c.plate)||name;
   var garage=c.motName||"the garage";
   var map={
     mot:{title:"Book MOT",subject:"MOT booking \u2014 "+pl,body:"Hi "+garage+",\n\nPlease could I book an MOT for my "+name+" ("+pl+").\n\nThanks"},
@@ -409,7 +409,7 @@ function scanPlate(file){
     var found = extractPlate(raw);
     var plateEl = document.getElementById("fPlate");
     if(found && plateEl){
-      plateEl.value = found;
+      plateEl.value = found; regCheck();
       if(hint) hint.textContent = "Plate found: " + found + " (raw: " + raw.replace(/\s+/g," ").slice(0,40) + ")";
       doLookup();
     }else{
@@ -420,7 +420,7 @@ function scanPlate(file){
     if(hint) hint.textContent = "Scan failed. Type the plate instead.";
   });
 }
-function openSheet(mode){
+function openSheet(mode,opts){
   var c=mode==="add"?{}:car();
   document.getElementById("sheetTitle").textContent=mode==="add"?"Add car":"Edit car";
   document.getElementById("fPlate").value=c.plate||"";
@@ -460,6 +460,16 @@ function openSheet(mode){
   lastLooked=null;
   var hint=document.getElementById("plateHint");
   if(hint) hint.textContent="Enter the plate and press Search, or use the camera.";
+  regCheck();
+  if((opts&&opts.focusReg)||!regKey()) setTimeout(function(){ var f=document.getElementById("fPlate"); try{ f.scrollIntoView({block:"center"}); f.focus(); }catch(e){} },80);
+}
+// The registration is required: Save stays off until 2 to 8 letters/numbers are in (private and personal plates are fine)
+function regKey(){ return String(document.getElementById("fPlate").value||"").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+function regCheck(){
+  var k=regKey(), good=/^[A-Z0-9]{2,8}$/.test(k), b=document.getElementById("btnSave"), h=document.getElementById("regReq");
+  if(b){ b.disabled=!good; b.setAttribute("aria-disabled",String(!good)); }
+  if(h){ h.hidden=good; h.textContent=k.length>8?"A registration is 2 to 8 letters and numbers.":"Enter the registration to save."; }
+  return good;
 }
 function step(dir){
   var s=state();
@@ -470,7 +480,8 @@ function step(dir){
 }
 function on(id,fn){var el=document.getElementById(id); if(el) el.onclick=fn;}
 initPhotoPos();
-on("hero",function(){
+on("hero",function(e){
+  if(e&&e.target&&e.target.closest&&e.target.closest("[data-addreg]")){ openSheet("edit",{focusReg:true}); return; }
   var c=car();
   if(c&&c.photo) openPhotoPos(c.photoFull||c.photo,c.photoFull?c.photoPos:null,false);
   else{var p=document.getElementById("photoPick");if(p)p.click()}
@@ -500,6 +511,12 @@ if(plateCam) plateCam.onchange=function(){
 };
 var plateEl=document.getElementById("fPlate");
 if(plateEl) plateEl.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doLookup();}});
+if(plateEl){
+  plateEl.addEventListener("input",regCheck);
+  plateEl.addEventListener("blur",function(){ var k=regKey(); if(k&&k.length<=8) plateEl.value=plate(k); regCheck(); });
+}
+var regReq=document.getElementById("regReq");
+if(regReq) regReq.addEventListener("click",function(){ var f=document.getElementById("fPlate"); try{ f.scrollIntoView({block:"center"}); f.focus(); }catch(e){} });
 var dues=document.getElementById("dues");
 if(dues) dues.addEventListener("click",function(e){
   var b=e.target.closest("[data-job]");
@@ -573,6 +590,7 @@ on("btnDelete",function(){
 on("btnSave",function(){
   var s=state(),mode=document.getElementById("sheet").dataset.mode;
   if(mode==="add" && s.cars.length>=20){ alert("Maximum 20 cars."); return; }
+  if(!regCheck()){ var _f=document.getElementById("fPlate"); try{ _f.focus(); }catch(e){} return; }
   var c=mode==="add"?{id:"c"+Math.random().toString(36).slice(2,8),photo:""}:s.cars[s.i];
   var before=mode==="add"?{}:JSON.parse(JSON.stringify(c));
   var looked = lastLooked || {};
@@ -580,13 +598,13 @@ on("btnSave",function(){
   var plateKey=plateNow.replace(/[^A-Z0-9]/g,"");
   if(looked.plate && looked.plate!==plateKey) looked={};
   var typed=document.getElementById("fName").value.trim();
-  c.nick=typed || looked.name || c.nick || plate(plateNow).replace("YOUR REG","") || "Car";
+  c.nick=typed || looked.name || c.nick || plate(plateNow) || "Car";
   c.name=c.nick;
   if(D3Rem.vrn(c.plate)!==plateKey)["make","model","odometer","odometerDate","odometerUnit","garageBookings","garageBookingDrafts"].forEach(function(k){delete c[k]});
   if(looked.engine) c.engine = looked.engine;
   ["make","model","odometer","odometerDate","odometerUnit"].forEach(function(k){if(looked[k])c[k]=looked[k]});
   if(looked.plate){ c.motChecked = Date.now(); }
-  c.plate=plateNow;
+  c.plate=plateKey; // stored upper case with no spaces; shown with the standard spacing
   c.mot=document.getElementById("fMot").value;
   c.tax=document.getElementById("fTax").value;
   c.ins=document.getElementById("fIns").value;
@@ -620,7 +638,7 @@ on("btnSave",function(){
 function goEmpty(){
   var v=document.getElementById("emptyPlate").value.trim();
   openSheet("add");
-  if(v){ document.getElementById("fPlate").value=v; doLookup(); }
+  if(v){ document.getElementById("fPlate").value=v; regCheck(); doLookup(); }
 }
 on("emptyGo",goEmpty);
 var emptyForm=document.getElementById("emptyForm");

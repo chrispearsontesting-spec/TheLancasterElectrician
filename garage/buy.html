@@ -71,6 +71,9 @@ input[type=text],input[type=number],select{width:100%;background:#171a20;border:
 .fault.open .more{display:block}
 .more p{margin:0 0 8px}
 .muted{color:var(--dim);font-size:12px}
+.cmpName{white-space:pre-line;margin:8px 0 0;color:var(--dim);font-size:12px}
+.mpgOff{margin:6px 0 0;font-size:13px;font-weight:600;color:var(--ink)}
+.mpgReal{margin:2px 0 0;color:var(--dim);font-size:12px}
 .saved a{color:var(--ice);font-weight:800;text-decoration:none}
 .saved p{margin:6px 0}
 ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.45}
@@ -120,14 +123,14 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
           <label>First plate</label>
           <input id="cmpAPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/>
           <button class="btn grey" type="button" id="cmpAGo">Find</button>
-          <p class="muted" id="cmpAName"></p>
+          <p class="muted cmpName" id="cmpAName"></p>
           <input id="cmpAMpg" class="hide" type="number" inputmode="decimal" placeholder="Miles per gallon"/>
         </div>
         <div>
           <label>Second plate</label>
           <input id="cmpBPlate" type="text" placeholder="AB12 CDE" autocapitalize="characters"/>
           <button class="btn grey" type="button" id="cmpBGo">Find</button>
-          <p class="muted" id="cmpBName"></p>
+          <p class="muted cmpName" id="cmpBName"></p>
           <input id="cmpBMpg" class="hide" type="number" inputmode="decimal" placeholder="Miles per gallon"/>
         </div>
       </div>
@@ -154,6 +157,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="mot-config.js"></script>
 <script src="mot-jobs.js"></script>
 <script src="mpg-uk.js?v=36"></script>
+<script src="mpg-lookup.js?v=1"></script>
 <script src="trim.js?v=38"></script>
 <script src="mot-client.js?v=38"></script>
 <script src="outlook.js?v=1"></script>
@@ -322,24 +326,21 @@ function fuelKey(fuel){
   if(f.indexOf("diesel")>=0) return "diesel";
   return "petrol";
 }
-function sureMpg(name,fuel){
-  var list=window.MPG_UK||[], hay=String(name||"").toLowerCase(), want=String(fuel||"").toLowerCase();
-  var hits=[], i;
-  for(i=0;i<list.length;i++){
-    var row=list[i], make=String(row[0]||"").toLowerCase(), model=String(row[1]||"").toLowerCase();
-    if(model.length<3||hay.indexOf(model)<0) continue;
-    if(make && hay.indexOf(make)<0) continue;
-    var rf=String(row[3]||"").toLowerCase();
-    if(want && rf.indexOf(want.slice(0,4))<0) continue;
-    var fig=want==="electric" ? row[7] : row[6];
-    if(fig) hits.push(+fig);
+function sureMpg(name,fuel,info){
+  if(window.MpgLookup){
+    var rec=window.MpgLookup.lookUp({
+      make:(info&&info.make)||"",
+      model:(info&&info.model)||"",
+      name:name,
+      fuel:(info&&info.fuel)||fuel,
+      year:info&&info.year,
+      engine:info&&info.engine,
+      firstUsedDate:info&&(info.firstUsedDate||(info.raw&&(info.raw.firstUsedDate||info.raw.registrationDate))),
+      co2:info&&(info.co2||(info.raw&&(info.raw.co2Emissions||info.raw.co2)))
+    });
+    return rec;
   }
-  if(!hits.length) return null;
-  hits.sort(function(a,b){return a-b});
-  var mid=hits[Math.floor(hits.length/2)];
-  var close=hits.filter(function(n){return Math.abs(n-mid)/mid<0.12});
-  if(close.length<Math.max(1,Math.ceil(hits.length*0.6))) return null;
-  return Math.round(mid*10)/10;
+  return {official:null,costMpg:null,unit:(fuel==="electric"?"mi/kWh":"mpg")};
 }
 function monthCost(mpg,fuel){
   var P=window.PRICE||{petrol:174.8,diesel:199.9,electric:26.32,offpeak:14};
@@ -364,12 +365,19 @@ function findCompare(side){
   window.fetchMotVehicle(plate).then(function(info){
     if(!info||!info.name){nameEl.textContent="No MOT match.";mpgEl.className="hide";return}
     var fuel=fuelKey(info.fuel||guessFuel(info.name));
-    var mpg=sureMpg(info.name,fuel);
-    cmpCars[side]={fuel:fuel,name:info.name,plate:plate,mpg:mpg};
-    if(mpg){
-      mpgEl.value=mpg;
+    var rec=sureMpg(info.name,fuel,info);
+    var cost=rec&&rec.costMpg, official=rec&&rec.official;
+    var unit=(rec&&rec.unit)||(fuel==="electric"?"mi/kWh":"mpg");
+    cmpCars[side]={fuel:fuel,name:info.name,plate:plate,mpg:cost,official:official,realWorld:rec&&rec.realWorld,unit:unit,phev:rec&&rec.phev,officialLabel:rec&&rec.officialLabel,realWorldLabel:rec&&rec.realWorldLabel};
+    if(cost){
+      mpgEl.value=cost;
       mpgEl.className="hide";
-      nameEl.textContent=info.name+" · "+fuel+" · "+mpg+(fuel==="electric"?" miles/kWh":" mpg");
+      nameEl.textContent=info.name+" · "+fuel+"\n"+(rec.officialLabel||"")+(rec.realWorldLabel?"\n"+rec.realWorldLabel:"");
+    }else if(official){
+      mpgEl.value="";
+      mpgEl.className="";
+      mpgEl.placeholder=fuel==="electric"?"Miles per kWh":"Miles per gallon";
+      nameEl.textContent=info.name+" · "+fuel+"\n"+(rec.officialLabel||"")+"\n"+(rec.realWorldLabel||"type the real-world figure");
     }else{
       mpgEl.value="";
       mpgEl.className="";
@@ -389,9 +397,12 @@ function runCompare(){
   var ac=monthCost(a.mpg,a.fuel), bc=monthCost(b.mpg,b.fuel);
   var gap=Math.abs(ac-bc), winner=ac<=bc?a:b;
   function col(car,cost){
-    return "<div class='cmpCol'><b>"+car.name+"</b><p class='muted'>"+car.fuel+" · "+car.mpg+(car.fuel==="electric"?" miles/kWh":" mpg")+"</p><div class='crow'><span>Month</span><b>£"+cost.toFixed(0)+"</b></div><div class='crow'><span>Year</span><b>£"+(cost*12).toFixed(0)+"</b></div></div>";
+    var unit=car.unit||(car.fuel==="electric"?"mi/kWh":"mpg");
+    var off=car.officialLabel||(car.official?("Official "+car.official+" "+unit):"");
+    var rw=car.realWorldLabel||"";
+    return "<div class='cmpCol'><b>"+car.name+"</b><p class='muted'>"+car.fuel+"</p>"+(off?"<p class='mpgOff'>"+off+"</p>":"")+(rw?"<p class='mpgReal'>"+rw+"</p>":"<p class='muted'>"+car.mpg+" "+unit+"</p>")+"<div class='crow'><span>Month</span><b>£"+cost.toFixed(0)+"</b></div><div class='crow'><span>Year</span><b>£"+(cost*12).toFixed(0)+"</b></div></div>";
   }
-  $("compareBody").innerHTML="<div class='cmpGrid' style='margin-top:12px'>"+col(a,ac)+col(b,bc)+"</div><p class='win'>"+winner.name+" saves £"+gap.toFixed(0)+" a month, £"+(gap*12).toFixed(0)+" a year.</p><p class='muted'>1,000 miles a month. Electric uses the night rate.</p>";
+  $("compareBody").innerHTML="<div class='cmpGrid' style='margin-top:12px'>"+col(a,ac)+col(b,bc)+"</div><p class='win'>"+winner.name+" saves £"+gap.toFixed(0)+" a month, £"+(gap*12).toFixed(0)+" a year.</p><p class='muted'>1,000 miles a month. Costs use the real-world estimate. Electric uses the night rate.</p>";
 }
 $("cmpAGo").onclick=function(){findCompare("a")};
 $("cmpBGo").onclick=function(){findCompare("b")};

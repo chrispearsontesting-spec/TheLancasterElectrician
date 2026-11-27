@@ -52,7 +52,7 @@ canvas#chart{width:100%;height:auto;background:#0b0c0e;border-radius:12px;displa
 body:not(.pick) #pick{display:none}
 body.pick a.backBtn.fixed{z-index:11}
 .pk-t.wide{grid-column:1/-1;min-height:48px;flex-direction:row;gap:8px}
-body.pick .pf-top,body.pick .pf-bot,body.pick .pf-rail,body.pick .pf-mid,body.pick #go{display:none !important}
+body.pick .pf-top,body.pick .pf-bot,body.pick .pf-rail,body.pick .pf-mid,body.pick #go,body.pick #flip{display:none !important}
 .pk-h{font-size:12px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:#8b8b8b;margin:6px 4px 10px}
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pk-t{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:72px;padding:10px 4px;border-radius:16px;background:#141416;border:1px solid #2a2a2e;color:#f2f2f2;font:inherit}
@@ -125,6 +125,16 @@ body:not(.pick) .appbar,body:not(.pick) a.backBtn.fixed{display:none !important}
   #bigStart{margin-top:16px}
 }
 @media (orientation:portrait) and (max-width:370px){.light{width:68px;height:68px}#lights{gap:18px}.pf-btn{font-size:10px;gap:3px}.pf-btn .pi{width:10px;height:10px;flex-basis:10px}.pf-pill{font-size:9.5px;padding:0 6px}}
+#flip{display:none;position:fixed;z-index:7;width:44px;height:44px;padding:0;margin:0;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(14,15,17,.52);-webkit-backdrop-filter:blur(18px) saturate(1.35);backdrop-filter:blur(18px) saturate(1.35);color:var(--accent,#7dd3fc);cursor:pointer;place-items:center;box-shadow:0 2px 12px rgba(0,0,0,.38)}
+#flip svg{width:22px;height:22px;fill:currentColor;display:block}
+body:not(.pick) #flip{display:grid}
+body:not(.pick) #chartWrap.show ~ #flip{display:none}
+@media (orientation:portrait){
+  #flip{right:var(--pf-sx);bottom:calc(var(--pf-sb) + 126px)}
+}
+@media (orientation:landscape){
+  #flip{left:50%;right:auto;bottom:var(--pf-sb);transform:translateX(-50%)}
+}
 </style>
 </head>
 <body class="pick">
@@ -201,10 +211,13 @@ body:not(.pick) .appbar,body:not(.pick) a.backBtn.fixed{display:none !important}
   <div id="runList" style="display:none"></div>
   <div class="row"><button id="runsBtn2" type="button">Saved runs</button><button id="again" type="button">New run</button></div>
 </div>
+<button class="ib" id="flip" type="button" aria-label="Flip camera" title="Flip camera"><svg viewBox="0 -960 960 960" aria-hidden="true"><path d="M160-160v-80h110l-16-14q-52-46-73-105t-21-119q0-111 66.5-197.5T400-790v84q-72 26-116 88.5T240-478q0 45 17 87.5t53 78.5l10 10v-98h80v240H160Zm400-10v-84q72-26 116-88.5T720-482q0-45-17-87.5T650-648l-10-10v98h-80v-240h240v80H690l16 14q49 49 71.5 106.5T800-482q0 111-66.5 197.5T560-170Z"/></svg></button>
+<script src="./cam-flip.js?v=1"></script>
 <script src="./car-scope.js?v=1"></script>
 <script src="./perf-g.js?v=3"></script>
 <script>
 const vid = document.getElementById('vid');
+if(window.D3CamFlip) D3CamFlip.boot('performance','environment',vid);
 const runSel = document.getElementById('run');
 const keepChk = document.getElementById('keep');
 const chartWrap = document.getElementById('chartWrap');
@@ -254,6 +267,16 @@ async function startCam(){
   }catch(e){ say('Camera not available – timing still works'); }
 }
 startCam();
+
+const flipBtn = document.getElementById('flip');
+if(flipBtn) flipBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if(window.D3CamFlip) D3CamFlip.toggle('performance','environment',vid);
+  else {
+    const now = vid.style.transform && /180/.test(vid.style.transform) ? 0 : 180;
+    vid.style.transform = 'rotate(' + now + 'deg)';
+  }
+});
 
 function onMotion(e){
   const r = PerfG.read(e);

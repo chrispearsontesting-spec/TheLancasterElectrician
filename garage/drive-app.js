@@ -57,8 +57,9 @@ async function placeName(pos){
   }catch(e){return pos.lat.toFixed(3)+", "+pos.lon.toFixed(3)}
 }
 var watch=null,last=null,miles=0,wake=null,streams=[],rec=null,chunks=[],started=0,startPos=null;
-var mpg=38,ppl=197.1,rearRot=180,on=false;
-document.getElementById("rear").style.transform="rotate("+rearRot+"deg)";
+var mpg=38,ppl=197.1,on=false;
+if(window.D3CamFlip) D3CamFlip.boot("dashcam","environment",document.getElementById("rear"));
+else document.getElementById("rear").style.transform="rotate(180deg)";
 function tick(spd){
   var litres=miles/Math.max(mpg,1)*4.54609;
   document.getElementById("miles").textContent=miles.toFixed(2);
@@ -261,8 +262,12 @@ function stop(){
 }
 document.getElementById("go").onclick=function(){on?stop():start()};
 document.getElementById("flip").onclick=function(){
-  rearRot=(rearRot+180)%360;
-  document.getElementById("rear").style.transform="rotate("+rearRot+"deg)";
+  var el=document.getElementById("rear");
+  if(window.D3CamFlip) D3CamFlip.toggle("dashcam","environment",el);
+  else {
+    var now=el&&el.style.transform&&/180/.test(el.style.transform)?0:180;
+    el.style.transform="rotate("+now+"deg)";
+  }
 };
 if(trackOnly) document.getElementById("rec").textContent="Track ready";
 purgeClips();

@@ -208,7 +208,7 @@
     f.style.width=fit.w+"px"; f.style.height=fit.h+"px";
     f.style.borderRadius=opts.radius||"18px 18px 0 0";
     var pl=el.querySelector("#d3ppPlate"); pl.innerHTML=opts.plate||"";
-    pl.style.transform="scale("+fit.k+")"; pl.style.transformOrigin="bottom right";
+    pl.style.transform="scale("+fit.k+")"; pl.style.transformOrigin=opts.plateOrigin||"bottom right";
     var ch=el.querySelector("#d3ppChange"); ch.hidden=!opts.onChange;
     el.querySelector("#d3ppCancel").style.gridColumn=opts.onChange?"":"1 / -1";
     el.hidden=false; document.documentElement.style.overflow="hidden";

@@ -190,15 +190,23 @@ window.addEventListener("resize",refit);
 window.addEventListener("orientationchange",refit);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitName).catch(function(){});
 
+// The cog sits bottom right opposite the fuel icon; with no cars (no photo area) it stays in the top corner so Settings is always reachable
+function dockGear(none){
+  var g=document.getElementById("gear"),h=document.querySelector(none?"#pgLive .topRow":"#pgLive .heroWrap");
+  if(g&&h&&g.parentNode!==h) h.appendChild(g);
+}
 function paint(){
   var s=state(),c=car(),hero=document.getElementById("hero");
   var none=!s.cars.length;
   document.body.classList.toggle("noCars",none);
+  dockGear(none);
   if(none){ try{remindBanner()}catch(e){} if(window.driv3ShowChip) try{driv3ShowChip()}catch(e){} return; }
   var hint=c.photo?"":"<span class='hint'>Tap to add photo</span>";
   var img=c.photo?"<img alt='car' src='"+c.photo+"'/>":"";
   hero.style.backgroundImage=c.photo?"none":"";
-  hero.innerHTML=img+hint+"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>";
+  hero.innerHTML=img+hint+(window.D3Plate?D3Plate.html(c,hero):"");
+  if(window.D3Plate) D3Plate.layout(hero,c);
+  dockGear(false);
   var sub = "";
   var eng = c.engine;
   if(!eng && c.name){
@@ -270,7 +278,7 @@ function savePicGif(f){
    car.photoFull = the original (for re-positioning); car.photoPos = {v,z,x,y,r}. */
 var photoSrcUrl="", photoNew=false;
 function heroPlateHtml(){
-  var c=car(); return c&&c.plate?"<div class='plate'><span class='uk'>UK</span><span class='reg'>"+plate(c.plate)+"</span></div>":"";
+  return window.D3Plate?D3Plate.posterHtml(car()):"";
 }
 function rememberHeroFrame(){
   var f=heroFrameSize(); try{ localStorage.setItem("d3.heroFrame",JSON.stringify({w:Math.round(f.w),h:Math.round(f.h)})); }catch(e){}
@@ -297,7 +305,7 @@ function openPhotoPos(src,transform,isNew){
   if(!window.D3PhotoPos) return;
   photoNew=!!isNew;
   D3PhotoPos.open({
-    src:src, frame:rememberHeroFrame(), radius:"18px 18px 0 0", plate:heroPlateHtml(), transform:transform,
+    src:src, frame:rememberHeroFrame(), radius:"18px 18px 0 0", plate:heroPlateHtml(), plateOrigin:window.D3Plate?D3Plate.posterOrigin():"", transform:transform,
     onSet:function(res){ savePositioned(res,photoNew); closePhotoPos(); },
     onCancel:function(){ closePhotoPos(); },
     onChange:function(){ var p=document.getElementById("photoPick"); if(p) p.click(); }

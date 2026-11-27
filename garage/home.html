@@ -2,7 +2,8 @@
 <html lang="en-GB">
 <head>
 <meta charset="UTF-8"/>
-<script src="./accent.js?v=1"></script>
+<script src="./accent.js?v=2"></script>
+<script>try{var _l=localStorage.getItem("gt.logoPos");document.documentElement.setAttribute("data-logo",_l==="centre"||_l==="right"?_l:"left")}catch(e){}</script>
 <script src="./app-lock.js?v=4"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0c0e"/>
@@ -284,6 +285,47 @@ body{padding-top:0;overflow-x:hidden}
 .fxSeg{display:inline-flex;background:#1c1c1e;border:1px solid #2a2a2e;border-radius:999px;padding:3px}
 .fxSeg button{background:none;border:0;color:#9aa3ad;font:600 13.5px/1 inherit;font-family:inherit;padding:10px 14px;border-radius:999px;min-height:40px}
 .fxSeg button[aria-checked="true"]{background:rgba(var(--accent-rgb),.16);color:var(--accent)}
+/* Logo position (Settings): the logo and its notch sit left, centre or right so the phone's camera cut-out never covers them; the cog takes a free side (right when centred) */
+html[data-logo="left"],html:not([data-logo]){--nw:calc(128px + env(safe-area-inset-left,0px))}
+html[data-logo="right"]{--nw:calc(128px + env(safe-area-inset-right,0px))}
+html[data-logo="centre"]{--nw:128px}
+.topRow .brandLogo{left:calc(16px + env(safe-area-inset-left,0px)) !important}
+.topRow #gear{right:calc(12px + env(safe-area-inset-right,0px)) !important}
+html[data-logo="right"] .topRow .brandLogo{left:auto !important;right:calc(16px + env(safe-area-inset-right,0px)) !important}
+html[data-logo="right"] .topRow #gear{right:auto !important;left:calc(12px + env(safe-area-inset-left,0px)) !important}
+html[data-logo="centre"] .topRow .brandLogo{left:50% !important;transform:translateX(-50%)}
+html[data-logo="right"] .heroWrap::before{left:auto !important;right:0;border-bottom-right-radius:0 !important;border-bottom-left-radius:var(--nr) !important}
+html[data-logo="right"] .heroWrap::after{left:auto !important;right:var(--nw);background:radial-gradient(circle at 0 100%,transparent calc(var(--nr) - .5px),var(--bg0) var(--nr))}
+html[data-logo="right"] .heroWrap .notchB{left:auto !important;right:0;background:radial-gradient(circle at 0 100%,transparent calc(var(--nr) - .5px),var(--bg0) var(--nr)) !important}
+html[data-logo="centre"] .heroWrap::before{left:50% !important;margin-left:calc(var(--nw) / -2);border-bottom-left-radius:var(--nr) !important}
+html[data-logo="centre"] .heroWrap::after{left:calc(50% + var(--nw) / 2) !important}
+html[data-logo="centre"] .heroWrap .notchB{left:calc(50% - var(--nw) / 2 - var(--nr)) !important;top:0 !important;background:radial-gradient(circle at 0 100%,transparent calc(var(--nr) - .5px),var(--bg0) var(--nr)) !important}
+.hint{left:calc(14px + env(safe-area-inset-left,0px)) !important}
+html[data-logo="left"] .hint{top:calc(var(--nh) + 10px) !important}
+html[data-logo="right"] .hint,html[data-logo="centre"] .hint{top:calc(var(--nh) + 10px) !important}
+/* Settings: colour picker */
+.fxRow.stack{flex-direction:column;align-items:stretch;gap:8px}
+.fxRow.stack .fxSeg{display:flex}.fxRow.stack .fxSeg button{flex:1}
+.accSet{margin:16px 2px 8px}
+.apHead{display:flex;align-items:baseline;justify-content:space-between}.apLab{font-size:15px;color:#f2f2f2}.apName{font-size:12.5px;color:#8b8b8b}
+.apRow{display:flex;justify-content:space-between;gap:4px;padding:6px 0 4px}
+.apS{width:44px;height:44px;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.apS i{width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center}
+.apS[aria-checked=true] i{box-shadow:0 0 0 2px #0f1012,0 0 0 4px currentColor}
+.apWheelBox{display:flex;align-items:center;gap:16px;margin-top:8px}
+.apWheel{position:relative;width:min(168px,48vw);aspect-ratio:1;border-radius:50%;flex:none;touch-action:none;cursor:crosshair;outline-offset:3px}
+.apWheel canvas{width:100%;height:100%;display:block;border-radius:50%}
+.apDim{position:absolute;inset:0;border-radius:50%;background:#000;pointer-events:none}
+.apKnob{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.5);pointer-events:none}
+.apSide{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.apPrev{display:flex;align-items:center;gap:10px}
+.apDot{width:34px;height:34px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.apBtn{display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:650;font-size:14px}
+.apHex{font:600 13px/1 ui-monospace,Menlo,monospace;color:#9aa3ad;letter-spacing:.04em}
+.apBri{display:flex;flex-direction:column;gap:8px;margin-top:14px;font-size:13px;color:#9aa3ad}
+.apBri input{-webkit-appearance:none;appearance:none;width:100%;height:14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);padding:0;margin:0}
+.apBri input::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.45);box-shadow:0 1px 5px rgba(0,0,0,.5)}
+.apBri input::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.45)}
 </style>
 </head>
 <body>
@@ -337,6 +379,8 @@ body{padding-top:0;overflow-x:hidden}
 <a class="btn wide" href="reminders.html?v=16" data-ico="cal">Reminders</a>
 <a class="btn wide" href="privacy.html" data-ico="doc">Privacy</a>
 <div class="fxRow"><span class="fxLab" id="fxLab">Car swipe effect</span><div class="fxSeg" id="fxSeg" role="radiogroup" aria-labelledby="fxLab"><button type="button" role="radio" data-fx="slide" aria-checked="true">Slide</button><button type="button" role="radio" data-fx="turn" aria-checked="false">Page turn</button></div></div>
+<div class="fxRow stack"><span class="fxLab" id="lpLab">Logo position</span><div class="fxSeg" id="lpSeg" role="radiogroup" aria-labelledby="lpLab"><button type="button" role="radio" data-lp="left" aria-checked="true">Left</button><button type="button" role="radio" data-lp="centre" aria-checked="false">Centre</button><button type="button" role="radio" data-lp="right" aria-checked="false">Right</button></div></div>
+<div class="accSet" id="accSet"></div>
 <button class="btn" type="button" id="setClose">Back</button>
 </div></div>
 <script>(function(){try{var g=JSON.parse(localStorage.getItem("gt.garage")||"null"),t=+localStorage.getItem("gt.lastBackup")||0;
@@ -445,6 +489,8 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 <script src="./grid-icons.js?v=2"></script>
 <script src="./home-tabs.js?v=6"></script>
 <script src="./home-swipe.js?v=1"></script>
+<script src="./accent-picker.js?v=1"></script>
+<script src="./home-prefs.js?v=1"></script>
 <script src="./reminders-web.js?v=2"></script>
 <script>
 (function(){
@@ -476,7 +522,7 @@ if(g&&g.cars&&g.cars.length&&(!t||Date.now()-t>30*864e5)){var d=document.getElem
 (function(){ // App colour: 5 swatches, tap = instant recolour across the app (saved on this phone)
   var A=window.T3Accent, row=document.getElementById("swRow"); if(!A||!row) return;
   var nm=document.createElement("span"); nm.className="swName"; nm.id="swName"; row.parentNode.appendChild(nm);
-  function paint(){ row.innerHTML=A.order.map(function(k){ var c=A.palette[k], on=A.key===k; return '<button type="button" class="sw" role="radio" data-acc="'+k+'" aria-checked="'+on+'" aria-label="'+c.name+'" title="'+c.name+'" style="color:'+c.hex+'"><i style="background:'+c.hex+'"></i></button>'; }).join(""); nm.textContent=A.palette[A.key].name; }
+  function paint(){ row.innerHTML=A.order.map(function(k){ var c=A.palette[k], on=A.key===k; return '<button type="button" class="sw" role="radio" data-acc="'+k+'" aria-checked="'+on+'" aria-label="'+c.name+'" title="'+c.name+'" style="color:'+c.hex+'"><i style="background:'+c.hex+'"></i></button>'; }).join(""); nm.textContent=A.isCustom&&A.isCustom()?"Custom":A.palette[A.key].name; }
   row.addEventListener("click",function(e){ var b=e.target.closest("[data-acc]"); if(!b) return; A.set(b.getAttribute("data-acc")); paint(); });
   window.addEventListener("t3accent",paint); paint();
   var t=document.getElementById("sheetTitle"), g=document.getElementById("gAccent");

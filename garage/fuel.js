@@ -13,7 +13,8 @@
     fuel: (function () {
       try { return localStorage.getItem("gt.fuelPref") || ""; } catch (e) { return ""; }
     })(),
-    miles: 5
+    miles: 5,
+    brands: (window.D3FuelBrands ? D3FuelBrands.load() : [])
   };
   var last = null;
   var cheapest = null;
@@ -54,6 +55,12 @@
   }
   function fuelParam() { var f = carFuel(); return f === "petrol" ? "petrol" : "diesel"; }
   function fuelLabel() { return fuelParam() === "petrol" ? "petrol" : "diesel"; }
+  function brandOn() { return !!(window.D3FuelBrands && state.brands.length); }
+  // "No stations with diesel within 5 miles." / "No Shell or BP stations within 5 miles."
+  function noneText() {
+    if (!brandOn()) return "No stations with " + fuelLabel() + " within " + state.miles + " miles.";
+    return "No " + D3FuelBrands.label(state.brands).replace(/, ([^,]*)$/, " or $1") + " stations with " + fuelLabel() + " within " + state.miles + " miles.";
+  }
 
   function mapsUrl(s) {
     return "https://www.google.com/maps/dir/?api=1&destination=" +
@@ -121,6 +128,16 @@
       "#cheapFuel .cf-chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}" +
       "#cheapFuel .cf-chip{appearance:none;border:1px solid #2a2a2e;background:#1c1c1e;color:#f2f2f2;border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;font-weight:650;cursor:pointer}" +
       "#cheapFuel .cf-chip[aria-pressed='true']{background:rgba(var(--accent-rgb),.08);border-color:rgba(var(--accent-rgb),.45);color:var(--accent)}" +
+      "#cheapFuel .cf-brand{margin-top:12px;border:1px solid #2a2a2e;border-radius:14px;background:#101012;padding:0 12px}" +
+      "#cheapFuel .cf-brand summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;cursor:pointer;list-style:none;font-size:14px;color:#c7c7cc}" +
+      "#cheapFuel .cf-brand summary::-webkit-details-marker{display:none}" +
+      "#cheapFuel .cf-brand summary::after{content:'\\203A';font-size:18px;color:var(--accent);transition:transform .2s;margin-left:2px}" +
+      "#cheapFuel .cf-brand[open] summary::after{transform:rotate(90deg)}" +
+      "#cheapFuel .cf-brand summary b{margin-left:auto;font-weight:650;color:#f2f2f2;font-size:13.5px;max-width:60%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}" +
+      "#cheapFuel .cf-brand.cf-brand-on summary b{color:var(--accent)}" +
+      "#cheapFuel .cf-brand .cf-chips{margin:2px 0 12px}" +
+      "#cheapFuel .cf-brand .cf-subchips{margin:-4px 0 12px 14px;padding-left:12px;border-left:2px solid #2a2a2e}" +
+      "#cheapFuel .cf-chip[aria-pressed='mixed']{border-color:rgba(var(--accent-rgb),.35);color:var(--accent)}" +
       "#cheapFuel .cf-go{display:block;width:100%;margin-top:14px;box-sizing:border-box;border:0;border-radius:16px;padding:14px 16px;font:inherit;font-size:16px;font-weight:700;background:#14532d;color:#fff;text-align:center;text-decoration:none;cursor:pointer}" +
       "#cheapFuel .cf-go[aria-disabled='true'],#cheapFuel .cf-go:disabled{opacity:.45;pointer-events:none}" +
       "#cheapFuel .cf-mapbtn{display:block;width:100%;margin-top:8px;box-sizing:border-box;border:1px solid #2a2a2e;border-radius:16px;padding:13px 16px;font:inherit;font-size:16px;font-weight:650;background:#1c1c1e;color:#f2f2f2;text-align:center;cursor:pointer}" +
@@ -164,9 +181,55 @@
 
   function setMiles(n) {
     state.miles = n;
-    root.querySelectorAll(".cf-chip").forEach(function (b) {
+    root.querySelectorAll(".cf-chip[data-miles]").forEach(function (b) {
       b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-miles")) === n));
     });
+  }
+
+  /* Brand filter: a small box under the radius chips. All | Shell | BP | Esso | Texaco | Jet | Supermarkets | Others, multi-select, remembered. */
+  function brandBox() {
+    var B = window.D3FuelBrands;
+    if (!B) return "";
+    var chip = function (id, text, extra) {
+      return "<button type='button' class='cf-chip cf-b" + (extra || "") + "' data-brand='" + id + "' aria-pressed='false'>" + text + "</button>";
+    };
+    return "<details class='cf-brand' id='cfBrand'><summary><span>Brand</span><b id='cfBrandSum'>" + esc(B.label(state.brands)) + "</b></summary>" +
+      "<div class='cf-chips' role='group' aria-label='Brand'>" +
+        chip("all", "All") + chip("shell", "Shell") + chip("bp", "BP") + chip("esso", "Esso") + chip("texaco", "Texaco") + chip("jet", "Jet") +
+        chip("super", "Supermarkets") + chip("others", "Others") +
+      "</div>" +
+      "<div class='cf-chips cf-subchips' role='group' aria-label='Supermarkets'>" +
+        chip("tesco", "Tesco") + chip("asda", "Asda") + chip("sainsburys", "Sainsbury\u2019s") + chip("morrisons", "Morrisons") +
+      "</div></details>";
+  }
+  function paintBrands() {
+    var B = window.D3FuelBrands;
+    if (!B || !$("cfBrand")) return;
+    var sel = state.brands, supAll = B.SUPER.every(function (x) { return sel.indexOf(x) >= 0; }), supSome = B.SUPER.some(function (x) { return sel.indexOf(x) >= 0; });
+    root.querySelectorAll("[data-brand]").forEach(function (b) {
+      var id = b.getAttribute("data-brand"), on;
+      if (id === "all") on = !sel.length;
+      else if (id === "super") { on = supAll; b.setAttribute("aria-pressed", supAll ? "true" : supSome ? "mixed" : "false"); return; }
+      else on = sel.indexOf(id) >= 0;
+      b.setAttribute("aria-pressed", String(on));
+    });
+    $("cfBrandSum").textContent = B.label(sel);
+    $("cfBrand").classList.toggle("cf-brand-on", !!sel.length);
+  }
+  function pickBrand(id) {
+    var B = D3FuelBrands, sel = state.brands.slice();
+    if (id === "all") sel = [];
+    else if (id === "super") {
+      var all = B.SUPER.every(function (x) { return sel.indexOf(x) >= 0; });
+      sel = sel.filter(function (x) { return B.SUPER.indexOf(x) < 0; });
+      if (!all) sel = sel.concat(B.SUPER);
+    } else {
+      var i = sel.indexOf(id);
+      if (i >= 0) sel.splice(i, 1); else sel.push(id);
+    }
+    state.brands = B.save(sel);
+    paintBrands();
+    if (last) search(last.lat, last.lng, last.label);
   }
 
   function renderIdle() {
@@ -188,7 +251,7 @@
   function renderResult() {
     if (!cheapest) {
       $("cfPrice").textContent = "—";
-      $("cfMeta").textContent = "No stations with " + fuelLabel() + " within " + state.miles + " miles.";
+      $("cfMeta").textContent = noneText();
       $("cfGo").setAttribute("aria-disabled", "true");
       $("cfGo").removeAttribute("href");
       $("cfMapBtn").disabled = true;
@@ -403,7 +466,7 @@
     function go() {
       if (!last) { say("Allow location or type a postcode first."); return; }
       if (!cheapest && !others.length) {
-        say("No stations with " + fuelLabel() + " within " + state.miles + " miles. Try a wider search.");
+        say(noneText() + (brandOn() ? " Try a wider search or another brand." : " Try a wider search."));
         return;
       }
       showSheet();
@@ -434,7 +497,8 @@
     last = { lat: lat, lng: lng, label: label || "" };
     say("Finding " + fuelLabel() + " near " + (label || "you") + "…");
     var q = url + "?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng) +
-      "&miles=" + encodeURIComponent(state.miles) + "&fuel=" + encodeURIComponent(fuelParam());
+      "&miles=" + encodeURIComponent(state.miles) + "&fuel=" + encodeURIComponent(fuelParam()) +
+      (brandOn() ? "&brands=" + encodeURIComponent(state.brands.join(",")) : "");
     return fetch(q).then(function (r) {
       return r.json().then(function (j) { return { ok: r.ok, j: j }; }).catch(function () {
         throw new Error("Fuel search failed.");
@@ -442,14 +506,16 @@
     }).then(function (res) {
       if (!res.ok) throw new Error((res.j && res.j.error) || "Fuel search failed.");
       var stations = (res.j && res.j.stations) || [];
+      // brand filter (also applied here, so it works whether or not the server has filtered already)
+      if (brandOn()) stations = stations.filter(function (s) { return D3FuelBrands.matches(s.brand, state.brands); });
       cheapest = stations[0] || null;
       others = stations.slice(1);
       renderResult();
       if (cheapest) {
-        say((res.j.count || stations.length) + " stations within " + state.miles + " miles" +
+        say((brandOn() ? stations.length : (res.j.count || stations.length)) + (((brandOn() ? stations.length : (res.j.count || stations.length)) === 1) ? " station within " : " stations within ") + state.miles + " miles" +
           (label ? " of " + label : "") + ".");
       } else {
-        say("No stations with " + fuelLabel() + " within " + state.miles + " miles. Try a wider search.");
+        say(noneText() + (brandOn() ? " Try a wider search or another brand." : " Try a wider search."));
       }
       try {
         localStorage.setItem("gt.fuelLast", JSON.stringify({
@@ -534,6 +600,7 @@
           return "<button type='button' class='cf-chip' data-miles='" + n + "' aria-pressed='" + (n === state.miles) + "'>" + n + " miles</button>";
         }).join("") +
       "</div>" +
+      brandBox() +
       "<a class='cf-go' id='cfGo' target='_blank' rel='noopener' aria-disabled='true'>Take me to the cheapest</a>" +
       "<button type='button' class='cf-mapbtn' id='cfMapBtn' disabled>View on map</button>" +
       "<div class='cf-find'><button type='button' id='cfLoc'>Use my location</button></div>" +
@@ -545,13 +612,17 @@
         "<div id='cfMap' role='application' aria-label='Map of nearby stations'></div>" +
       "</div>";
 
-    root.querySelectorAll(".cf-chip").forEach(function (btn) {
+    root.querySelectorAll(".cf-chip[data-miles]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var n = Number(btn.getAttribute("data-miles"));
         setMiles(n);
         if (last) search(last.lat, last.lng, last.label);
       });
     });
+    root.querySelectorAll("[data-brand]").forEach(function (b) {
+      b.addEventListener("click", function () { pickBrand(b.getAttribute("data-brand")); });
+    });
+    paintBrands();
     $("cfGo").addEventListener("click", takeMe);
     $("cfMapBtn").addEventListener("click", viewMap);
     $("cfSheetClose").addEventListener("click", closeSheet);

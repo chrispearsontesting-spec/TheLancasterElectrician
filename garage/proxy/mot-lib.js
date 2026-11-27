@@ -437,14 +437,29 @@ export function parseFuelFeed(json, feedBrand) {
   return { updated, stations };
 }
 
+// Brand groups for the app's brand filter (same rules as garage/fuel-brands.js): shell, bp, esso, texaco, jet, tesco, asda, sainsburys, morrisons, others.
+const BRAND_RULES = [["shell", /\bshell\b/], ["bp", /\bbp\b/], ["esso", /\besso\b/], ["texaco", /\btexaco\b/], ["jet", /\bjet\b/],
+  ["tesco", /\btesco\b/], ["asda", /\basda\b/], ["sainsburys", /\bsainsbur/], ["morrisons", /\bmorrison/]];
+export const BRAND_IDS = BRAND_RULES.map(r => r[0]).concat(["others"]);
+export function brandGroup(brand) {
+  const s = " " + String(brand == null ? "" : brand).toLowerCase().replace(/[\u2018\u2019'`]/g, "").replace(/[^a-z0-9]+/g, " ").trim() + " ";
+  for (const [id, re] of BRAND_RULES) if (re.test(s)) return id;
+  return "others";
+}
+export function parseBrands(v) {
+  return String(v || "").toLowerCase().split(",").map(x => x.trim()).filter((x, i, a) => BRAND_IDS.includes(x) && a.indexOf(x) === i);
+}
+
 export function filterFuelStations(stations, opts) {
   const lat = Number(opts.lat), lng = Number(opts.lng);
   const miles = Math.min(30, Math.max(1, Number(opts.miles) || 5));
   const fuel = String(opts.fuel || "petrol").toLowerCase();
   const staleAfter = opts.staleAfterMs != null ? opts.staleAfterMs : 7 * 86400000;
   const now = opts.now || Date.now();
+  const brands = Array.isArray(opts.brands) ? opts.brands : [];
   const out = [];
   for (const s of stations || []) {
+    if (brands.length && !brands.includes(brandGroup(s.brand))) continue;
     const picked = pickPrice(s.prices, fuel);
     if (!picked) continue;
     const distance = milesBetween(lat, lng, s.lat, s.lng);
@@ -964,7 +979,8 @@ async function fuelHandle(sp, headers, env, ctx) {
   if (shouldRefreshOfficial(env, merged) && ctx && typeof ctx.waitUntil === "function") {
     ctx.waitUntil(refreshFuelCache(env));
   }
-  const stations = filterFuelStations(merged.stations, { lat, lng, miles, fuel });
+  const brands = parseBrands(sp.get("brands")); // optional: only these brand groups (the app's brand filter)
+  const stations = filterFuelStations(merged.stations, { lat, lng, miles, fuel, brands });
   const hdrs = { ...headers, "Cache-Control": "public, max-age=60, s-maxage=1800" };
   return json({
     updated: merged.updated,
@@ -973,6 +989,7 @@ async function fuelHandle(sp, headers, env, ctx) {
     lat,
     lng,
     count: stations.length,
+    brands,
     stations,
     sources: merged.sources,
     provider: merged.provider

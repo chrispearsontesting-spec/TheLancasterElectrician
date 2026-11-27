@@ -1,7 +1,7 @@
 // Tests for /fuel on the MOT worker: parse, filter, cache. Run: node fuel-lib.test.mjs
 import assert from "node:assert/strict";
 import worker from "./mot-worker.js";
-import { _resetForTests, asPence, milesBetween, parseFuelFeed, pickPrice, filterFuelStations, normalizeFFGrade, extractBrand, officialList, joinOfficialStations, refreshFuelCache } from "./mot-lib.js";
+import { _resetForTests, asPence, milesBetween, parseFuelFeed, pickPrice, filterFuelStations, brandGroup, parseBrands, normalizeFFGrade, extractBrand, officialList, joinOfficialStations, refreshFuelCache } from "./mot-lib.js";
 
 const SITE = "https://thelancasterelectrician.com";
 const env = { DVSA_TOKEN_URL: "https://login.example/token", DVSA_CLIENT_ID: "id", DVSA_CLIENT_SECRET: "s", DVSA_API_KEY: "k" };
@@ -326,6 +326,18 @@ await t("Fuel Finder access token is reused across a second refresh", async () =
     assert.equal(b.ok, true);
     assert.equal(mock.tokenCalls(), 1);
   } finally { mock.restore(); }
+});
+
+await t("brand filter: names normalise and /fuel can filter by brand group", () => {
+  assert.equal(brandGroup("SAINSBURYS"), "sainsburys"); assert.equal(brandGroup("Sainsbury\u2019s Local"), "sainsburys");
+  assert.equal(brandGroup("ASDA EXPRESS"), "asda"); assert.equal(brandGroup("Shell Express"), "shell"); assert.equal(brandGroup("MFG"), "others");
+  assert.deepEqual(parseBrands("Shell, bp,nope,shell"), ["shell", "bp"]);
+  const mk = (id, brand, price) => ({ id, brand, lat: 54.047, lng: -2.801, prices: { E10: price, B7: price }, address: "x", postcode: "LA1 1AA" });
+  const st = [mk("1", "ASDA EXPRESS", 150), mk("2", "Shell", 160), mk("3", "BP", 155), mk("4", "Gulf", 140)];
+  const o = { lat: 54.047, lng: -2.801, miles: 5, fuel: "diesel", now: Date.parse("2026-11-10T02:00:00Z") };
+  assert.deepEqual(filterFuelStations(st, { ...o, brands: ["shell", "asda"] }).map(x => x.id).sort(), ["1", "2"]);
+  assert.deepEqual(filterFuelStations(st, { ...o, brands: ["others"] }).map(x => x.id), ["4"]);
+  assert.equal(filterFuelStations(st, { ...o, brands: [] }).length, 4);
 });
 
 console.log(`\n${pass} fuel tests passed`);

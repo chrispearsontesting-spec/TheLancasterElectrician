@@ -74,7 +74,7 @@
     var o = {
       plate: c.plate || "",
       nick: c.nick || c.name || "",
-      accent: ACCENT[accentName] || ACCENT.blue,
+      accent: ACCENT[accentName] || (/^#[0-9a-f]{6}$/i.test(accentName) ? accentName : ACCENT.blue),
       mot: c.mot || "",
       tax: c.tax || "",
       ins: c.ins || c.insurance || "",

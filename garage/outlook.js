@@ -53,10 +53,30 @@
       if(lows && !(pack.faults||[]).some(function(f){return f.s==="med";})) return {n:10,lab:"This model and engine has a light fault list"};
       return {n:4,lab:"Typical known issues for this model, nothing severe on file"};
     }
+    if(normBaseline(input)) return null; // DVSA pass rate is used instead of the hand-made make list
     for(i=0;i<BASE.length;i++){
       for(j=0;j<BASE[i].k.length;j++) if(h.indexOf(BASE[i].k[j])>=0) return {n:BASE[i].n,lab:BASE[i].lab};
     }
     return null;
+  }
+
+  /* DVSA anonymised MOT data (data/mot-norms.js, OGL v3.0): first-time pass rate for this make/model/fuel/age band vs UK. */
+  function normBaseline(input){
+    var N=root.T3_MOTNORMS;
+    if(!N||!input.make||input.age==null) return null;
+    var a=+input.age, b=a<6?"a":a<9?"b":a<12?"c":a<15?"d":a<20?"e":"f";
+    var mk=String(input.make).toUpperCase().trim(); if(mk==="MERCEDES"||mk==="MERCEDES BENZ") mk="MERCEDES-BENZ";
+    var md=String(input.model||"").toUpperCase().replace(/\s+/g," ").trim(), w=md.split(" "), key=(/^\d+$/.test(w[0])&&w[1])?w[0]+" "+w[1]:w[0];
+    var f=String(input.fuel||"").toLowerCase(), fu=/hybrid/.test(f)?"H":/elec/.test(f)?"E":/diesel/.test(f)?"D":/petrol/.test(f)?"P":"O";
+    var r=N.model[mk+"|"+md+"|"+fu+"|"+b]||N.model[mk+"|"+key+"|"+fu+"|"+b], who="This model";
+    if(!r){ r=N.make[mk+"|"+fu+"|"+b]; who="This make"; }
+    var uk=N.uk[b];
+    if(!r||!uk) return null;
+    var d=r[1]-uk[1], n=Math.max(-10,Math.min(10,Math.round(d*80)));
+    var pct=Math.round(r[1]*100)+"% vs "+Math.round(uk[1]*100)+"% UK", line="First-time MOT pass rate, "+who.toLowerCase()+" at this age: "+pct+" · DVSA data";
+    if(d>=0.03) return {n:n,line:line,lab:who+" passes its MOT first time more than most at this age ("+pct+")"};
+    if(d<=-0.03) return {n:n,line:line,lab:who+" fails its MOT more than most at this age ("+pct+")"};
+    return {n:n,line:line,lab:who+" passes its MOT about as often as most at this age ("+pct+")"};
   }
 
   function life(age, miles){
@@ -85,22 +105,25 @@
     if(!rows.length) return bits;
     var latest=rows[rows.length-1];
     if(isFailResult(latest)) bits.push({n:-12,lab:"Latest test was a fail",dir:-1});
-    var fails=0, rust=0, clean=0, stems={};
+    var fails=0, rust=0, clean=0, stems={}, danger=0, prsTests=0;
     rows.forEach(function(t){
       var y=+(dateOf(t).slice(0,4)||0);
       if(y && y<now-5) return;
       if(isFailResult(t)) fails++;
-      var defs=defects(t), major=0, adv=0;
+      var defs=defects(t), major=0, adv=0, prs=0;
       defs.forEach(function(d){
         var tx=textOf(d).toLowerCase();
         if(/corrosion|corroded|\brust\b|sill corroded|prescribed area|chassis corroded/.test(tx)) rust++;
         if(isMajor(d)) major++;
+        if(d && (d.dangerous===true || d.dangerous==="true" || /DANGEROUS/.test(typeOf(d)))) danger++;
+        if(/PRS/.test(typeOf(d))) prs++;
         if(isAdvisory(d)){
           adv++;
           var stem=tx.replace(/[^a-z]+/g," ").trim().split(" ").slice(0,4).join(" ");
           if(stem) stems[stem]=(stems[stem]||0)+1;
         }
       });
+      if(prs && !isFailResult(t)) prsTests++;
       if(!isFailResult(t) && major===0 && adv<=1) clean++;
     });
     if(fails>=3) bits.push({n:-12,lab:"Several MOT fails in the last five years",dir:-1});
@@ -109,6 +132,9 @@
     var rec=0, k;
     for(k in stems) if(stems[k]>=2) rec++;
     if(rec) bits.push({n:-8,lab:"The same advisory keeps coming back",dir:-1});
+    if(danger>=2) bits.push({n:-10,lab:"Dangerous defects recorded more than once",dir:-1});
+    else if(danger===1) bits.push({n:-6,lab:"A dangerous defect was recorded",dir:-1});
+    if(prsTests>=2) bits.push({n:-3,lab:"Needed fixes on the day at more than one MOT",dir:-1});
     if(rust>=2) bits.push({n:-10,lab:"Corrosion keeps being advised",dir:-1});
     else if(rust===1) bits.push({n:-4,lab:"Corrosion has been advised",dir:-1});
     if(clean>=2 && fails===0 && !rec && !rust) bits.push({n:8,lab:"Recent tests have been clean",dir:1});
@@ -203,6 +229,8 @@
     if(input.year && !input.age) input.age=new Date().getFullYear()-(+input.year);
     var factors=[], b=baseline(input);
     if(b) factors.push({n:b.n,lab:b.lab,dir:b.n>=0?1:-1});
+    var nb=normBaseline(input); input._norm=nb;
+    if(nb && nb.n) factors.push({n:nb.n,lab:nb.lab,dir:nb.n>0?1:-1});
     factors=factors.concat(life(input.age, input.miles), motTrend(tests), mileageFlags(tests));
     var jobs=jobEvidence(tests, input);
     factors=factors.concat(jobs.done, jobs.due);
@@ -238,7 +266,8 @@
       costLo:cost.lo,
       costHi:cost.hi,
       age:input.age||0,
-      miles:input.miles||0
+      miles:input.miles||0,
+      norm:input._norm?input._norm.line:""
     };
   }
 
@@ -259,6 +288,7 @@
       "<div><p class='outTitle'>Reliability &amp; cost outlook</p><p class='estLab'>Estimate · out of 100</p></div></div>"+
       "<p class='outSum'>"+esc(r.summary)+"</p>"+
       "<div class='outFacts'>"+(up||"")+(down||"")+"</div>"+
+      (r.norm?"<p class='outNorm' style='font-size:12px;line-height:1.35;color:#9aa3b0;margin:8px 0 10px'>"+esc(r.norm)+"</p>":"")+
       done+"</div>";
   }
 

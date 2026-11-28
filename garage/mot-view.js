@@ -44,7 +44,9 @@ window.paintMotView=function(tests, year, car){
     var tyre=lastHit(/tyre/), brake=lastHit(/brake/), sus=lastHit(/suspension|spring|arm|bush/), exh=lastHit(/exhaust|corrosion/);
     var carInfo=car||{};
     var diyText="";
-    try{ (JSON.parse(localStorage.getItem("gt.diy")||"[]")||[]).forEach(function(x){ diyText+=" "+(x.text||x.title||x.job||x.name||""); }); }catch(e){}
+    /* Work done on this phone counts only for the same plate (a different car's cambelt is not proof). */
+    var vk=function(s){return String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"");}, mine=vk(carInfo.plate);
+    try{ (JSON.parse(localStorage.getItem("gt.diy")||"[]")||[]).forEach(function(x){ if(mine&&vk(x.plate)!==mine) return; diyText+=" "+(x.text||x.title||x.job||x.name||""); }); }catch(e){}
     var outlook=window.T3Outlook?window.T3Outlook.score({
       tests:tests, year:year||null, age:age, miles:milesNow,
       make:carInfo.make, model:carInfo.model, name:carInfo.name, fuel:carInfo.fuel, engine:carInfo.engine,

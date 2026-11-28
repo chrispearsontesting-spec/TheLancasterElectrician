@@ -87,6 +87,7 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 .crow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
 .svRow{display:flex;align-items:center;gap:8px}.svRow a{flex:1}.svDel{background:none;border:1px solid #3a3a3e;color:#b0b0b0;border-radius:999px;padding:6px 10px;font-size:12px;min-height:32px}
 </style>
+<link rel="stylesheet" href="buy-compare.css?v=1"/>
 </head>
 <body>
 <h1>Buying guide</h1>
@@ -160,10 +161,12 @@ ul{margin:8px 0 0;padding-left:18px;color:#c9c2b4;font-size:14px;line-height:1.4
 <script src="mpg-lookup.js?v=1"></script>
 <script src="trim.js?v=38"></script>
 <script src="mot-client.js?v=38"></script>
-<script src="outlook.js?v=1"></script>
-<script src="mot-view.js?v=48"></script>
+<script src="data/mot-norms.js?v=1"></script>
+<script src="outlook.js?v=2"></script>
+<script src="mot-view.js?v=49"></script>
 <script src="./icons.js?v=36"></script>
 <script src="./compare.js?v=40"></script>
+<script src="./buy-compare.js?v=1"></script>
 <script>
 function $(id){return document.getElementById(id)}
 function loadView(){try{return JSON.parse(localStorage.getItem("gt.viewings.v1")||"[]")}catch(e){return []}}
@@ -304,7 +307,7 @@ function run(){
     var year=(info&&info.year)||yearGuess;
     paint({name:name,plate:plate,fuel:(info&&info.fuel)||fuel,year:year,engine:info&&info.engine});
     if(window.loadMotHistory) window.loadMotHistory(plate);
-    if(window.paintMotView) window.paintMotView(info.tests, info.year, {make:info.make,model:info.model,name:name,fuel:(info&&info.fuel)||fuel,engine:info&&info.engine});
+    if(window.paintMotView) window.paintMotView(info.tests, info.year, {make:info.make,model:info.model,name:name,fuel:(info&&info.fuel)||fuel,engine:info&&info.engine,plate:plate});
   });
 }
 document.addEventListener("click",function(e){
@@ -368,7 +371,7 @@ function findCompare(side){
     var rec=sureMpg(info.name,fuel,info);
     var cost=rec&&rec.costMpg, official=rec&&rec.official;
     var unit=(rec&&rec.unit)||(fuel==="electric"?"mi/kWh":"mpg");
-    cmpCars[side]={fuel:fuel,name:info.name,plate:plate,mpg:cost,official:official,realWorld:rec&&rec.realWorld,unit:unit,phev:rec&&rec.phev,officialLabel:rec&&rec.officialLabel,realWorldLabel:rec&&rec.realWorldLabel};
+    cmpCars[side]={fuel:fuel,name:info.name,plate:plate,mpg:cost,official:official,realWorld:rec&&rec.realWorld,unit:unit,phev:rec&&rec.phev,officialLabel:rec&&rec.officialLabel,realWorldLabel:rec&&rec.realWorldLabel,info:info};
     if(cost){
       mpgEl.value=cost;
       mpgEl.className="hide";
@@ -393,7 +396,7 @@ function runCompare(){
   });
   var a=cmpCars.a, b=cmpCars.b;
   if(!a.name||!b.name){$("compareBody").innerHTML="<p class='muted'>Find both plates first.</p>";return}
-  if(!a.mpg||!b.mpg){$("compareBody").innerHTML="<p class='muted'>Enter the figure where the box is showing.</p>";return}
+  if(!a.mpg||!b.mpg){$("compareBody").innerHTML="<p class='muted'>Enter the figure where the box is showing.</p>";fullCompare();return}
   var ac=monthCost(a.mpg,a.fuel), bc=monthCost(b.mpg,b.fuel);
   var gap=Math.abs(ac-bc), winner=ac<=bc?a:b;
   function col(car,cost){
@@ -403,6 +406,10 @@ function runCompare(){
     return "<div class='cmpCol'><b>"+car.name+"</b><p class='muted'>"+car.fuel+"</p>"+(off?"<p class='mpgOff'>"+off+"</p>":"")+(rw?"<p class='mpgReal'>"+rw+"</p>":"<p class='muted'>"+car.mpg+" "+unit+"</p>")+"<div class='crow'><span>Month</span><b>£"+cost.toFixed(0)+"</b></div><div class='crow'><span>Year</span><b>£"+(cost*12).toFixed(0)+"</b></div></div>";
   }
   $("compareBody").innerHTML="<div class='cmpGrid' style='margin-top:12px'>"+col(a,ac)+col(b,bc)+"</div><p class='win'>"+winner.name+" saves £"+gap.toFixed(0)+" a month, £"+(gap*12).toFixed(0)+" a year.</p><p class='muted'>1,000 miles a month. Costs use the real-world estimate. Electric uses the night rate.</p>";
+  fullCompare();
+}
+function fullCompare(){
+  if(window.T3Compare&&cmpCars.a.info&&cmpCars.b.info) window.T3Compare.render($("compareBody"),cmpCars,{monthCost:monthCost});
 }
 $("cmpAGo").onclick=function(){findCompare("a")};
 $("cmpBGo").onclick=function(){findCompare("b")};

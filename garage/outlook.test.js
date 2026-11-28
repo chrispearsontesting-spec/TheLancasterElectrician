@@ -89,3 +89,35 @@ test('escapes HTML in defect text', () => {
   assert.doesNotMatch(html, /<script>x/);
   assert.match(html, /&lt;script&gt;/);
 });
+
+test('DVSA pass-rate norm replaces the make list when the model matches', () => {
+  const save = globalThis.T3_MOTNORMS;
+  globalThis.T3_MOTNORMS = { uk:{c:[1000,0.72]}, make:{}, model:{'VAUXHALL|CORSA|P|c':[5000,0.60,0.06], 'TOYOTA|YARIS|P|c':[5000,0.80,0.05]} };
+  const bad = O.score({year:new Date().getFullYear()-10, make:'Vauxhall', model:'Corsa', fuel:'Petrol', tests:[]});
+  const good = O.score({year:new Date().getFullYear()-10, make:'Toyota', model:'Yaris', fuel:'Petrol', tests:[]});
+  assert.ok(bad.down.some(f => /fails its MOT more than most.*60% vs 72% UK/.test(f.lab)), JSON.stringify(bad.down));
+  assert.ok(good.up.some(f => /passes its MOT first time more than most/.test(f.lab)));
+  assert.ok(good.score > bad.score);
+  globalThis.T3_MOTNORMS = save;
+});
+
+test('dangerous defects and repeat fixes-on-the-day count against the car', () => {
+  const y = new Date().getFullYear();
+  const base = { year:y-9, make:'Ford', model:'Focus', fuel:'Petrol' };
+  const clean = O.score({...base, tests:[{testResult:'PASSED',completedDate:`${y}-01-10`,odometerValue:90000,defects:[]},{testResult:'PASSED',completedDate:`${y-1}-01-10`,odometerValue:80000,defects:[]}]});
+  const risky = O.score({...base, tests:[
+    {testResult:'PASSED',completedDate:`${y}-01-10`,odometerValue:90000,defects:[{type:'PRS',text:'Headlamp aim too high'}]},
+    {testResult:'FAILED',completedDate:`${y-1}-01-10`,odometerValue:80000,defects:[{type:'DANGEROUS',text:'Tyre cord exposed',dangerous:true}]},
+    {testResult:'PASSED',completedDate:`${y-1}-01-11`,odometerValue:80010,defects:[{type:'PRS',text:'Wiper blade torn'}]}]});
+  assert.ok(risky.down.some(f => /dangerous defect/i.test(f.lab)), JSON.stringify(risky.down));
+  assert.ok(risky.score < clean.score);
+});
+
+test('pass-rate factor also applies when a model fault pack matches', () => {
+  const save = globalThis.T3_MOTNORMS, saveF = globalThis.FAULTS;
+  globalThis.FAULTS = [{k:['ford','focus'], faults:[{s:'med',t:'x'}]}];
+  globalThis.T3_MOTNORMS = { uk:{c:[1,0.72]}, make:{}, model:{'FORD|FOCUS|D|c':[9,0.62,0.07]} };
+  const r = O.score({year:new Date().getFullYear()-10, make:'Ford', model:'Focus', fuel:'Diesel', tests:[]});
+  assert.ok(r.down.some(f => /fails its MOT more than most/.test(f.lab)), JSON.stringify(r.down));
+  globalThis.T3_MOTNORMS = save; globalThis.FAULTS = saveF;
+});

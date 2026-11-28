@@ -4,7 +4,9 @@
 //   falls back to a best-effort in-memory counter (per Worker isolate, resets when it recycles).
 // - Caches the DVSA OAuth token in memory until shortly before it expires.
 
-const ALLOWED_ORIGINS = ["https://thelancasterelectrician.com", "https://www.thelancasterelectrician.com"];
+const ALLOWED_ORIGINS = ["https://thelancasterelectrician.com", "https://www.thelancasterelectrician.com", "https://trac3.co.uk", "https://www.trac3.co.uk"];
+// Trac3 Cloudflare Pages project: production trac3.pages.dev and its branch previews (e.g. preview-chris-pass-2026-11-1.trac3.pages.dev).
+const PAGES_ORIGIN = /^https:\/\/([a-z0-9-]+\.)?trac3\.pages\.dev$/;
 const DEV_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 const MEM_LIMIT = 20;          // requests per IP per window (fallback limiter)
 const MEM_WINDOW_MS = 60000;
@@ -16,6 +18,7 @@ const memHits = new Map();
 export function originAllowed(origin, env) {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (PAGES_ORIGIN.test(origin)) return true;
   if (DEV_ORIGIN.test(origin) && (env && env.ALLOW_LOCALHOST) !== "0") return true;
   const extra = String((env && env.EXTRA_ORIGINS) || "").split(",").map(s => s.trim()).filter(Boolean);
   return extra.includes(origin);

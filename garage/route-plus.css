@@ -1,0 +1,63 @@
+/* Route costs: cheaper route, time of day, car types (2026-11-28) */
+.rpAlt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#121a20;border:1px solid rgba(var(--accent-rgb),.45);border-radius:18px;padding:14px;color:var(--ink);margin:0 0 12px;cursor:pointer}
+.rpAlt .ar{color:var(--accent);font-size:18px;flex:0 0 22px;text-align:center}
+.rpAlt .tx{flex:1;min-width:0}
+.rpAlt .tx b{display:block;font-size:15px;font-weight:650}
+.rpAlt .tx span{display:block;color:var(--dim);font-size:12px;margin-top:2px;line-height:1.35}
+.rpAlt .sv{color:var(--accent);font-weight:800;font-size:20px;white-space:nowrap}
+.rpAlt.on{background:rgba(var(--accent-rgb),.12)}
+.rpOk{color:var(--dim);font-size:12px;margin:-4px 2px 12px}
+.rpBar{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px}
+.rpChip{display:inline-flex;align-items:center;gap:6px;background:#141416;border:1px solid #2a2a2e;border-radius:999px;padding:0 12px;height:38px;color:var(--ink);font-size:14px;font-weight:600;position:relative}
+.rpChip select{position:absolute;inset:0;opacity:0;width:100%;font-size:16px}
+.rpChip i{width:7px;height:7px;border:solid #9aa3b0;border-width:0 2px 2px 0;transform:rotate(45deg);margin:-3px 0 0 2px}
+.rpTag{color:#8b8b8b;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.rpDay{background:#141416;border:1px solid #2a2a2e;border-radius:18px;padding:14px;margin:0 0 6px}
+.rpDay .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.rpDay .hd b{font-size:15px;font-weight:650}
+.rpDay .hd span{color:var(--dim);font-size:12px}
+.rpBars{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;height:150px}
+.rpCol{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;background:none;border:0;padding:0;color:var(--ink)}
+.rpCol em{font-style:normal;font-size:10px;color:#c9c2b4}
+.rpCol i{display:block;width:100%;border-radius:8px;background:#2a2e36;min-height:8px}
+.rpCol.at i{background:rgba(var(--accent-rgb),.35);box-shadow:inset 0 0 0 2px var(--accent)}
+.rpCol.best i{background:var(--accent)}
+.rpCol.best em,.rpCol.best u{color:var(--accent)}
+.rpCol u{text-decoration:none;font-size:11px;color:var(--dim)}
+.rpCol s{text-decoration:none;font-size:10px;color:#6f7680}
+.rpNote{color:var(--dim);font-size:12px;line-height:1.45;margin:6px 2px 12px}
+#compareCard.rpTypes{background:#141416 !important;border:1px solid #2a2a2e !important;border-radius:18px;padding:14px;margin:0 0 12px}
+.rpTypes .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.rpTypes .hd b{font-size:16px;font-weight:650}
+.rpTypes .hd span{color:var(--dim);font-size:12px}
+.rpRow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #24262b}
+.rpRow .nm{flex:1;min-width:0}
+.rpRow .nm b{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:650}
+.rpRow .nm span{display:block;color:var(--dim);font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rpRow .gbp{font-size:21px;font-weight:800;white-space:nowrap}
+.rpRow .ed{flex:0 0 40px;height:40px;border-radius:50%;border:0;background:#22252b;color:#d8d2c4;display:flex;align-items:center;justify-content:center;font-size:16px}
+.rpRow.best{border:1px solid rgba(var(--accent-rgb),.55);border-radius:14px;background:rgba(var(--accent-rgb),.07);padding:10px;margin:4px -6px}
+.rpRow.best .gbp{color:var(--accent)}
+.rpPill{font-size:10px;font-weight:800;letter-spacing:.06em;background:var(--accent);color:#0b0c0f;border-radius:999px;padding:2px 8px}
+.rpHow{border-top:1px solid #24262b;margin-top:4px;padding-top:4px}
+.rpHow>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;color:var(--dim);font-size:13px;padding:8px 0;cursor:pointer}
+.rpHow>summary::-webkit-details-marker{display:none}
+.rpHow>summary::after{content:"";width:7px;height:7px;border:solid #6b6f76;border-width:0 2px 2px 0;transform:rotate(45deg);margin:0 4px 3px}
+.rpHow[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
+.rpHow p{color:var(--dim);font-size:12px;line-height:1.45;margin:6px 0}
+.rpHow a{color:var(--accent)}
+.rpSeg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 10px}
+.rpSeg button{background:#171a20;border:1px solid rgba(255,255,255,.12);color:var(--ink);border-radius:12px;padding:9px 4px;font-size:13px;font-weight:650}
+.rpSeg button em{display:block;font-style:normal;color:var(--dim);font-size:11px;font-weight:500;margin-top:2px}
+.rpSeg button.on{border-color:var(--accent);background:rgba(var(--accent-rgb),.1)}
+.rpSlide{display:flex;justify-content:space-between;color:var(--dim);font-size:12px;margin-top:4px}
+.rpHow input[type=range]{width:100%;padding:0;border:0;background:none;accent-color:var(--accent)}
+.rpSmall{background:#22252b;border:0;color:var(--ink);border-radius:12px;padding:10px 14px;font-weight:650;font-size:14px;margin-top:6px}
+.rpSheetBg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.rpSheet{width:100%;max-width:480px;background:#16171b;border-radius:22px 22px 0 0;border-top:1px solid #2a2a2e;padding:16px 16px calc(18px + env(safe-area-inset-bottom))}
+.rpSheet h3{margin:0 0 4px;font-size:17px}
+.rpSheet .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rpSheet .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.rpSheet .acts button{border:0;border-radius:14px;padding:13px;font-weight:700;font-size:15px;background:#24262b;color:var(--ink)}
+.rpSheet .acts .pri{background:var(--accent);color:var(--on-accent,#000)}
+.rpRow .nm .rpPill{display:inline-block;color:#0b0c0f;margin:0;white-space:nowrap}

@@ -20,12 +20,35 @@ function mpgRow(){
   }
   return score>=8?best:null;
 }
+// Official figure matched by year/engine/test cycle (mpg-lookup.js), shown as a real-world estimate.
+var __offCache={};
+function officialPick(kind){
+  if(!window.MpgLookup||kind==="electric") return null;
+  var g=null; try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null"); g=s&&s.cars&&(s.cars[s.i]||s.cars[0]);}catch(e){}
+  if(!g||!(g.make||g.name)) return null;
+  var fam=MpgLookup.fuelFamily(g.fuel);
+  if((kind==="diesel")!==(fam==="diesel")) return null;
+  var key=[g.make,g.model,g.name,g.fuel,g.year,g.engine,g.co2].join("|");
+  if(!(key in __offCache)){
+    var r=MpgLookup.lookUp({make:g.make||"",model:g.model||"",name:g.name||[g.make,g.model].join(" "),fuel:g.fuel,year:+g.year||null,engine:+g.engine||null,firstUsedDate:g.firstUsedDate||g.regDate||null,co2:+g.co2||null});
+    __offCache[key]=r&&r.costMpg&&!r.phev?r:null;
+  }
+  return __offCache[key];
+}
+// Your own fill-ups (gt.fuelLog.v1) beat any official figure once there are enough.
+function learnedPick(kind){
+  if(!window.FuelCompare||kind==="electric") return null;
+  var g=null; try{var s=JSON.parse(localStorage.getItem("gt.garage")||"null"); g=s&&s.cars&&(s.cars[s.i]||s.cars[0]);}catch(e){}
+  var plate=g&&g.plate?String(g.plate).toUpperCase().replace(/\s/g,""):"";
+  return FuelCompare.learnedMpg(FuelCompare.fillups(), plate);
+}
 function cycleMpg(kind){
   var box=document.getElementById("mpgOverride");
   var row=mpgRow();
   if(!row) return (box&&+box.value)||(kind==="electric"?3.5:kind==="diesel"?45:40);
   if(window.CYCLE==="custom"&&box&&+box.value) return +box.value;
   if(kind==="electric") return row[7]||3.5;
+  if(window.CYCLE==="combined"){ var lm=learnedPick(kind); if(lm) return lm.mpg; var off=officialPick(kind); if(off) return off.costMpg; }
   if(window.CYCLE==="urban") return row[4]||row[6]||45;
   if(window.CYCLE==="extra") return row[5]||row[6]||45;
   return row[6]||row[4]||row[5]||45;
@@ -58,7 +81,8 @@ function markFuel(){
     if(box){ box.hidden=window.CYCLE!=="custom"; if(window.CYCLE!=="custom") box.value=String(fig); }
     if(lab) lab.textContent=electric?"Miles per kWh":"Economy";
     var cycleName={urban:"Urban",extra:"Extra-urban",combined:"Combined",custom:"Custom"}[window.CYCLE]||"Combined";
-    if(note) note.textContent=cycleName+". Using "+fig+(electric?" miles per kWh. ":" mpg. ")+row[0]+" "+row[1]+" "+(row[2]||"")+" \u00b7 "+(row[8]||"official");
+    var lm=window.CYCLE==="combined"?learnedPick(kind):null, off=window.CYCLE==="combined"&&!lm?officialPick(kind):null;
+    if(note) note.textContent=lm?("From your "+lm.n+" fill-ups: "+lm.mpg+" mpg. Tap Custom if yours differs."):off?("Real-world est. "+off.costMpg+" mpg \u00b7 official "+off.official+" mpg ("+off.scheme+"). Tap Custom if yours differs."):(cycleName+". Using "+fig+(electric?" miles per kWh. ":" mpg. ")+row[0]+" "+row[1]+" "+(row[2]||"")+" \u00b7 "+(row[8]||"official"));
   }
   if(window.car) car.kind=kind;
 }

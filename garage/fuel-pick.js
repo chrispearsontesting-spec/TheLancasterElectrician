@@ -99,7 +99,7 @@ function wrapCosts(){
     var UK=4.54609, mins=(+secs||0)/60;
     if(pick==="offpeak"||pick==="peak"){
       var mpk=cycleMpg("electric")||3.5;
-      var rate=(pick==="offpeak"?(+P.offpeak||14):(+P.electric||26.32))/100;
+      var rate=(pick==="offpeak"?(+P.offpeak||9.9):(+P.electric||26.32))/100;
       var kwh=miles/mpk, qk=miles/(mpk*0.82);
       return {ecoGBP:kwh*rate,quickGBP:qk*rate,ecoMin:mins,quickMin:mins*0.88,ecoUse:kwh.toFixed(1)+" kWh",quickUse:qk.toFixed(1)+" kWh"};
     }

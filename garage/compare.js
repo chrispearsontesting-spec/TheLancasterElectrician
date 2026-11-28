@@ -1,5 +1,5 @@
 function dipPrice(){
-  return window.PRICE||{petrol:174.8,diesel:199.9,electric:26.32,offpeak:14};
+  return window.PRICE||{petrol:174.8,diesel:199.9,electric:26.32,offpeak:9.9};
 }
 function fuelCost(mpg,ppl,miles){return miles/Math.max(mpg,1)*4.54609*(ppl/100)}
 function evCost(mpk,pkwh,miles){return miles/Math.max(mpk,0.4)*(pkwh/100)}
